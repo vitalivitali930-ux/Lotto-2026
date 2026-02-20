@@ -6,201 +6,121 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #D4AF37; --red: #FF4500; --carbon: #0a0a0a; }
+        :root { --gold: #D4AF37; --carbon: #0a0a0a; }
+        body { background: #000 url('bg.png') no-repeat center center fixed; background-size: cover; color: var(--gold); font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow: hidden; }
         
-        body {
-            background: #000 url('bg.png') no-repeat center center fixed;
-            background-size: cover; color: var(--gold);
-            font-family: -apple-system, system-ui, sans-serif;
-            margin: 0; padding: 0; text-align: center; overflow: hidden;
-        }
+        /* Стили модального окна */
+        #chance-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .modal-card { border: 1px solid var(--gold); padding: 30px; border-radius: 20px; background: #111; }
 
-        /* SPLASH SCREEN */
-        #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 100000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; transition: opacity 0.8s ease;
-        }
-        .logo { width: 180px; filter: drop-shadow(0 0 15px var(--gold)); }
-        .intro-text { margin-top: 20px; font-size: 24px; font-weight: bold; min-height: 30px; }
+        /* Языковая панель */
+        .lang-bar { padding: 10px; display: flex; justify-content: flex-end; gap: 10px; cursor: pointer; }
+        .lang-flag { font-size: 20px; filter: grayscale(0.5); transition: 0.3s; }
+        .lang-flag.active { filter: grayscale(0); transform: scale(1.2); }
 
-        /* ОКНО "РЕАЛЬНЫЙ ШАНС" */
-        #chance-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 99999;
-            flex-direction: column; justify-content: center; align-items: center; padding: 30px;
-        }
-        .modal-content { border: 1px solid var(--gold); padding: 40px 20px; border-radius: 25px; background: #111; }
-        .chance-desc { font-size: 18px; line-height: 1.5; color: var(--gold); margin-top: 15px; }
+        /* Баланс */
+        .balance-row { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .stat { border: 1px solid var(--gold); border-radius: 12px; padding: 12px; min-width: 120px; background: rgba(20,20,20,0.8); }
+        .stat-label { font-size: 9px; opacity: 0.6; text-transform: uppercase; }
+        .stat-val { font-size: 22px; font-weight: bold; }
 
-        /* ГЛАВНЫЙ ИНТЕРФЕЙС */
-        #main-app { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; padding: 10px 20px; font-size: 12px; opacity: 0.7; }
-        
-        .balance-row { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .stat-card { background: rgba(20,20,20,0.9); border: 1px solid var(--gold); border-radius: 12px; padding: 12px; min-width: 130px; }
-        .label { font-size: 9px; color: #777; text-transform: uppercase; }
-        .val { font-size: 22px; font-weight: bold; color: #fff; }
-
+        /* Сетка */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 20px; max-width: 400px; margin: 0 auto; }
-        .cell { background: rgba(35,35,35,0.8); border: 1px solid #333; padding: 14px 0; border-radius: 8px; font-weight: bold; font-size: 16px; transition: 0.2s; }
-        .cell.selected { background: linear-gradient(180deg, #F9D976, var(--gold)); color: #000; box-shadow: 0 0 15px var(--gold); }
+        .cell { background: rgba(40,40,40,0.7); border: 1px solid #333; padding: 15px 0; border-radius: 8px; font-weight: bold; }
+        .cell.selected { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
+        .cell.disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .btn-main {
-            background: linear-gradient(180deg, #F9D976, var(--gold)); color: #000;
-            border: none; width: 85%; padding: 18px; border-radius: 15px;
-            font-size: 18px; font-weight: bold; margin: 20px 0; cursor: pointer;
-        }
-
-        .qr-section { margin-top: 20px; border-top: 1px solid #222; padding: 20px; opacity: 0.6; }
-        .qr-box { width: 80px; height: 80px; border: 1px dashed var(--gold); margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .btn-main { background: var(--gold); color: #000; border: none; width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; font-weight: bold; margin-top: 25px; }
     </style>
 </head>
 <body>
 
-<div id="splash-screen">
-    <img src="1771489965074(1).png" class="logo">
-    <div id="intro-msg" class="intro-text"></div>
-</div>
-
 <div id="chance-modal">
-    <div class="modal-content">
-        <div style="font-size: 22px; font-weight: bold;">У ТЕБЯ БЫЛ РЕАЛЬНЫЙ ШАНС</div>
-        <div id="chance-text" class="chance-desc"></div>
-        <span style="font-size: 60px; margin-top: 20px; display: block;">😢</span>
-        <button class="btn-main" style="width:100%" onclick="closeModal()">ПОНЯТНО...</button>
+    <div class="modal-card">
+        <div id="chance-title" style="font-size: 20px; font-weight: bold;"></div>
+        <div id="chance-text" style="margin: 20px 0; font-size: 16px;"></div>
+        <span style="font-size: 50px;">😢</span>
+        <button class="btn-main" style="width:100%" onclick="location.reload()">VERSTANDEN</button>
     </div>
 </div>
 
-<div id="main-app">
-    <div class="header">
-        <span>PROJECT: ЛОТТО</span>
-        <span>🇷🇺 🇩🇪 🇫🇷 🇮🇹</span>
+<div class="lang-bar">
+    <span class="lang-flag" onclick="setLang('ru')">🇷🇺</span>
+    <span class="lang-flag" onclick="setLang('de')">🇩🇪</span>
+    <span class="lang-flag" onclick="setLang('fr')">🇫🇷</span>
+    <span class="lang-flag" onclick="setLang('it')">🇮🇹</span>
+</div>
+
+<div class="balance-row">
+    <div class="stat">
+        <div class="stat-label">VIRTUAL VCHF</div>
+        <div id="bal" class="stat-val">100.00</div>
     </div>
-
-    <div class="balance-row">
-        <div class="stat-card">
-            <div class="label">VIRTUAL VCHF</div>
-            <div id="vchf-val" class="val">0.00</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">LOYALTY BONUS</div>
-            <div id="loyalty-val" class="val">+0</div>
-        </div>
-    </div>
-
-    <div id="timer" style="color:var(--red); font-size:12px; font-weight:bold; margin-bottom:15px;">SYNCHRONIZING WITH SWISSLOS...</div>
-
-    <div class="grid" id="lotto-grid"></div>
-
-    <button class="btn-main" onclick="confirmTicket()">TICKET BESTÄTIGEN</button>
-
-    <div class="qr-section">
-        <div style="font-size:10px;">ПРИГЛАСИТЬ ДРУГА (+100 VCHF)</div>
-        <div class="qr-box">QR CODE</div>
-        <div style="font-size:11px; text-decoration: underline;">COPY MY PERSONAL LINK</div>
+    <div class="stat">
+        <div class="stat-label">LOYALTY</div>
+        <div id="loy" class="stat-val">+0</div>
     </div>
 </div>
+
+<div class="grid" id="grid"></div>
+<button class="btn-main" id="confirm-btn" onclick="checkWin()">TICKET BESTÄTIGEN</button>
 
 <script>
     const tg = window.Telegram.WebApp;
-    if(tg) { tg.expand(); tg.ready(); }
+    let balance = 100.00;
+    let loyalty = 0;
+    let selectedNums = [];
+    let currentLang = 'de';
 
-    // --- ЛОГИКА ИНТРО ---
-    const msgs = ["Grüezi", "Welcome", "Добро пожаловать"];
-    let mIdx = 0;
-    const msgEl = document.getElementById('intro-msg');
-    
-    const introInterval = setInterval(() => {
-        msgEl.innerText = msgs[mIdx];
-        mIdx++;
-        if(mIdx >= msgs.length) clearInterval(introInterval);
-    }, 800);
+    const translations = {
+        ru: { title: "У ТЕБЯ БЫЛ РЕАЛЬНЫЙ ШАНС", btn: "ПОДТВЕРДИТЬ", items: ["обновить гардероб", "улететь в отпуск", "купить новую машину", "больше не работать"] },
+        de: { title: "DU HATTEST EINE REALISTISCHE CHANCE", btn: "BESTÄTIGEN", items: ["Garderobe erneuern", "Traumurlaub machen", "neues Auto kaufen", "nie больше arbeiten"] }
+    };
 
-    setTimeout(() => {
-        const ss = document.getElementById('splash-screen');
-        const app = document.getElementById('main-app');
-        ss.style.opacity = '0';
-        setTimeout(() => {
-            ss.style.display = 'none';
-            app.style.display = 'block';
-            setTimeout(() => app.style.opacity = '1', 50);
-        }, 800);
-    }, 3000);
-
-    // --- ДВИЖОК VCHF ---
-    let balance = parseFloat(localStorage.getItem('vchf_bal')) || 100.00;
-    let loyalty = parseInt(localStorage.getItem('loyalty_pts')) || 0;
-    
-    // Проверка 1-го числа
-    const now = new Date();
-    const lastMonth = localStorage.getItem('last_m');
-    if (now.getDate() === 1 && lastMonth !== now.getMonth().toString()) {
-        balance += 100.00;
-        localStorage.setItem('last_m', now.getMonth());
+    function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('confirm-btn').innerText = translations[lang]?.btn || "BESTÄTIGEN";
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function updateStats() {
-        document.getElementById('vchf-val').innerText = balance.toFixed(2);
-        document.getElementById('loyalty-val').innerText = `+${loyalty}`;
-        localStorage.setItem('vchf_bal', balance);
-        localStorage.setItem('loyalty_pts', loyalty);
-    }
-    updateStats();
-
-    // Сетка
-    const grid = document.getElementById('lotto-grid');
+    const grid = document.getElementById('grid');
     for (let i = 1; i <= 42; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.innerText = i;
         cell.onclick = () => {
-            cell.classList.toggle('selected');
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            if (selectedNums.includes(i)) {
+                selectedNums = selectedNums.filter(n => n !== i);
+                cell.classList.remove('selected');
+            } else if (selectedNums.length < 6) {
+                selectedNums.push(i);
+                cell.classList.add('selected');
+                tg.HapticFeedback.impactOccurred('light');
+            }
         };
         grid.appendChild(cell);
     }
 
-    function confirmTicket() {
-        const selCount = document.querySelectorAll('.cell.selected').length;
-        if(selCount < 6) {
-            alert("Выберите 6 чисел для участия!");
-            return;
-        }
-
-        // Начисление за лояльность (каждый розыгрыш)
+    function checkWin() {
+        if (selectedNums.length < 6) return alert("Wähle 6 Zahlen!");
+        
         loyalty += 10;
-        updateStats();
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        document.getElementById('loy').innerText = `+${loyalty}`;
+        
+        const sum = Math.random() * 150000;
+        let item = "";
+        const langData = translations[currentLang] || translations['de'];
+        
+        if (sum < 1000) item = langData.items[0];
+        else if (sum < 10000) item = langData.items[1];
+        else if (sum < 100000) item = langData.items[2];
+        else item = langData.items[3];
 
-        // Рандомная симуляция шанса (в будущем - реальный API)
-        const mockWin = Math.random() * 150000;
-        showChance(mockWin);
-    }
-
-    function showChance(sum) {
-        let text = "";
-        if (sum < 1000) text = "Полностью обновить гардероб и купить новую одежду...";
-        else if (sum < 10000) text = "Улететь в лучший отпуск в твоей жизни уже завтра...";
-        else if (sum < 100000) text = "Выехать из автосалона на новеньком автомобиле...";
-        else text = "Больше никогда не работать и жить в свое удовольствие...";
-
-        document.getElementById('chance-text').innerText = text;
+        document.getElementById('chance-title').innerText = langData.title;
+        document.getElementById('chance-text').innerText = item;
         document.getElementById('chance-modal').style.display = 'flex';
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+        tg.HapticFeedback.notificationOccurred('error');
     }
-
-    function closeModal() {
-        document.getElementById('chance-modal').style.display = 'none';
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-    }
-
-    // Таймер
-    setInterval(() => {
-        const d = new Date();
-        document.getElementById('timer').innerText = `NEXT DRAW IN: ${23 - d.getHours()}h ${59 - d.getMinutes()}m ${59 - d.getSeconds()}s`;
-    }, 1000);
 </script>
-
 </body>
 </html>
