@@ -6,126 +6,54 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* ДИНАМИЧЕСКИЕ ЦВЕТА (ФУНДАМЕНТ) */
         :root { 
-            --gold-main: #d4af37; 
-            --gold-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
+            --main-color: #d4af37; 
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
         }
         
-        body { 
-            background: #000; 
-            color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            overflow: hidden; 
-        }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow: hidden; }
 
-        /* ИНТРО-КОНТЕЙНЕР */
+        /* ИНТРО */
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; 
-            z-index: 20000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
+            background: url('Hintergrund.png') no-repeat center center; background-size: cover; z-index: 20000; display: flex; justify-content: center; align-items: center;
         }
-        
-        .intro-img { 
-            position: absolute; 
-            width: 70%; 
-            opacity: 0; 
-            pointer-events: none; 
-        }
-
-        /* Анимация появления (Shake & Pop) */
+        .intro-img { position: absolute; width: 70%; opacity: 0; pointer-events: none; }
+        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop {
             0% { transform: scale(0.1); opacity: 0; }
             50% { transform: scale(1.05) translate(-3px, 3px); opacity: 1; }
             100% { transform: scale(1) translate(0, 0); opacity: 1; }
         }
-        
-        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
 
-        /* ОСНОВНОЙ КОНТЕНТ */
-        #app-content { 
-            opacity: 0; 
-            transition: opacity 1s ease; 
-            display: none; 
-            height: 100vh; 
-            overflow-y: auto; 
-            padding-bottom: 30px; 
+        /* ПАНЕЛЬ СМЕНЫ ЦВЕТА */
+        .theme-panel {
+            position: fixed; top: 60px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 1000;
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 20px; border: 1px solid var(--main-color);
+            transition: all 0.3s; transform: translateX(60px); /* Спрятана по умолчанию */
         }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        .theme-toggle { position: fixed; top: 65px; right: 15px; font-size: 24px; z-index: 1001; cursor: pointer; }
 
-        /* КАРТОЧКИ БАЛАНСА */
-        .balance-container { display: flex; justify-content: center; gap: 10px; padding: 15px; }
-        .bal-card { 
-            flex: 1; 
-            border-radius: 12px; 
-            padding: 10px; 
-            background: rgba(20, 20, 20, 0.9); 
-            border: 1.5px solid var(--gold-main); 
-        }
-        .bal-label { font-size: 10px; color: var(--gold-main); text-transform: uppercase; margin-bottom: 4px; }
-        .bal-val { font-size: 22px; font-weight: bold; color: #fff; } /* Цифры белые */
+        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        #app-content { opacity: 0; transition: opacity 1s ease; display: none; height: 100vh; overflow-y: auto; padding-bottom: 30px; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 10px; background: rgba(20, 20, 20, 0.9); border: 1.5px solid var(--main-color); }
+        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; }
+        .bal-val { font-size: 22px; font-weight: bold; color: #fff; }
 
-        /* КНОПКА ПОПОЛНЕНИЯ */
-        .btn-topup { 
-            background: var(--gold-gradient); 
-            color: #000; 
-            border: none; 
-            width: 85%; 
-            padding: 14px; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            font-size: 14px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
+        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
+        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 20px; }
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; }
 
-        /* СЕТКА ЛОТТО */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { 
-            background: rgba(35, 35, 35, 0.8); 
-            border: 1px solid #444; 
-            padding: 14px 0; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            color: #fff; /* Цифры белые */
-            font-size: 18px;
-        }
-        .cell.selected { 
-            background: var(--gold-gradient); 
-            color: #000; 
-            border-color: #fff; 
-        }
+        .cell { background: rgba(35, 35, 35, 0.8); border: 1px solid #444; padding: 14px 0; border-radius: 8px; font-weight: bold; color: #fff; font-size: 18px; }
+        .cell.selected { background: var(--main-gradient); color: #000; border-color: #fff; }
 
-        /* SUPERZAHL */
-        .super-title { margin: 20px 0 10px; font-size: 14px; color: var(--gold-main); font-weight: bold; letter-spacing: 1px; }
-        .super-grid { display: flex; justify-content: center; gap: 10px; }
-        .super-cell { 
-            width: 42px; height: 42px; 
-            border: 2px solid var(--gold-main); 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: #fff; /* Цифры белые */
-            font-weight: bold; 
-        }
-        .super-cell.selected { background: var(--gold-gradient); color: #000; }
-
-        /* ГЛАВНАЯ КНОПКА */
-        .btn-main { 
-            background: var(--gold-gradient); 
-            color: #000; 
-            border: none; 
-            width: 85%; 
-            padding: 20px; 
-            border-radius: 15px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            margin-top: 25px; 
-            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
-        }
+        .super-title { margin: 20px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
+        .super-cell { width: 42px; height: 42px; border: 2px solid var(--main-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
+        .super-cell.selected { background: var(--main-gradient); color: #000; }
     </style>
 </head>
 <body>
@@ -137,31 +65,27 @@
 </div>
 
 <div id="app-content">
-    <div style="padding: 15px; display: flex; justify-content: center; gap: 15px; font-size: 24px;">
-        <span onclick="setLang('ru')">🇷🇺</span>
-        <span onclick="setLang('de')">🇩🇪</span>
-        <span onclick="setLang('fr')">🇫🇷</span>
-        <span onclick="setLang('it')">🇮🇹</span>
+    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
     </div>
 
-    <div class="balance-container">
-        <div class="bal-card">
-            <div class="bal-label">VIRTUAL VChf</div>
-            <div class="bal-val">100.00</div>
-        </div>
-        <div class="bal-card">
-            <div class="bal-label">REAL CHF</div>
-            <div class="bal-val">0.00</div>
-        </div>
+    <div style="padding: 15px; display: flex; justify-content: center; gap: 15px; font-size: 24px;">
+        <span onclick="setLang('ru')">🇷🇺</span><span onclick="setLang('de')">🇩🇪</span>
+    </div>
+
+    <div class="balance-container" style="display: flex; gap: 10px; padding: 15px;">
+        <div class="bal-card"><div class="bal-label">VIRTUAL</div><div class="bal-val">100.00</div></div>
+        <div class="bal-card"><div class="bal-label">REAL</div><div class="bal-val">0.00</div></div>
     </div>
     
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
-
     <div class="grid" id="main-grid"></div>
-    
     <div id="l-super" class="super-title">SUPERZAHL</div>
-    <div class="super-grid" id="s-grid"></div>
-    
+    <div class="super-grid" id="s-grid" style="display: flex; justify-content: center; gap: 10px;"></div>
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
@@ -169,95 +93,53 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Логика Интро: последовательность Bild1 -> Bild2 -> Bild3
+    function setTheme(t) {
+        const root = document.documentElement;
+        if(t === 'gold') { root.style.setProperty('--main-color', '#d4af37'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #f9e27d, #d4af37)'); }
+        if(t === 'lime') { root.style.setProperty('--main-color', '#32CD32'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #7FFF00, #32CD32)'); }
+        if(t === 'silver') { root.style.setProperty('--main-color', '#c0c0c0'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #ffffff, #c0c0c0)'); }
+        if(t === 'cyan') { root.style.setProperty('--main-color', '#00ffff'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #e0ffff, #00ffff)'); }
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
     function runIntro() {
-        const steps = [
-            { id: 'intro1', show: 500, hide: 2500 },
-            { id: 'intro2', show: 2700, hide: 4700 },
-            { id: 'intro3', show: 4900, hide: 6900 }
-        ];
-
-        steps.forEach(s => {
-            setTimeout(() => {
-                const img = document.getElementById(s.id);
-                if(img) img.classList.add('active');
-            }, s.show);
-
-            setTimeout(() => {
-                const img = document.getElementById(s.id);
-                if(img) { img.classList.remove('active'); img.style.opacity = '0'; }
-            }, s.hide);
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
         });
-
-        // Переход к приложению
         setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            const app = document.getElementById('app-content');
-            app.style.display = 'block';
-            setTimeout(() => app.style.opacity = '1', 50);
+            document.getElementById('intro-container').style.display='none';
+            document.getElementById('app-content').style.display='block';
+            setTimeout(() => document.getElementById('app-content').style.opacity='1', 50);
         }, 7500);
     }
-
     window.onload = runIntro;
 
-    // Языковой словарь
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER" },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA" }
-    };
-
-    function setLang(l) {
-        document.getElementById('main-btn').innerText = dict[l].btn;
-        document.getElementById('l-super').innerText = dict[l].super;
-        document.getElementById('topup-btn').innerText = dict[l].topup;
-    }
-
-    // Генерация сетки 1-42
+    // Сетка и логика (как в оригинале)
     let selected = [];
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('div');
-        c.className = 'cell';
-        c.innerText = i;
+        const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
         c.onclick = () => {
-            if(selected.includes(i)) {
-                selected = selected.filter(n => n !== i);
-                c.classList.remove('selected');
-            } else if(selected.length < 6) {
-                selected.push(i);
-                c.classList.add('selected');
-                tg.HapticFeedback.impactOccurred('light');
-            }
+            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
         grid.appendChild(c);
     }
 
-    // Генерация Superzahl 1-6
     let superNum = null;
     const sGrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div');
-        sc.className = 'super-cell';
-        sc.innerText = i;
+        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-            superNum = i;
-            sc.classList.add('selected');
-            tg.HapticFeedback.impactOccurred('medium');
+            superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
         sGrid.appendChild(sc);
     }
 
-    function runEngine() {
-        if(selected.length === 6 && superNum) {
-            tg.HapticFeedback.notificationOccurred('success');
-            alert("Билет принят! Удачи!");
-        } else {
-            tg.HapticFeedback.notificationOccurred('error');
-        }
-    }
+    function runEngine() { if(selected.length === 6 && superNum) tg.HapticFeedback.notificationOccurred('success'); }
 </script>
 </body>
 </html>
