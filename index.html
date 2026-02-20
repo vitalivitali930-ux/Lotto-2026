@@ -6,11 +6,7 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { 
-            --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
-        }
-        
+        :root { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); }
         body { background: #000; color: #fff; font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow: hidden; }
 
         /* ИНТРО */
@@ -20,39 +16,38 @@
         }
         .intro-img { position: absolute; width: 70%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
-        @keyframes shakePop {
-            0% { transform: scale(0.1); opacity: 0; }
-            50% { transform: scale(1.05) translate(-3px, 3px); opacity: 1; }
-            100% { transform: scale(1) translate(0, 0); opacity: 1; }
-        }
-
-        /* ПАНЕЛЬ ЦВЕТОВ */
-        .theme-toggle { position: fixed; top: 65px; right: 15px; font-size: 24px; z-index: 1001; cursor: pointer; }
-        .theme-panel {
-            position: fixed; top: 60px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 1000;
-            background: rgba(0,0,0,0.8); padding: 12px; border-radius: 20px; border: 1.5px solid var(--main-color);
-            transition: 0.3s; transform: translateX(70px);
-        }
-        .theme-panel.open { transform: translateX(0); }
-        .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         /* ИНТЕРФЕЙС */
-        #app-content { opacity: 0; transition: opacity 1s ease; display: none; height: 100vh; overflow-y: auto; padding-bottom: 30px; }
-        .bal-card { flex: 1; border-radius: 12px; padding: 10px; background: rgba(20, 20, 20, 0.9); border: 1.5px solid var(--main-color); }
-        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; }
-        .bal-val { font-size: 22px; font-weight: bold; color: #fff; }
+        #app-content { opacity: 0; transition: opacity 1s ease; display: none; height: 100vh; overflow-y: auto; padding-top: 25px; }
+        
+        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 100; }
+        .lang-btn { font-size: 28px; cursor: pointer; transition: 0.2s; }
+
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(20, 20, 20, 0.95); border: 1.5px solid var(--main-color); }
+        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        /* ЗЕЛЕНЫЙ БАЛАНС */
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; text-shadow: 0 0 8px rgba(50, 205, 50, 0.4); }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
-        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 20px; }
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; }
+        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 25px; font-size: 14px; }
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: rgba(35, 35, 35, 0.8); border: 1px solid #444; padding: 14px 0; border-radius: 8px; font-weight: bold; color: #fff; font-size: 18px; }
+        .cell { background: rgba(35, 35, 35, 0.9); border: 1px solid #444; padding: 14px 0; border-radius: 8px; font-weight: bold; color: #fff; font-size: 18px; }
         .cell.selected { background: var(--main-gradient); color: #000; border-color: #fff; }
 
-        .super-title { margin: 20px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
+        .super-grid { display: flex; justify-content: center; gap: 10px; padding-bottom: 20px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--main-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
         .super-cell.selected { background: var(--main-gradient); color: #000; }
+
+        /* ПАЛИТРА */
+        .theme-toggle { position: fixed; top: 25px; right: 20px; font-size: 24px; z-index: 1001; cursor: pointer; }
+        .theme-panel { position: fixed; top: 70px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(80px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -64,6 +59,14 @@
 </div>
 
 <div id="app-content">
+    <div class="lang-panel">
+        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
+        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
+        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
+    </div>
+
     <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
     <div class="theme-panel">
         <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
@@ -72,22 +75,15 @@
         <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
     </div>
 
-    <div style="padding: 15px; display: flex; justify-content: center; gap: 12px; font-size: 24px;">
-        <span onclick="setLang('ru')">🇷🇺</span>
-        <span onclick="setLang('ua')">🇺🇦</span>
-        <span onclick="setLang('de')">🇩🇪</span>
-        <span onclick="setLang('fr')">🇫🇷</span>
-    </div>
-
-    <div class="balance-container" style="display: flex; gap: 10px; padding: 15px;">
-        <div class="bal-card"><div class="bal-label">VIRTUAL</div><div class="bal-val">100.00</div></div>
-        <div class="bal-card"><div class="bal-label">REAL</div><div class="bal-val">0.00</div></div>
+    <div class="balance-container">
+        <div class="bal-card"><div class="bal-label">VIRTUAL VChf</div><div class="bal-val">100.00</div></div>
+        <div class="bal-card"><div class="bal-label">REAL CHF</div><div class="bal-val">0.00</div></div>
     </div>
     
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
     <div class="grid" id="main-grid"></div>
     <div id="l-super" class="super-title">SUPERZAHL</div>
-    <div class="super-grid" id="s-grid" style="display: flex; justify-content: center; gap: 10px;"></div>
+    <div class="super-grid" id="s-grid"></div>
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
@@ -97,10 +93,14 @@
 
     function setTheme(t) {
         const root = document.documentElement;
-        if(t === 'gold') { root.style.setProperty('--main-color', '#d4af37'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #f9e27d, #d4af37)'); }
-        if(t === 'lime') { root.style.setProperty('--main-color', '#32CD32'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #7FFF00, #32CD32)'); }
-        if(t === 'silver') { root.style.setProperty('--main-color', '#c0c0c0'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #ffffff, #c0c0c0)'); }
-        if(t === 'cyan') { root.style.setProperty('--main-color', '#00ffff'); root.style.setProperty('--main-gradient', 'linear-gradient(145deg, #e0ffff, #00ffff)'); }
+        const colors = {
+            gold: ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
+            lime: ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
+            silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)'],
+            cyan: ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)']
+        };
+        root.style.setProperty('--main-color', colors[t][0]);
+        root.style.setProperty('--main-gradient', colors[t][1]);
         tg.HapticFeedback.impactOccurred('medium');
     }
 
@@ -108,12 +108,16 @@
         const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
         steps.forEach(st => {
             setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
+            setTimeout(() => { 
+                const el = document.getElementById(st.id);
+                el.classList.remove('active'); el.style.opacity='0'; 
+            }, st.e);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display='none';
-            document.getElementById('app-content').style.display='block';
-            setTimeout(() => document.getElementById('app-content').style.opacity='1', 50);
+            const app = document.getElementById('app-content');
+            app.style.display='block';
+            setTimeout(() => app.style.opacity='1', 50);
         }, 7500);
     }
     window.onload = runIntro;
@@ -122,13 +126,15 @@
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС" },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER" }
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER" },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA" }
     };
 
     function setLang(l) {
         document.getElementById('main-btn').innerText = dict[l].btn;
         document.getElementById('l-super').innerText = dict[l].super;
         document.getElementById('topup-btn').innerText = dict[l].topup;
+        tg.HapticFeedback.selectionChanged();
     }
 
     let selected = [];
