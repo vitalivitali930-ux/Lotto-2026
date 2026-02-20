@@ -1,95 +1,99 @@
- 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto Manifest 2026 - Real & Demo</title>
+    <title>Swiss Lotto Manifest 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            background: #000 url('bg.png') no-repeat center center fixed; 
-            background-size: cover;
-            color: #d4af37; 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            margin: 0; padding: 0;
-            overflow: hidden; 
-            display: flex; flex-direction: column; align-items: center;
+        :root {
+            --gold: #d4af37;
+            --dark-gold: #b8860b;
+            --bg-carbon: #121212;
         }
 
+        body { 
+            background: #000 url('bg.png') no-repeat center center fixed; 
+            background-size: cover; color: var(--gold); 
+            font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0;
+            overflow-x: hidden; display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Splash Screen */
         #splash-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 9999; transition: opacity 0.8s ease;
+            z-index: 9999; transition: opacity 0.8s ease; background: #000;
         }
-
         .splash-img {
             position: absolute; width: 0%; opacity: 0;
             transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             max-width: 85%; filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
         }
-
         .active { width: 80% !important; opacity: 1 !important; }
 
+        /* Main UI */
         #main-content { 
-            opacity: 0; display: none; width: 100%; max-width: 400px;
+            opacity: 0; display: none; width: 100%; max-width: 420px;
             padding: 15px; box-sizing: border-box; text-align: center;
             transition: opacity 1s ease;
         }
 
-        /* Блок баланса */
+        /* Wallet Section */
+        .wallet-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;
+        }
         .balance-card {
-            background: linear-gradient(145deg, #2a2a2a, #0a0a0a);
-            border: 1px solid #d4af37; border-radius: 15px;
-            padding: 12px 25px; margin-bottom: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.9);
-            display: inline-block;
+            background: rgba(30, 30, 30, 0.95); border: 1px solid var(--gold); border-radius: 12px;
+            padding: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 2px #000;
         }
-        .balance-val { 
-            font-size: 24px; font-weight: bold; color: #fff; 
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-        }
+        .balance-val { font-size: 18px; font-weight: bold; color: #fff; margin-top: 5px; }
+        .real-val { color: #00ff00; }
 
-        /* Кнопка пополнения [cite: 2026-02-19] */
+        /* Buttons */
         .deposit-btn {
-            background: linear-gradient(90deg, #d4af37, #f9e29c, #d4af37);
-            background-size: 200% auto;
-            color: #000; border: none; border-radius: 10px;
-            padding: 12px 30px; font-weight: 1000; font-size: 14px;
-            text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-            margin-bottom: 20px;
-            animation: shine 3s linear infinite;
-            display: block; width: 80%; margin-left: auto; margin-right: auto;
+            background: linear-gradient(90deg, var(--gold), #f9e29c, var(--gold));
+            background-size: 200% auto; color: #000; border: none; border-radius: 10px;
+            padding: 14px; font-weight: 900; width: 100%; cursor: pointer;
+            animation: shine 3s linear infinite; margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); text-transform: uppercase;
         }
-        @keyframes shine {
-            to { background-position: 200% center; }
-        }
-        .deposit-btn:active { transform: scale(0.95); }
+        @keyframes shine { to { background-position: 200% center; } }
 
+        /* Status & Header */
+        .status-info { font-size: 10px; font-weight: bold; color: #ff4500; margin-bottom: 5px; }
+        .privacy-tag { font-size: 9px; color: #888; margin-bottom: 15px; letter-spacing: 1px; }
         .header { 
-            font-size: 24px; font-weight: bold; margin: 5px 0 15px; 
-            text-transform: uppercase;
-            text-shadow: 2px 2px 0px #000, 0px 0px 15px rgba(212, 175, 55, 0.7);
-        }
-        
-        .lang-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
-        .lang-btn { 
-            background: rgba(40,40,40,0.9);
-            color: #d4af37; border: 1px solid #444; padding: 8px 0; border-radius: 8px;
-            font-size: 12px; font-weight: bold; cursor: pointer;
+            font-size: 26px; font-weight: bold; margin: 10px 0; 
+            text-shadow: 3px 3px 0px #000, 0px 0px 15px rgba(212,175,55,0.6);
+            letter-spacing: 2px;
         }
 
-        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        /* Grid System */
+        .section-title { 
+            font-size: 12px; font-weight: bold; margin: 20px 0 10px; 
+            text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px;
+        }
+        .lotto-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .super-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+
         .num { 
             aspect-ratio: 1; border: 1px solid #444; display: flex; align-items: center; justify-content: center; 
-            background: rgba(0,0,0,0.85); border-radius: 6px; font-weight: bold;
-            transition: all 0.2s ease; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.8); border-radius: 6px; font-weight: bold; font-size: 15px;
+            transition: all 0.2s; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            cursor: pointer; color: var(--gold);
         }
         .selected { 
-            background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; 
-            box-shadow: 0 0 15px #d4af37, inset 0 0 5px rgba(255,255,255,0.5); border: none;
+            background: linear-gradient(135deg, var(--gold), var(--dark-gold)) !important; 
+            color: #000 !important; border: none; box-shadow: 0 0 15px var(--gold);
         }
+        .super-num { border-color: #ff4500; color: #ff4500; }
+        .super-selected { 
+            background: linear-gradient(135deg, #ff4500, #b22222) !important; 
+            color: #fff !important; box-shadow: 0 0 15px #ff4500; border: none;
+        }
+
     </style>
 </head>
 <body>
@@ -101,83 +105,129 @@
     </div>
 
     <div id="main-content">
-        <div class="balance-card">
-            <div style="font-size: 11px; opacity: 0.7;">DEMO BALANCE</div>
-            <div class="balance-val" id="v-balance">100.00 VChf</div>
+        <div class="wallet-container">
+            <div class="balance-card">
+                <div style="font-size: 9px; opacity: 0.7;">VIRTUAL VChf</div>
+                <div class="balance-val" id="v-balance">100.00</div>
+            </div>
+            <div class="balance-card" style="border-color: #00ff00;">
+                <div style="font-size: 9px; opacity: 0.7;">REAL CHF</div>
+                <div class="balance-val real-val" id="r-balance">0.00</div>
+            </div>
         </div>
 
-        <button class="deposit-btn" onclick="openDeposit()">💰 DEPOSIT REAL CHF</button>
+        <button class="deposit-btn" onclick="openDeposit()">💰 TOP UP REAL BALANCE</button>
+
+        <div class="status-info">🕒 ТИРАЖ ЧЕРЕЗ: 02:14:05 (СТОП-ИГРА ЗА 3 ЧАСА)</div>
+        <div class="privacy-tag">🔒 END-TO-END ENCRYPTED | ANONYMOUS PLAY</div>
 
         <div class="header">⚜️ LOTTO MANIFEST ⚜️</div>
         
-        <div class="lang-grid">
-            <button class="lang-btn" onclick="setLang('ru')">RU</button>
-            <button class="lang-btn" onclick="setLang('de')">DE</button>
-            <button class="lang-btn" onclick="setLang('fr')">FR</button>
-            <button class="lang-btn" onclick="setLang('en')">EN</button>
-        </div>
+        <div class="section-title">FIELD 6 NUMBERS (1-42)</div>
+        <div class="lotto-grid" id="main-grid"></div>
 
-        <div id="h-title" style="margin-bottom: 10px; font-weight: bold; font-size: 14px;">SELECT NUMBERS (2.50 VChf)</div>
-        <div class="heatmap-grid" id="heatmap"></div>
+        <div class="section-title">SELECT SUPERZAHL (1-6)</div>
+        <div class="super-grid" id="super-grid"></div>
+        
+        <div style="margin: 30px 0 10px; font-size: 10px; color: #555; font-style: italic;">
+            "Совесть — это частица бога в человеке"
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
 
-        let balance = 100.00;
-        const TICKET_PRICE = 2.50;
+        let vBal = 100.00; 
+        let rBal = 0.00;   
+        let selectedMain = 0;
+        let selectedSuper = 0;
+        const TICKET_PRICE = 2.50; // Реальная цена Swiss Lotto [cite: 2026-02-19]
 
+        // Логика заставок
         window.onload = () => {
-            const s1 = document.getElementById('step1');
-            const s2 = document.getElementById('step2');
-            const s3 = document.getElementById('step3');
             const container = document.getElementById('splash-container');
             const main = document.getElementById('main-content');
-
-            setTimeout(() => s1.classList.add('active'), 100);
-            setTimeout(() => { s1.style.opacity='0'; setTimeout(()=>{ s1.style.display='none'; s2.classList.add('active'); }, 600); }, 2500);
-            setTimeout(() => { s2.style.opacity='0'; setTimeout(()=>{ s2.style.display='none'; s3.classList.add('active'); }, 600); }, 5000);
+            
+            setTimeout(() => document.getElementById('step1').classList.add('active'), 100);
+            setTimeout(() => { document.getElementById('step1').style.opacity='0'; setTimeout(()=>document.getElementById('step2').classList.add('active'), 600); }, 2500);
+            setTimeout(() => { document.getElementById('step2').style.opacity='0'; setTimeout(()=>document.getElementById('step3').classList.add('active'), 600); }, 5000);
             setTimeout(() => { 
                 container.style.opacity='0'; 
                 setTimeout(()=>{ container.style.display='none'; main.style.display='block'; setTimeout(()=>main.style.opacity='1', 50); }, 800); 
             }, 7500);
         };
 
-        function openDeposit() {
-            // Вызываем уведомление от Телеграм [cite: 2026-02-19]
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Redirecting to safe payment gateway...");
-        }
-
-        function setLang(lang) {
-            tg.HapticFeedback.impactOccurred('light');
-            const t = { 
-                'ru': 'ВЫБЕРИТЕ ЧИСЛА (2.50 VChf)', 
-                'de': 'ZAHLEN WÄHLEN (2.50 VChf)', 
-                'fr': 'CHOISIR NUMÉROS (2.50 VChf)', 
-                'en': 'SELECT NUMBERS (2.50 VChf)' 
-            };
-            document.getElementById('h-title').innerText = t[lang];
-        }
-
-        const hGrid = document.getElementById('heatmap');
-        for(let i=1; i<=25; i++) {
+        // Генерация основной сетки 1-42
+        const mGrid = document.getElementById('main-grid');
+        for(let i=1; i<=42; i++) {
             let n = document.createElement('div');
             n.className = 'num';
             n.innerText = i;
             n.onclick = function() {
+                if(!this.classList.contains('selected') && selectedMain >= 6) return;
                 this.classList.toggle('selected');
-                if(this.classList.contains('selected')) {
-                    balance -= TICKET_PRICE;
-                    tg.HapticFeedback.impactOccurred('medium');
-                } else {
-                    balance += TICKET_PRICE;
-                    tg.HapticFeedback.selectionChanged();
-                }
-                document.getElementById('v-balance').innerText = balance.toFixed(2) + ' VChf';
+                selectedMain += this.classList.contains('selected') ? 1 : -1;
+                tg.HapticFeedback.selectionChanged();
+                checkTicket();
             };
-            hGrid.appendChild(n);
+            mGrid.appendChild(n);
+        }
+
+        // Генерация Superzahl 1-6
+        const sGrid = document.getElementById('super-grid');
+        for(let i=1; i<=6; i++) {
+            let n = document.createElement('div');
+            n.className = 'num super-num';
+            n.innerText = i;
+            n.onclick = function() {
+                if(!this.classList.contains('super-selected') && selectedSuper >= 1) return;
+                this.classList.toggle('super-selected');
+                selectedSuper += this.classList.contains('super-selected') ? 1 : -1;
+                tg.HapticFeedback.impactOccurred('medium');
+                checkTicket();
+            };
+            sGrid.appendChild(n);
+        }
+
+        // Система "Анти-дурак" и покупка билета [cite: 2026-02-19]
+        function checkTicket() {
+            if(selectedMain === 6 && selectedSuper === 1) {
+                // Приоритет реальному балансу, если там есть деньги
+                if (rBal >= TICKET_PRICE) {
+                    rBal -= TICKET_PRICE;
+                    updateUI();
+                    tg.showAlert("РЕАЛЬНАЯ СТАВКА ПРИНЯТА! Вы в игре за джекпот.");
+                } 
+                // Иначе играем на Demo
+                else if (vBal >= TICKET_PRICE) {
+                    vBal -= TICKET_PRICE;
+                    updateUI();
+                    tg.showAlert("ДЕМО-СТАВКА ПРИНЯТА! (Выигрыш в VChf не выводится)");
+                } 
+                // Если везде пусто — Анти-дурак
+                else {
+                    tg.HapticFeedback.notificationOccurred('error');
+                    tg.showAlert("НЕДОСТАТОЧНО СРЕДСТВ! Пополните баланс.");
+                }
+                resetBoard();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('v-balance').innerText = vBal.toFixed(2);
+            document.getElementById('r-balance').innerText = rBal.toFixed(2);
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function resetBoard() {
+            document.querySelectorAll('.num').forEach(el => el.classList.remove('selected', 'super-selected'));
+            selectedMain = 0; selectedSuper = 0;
+        }
+
+        function openDeposit() {
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showAlert("Перенаправление на защищенный шлюз оплаты (Sicherheit First)...");
         }
     </script>
 </body>
