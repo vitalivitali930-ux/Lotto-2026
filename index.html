@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,22 +7,20 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { 
-            background-color: #1a1a1a; 
+            /* Используем твой новый файл bg.png */
+            background: #000 url('bg.png') no-repeat center center fixed; 
+            background-size: cover;
             color: #d4af37; 
-            font-family: sans-serif; 
-            margin: 0; 
-            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; padding: 0;
             overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Общий контейнер для заставок */
+        /* Контейнер для вступительного шоу */
         #splash-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a1a1a;
             display: flex; justify-content: center; align-items: center;
             z-index: 9999;
             transition: opacity 0.8s ease;
@@ -31,52 +28,60 @@
 
         .splash-img {
             position: absolute;
-            width: 0%; 
-            opacity: 0;
-            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            max-width: 85%;
+            width: 0%; opacity: 0;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 80%;
         }
 
-        /* Эффект появления/роста */
-        .active {
-            width: 80% !important; 
-            opacity: 1 !important;
-        }
+        /* Класс для эффекта "вырастания" из точки */
+        .active { width: 75% !important; opacity: 1 !important; }
 
-        /* Контент меню */
         #main-content { 
-            opacity: 0; 
-            transition: opacity 1s ease; 
-            width: 100%;
-            max-width: 400px;
-            padding: 20px; 
-            box-sizing: border-box;
-            text-align: center; 
-            display: none;
+            opacity: 0; display: none; 
+            width: 100%; max-width: 400px;
+            padding: 20px; box-sizing: border-box; text-align: center;
+            transition: opacity 1s ease;
         }
 
-        .header { font-size: 26px; font-weight: bold; margin: 20px 0; text-shadow: 0 0 10px #d4af37; }
-        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .btn { background: rgba(212, 175, 55, 0.1); color: #d4af37; border: 1px solid #d4af37; padding: 15px; border-radius: 12px; font-weight: bold; }
-        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .num { aspect-ratio: 1; border: 1px solid #333; display: flex; align-items: center; justify-content: center; background: #222; border-radius: 6px; }
-        .hot { background: linear-gradient(45deg, #ff4500, #ff8c00); color: white; border: none; }
+        .header { font-size: 24px; font-weight: bold; margin: 20px 0; letter-spacing: 2px; }
+        
+        /* Кнопки выбора 4 языков [cite: 2026-02-19] */
+        .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .lang-btn { 
+            background: rgba(212, 175, 55, 0.1); 
+            color: #d4af37; 
+            border: 1px solid #d4af37; 
+            padding: 15px 5px; 
+            border-radius: 10px; 
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .heatmap-title { margin: 20px 0 10px; font-size: 18px; color: #d4af37; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+        .num { aspect-ratio: 1; border: 1px solid #444; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); border-radius: 4px; }
+        .hot { background: #ff4500; color: white; border: none; box-shadow: 0 0 10px #ff4500; }
     </style>
 </head>
 <body>
 
     <div id="splash-container">
-        <img id="step1" class="splash-img" src="1771489965074(1).png">
+        <img id="step1" class="splash-img" src="1771489965074.png">
         <img id="step2" class="splash-img" src="1771607028825.png">
         <img id="step3" class="splash-img" src="1771607031910.png">
     </div>
 
     <div id="main-content">
-        <div class="header">⚜️ 𝕃𝕆𝕋𝕋𝕆 𝕄𝔸ℕ𝕀𝔽𝔼𝕊𝕋 ⚜️</div>
-        <div class="grid-buttons">
-            <button class="btn">RUSSIAN</button>
-            <button class="btn">DEUTSCH</button>
+        <div class="header">⚜️ Lotto Manifest ⚜️</div>
+        
+        <div class="lang-grid">
+            <button class="lang-btn" onclick="setLang('ru')">🇷🇺 RUSSIAN</button>
+            <button class="lang-btn" onclick="setLang('de')">🇩🇪 DEUTSCH</button>
+            <button class="lang-btn" onclick="setLang('fr')">🇫🇷 FRANÇAIS</button>
+            <button class="lang-btn" onclick="setLang('en')">🇬🇧 ENGLISH</button>
         </div>
+
+        <div class="heatmap-title" id="h-title">VISUAL HEATMAP</div>
         <div class="heatmap-grid" id="heatmap"></div>
     </div>
 
@@ -92,39 +97,43 @@
             const container = document.getElementById('splash-container');
             const main = document.getElementById('main-content');
 
-            // 1. Показываем основное Лого (0-2.5 сек) [cite: 2026-02-19]
+            // 1. Показываем Helvetic Luck
             setTimeout(() => s1.classList.add('active'), 100);
 
-            // 2. Переход к Grüezi (2.5-5.0 сек) [cite: 2026-02-19]
-            setTimeout(() => {
-                s1.style.opacity = '0';
-                setTimeout(() => {
-                    s1.style.display = 'none';
-                    s2.classList.add('active');
-                }, 600);
+            // 2. Переход к Grüezi через 2.5 сек
+            setTimeout(() => { 
+                s1.style.opacity = '0'; 
+                setTimeout(() => { s1.style.display='none'; s2.classList.add('active'); }, 600); 
             }, 2500);
 
-            // 3. Переход к Welcome (5.0-7.5 сек) [cite: 2026-02-19]
-            setTimeout(() => {
-                s2.style.opacity = '0';
-                setTimeout(() => {
-                    s2.style.display = 'none';
-                    s3.classList.add('active');
-                }, 600);
+            // 3. Переход к Welcome через 5.0 сек
+            setTimeout(() => { 
+                s2.style.opacity = '0'; 
+                setTimeout(() => { s2.style.display='none'; s3.classList.add('active'); }, 600); 
             }, 5000);
 
-            // 4. Финальный вход в меню
-            setTimeout(() => {
-                container.style.opacity = '0';
-                setTimeout(() => {
-                    container.style.display = 'none';
-                    main.style.display = 'block';
-                    setTimeout(() => main.style.opacity = '1', 50);
-                }, 800);
+            // 4. Вход в меню через 7.5 сек
+            setTimeout(() => { 
+                container.style.opacity = '0'; 
+                setTimeout(() => { 
+                    container.style.display='none'; 
+                    main.style.display='block'; 
+                    setTimeout(() => main.style.opacity='1', 50); 
+                }, 800); 
             }, 7500);
         };
 
-        // Генерация сетки
+        function setLang(lang) {
+            tg.HapticFeedback.impactOccurred('medium'); // Вибрация при выборе языка
+            const titles = {
+                'ru': 'ВИЗУАЛЬНАЯ КАРТА',
+                'de': 'VISUELLE HEATMAP',
+                'fr': 'CARTE THERMIQUE',
+                'en': 'VISUAL HEATMAP'
+            };
+            document.getElementById('h-title').innerText = titles[lang];
+        }
+
         const hGrid = document.getElementById('heatmap');
         for(let i=1; i<=25; i++) {
             let n = document.createElement('div');
