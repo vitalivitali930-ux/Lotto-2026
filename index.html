@@ -7,56 +7,58 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --gold: #D4AF37; --carbon: #0a0a0a; --red: #ff4444; }
-        body { background: #000 url('bg.png') no-repeat center center fixed; background-size: cover; color: var(--gold); font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow-y: auto; padding-bottom: 50px; }
+        body { background: #000 url('bg.png') no-repeat center center fixed; background-size: cover; color: var(--gold); font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow-x: hidden; padding-bottom: 40px; }
         
         #chance-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        .modal-card { border: 1px solid var(--gold); padding: 30px; border-radius: 25px; background: #111; box-shadow: 0 0 30px var(--gold); }
+        .modal-card { border: 1px solid var(--gold); padding: 30px; border-radius: 25px; background: #111; box-shadow: 0 0 30px var(--gold); width: 90%; max-width: 350px; }
 
-        .lang-bar { padding: 15px; display: flex; justify-content: flex-end; gap: 15px; }
-        .lang-flag { font-size: 24px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
+        .lang-bar { padding: 15px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .lang-flag { font-size: 24px; cursor: pointer; opacity: 0.4; transition: 0.3s; }
         .lang-flag.active { opacity: 1; transform: scale(1.2); }
 
-        .stat-center { margin: 20px auto; width: 160px; border: 2px solid var(--gold); border-radius: 20px; padding: 15px; background: rgba(10,10,10,0.9); }
-        .stat-label { font-size: 10px; opacity: 0.7; letter-spacing: 1px; }
-        .stat-val { font-size: 28px; font-weight: bold; color: #fff; }
+        .stat-center { margin: 15px auto; width: 140px; border: 1px solid var(--gold); border-radius: 15px; padding: 10px; background: rgba(10,10,10,0.9); }
+        .stat-label { font-size: 9px; opacity: 0.7; text-transform: uppercase; }
+        .stat-val { font-size: 24px; font-weight: bold; color: #fff; }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 20px; max-width: 420px; margin: 0 auto; }
-        .cell { background: rgba(30,30,30,0.8); border: 1px solid #333; padding: 14px 0; border-radius: 10px; font-weight: bold; font-size: 16px; }
-        .cell.selected { background: linear-gradient(180deg, #f9d976, var(--gold)); color: #000; }
-        .cell.locked { opacity: 0.4; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 15px; max-width: 380px; margin: 0 auto; }
+        .cell { background: rgba(30,30,30,0.8); border: 1px solid #333; padding: 12px 0; border-radius: 8px; font-weight: bold; font-size: 15px; }
+        .cell.selected { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
 
-        .super-title { margin: 25px 0 10px; font-size: 14px; text-transform: uppercase; color: var(--red); font-weight: bold; }
-        .super-grid { display: flex; justify-content: center; gap: 10px; }
-        .super-cell { width: 45px; height: 45px; border: 1px solid var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--red); }
+        .super-title { margin: 20px 0 10px; font-size: 12px; text-transform: uppercase; color: var(--red); font-weight: bold; }
+        .super-grid { display: flex; justify-content: center; gap: 8px; }
+        .super-cell { width: 40px; height: 40px; border: 1px solid var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--red); font-size: 14px; }
         .super-cell.selected { background: var(--red); color: #000; }
 
-        .btn-main { background: var(--gold); color: #000; border: none; width: 85%; padding: 20px; border-radius: 20px; font-size: 20px; font-weight: bold; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .btn-main { background: var(--gold); color: #000; border: none; width: 85%; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="chance-modal">
     <div class="modal-card">
-        <div id="m-title" style="font-size: 22px; font-weight: bold;"></div>
-        <div id="m-text" style="margin: 25px 0; font-size: 18px; color: #fff;"></div>
-        <span style="font-size: 60px;">😢</span>
-        <button class="btn-main" style="width:100%" onclick="location.reload()">VERSTANDEN</button>
+        <div id="m-title" style="font-size: 18px; font-weight: bold;"></div>
+        <div id="m-text" style="margin: 20px 0; font-size: 16px; color: #fff;"></div>
+        <span style="font-size: 50px;">😢</span>
+        <button id="m-btn-close" class="btn-main" style="width:100%" onclick="location.reload()">OK</button>
     </div>
 </div>
 
 <div class="lang-bar">
     <span class="lang-flag" id="f-ru" onclick="setLang('ru')">🇷🇺</span>
+    <span class="lang-flag" id="f-ua" onclick="setLang('ua')">🇺🇦</span>
     <span class="lang-flag active" id="f-de" onclick="setLang('de')">🇩🇪</span>
+    <span class="lang-flag" id="f-fr" onclick="setLang('fr')">🇫🇷</span>
+    <span class="lang-flag" id="f-it" onclick="setLang('it')">🇮🇹</span>
 </div>
 
 <div class="stat-center">
-    <div class="stat-label">VIRTUAL VCHF</div>
-    <div id="v-bal" class="stat-val">100.00</div>
+    <div id="l-bal-label" class="stat-label">VIRTUAL VCHF</div>
+    <div class="stat-val">100.00</div>
 </div>
 
 <div class="grid" id="main-grid"></div>
 
-<div class="super-title">Superzahl</div>
+<div id="l-super" class="super-title">Superzahl</div>
 <div class="super-grid" id="s-grid"></div>
 
 <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
@@ -68,19 +70,26 @@
     let lang = 'de';
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", title: "У ТЕБЯ БЫЛ РЕАЛЬНЫЙ ШАНС", items: ["обновить весь гардероб", "улететь в лучший отпуск", "забрать новую машину из салона", "забыть о работе навсегда"] },
-        de: { btn: "BESTÄTIGEN", title: "DEINE REALISTISCHE CHANCE", items: ["Garderobe komplett erneuern", "Traumurlaub sofort buchen", "neues Auto abholen", "nie wieder arbeiten gehen"] }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "Бонусное число", close: "ПОНЯТНО", title: "У ТЕБЯ БЫЛ РЕАЛЬНЫЙ ШАНС", items: ["обновить весь гардероб", "улететь в лучший отпуск", "забрать новую машину из салона", "забыть о работе навсегда"] },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "Бонусне число", close: "ЗРОЗУМІЛО", title: "У ТЕБЕ БУВ РЕАЛЬНИЙ ШАНС", items: ["оновити весь гардероб", "полетіти у найкращу відпустку", "забрати нову машину з салону", "забути про роботу назавжди"] },
+        de: { btn: "BESTÄTIGEN", super: "Superzahl", close: "VERSTANDEN", title: "DEINE REALISTISCHE CHANCE", items: ["Garderobe komplett erneuern", "Traumurlaub sofort buchen", "neues Auto abholen", "nie wieder arbeiten gehen"] },
+        fr: { btn: "CONFIRMER", super: "Nombre Bonus", close: "COMPRIS", title: "TU AVAIS UNE CHANCE RÉELLE", items: ["refaire toute ta garde-robe", "partir pour les meilleures vacances", "récupérer une voiture neuve", "oublier le travail pour toujours"] },
+        it: { btn: "CONFERMA", super: "Numero Bonus", close: "HO CAPITO", title: "AVEVI UNA REALE POSSIBILITÀ", items: ["rinnovare tutto il guardaroba", "partire per la vacanza dei sogni", "ritirare un'auto nuova", "dimenticare il lavoro per sempre"] }
     };
 
     function setLang(l) {
         lang = l;
-        document.getElementById('main-btn').innerText = dict[l].btn;
+        const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('m-btn-close').innerText = d.close;
         document.querySelectorAll('.lang-flag').forEach(f => f.classList.remove('active'));
         document.getElementById('f-'+l).classList.add('active');
-        tg.HapticFeedback.impactOccurred('medium');
+        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
     }
 
-    // Основная сетка
+    // Сетка
+    const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div');
         c.className = 'cell'; c.innerText = i;
@@ -91,13 +100,14 @@
             } else if(selected.length < 6) {
                 selected.push(i);
                 c.classList.add('selected');
-                tg.HapticFeedback.impactOccurred('light');
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         };
-        document.getElementById('main-grid').appendChild(c);
+        grid.appendChild(c);
     }
 
-    // Супер-число
+    // Superzahl
+    const sGrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div');
         sc.className = 'super-cell'; sc.innerText = i;
@@ -105,25 +115,30 @@
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i;
             sc.classList.add('selected');
-            tg.HapticFeedback.impactOccurred('medium');
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         };
-        document.getElementById('s-grid').appendChild(sc);
+        sGrid.appendChild(sc);
     }
 
     function runEngine() {
-        if(selected.length < 6 || !superNum) return alert(lang === 'ru' ? "Выберите 6 чисел и Superzahl!" : "Wähle 6 Zahlen и Superzahl!");
+        if(selected.length < 6 || !superNum) {
+            alert(dict[lang].super + "!");
+            return;
+        }
         
         const win = Math.random() * 150000;
         let msg = "";
-        if(win < 1000) msg = dict[lang].items[0];
-        else if(win < 10000) msg = dict[lang].items[1];
-        else if(win < 100000) msg = dict[lang].items[2];
-        else msg = dict[lang].items[3];
+        const langData = dict[lang];
+        
+        if(win < 1000) msg = langData.items[0];
+        else if(win < 10000) msg = langData.items[1];
+        else if(win < 100000) msg = langData.items[2];
+        else msg = langData.items[3];
 
-        document.getElementById('m-title').innerText = dict[lang].title;
+        document.getElementById('m-title').innerText = langData.title;
         document.getElementById('m-text').innerText = msg;
         document.getElementById('chance-modal').style.display = 'flex';
-        tg.HapticFeedback.notificationOccurred('error');
+        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
     }
 </script>
 </body>
