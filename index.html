@@ -1,10 +1,10 @@
-
+ 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto Manifest 2026</title>
+    <title>Lotto Manifest 2026 - Real & Demo</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { 
@@ -18,85 +18,77 @@
         }
 
         #splash-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease;
+            z-index: 9999; transition: opacity 0.8s ease;
         }
 
         .splash-img {
-            position: absolute;
-            width: 0%; opacity: 0;
+            position: absolute; width: 0%; opacity: 0;
             transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            max-width: 85%;
-            filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
+            max-width: 85%; filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
         }
 
         .active { width: 80% !important; opacity: 1 !important; }
 
         #main-content { 
-            opacity: 0; display: none; 
-            width: 100%; max-width: 400px;
-            padding: 20px; box-sizing: border-box; text-align: center;
+            opacity: 0; display: none; width: 100%; max-width: 400px;
+            padding: 15px; box-sizing: border-box; text-align: center;
             transition: opacity 1s ease;
         }
 
-        /* 3D Заголовок с мощной темной окантовкой [cite: 2026-02-19] */
-        .header { 
-            font-size: 28px; 
-            font-weight: bold; 
-            margin: 20px 0; 
-            text-transform: uppercase;
-            color: #d4af37;
-            text-shadow: 
-                3px 3px 0px #000, 
-                -1px -1px 0px #000,  
-                1px -1px 0px #000,
-                -1px 1px 0px #000,
-                0px 0px 15px rgba(212, 175, 55, 0.7);
-        }
-        
-        /* Объёмные кнопки с глубокой тенью [cite: 2026-02-19] */
-        .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .lang-btn { 
+        /* Блок баланса */
+        .balance-card {
             background: linear-gradient(145deg, #2a2a2a, #0a0a0a);
-            color: #d4af37; 
-            border: 1px solid #d4af37; 
-            padding: 15px 5px; 
-            border-radius: 12px; 
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.8), inset 0 0 5px rgba(212,175,55,0.2);
-            transition: all 0.2s;
-            text-shadow: 1px 1px 2px #000;
+            border: 1px solid #d4af37; border-radius: 15px;
+            padding: 12px 25px; margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.9);
+            display: inline-block;
         }
-        .lang-btn:active { transform: translateY(3px); box-shadow: 2px 2px 5px rgba(0,0,0,0.9); }
+        .balance-val { 
+            font-size: 24px; font-weight: bold; color: #fff; 
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
 
-        .heatmap-title { 
-            margin: 20px 0 10px; 
-            font-size: 18px; 
-            font-weight: bold;
-            text-shadow: 2px 2px 4px #000;
+        /* Кнопка пополнения [cite: 2026-02-19] */
+        .deposit-btn {
+            background: linear-gradient(90deg, #d4af37, #f9e29c, #d4af37);
+            background-size: 200% auto;
+            color: #000; border: none; border-radius: 10px;
+            padding: 12px 30px; font-weight: 1000; font-size: 14px;
+            text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            margin-bottom: 20px;
+            animation: shine 3s linear infinite;
+            display: block; width: 80%; margin-left: auto; margin-right: auto;
+        }
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+        .deposit-btn:active { transform: scale(0.95); }
+
+        .header { 
+            font-size: 24px; font-weight: bold; margin: 5px 0 15px; 
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px #000, 0px 0px 15px rgba(212, 175, 55, 0.7);
         }
         
+        .lang-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .lang-btn { 
+            background: rgba(40,40,40,0.9);
+            color: #d4af37; border: 1px solid #444; padding: 8px 0; border-radius: 8px;
+            font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+
         .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
         .num { 
-            aspect-ratio: 1; 
-            border: 1px solid #444; 
-            display: flex; align-items: center; justify-content: center; 
-            background: rgba(0,0,0,0.85); 
-            border-radius: 6px; 
-            font-weight: bold;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            aspect-ratio: 1; border: 1px solid #444; display: flex; align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.85); border-radius: 6px; font-weight: bold;
+            transition: all 0.2s ease; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
         }
-        .hot { 
-            background: linear-gradient(135deg, #ff4500, #8b0000); 
-            color: white; 
-            border: none; 
-            box-shadow: 0 0 15px rgba(255, 69, 0, 0.7);
-            text-shadow: 1px 1px 2px #000;
+        .selected { 
+            background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; 
+            box-shadow: 0 0 15px #d4af37, inset 0 0 5px rgba(255,255,255,0.5); border: none;
         }
     </style>
 </head>
@@ -109,23 +101,32 @@
     </div>
 
     <div id="main-content">
+        <div class="balance-card">
+            <div style="font-size: 11px; opacity: 0.7;">DEMO BALANCE</div>
+            <div class="balance-val" id="v-balance">100.00 VChf</div>
+        </div>
+
+        <button class="deposit-btn" onclick="openDeposit()">💰 DEPOSIT REAL CHF</button>
+
         <div class="header">⚜️ LOTTO MANIFEST ⚜️</div>
         
         <div class="lang-grid">
-            <button class="lang-btn" onclick="setLang('ru')">🇷🇺 RUSSIAN</button>
-            <button class="lang-btn" onclick="setLang('de')">🇩🇪 DEUTSCH</button>
-            <button class="lang-btn" onclick="setLang('fr')">🇫🇷 FRANÇAIS</button>
-            <button class="lang-btn" onclick="setLang('en')">🇬🇧 ENGLISH</button>
+            <button class="lang-btn" onclick="setLang('ru')">RU</button>
+            <button class="lang-btn" onclick="setLang('de')">DE</button>
+            <button class="lang-btn" onclick="setLang('fr')">FR</button>
+            <button class="lang-btn" onclick="setLang('en')">EN</button>
         </div>
 
-        <div class="heatmap-title" id="h-title">VISUAL HEATMAP</div>
+        <div id="h-title" style="margin-bottom: 10px; font-weight: bold; font-size: 14px;">SELECT NUMBERS (2.50 VChf)</div>
         <div class="heatmap-grid" id="heatmap"></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
+
+        let balance = 100.00;
+        const TICKET_PRICE = 2.50;
 
         window.onload = () => {
             const s1 = document.getElementById('step1');
@@ -135,41 +136,47 @@
             const main = document.getElementById('main-content');
 
             setTimeout(() => s1.classList.add('active'), 100);
+            setTimeout(() => { s1.style.opacity='0'; setTimeout(()=>{ s1.style.display='none'; s2.classList.add('active'); }, 600); }, 2500);
+            setTimeout(() => { s2.style.opacity='0'; setTimeout(()=>{ s2.style.display='none'; s3.classList.add('active'); }, 600); }, 5000);
             setTimeout(() => { 
-                s1.style.opacity = '0'; 
-                setTimeout(() => { s1.style.display='none'; s2.classList.add('active'); }, 600); 
-            }, 2500);
-            setTimeout(() => { 
-                s2.style.opacity = '0'; 
-                setTimeout(() => { s2.style.display='none'; s3.classList.add('active'); }, 600); 
-            }, 5000);
-            setTimeout(() => { 
-                container.style.opacity = '0'; 
-                setTimeout(() => { 
-                    container.style.display='none'; 
-                    main.style.display='block'; 
-                    setTimeout(() => main.style.opacity='1', 50); 
-                }, 800); 
+                container.style.opacity='0'; 
+                setTimeout(()=>{ container.style.display='none'; main.style.display='block'; setTimeout(()=>main.style.opacity='1', 50); }, 800); 
             }, 7500);
         };
 
+        function openDeposit() {
+            // Вызываем уведомление от Телеграм [cite: 2026-02-19]
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Redirecting to safe payment gateway...");
+        }
+
         function setLang(lang) {
-            tg.HapticFeedback.impactOccurred('medium'); 
-            const titles = {
-                'ru': 'ВИЗУАЛЬНАЯ КАРТА',
-                'de': 'VISUELLE HEATMAP',
-                'fr': 'CARTE THERMIQUE',
-                'en': 'VISUAL HEATMAP'
+            tg.HapticFeedback.impactOccurred('light');
+            const t = { 
+                'ru': 'ВЫБЕРИТЕ ЧИСЛА (2.50 VChf)', 
+                'de': 'ZAHLEN WÄHLEN (2.50 VChf)', 
+                'fr': 'CHOISIR NUMÉROS (2.50 VChf)', 
+                'en': 'SELECT NUMBERS (2.50 VChf)' 
             };
-            document.getElementById('h-title').innerText = titles[lang];
+            document.getElementById('h-title').innerText = t[lang];
         }
 
         const hGrid = document.getElementById('heatmap');
         for(let i=1; i<=25; i++) {
             let n = document.createElement('div');
             n.className = 'num';
-            if([3, 14, 21].includes(i)) n.className += ' hot';
             n.innerText = i;
+            n.onclick = function() {
+                this.classList.toggle('selected');
+                if(this.classList.contains('selected')) {
+                    balance -= TICKET_PRICE;
+                    tg.HapticFeedback.impactOccurred('medium');
+                } else {
+                    balance += TICKET_PRICE;
+                    tg.HapticFeedback.selectionChanged();
+                }
+                document.getElementById('v-balance').innerText = balance.toFixed(2) + ' VChf';
+            };
             hGrid.appendChild(n);
         }
     </script>
