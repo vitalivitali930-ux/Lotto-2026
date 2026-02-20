@@ -1,71 +1,83 @@
-<div id="language-selector" style="text-align: right; padding: 10px;">
-    <button onclick="setLanguage('ru')">🇷🇺 RU</button>
-    <button onclick="setLanguage('de')">🇩🇪 DE</button>
-    <button onclick="setLanguage('en')">🇺🇸 EN</button>
-    <button onclick="setLanguage('fr')">🇫🇷 FR</button>
-</div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helvetic Luck - Lotto Manifest</title>
+    <style>
+        body { background-color: #000; color: #D4AF37; font-family: 'Cinzel', serif; text-align: center; }
+        .header { display: flex; justify-content: space-between; padding: 15px; background: #111; border-bottom: 1px solid #333; }
+        .balance-container { display: flex; justify-content: space-around; margin: 20px 0; }
+        .balance-box { border: 1px solid #D4AF37; padding: 10px; width: 40%; border-radius: 10px; background: rgba(20,20,20,0.8); }
+        .btn-topup { background: linear-gradient(to bottom, #D4AF37, #8A6D3B); color: #000; border: none; padding: 15px 30px; border-radius: 20px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; max-width: 400px; margin: 20px auto; padding: 10px; }
+        .cell { border: 1px solid #444; padding: 10px; background: #1a1a1a; cursor: pointer; transition: 0.3s; }
+        .cell.selected { background: #D4AF37; color: #000; }
+        .language-btn { cursor: pointer; font-size: 20px; margin-left: 10px; transition: 0.3s; }
+        .language-btn:hover { filter: drop-shadow(0 0 5px gold); }
+    </style>
+</head>
+<body>
 
-<script>
-// Словарь переводов
-const translations = {
-    ru: {
-        title: "ЛОТТО МАНИФЕСТ",
-        virtual: "ВИРТУАЛЬНЫЙ VCH",
-        real: "РЕАЛЬНЫЙ CHF",
-        topup: "ПОПОЛНИТЬ РЕАЛЬНЫЙ БАЛАНС",
-        field6: "ПОЛЕ: 6 НОМЕРОВ (1-42)",
-        superzahl: "ВЫБЕРИТЕ SUPERZAHL (1-6)",
-        ritual: "Статус: Ритуал Активен"
-    },
-    de: {
-        title: "LOTTO MANIFEST",
-        virtual: "VIRTUELL VCH",
-        real: "REAL CHF",
-        topup: "ECHTGELD-GUTHABEN AUFLADEN",
-        field6: "FELD: 6 NUMMERN (1-42)",
-        superzahl: "SUPERZAHL WÄHLEN (1-6)",
-        ritual: "Status: Ritual Aktiv"
-    },
-    en: {
-        title: "LOTTO MANIFEST",
-        virtual: "VIRTUAL VCH",
-        real: "REAL CHF",
-        topup: "TOP UP REAL BALANCE",
-        field6: "FIELD: 6 NUMBERS (1-42)",
-        superzahl: "SELECT SUPERZAHL (1-6)",
-        ritual: "Status: Ritual Active"
-    },
-    fr: {
-        title: "MANIFESTE LOTTO",
-        virtual: "VIRTUEL VCH",
-        real: "RÉEL CHF",
-        topup: "RECHARGER LE SOLDE RÉEL",
-        field6: "CHAMP: 6 NUMÉROS (1-42)",
-        superzahl: "CHOISIR SUPERZAHL (1-6)",
-        ritual: "Statut: Rituel Actif"
-    }
-};
+    <div class="header">
+        <div id="ritual-status">Status: Ritual Active</div>
+        <div id="lang-selector">
+            <span class="language-btn" onclick="setLanguage('ru')">🇷🇺</span>
+            <span class="language-btn" onclick="setLanguage('de')">🇩🇪</span>
+            <span class="language-btn" onclick="setLanguage('en')">🇺🇸</span>
+            <span class="language-btn" onclick="setLanguage('fr')">🇫🇷</span>
+        </div>
+    </div>
 
-function setLanguage(lang) {
-    const t = translations[lang];
-    
-    // Обновляем текст в элементах по их ID или селекторам
-    // Убедитесь, что у ваших элементов в HTML прописаны соответствующие ID
-    document.querySelector('.lotto-title').innerText = t.title;
-    document.querySelector('#virtual-label').innerText = t.virtual;
-    document.querySelector('#real-label').innerText = t.real;
-    document.querySelector('.top-up-btn').innerText = t.topup;
-    document.querySelector('.field-instruction').innerText = t.field6;
-    document.querySelector('.superzahl-instruction').innerText = t.superzahl;
-    
-    // Сохраняем выбор пользователя
-    localStorage.setItem('selectedLanguage', lang);
-    console.log("Язык изменен на: " + lang);
-}
+    <div class="balance-container">
+        <div class="balance-box">
+            <div id="vch-label">VIRTUAL VCH</div>
+            <div style="font-size: 20px;">100.00</div>
+        </div>
+        <div class="balance-box">
+            <div id="real-label">REAL CHF</div>
+            <div style="font-size: 20px; color: #00FF00;">0.00</div>
+        </div>
+    </div>
 
-// При загрузке страницы устанавливаем последний выбранный язык или английский
-window.onload = () => {
-    const savedLang = localStorage.getItem('selectedLanguage') || 'en';
-    setLanguage(savedLang);
-};
-</script>
+    <button class="btn-topup" id="topup-btn">TOP UP REAL BALANCE</button>
+
+    <h2 id="main-title" style="letter-spacing: 3px;">⚜ LOTTO MANIFEST ⚜</h2>
+    <p id="field-desc">FIELD 6 NUMBERS (1-42)</p>
+
+    <div class="grid" id="lotto-grid">
+        </div>
+
+    <script>
+        const translations = {
+            ru: { title: "ЛОТТО МАНИФЕСТ", vch: "ВИРТУАЛЬНЫЙ VCH", real: "РЕАЛЬНЫЙ CHF", top: "ПОПОЛНИТЬ БАЛАНС", field: "ВЫБЕРИТЕ 6 НОМЕРОВ", ritual: "Статус: Ритуал Активен" },
+            de: { title: "LOTTO MANIFEST", vch: "VIRTUELL VCH", real: "REAL CHF", top: "GUTHABEN AUFLADEN", field: "6 NUMMERN WÄHLEN", ritual: "Status: Ritual Aktiv" },
+            en: { title: "LOTTO MANIFEST", vch: "VIRTUAL VCH", real: "REAL CHF", top: "TOP UP BALANCE", field: "SELECT 6 NUMBERS", ritual: "Status: Ritual Active" },
+            fr: { title: "MANIFESTE LOTTO", vch: "VIRTUEL VCH", real: "RÉEL CHF", top: "RECHARGER LE SOLDE", field: "CHOISIR 6 NUMÉROS", ritual: "Statut: Rituel Actif" }
+        };
+
+        function setLanguage(lang) {
+            const t = translations[lang];
+            document.getElementById('main-title').innerText = t.title;
+            document.getElementById('vch-label').innerText = t.vch;
+            document.getElementById('real-label').innerText = t.real;
+            document.getElementById('topup-btn').innerText = t.top;
+            document.getElementById('field-desc').innerText = t.field;
+            document.getElementById('ritual-status').innerText = t.ritual;
+            localStorage.setItem('lotto_lang', lang);
+        }
+
+        // Генерация сетки
+        const grid = document.getElementById('lotto-grid');
+        for (let i = 1; i <= 42; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerText = i;
+            cell.onclick = () => cell.classList.toggle('selected');
+            grid.appendChild(cell);
+        }
+
+        window.onload = () => setLanguage(localStorage.getItem('lotto_lang') || 'ru');
+    </script>
+</body>
+</html>
