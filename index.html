@@ -7,11 +7,10 @@
     <title>Lotto Manifest 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Основной стиль в темных золотых тонах */
         body { 
             background-color: #1a1a1a; 
             color: #d4af37; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: sans-serif; 
             margin: 0; 
             padding: 0;
             overflow: hidden; 
@@ -20,30 +19,31 @@
             align-items: center;
         }
 
-        /* Заставка (Splash Screen) [cite: 2026-02-19] */
-        #splash {
+        /* Общий контейнер для заставок */
+        #splash-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #1a1a1a;
             display: flex; justify-content: center; align-items: center;
             z-index: 9999;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.8s ease;
         }
 
-        /* Твоя эмблема */
-        #logo {
+        .splash-img {
+            position: absolute;
             width: 0%; 
             opacity: 0;
-            transition: all 1.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Эффект "вырастания" */
+            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 85%;
         }
 
-        /* Класс для активации анимации [cite: 2026-02-19] */
-        #logo.active {
-            width: 70%; 
-            opacity: 1;
+        /* Эффект появления/роста */
+        .active {
+            width: 80% !important; 
+            opacity: 1 !important;
         }
 
-        /* Основной контент (скрыт, пока идет заставка) */
+        /* Контент меню */
         #main-content { 
             opacity: 0; 
             transition: opacity 1s ease; 
@@ -52,91 +52,31 @@
             padding: 20px; 
             box-sizing: border-box;
             text-align: center; 
+            display: none;
         }
 
-        .header { 
-            font-size: 26px; 
-            font-weight: bold; 
-            text-shadow: 0 0 15px #d4af37; 
-            margin: 20px 0;
-            letter-spacing: 2px;
-        }
-
-        .grid-buttons { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            margin-bottom: 30px;
-        }
-
-        .btn { 
-            background: rgba(212, 175, 55, 0.1); 
-            color: #d4af37; 
-            border: 1px solid #d4af37; 
-            padding: 15px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        .btn:active {
-            background: #d4af37;
-            color: #1a1a1a;
-        }
-
-        /* Сетка Heatmap [cite: 2026-02-19] */
-        .heatmap-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #d4af37;
-            opacity: 0.8;
-        }
-
-        .heatmap-grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 8px; 
-            margin: 0 auto;
-        }
-
-        .num { 
-            aspect-ratio: 1;
-            border: 1px solid #333; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 6px; 
-            font-size: 14px;
-            background: #222;
-        }
-
-        /* "Горячие" числа (Smart Pick) [cite: 2026-02-19] */
-        .hot { 
-            background: linear-gradient(45deg, #ff4500, #ff8c00); 
-            color: white; 
-            border: none;
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.6);
-            font-weight: bold;
-        }
+        .header { font-size: 26px; font-weight: bold; margin: 20px 0; text-shadow: 0 0 10px #d4af37; }
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .btn { background: rgba(212, 175, 55, 0.1); color: #d4af37; border: 1px solid #d4af37; padding: 15px; border-radius: 12px; font-weight: bold; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .num { aspect-ratio: 1; border: 1px solid #333; display: flex; align-items: center; justify-content: center; background: #222; border-radius: 6px; }
+        .hot { background: linear-gradient(45deg, #ff4500, #ff8c00); color: white; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="splash">
-        <img id="logo" src="1771489965074(1).png" alt="Lotto Logo">
+    <div id="splash-container">
+        <img id="step1" class="splash-img" src="1771489965074.png">
+        <img id="step2" class="splash-img" src="1771607028825.png">
+        <img id="step3" class="splash-img" src="1771607031910.png">
     </div>
 
     <div id="main-content">
         <div class="header">⚜️ 𝕃𝕆𝕋𝕋𝕆 𝕄𝔸ℕ𝕀𝔽𝔼𝕊𝕋 ⚜️</div>
-        
         <div class="grid-buttons">
-            <button class="btn" onclick="vibrate()">RUSSIAN</button>
-            <button class="btn" onclick="vibrate()">DEUTSCH</button>
+            <button class="btn">RUSSIAN</button>
+            <button class="btn">DEUTSCH</button>
         </div>
-
-        <div class="heatmap-title">VISUAL HEATMAP</div>
         <div class="heatmap-grid" id="heatmap"></div>
     </div>
 
@@ -145,43 +85,51 @@
         tg.ready();
         tg.expand();
 
-        // Функция вибрации при нажатии
-        function vibrate() {
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        }
-
-        // Логика заставки [cite: 2026-02-19]
         window.onload = () => {
-            const logo = document.getElementById('logo');
-            const splash = document.getElementById('splash');
+            const s1 = document.getElementById('step1');
+            const s2 = document.getElementById('step2');
+            const s3 = document.getElementById('step3');
+            const container = document.getElementById('splash-container');
             const main = document.getElementById('main-content');
 
-            // Начинаем анимацию увеличения через мгновение после загрузки
-            setTimeout(() => {
-                logo.classList.add('active');
-            }, 100);
+            // 1. Показываем основное Лого (0-2.5 сек) [cite: 2026-02-19]
+            setTimeout(() => s1.classList.add('active'), 100);
 
-            // Через 2.5 секунды убираем заставку и показываем меню
+            // 2. Переход к Grüezi (2.5-5.0 сек) [cite: 2026-02-19]
             setTimeout(() => {
-                splash.style.opacity = '0';
+                s1.style.opacity = '0';
                 setTimeout(() => {
-                    splash.style.display = 'none';
-                    main.style.opacity = '1';
-                    document.body.style.overflow = 'auto';
+                    s1.style.display = 'none';
+                    s2.classList.add('active');
                 }, 600);
-            }, 2600);
+            }, 2500);
+
+            // 3. Переход к Welcome (5.0-7.5 сек) [cite: 2026-02-19]
+            setTimeout(() => {
+                s2.style.opacity = '0';
+                setTimeout(() => {
+                    s2.style.display = 'none';
+                    s3.classList.add('active');
+                }, 600);
+            }, 5000);
+
+            // 4. Финальный вход в меню
+            setTimeout(() => {
+                container.style.opacity = '0';
+                setTimeout(() => {
+                    container.style.display = 'none';
+                    main.style.display = 'block';
+                    setTimeout(() => main.style.opacity = '1', 50);
+                }, 800);
+            }, 7500);
         };
 
-        // Генерация сетки чисел [cite: 2026-02-19]
+        // Генерация сетки
         const hGrid = document.getElementById('heatmap');
-        const hotNumbers = [3, 9, 14, 21]; // Пример "горячих" чисел
-
         for(let i=1; i<=25; i++) {
             let n = document.createElement('div');
             n.className = 'num';
-            if(hotNumbers.includes(i)) n.className += ' hot'; 
+            if([3, 14, 21].includes(i)) n.className += ' hot';
             n.innerText = i;
             hGrid.appendChild(n);
         }
