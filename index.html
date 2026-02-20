@@ -6,49 +6,58 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #D4AF37; --carbon: #0a0a0a; --red: #ff4444; }
+        :root { --gold: #D4AF37; --green: #00ff00; --red: #ff4444; }
         body { background: #000; color: var(--gold); font-family: -apple-system, sans-serif; text-align: center; margin: 0; overflow: hidden; }
 
-        /* ЭФФЕКТ ДРОЖАНИЯ (SHAKE) ПРИ ПОЯВЛЕНИИ */
+        /* ИНТРО И АНИМАЦИЯ SHAKE */
         @keyframes shakePop {
-            0% { transform: scale(0.1) translate(0, 0); opacity: 0; }
+            0% { transform: scale(0.1); opacity: 0; }
             50% { transform: scale(1.1) translate(-5px, 5px); opacity: 1; }
-            65% { transform: scale(1) translate(5px, -5px); }
-            80% { transform: scale(1.02) translate(-2px, 2px); }
+            75% { transform: scale(0.95) translate(5px, -5px); }
             100% { transform: scale(1) translate(0, 0); opacity: 1; }
         }
-
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('1771489965074(1).png') no-repeat center center;
             background-size: cover; z-index: 20000; display: flex; justify-content: center; align-items: center;
         }
-        .intro-img { position: absolute; width: 65%; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .intro-img { position: absolute; width: 65%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.8s ease-out forwards; }
 
-        /* ОСНОВНОЙ КОНТЕНТ */
-        #app-content { opacity: 0; transition: opacity 1s ease; display: none; padding-bottom: 40px; background: url('bg.png') no-repeat center center fixed; background-size: cover; height: 100vh; overflow-y: auto; }
+        /* ОСНОВНОЙ КОНТЕНТ (СКРЫТ ДО КОНЦА ИНТРО) */
+        #app-content { opacity: 0; transition: opacity 1s ease; display: none; background: url('bg.png') no-repeat center center fixed; background-size: cover; height: 100vh; overflow-y: auto; padding-bottom: 40px; }
 
-        .lang-bar { padding: 15px; display: flex; justify-content: center; gap: 12px; }
+        /* БАЛАНСЫ (КАК НА СКРИНШОТЕ) */
+        .balance-container { display: flex; justify-content: center; gap: 10px; padding: 10px 15px; margin-top: 5px; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 10px; background: rgba(0,0,0,0.85); border: 1.5px solid #333; }
+        .bal-card.virtual { border-color: var(--gold); }
+        .bal-card.real { border-color: var(--green); }
+        .bal-label { font-size: 10px; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+        .bal-val { font-size: 22px; font-weight: bold; color: #fff; }
+        .bal-val.real-val { color: var(--green); }
+
+        .btn-topup { background: var(--gold); color: #000; border: none; width: 88%; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 14px; margin: 5px 0 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+
+        /* ИГРОВОЕ ПОЛЕ */
+        .lang-bar { padding: 10px; display: flex; justify-content: center; gap: 12px; }
         .lang-flag { font-size: 24px; cursor: pointer; opacity: 0.4; transition: 0.3s; }
         .lang-flag.active { opacity: 1; transform: scale(1.2); }
 
-        .stat-center { margin: 15px auto; width: 140px; border: 1px solid var(--gold); border-radius: 15px; padding: 10px; background: rgba(10,10,10,0.9); }
-        .stat-val { font-size: 24px; font-weight: bold; color: #fff; }
-
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 15px; max-width: 380px; margin: 0 auto; }
-        .cell { background: rgba(30,30,30,0.8); border: 1px solid #333; padding: 12px 0; border-radius: 8px; font-weight: bold; font-size: 15px; }
-        .cell.selected { background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
+        .cell { background: rgba(30,30,30,0.85); border: 1px solid #444; padding: 12px 0; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+        .cell.selected { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 15px var(--gold); }
 
-        .super-title { margin: 20px 0 10px; font-size: 12px; text-transform: uppercase; color: var(--red); font-weight: bold; }
+        .super-title { margin: 20px 0 10px; font-size: 12px; text-transform: uppercase; color: var(--red); font-weight: bold; letter-spacing: 1px; }
         .super-grid { display: flex; justify-content: center; gap: 8px; }
-        .super-cell { width: 40px; height: 40px; border: 1px solid var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--red); }
-        .super-cell.selected { background: var(--red); color: #000; }
+        .super-cell { width: 42px; height: 42px; border: 1.5px solid var(--red); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--red); font-weight: bold; cursor: pointer; }
+        .super-cell.selected { background: var(--red); color: #fff; box-shadow: 0 0 15px var(--red); }
 
-        .btn-main { background: var(--gold); color: #000; border: none; width: 85%; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; }
-        
+        .btn-main { background: var(--gold); color: #000; border: none; width: 88%; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; margin-top: 25px; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* МОДАЛЬНОЕ ОКНО */
         #chance-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 30000; flex-direction: column; justify-content: center; align-items: center; }
-        .modal-card { border: 1px solid var(--gold); padding: 30px; border-radius: 25px; background: #111; width: 80%; max-width: 350px; }
+        .modal-card { border: 2px solid var(--gold); padding: 30px; border-radius: 30px; background: #111; width: 85%; max-width: 350px; box-shadow: 0 0 40px rgba(212, 175, 55, 0.2); }
     </style>
 </head>
 <body>
@@ -68,10 +77,17 @@
         <span class="lang-flag" id="f-it" onclick="setLang('it')">🇮🇹</span>
     </div>
 
-    <div class="stat-center">
-        <div id="l-bal" class="stat-label">VIRTUAL VCHF</div>
-        <div class="stat-val">100.00</div>
+    <div class="balance-container">
+        <div class="bal-card virtual">
+            <div class="bal-label">VIRTUAL VChf</div>
+            <div class="bal-val">100.00</div>
+        </div>
+        <div class="bal-card real">
+            <div class="bal-label">REAL CHF</div>
+            <div class="bal-val real-val">0.00</div>
+        </div>
     </div>
+    <button class="btn-topup">💰 TOP UP REAL BALANCE</button>
 
     <div class="grid" id="main-grid"></div>
     <div id="l-super" class="super-title">Superzahl</div>
@@ -81,9 +97,8 @@
 
 <div id="chance-modal">
     <div class="modal-card">
-        <div id="m-title" style="font-size: 18px; font-weight: bold;"></div>
-        <div id="m-text" style="margin: 20px 0; color: #fff;"></div>
-        <span style="font-size: 50px;">😢</span>
+        <div id="m-title" style="font-size: 20px; font-weight: bold;"></div>
+        <div id="m-text" style="margin: 20px 0; font-size: 16px; color: #ccc;"></div>
         <button id="m-btn-close" class="btn-main" style="width:100%" onclick="location.reload()">OK</button>
     </div>
 </div>
@@ -91,21 +106,20 @@
 <script>
     const tg = window.Telegram.WebApp;
     
-    // АЛГОРИТМ ИНТРО (4 -> 1 -> 2) С ЭФФЕКТОМ ДРОЖАНИЯ
+    // АЛГОРИТМ ИНТРО (4 -> 1 -> 2)
     function runIntro() {
-        const sequence = [
-            { id: 'img1', start: 500, end: 2400 },
-            { id: 'img2', start: 2500, end: 4400 },
-            { id: 'img3', start: 4500, end: 6400 }
+        const seq = [
+            { id: 'img1', s: 500, e: 2400 }, // Картинка 4
+            { id: 'img2', s: 2500, e: 4400 }, // Картинка 1
+            { id: 'img3', s: 4500, e: 6400 }  // Картинка 2
         ];
 
-        sequence.forEach(step => {
+        seq.forEach(step => {
+            setTimeout(() => document.getElementById(step.id).classList.add('active'), step.s);
             setTimeout(() => {
-                document.getElementById(step.id).classList.add('active');
-            }, step.start);
-            setTimeout(() => {
-                document.getElementById(step.id).classList.remove('active');
-                document.getElementById(step.id).style.opacity = '0';
+                const el = document.getElementById(step.id);
+                el.classList.remove('active');
+                el.style.opacity = '0';
             }, step.end);
         });
 
@@ -121,14 +135,14 @@
 
     window.onload = runIntro;
 
-    // ИГРОВАЯ ЛОГИКА (ПРОВЕРЕНО ПО ВИДЕО)
+    // ИГРОВАЯ ЛОГИКА (6 ИЗ 42 + ЯЗЫКИ)
     let selected = []; let superNum = null; let lang = 'de';
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "Бонусное число", close: "ПОНЯТНО", title: "У ТЕБЯ БЫЛ ШАНС", items: ["обновить гардероб", "улететь в лучший отпуск", "купить новую машину", "забыть о работе"] },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "Бонусне число", close: "ЗРОЗУМІЛО", title: "У ТЕБЕ БУВ ШАНС", items: ["оновити гардероб", "полетіти у відпустку", "забрати авто", "не працювати"] },
-        de: { btn: "BESTÄTIGEN", super: "Superzahl", close: "VERSTANDEN", title: "DEINE CHANCE", items: ["Garderobe erneuern", "Urlaub buchen", "Auto abholen", "nie arbeiten"] },
-        fr: { btn: "CONFIRMER", super: "Nombre Bonus", close: "COMPRIS", title: "CHANCE RÉELLE", items: ["garde-robe", "vacances", "voiture", "plus de travail"] },
-        it: { btn: "CONFERMA", super: "Numero Bonus", close: "CAPITO", title: "POSSIBILITÀ", items: ["guardaroba", "vacanza", "auto", "no lavoro"] }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "Бонусное число", close: "ПОНЯТНО", title: "У ТЕБЯ БЫЛ ШАНС", items: ["обновить весь гардероб", "улететь в лучший отпуск"] },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "Бонусне число", close: "ЗРОЗУМІЛО", title: "У ТЕБЕ БУВ ШАНС", items: ["оновити гардероб", "полетіти у відпустку"] },
+        de: { btn: "BESTÄTIGEN", super: "Superzahl", close: "VERSTANDEN", title: "DEINE CHANCE", items: ["Garderobe erneuern", "Traumurlaub buchen"] },
+        fr: { btn: "CONFIRMER", super: "Nombre Bonus", close: "COMPRIS", title: "CHANCE RÉELLE", items: ["refaire ta garde-robe", "partir en vacances"] },
+        it: { btn: "CONFERMA", super: "Numero Bonus", close: "CAPITO", title: "POSSIBILITÀ", items: ["rinnovare guardaroba", "vacanza dei sogni"] }
     };
 
     function setLang(l) {
@@ -141,30 +155,42 @@
         if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
     }
 
-    const grid = document.getElementById('main-grid');
+    // Генерация сетки 1-42
+    const mGrid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
         c.onclick = () => {
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); }
+            if(selected.includes(i)) {
+                selected = selected.filter(n => n !== i);
+                c.classList.remove('selected');
+            } else if(selected.length < 6) {
+                selected.push(i);
+                c.classList.add('selected');
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            }
         };
-        grid.appendChild(c);
+        mGrid.appendChild(c);
     }
 
+    // Генерация бонуса 1-6
     const sGrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-            superNum = i; sc.classList.add('selected'); if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            superNum = i; sc.classList.add('selected');
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         };
         sGrid.appendChild(sc);
     }
 
     function runEngine() {
-        if(selected.length < 6 || !superNum) return alert(dict[lang].super + "!");
+        if(selected.length < 6 || !superNum) {
+            alert(dict[lang].super + "!");
+            return;
+        }
         document.getElementById('m-title').innerText = dict[lang].title;
-        document.getElementById('m-text').innerText = dict[lang].items[Math.floor(Math.random()*4)];
+        document.getElementById('m-text').innerText = dict[lang].items[Math.floor(Math.random() * 2)];
         document.getElementById('chance-modal').style.display = 'flex';
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
     }
