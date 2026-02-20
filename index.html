@@ -1,125 +1,71 @@
-import random
-import asyncio
-import sqlite3
-import logging
-from aiogram import Bot, Dispatcher, types, F, exceptions
-from aiogram.filters import Command
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+<div id="language-selector" style="text-align: right; padding: 10px;">
+    <button onclick="setLanguage('ru')">🇷🇺 RU</button>
+    <button onclick="setLanguage('de')">🇩🇪 DE</button>
+    <button onclick="setLanguage('en')">🇺🇸 EN</button>
+    <button onclick="setLanguage('fr')">🇫🇷 FR</button>
+</div>
 
-# --- НАСТРОЙКИ ---
-TOKEN = "7659579628:AAG1EdW81IVcGoAGEe7ymK6aYMxjm4Pyk3E"
-CHANNEL_ID = "@your_channel_name" 
-TICKET_PRICE = 2.50
+<script>
+// Словарь переводов
+const translations = {
+    ru: {
+        title: "ЛОТТО МАНИФЕСТ",
+        virtual: "ВИРТУАЛЬНЫЙ VCH",
+        real: "РЕАЛЬНЫЙ CHF",
+        topup: "ПОПОЛНИТЬ РЕАЛЬНЫЙ БАЛАНС",
+        field6: "ПОЛЕ: 6 НОМЕРОВ (1-42)",
+        superzahl: "ВЫБЕРИТЕ SUPERZAHL (1-6)",
+        ritual: "Статус: Ритуал Активен"
+    },
+    de: {
+        title: "LOTTO MANIFEST",
+        virtual: "VIRTUELL VCH",
+        real: "REAL CHF",
+        topup: "ECHTGELD-GUTHABEN AUFLADEN",
+        field6: "FELD: 6 NUMMERN (1-42)",
+        superzahl: "SUPERZAHL WÄHLEN (1-6)",
+        ritual: "Status: Ritual Aktiv"
+    },
+    en: {
+        title: "LOTTO MANIFEST",
+        virtual: "VIRTUAL VCH",
+        real: "REAL CHF",
+        topup: "TOP UP REAL BALANCE",
+        field6: "FIELD: 6 NUMBERS (1-42)",
+        superzahl: "SELECT SUPERZAHL (1-6)",
+        ritual: "Status: Ritual Active"
+    },
+    fr: {
+        title: "MANIFESTE LOTTO",
+        virtual: "VIRTUEL VCH",
+        real: "RÉEL CHF",
+        topup: "RECHARGER LE SOLDE RÉEL",
+        field6: "CHAMP: 6 NUMÉROS (1-42)",
+        superzahl: "CHOISIR SUPERZAHL (1-6)",
+        ritual: "Statut: Rituel Actif"
+    }
+};
 
-logging.basicConfig(level=logging.INFO)
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
-scheduler = AsyncIOScheduler()
-
-# --- ЛОГИКА БАЗЫ ДАННЫХ И ТРАНЗАКЦИЙ ---
-def db_transaction_purchase(user_id: int, quantity: int):
-    """Выполняет покупку внутри одной транзакции БД для безопасности"""
-    total_cost = quantity * TICKET_PRICE
-    conn = sqlite3.connect('lotto_ultimate.db', timeout=10)
-    cursor = conn.cursor()
+function setLanguage(lang) {
+    const t = translations[lang];
     
-    try:
-        cursor.execute("BEGIN EXCLUSIVE TRANSACTION")
-        
-        # 1. Проверяем баланс
-        cursor.execute("SELECT balance FROM users WHERE user_id = ?", (user_id,))
-        res = cursor.fetchone()
-        
-        if not res or res[0] < total_cost:
-            return False, "Недостаточно средств"
-        
-        # 2. Списываем средства
-        cursor.execute("UPDATE users SET balance = balance - ? WHERE user_id = ?", (total_cost, user_id))
-        
-        # 3. Наполняем казну
-        cursor.execute("UPDATE treasury SET balance = balance + ?", (total_cost,))
-        
-        # 4. Пакетная генерация билетов
-        tickets_data = []
-        for _ in range(quantity):
-            nums = ",".join(map(str, sorted(random.sample(range(1, 43), 6))))
-            tickets_data.append((user_id, nums))
-            
-        cursor.executemany("INSERT INTO tickets (user_id, numbers) VALUES (?, ?)", tickets_data)
-        
-        conn.commit()
-        return True, "Успешно"
-    except Exception as e:
-        conn.rollback()
-        logging.error(f"DB Error: {e}")
-        return False, "Ошибка базы данных"
-    finally:
-        conn.close()
-
-# --- ШАБЛОНЫ ТЕКСТОВ ---
-def get_main_menu_text():
-    return (
-        "🏰 <b>𝕾𝖜𝖎𝖘𝖘 𝕷𝖚𝖈𝖐 | 𝕻𝖗𝖊𝖒𝖎𝖚𝖒 𝕶𝖆𝖇𝖎𝖓𝖊𝖙𝖙</b>\n\n"
-        "🟡 <b>𝕎𝕀ℂℍ𝕋𝕀𝔾𝕊𝕋𝔼 (Priorität 1)</b>\n"
-        "🏆 Status: <code>𝔊𝔒𝔏𝔇 𝔐ℑ𝔗𝔊𝔏ℑ𝔈𝔇</code> 👑\n"
-        "💰 Guthaben: <code>1,250.00 CHF</code>\n\n"
-        "🔵 <b>ℑ𝔑𝔉𝔒ℜ𝔐𝔄𝔗ℑ𝔒𝔑 (Priorität 2)</b>\n"
-        "👤 Teilnehmer: <code>ID-777-LUCK</code>\n"
-        "👥 Ihr Team: <b>Zürich Lions</b> 🦁\n"
-        "______________________________________"
-    )
-
-# --- ОБРАБОТЧИКИ ---
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="🟡 𝔗𝔦𝔠𝔨𝔢𝔱𝔰 𝔨𝔞𝔲𝔣𝔢𝔫", callback_data="buy_menu"))
-    await message.answer(get_main_menu_text(), reply_markup=builder.as_markup(), parse_mode="HTML")
-
-@dp.callback_query(F.data == "buy_menu")
-async def cmd_buy(callback: types.CallbackQuery):
-    builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="🎟 1 Ticket", callback_data="buy:1"))
-    builder.row(types.InlineKeyboardButton(text="🎟 5 Tickets", callback_data="buy:5"))
-    builder.row(types.InlineKeyboardButton(text="⬅ Zurück", callback_data="back_to_main"))
+    // Обновляем текст в элементах по их ID или селекторам
+    // Убедитесь, что у ваших элементов в HTML прописаны соответствующие ID
+    document.querySelector('.lotto-title').innerText = t.title;
+    document.querySelector('#virtual-label').innerText = t.virtual;
+    document.querySelector('#real-label').innerText = t.real;
+    document.querySelector('.top-up-btn').innerText = t.topup;
+    document.querySelector('.field-instruction').innerText = t.field6;
+    document.querySelector('.superzahl-instruction').innerText = t.superzahl;
     
-    await callback.message.edit_text("🏰 <b>𝕿𝖎𝖈𝖇𝖊𝖙 𝕾𝖍𝖔𝖕</b>\nВыберите количество:", 
-                                    reply_markup=builder.as_markup(), parse_mode="HTML")
+    // Сохраняем выбор пользователя
+    localStorage.setItem('selectedLanguage', lang);
+    console.log("Язык изменен на: " + lang);
+}
 
-@dp.callback_query(F.data.startswith("buy:"))
-async def process_purchase(callback: types.CallbackQuery):
-    qty = int(callback.data.split(":")[1])
-    if qty <= 0: return
-
-    success, message = db_transaction_purchase(callback.from_user.id, qty)
-    
-    if success:
-        await callback.message.edit_text(f"✅ <b>Успешно!</b>\nКуплено билетов: {qty}\n🍀 Удачи!", parse_mode="HTML")
-    else:
-        await callback.answer(f"❌ {message}", show_alert=True)
-    await callback.answer()
-
-# --- АВТО-ОТЧЕТ В КАНАЛ ---
-async def publish_results():
-    try:
-        conn = sqlite3.connect('lotto_ultimate.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT balance FROM treasury LIMIT 1")
-        balance = cursor.fetchone()[0]
-        conn.close()
-
-        text = (f"🏰 <b>𝕾𝖜𝖎𝖘𝖘 𝕷𝖚𝖈𝖐 | 𝕭𝖊𝖗𝖎𝖈𝖍𝖙</b>\n"
-                f"💰 В казне накоплено: <code>{balance:.2f} CHF</code>")
-        await bot.send_message(CHANNEL_ID, text, parse_mode="HTML")
-    except Exception as e:
-        logging.error(f"Ошибка отчета: {e}")
-
-# --- ЗАПУСК ---
-async def main():
-    scheduler.add_job(publish_results, "cron", day_of_week="wed,sat", hour=19, minute=0)
-    scheduler.start()
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+// При загрузке страницы устанавливаем последний выбранный язык или английский
+window.onload = () => {
+    const savedLang = localStorage.getItem('selectedLanguage') || 'en';
+    setLanguage(savedLang);
+};
+</script>
