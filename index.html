@@ -3,93 +3,185 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lotto Manifest 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #1a1a1a; color: #d4af37; font-family: sans-serif; margin: 0; overflow: hidden; }
-        
-        /* Анимация эмблемы [cite: 2026-02-19] */
+        /* Основной стиль в темных золотых тонах */
+        body { 
+            background-color: #1a1a1a; 
+            color: #d4af37; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Заставка (Splash Screen) [cite: 2026-02-19] */
         #splash {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #1a1a1a;
             display: flex; justify-content: center; align-items: center;
             z-index: 9999;
+            transition: opacity 0.6s ease;
         }
+
+        /* Твоя эмблема */
         #logo {
             width: 0%; 
             opacity: 0;
-            transition: all 2s ease-out; /* Время анимации */
-        }
-        #logo.active {
-            width: 65%; /* Увеличение до 65% экрана */
-            opacity: 1;
-        }
-        #logo.fade-out {
-            opacity: 0;
-            transform: scale(1.5);
-            transition: opacity 0.5s ease;
+            transition: all 1.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Эффект "вырастания" */
         }
 
-        /* Основной контент (скрыт в начале) */
-        #main-content { opacity: 0; transition: opacity 1s; padding: 20px; text-align: center; }
-        .header { font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #d4af37; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { background: #333; color: white; border: 1px solid #d4af37; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
-        .num { width: 45px; height: 45px; border: 1px solid #444; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
-        .hot { background: #ff4500; color: white; border-color: #ff4500; box-shadow: 0 0 8px #ff4500; }
+        /* Класс для активации анимации [cite: 2026-02-19] */
+        #logo.active {
+            width: 70%; 
+            opacity: 1;
+        }
+
+        /* Основной контент (скрыт, пока идет заставка) */
+        #main-content { 
+            opacity: 0; 
+            transition: opacity 1s ease; 
+            width: 100%;
+            max-width: 400px;
+            padding: 20px; 
+            box-sizing: border-box;
+            text-align: center; 
+        }
+
+        .header { 
+            font-size: 26px; 
+            font-weight: bold; 
+            text-shadow: 0 0 15px #d4af37; 
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .grid-buttons { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-bottom: 30px;
+        }
+
+        .btn { 
+            background: rgba(212, 175, 55, 0.1); 
+            color: #d4af37; 
+            border: 1px solid #d4af37; 
+            padding: 15px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn:active {
+            background: #d4af37;
+            color: #1a1a1a;
+        }
+
+        /* Сетка Heatmap [cite: 2026-02-19] */
+        .heatmap-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #d4af37;
+            opacity: 0.8;
+        }
+
+        .heatmap-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+            margin: 0 auto;
+        }
+
+        .num { 
+            aspect-ratio: 1;
+            border: 1px solid #333; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 6px; 
+            font-size: 14px;
+            background: #222;
+        }
+
+        /* "Горячие" числа (Smart Pick) [cite: 2026-02-19] */
+        .hot { 
+            background: linear-gradient(45deg, #ff4500, #ff8c00); 
+            color: white; 
+            border: none;
+            box-shadow: 0 0 10px rgba(255, 69, 0, 0.6);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <div id="splash">
-        <img id="logo" src="https://raw.githubusercontent.com/vitalivitali930-ux/Lotto-2026/main/image.png" alt="Lotto Logo">
+        <img id="logo" src="1771489965074.png" alt="Lotto Logo">
     </div>
 
     <div id="main-content">
         <div class="header">⚜️ 𝕃𝕆𝕋𝕋𝕆 𝕄𝔸ℕ𝕀𝔽𝔼𝕊𝕋 ⚜️</div>
-        <div class="grid">
-            <button class="btn" onclick="tg.HapticFeedback.impactOccurred('medium')">RUSSIAN</button>
-            <button class="btn" onclick="tg.HapticFeedback.impactOccurred('medium')">DEUTSCH</button>
+        
+        <div class="grid-buttons">
+            <button class="btn" onclick="vibrate()">RUSSIAN</button>
+            <button class="btn" onclick="vibrate()">DEUTSCH</button>
         </div>
-        <div class="header" style="margin-top: 30px; font-size: 18px;">VISUAL HEATMAP</div>
+
+        <div class="heatmap-title">VISUAL HEATMAP</div>
         <div class="heatmap-grid" id="heatmap"></div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
 
-        // Логика анимации [cite: 2026-02-19]
+        // Функция вибрации при нажатии
+        function vibrate() {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        // Логика заставки [cite: 2026-02-19]
         window.onload = () => {
             const logo = document.getElementById('logo');
             const splash = document.getElementById('splash');
             const main = document.getElementById('main-content');
 
-            // 1. Появление и увеличение
+            // Начинаем анимацию увеличения через мгновение после загрузки
             setTimeout(() => {
                 logo.classList.add('active');
             }, 100);
 
-            // 2. Исчезновение через 2 секунды
+            // Через 2.5 секунды убираем заставку и показываем меню
             setTimeout(() => {
-                logo.classList.remove('active');
-                logo.classList.add('fade-out');
+                splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.display = 'none';
                     main.style.opacity = '1';
-                }, 500);
-            }, 2100);
+                    document.body.style.overflow = 'auto';
+                }, 600);
+            }, 2600);
         };
 
-        // Сетка Heatmap
+        // Генерация сетки чисел [cite: 2026-02-19]
         const hGrid = document.getElementById('heatmap');
+        const hotNumbers = [3, 9, 14, 21]; // Пример "горячих" чисел
+
         for(let i=1; i<=25; i++) {
             let n = document.createElement('div');
             n.className = 'num';
-            if([3, 14, 21].includes(i)) n.className += ' hot'; 
+            if(hotNumbers.includes(i)) n.className += ' hot'; 
             n.innerText = i;
             hGrid.appendChild(n);
         }
