@@ -1,59 +1,95 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotto Manifest 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background-color: #1a1a1a; color: #d4af37; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; padding-top: 20px; }
-        .header { font-size: 24px; margin-bottom: 20px; font-weight: bold; text-shadow: 0 0 10px #d4af37; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .btn { background: #333; color: white; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; cursor: pointer; min-width: 130px; font-weight: bold; }
-        .manifest-card { display: none; border: 2px solid #d4af37; padding: 20px; margin: 20px 0; text-align: center; width: 85%; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
-        .heatmap-title { font-size: 18px; margin-top: 10px; color: #d4af37; }
-        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; }
-        .num { width: 45px; height: 45px; border: 1px solid #d4af37; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 4px; }
+        body { background-color: #1a1a1a; color: #d4af37; font-family: sans-serif; margin: 0; overflow: hidden; }
+        
+        /* Анимация эмблемы [cite: 2026-02-19] */
+        #splash {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a1a1a;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        #logo {
+            width: 0%; 
+            opacity: 0;
+            transition: all 2s ease-out; /* Время анимации */
+        }
+        #logo.active {
+            width: 65%; /* Увеличение до 65% экрана */
+            opacity: 1;
+        }
+        #logo.fade-out {
+            opacity: 0;
+            transform: scale(1.5);
+            transition: opacity 0.5s ease;
+        }
+
+        /* Основной контент (скрыт в начале) */
+        #main-content { opacity: 0; transition: opacity 1s; padding: 20px; text-align: center; }
+        .header { font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #d4af37; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { background: #333; color: white; border: 1px solid #d4af37; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
+        .num { width: 45px; height: 45px; border: 1px solid #444; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
         .hot { background: #ff4500; color: white; border-color: #ff4500; box-shadow: 0 0 8px #ff4500; }
-        .cold { background: #1e90ff; color: white; border-color: #1e90ff; }
     </style>
 </head>
 <body>
-    <div class="header">⚜️ 𝕃𝕆𝕋𝕋𝕆 𝕄𝔸ℕ𝕀𝔽𝔼𝕊𝕋 ⚜️</div>
-    
-    <div class="grid">
-        <button class="btn" onclick="showGreet('ПРИВЕТ')">RUSSIAN</button>
-        <button class="btn" onclick="showGreet('HALLO')">DEUTSCH</button>
-        <button class="btn" onclick="showGreet('HELLO')">ENGLISH</button>
-        <button class="btn" onclick="showGreet('SALUT')">FRANÇAIS</button>
+
+    <div id="splash">
+        <img id="logo" src="https://raw.githubusercontent.com/vitalivitali930-ux/Lotto-2026/main/image.png" alt="Lotto Logo">
     </div>
 
-    <div id="card" class="manifest-card">
-        <h2 id="word" style="margin: 0; letter-spacing: 2px;"></h2>
-        <hr style="border: 0.5px solid #d4af37; margin: 15px 0;">
-        <p style="margin: 0; font-style: italic; font-size: 14px;">Status: Ritual Active</p>
+    <div id="main-content">
+        <div class="header">⚜️ 𝕃𝕆𝕋𝕋𝕆 𝕄𝔸ℕ𝕀𝔽𝔼𝕊𝕋 ⚜️</div>
+        <div class="grid">
+            <button class="btn" onclick="tg.HapticFeedback.impactOccurred('medium')">RUSSIAN</button>
+            <button class="btn" onclick="tg.HapticFeedback.impactOccurred('medium')">DEUTSCH</button>
+        </div>
+        <div class="header" style="margin-top: 30px; font-size: 18px;">VISUAL HEATMAP</div>
+        <div class="heatmap-grid" id="heatmap"></div>
     </div>
-
-    <div class="heatmap-title">VISUAL HEATMAP</div>
-    <div class="heatmap-grid" id="heatmap"></div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        function showGreet(text) {
-            document.getElementById('word').innerText = text;
-            document.getElementById('card').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('medium');
-        }
+        // Логика анимации [cite: 2026-02-19]
+        window.onload = () => {
+            const logo = document.getElementById('logo');
+            const splash = document.getElementById('splash');
+            const main = document.getElementById('main-content');
 
+            // 1. Появление и увеличение
+            setTimeout(() => {
+                logo.classList.add('active');
+            }, 100);
+
+            // 2. Исчезновение через 2 секунды
+            setTimeout(() => {
+                logo.classList.remove('active');
+                logo.classList.add('fade-out');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    main.style.opacity = '1';
+                }, 500);
+            }, 2100);
+        };
+
+        // Сетка Heatmap
         const hGrid = document.getElementById('heatmap');
-        // Создаем сетку 1-25 с Heatmap-эффектами [cite: 2026-02-19]
         for(let i=1; i<=25; i++) {
             let n = document.createElement('div');
             n.className = 'num';
-            // Логика "Hot Summer" (горячие) и "Sleeping Giant" (холодные) [cite: 2026-02-19]
-            if([3, 8, 14, 21].includes(i)) n.className += ' hot'; 
-            if([5, 17].includes(i)) n.className += ' cold';
+            if([3, 14, 21].includes(i)) n.className += ' hot'; 
             n.innerText = i;
             hGrid.appendChild(n);
         }
