@@ -6,7 +6,6 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* ДИНАМИЧЕСКИЕ ЦВЕТА (ФУНДАМЕНТ) */
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
@@ -27,17 +26,17 @@
             100% { transform: scale(1) translate(0, 0); opacity: 1; }
         }
 
-        /* ПАНЕЛЬ СМЕНЫ ЦВЕТА */
+        /* ПАНЕЛЬ ЦВЕТОВ */
+        .theme-toggle { position: fixed; top: 65px; right: 15px; font-size: 24px; z-index: 1001; cursor: pointer; }
         .theme-panel {
             position: fixed; top: 60px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 1000;
-            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 20px; border: 1px solid var(--main-color);
-            transition: all 0.3s; transform: translateX(60px); /* Спрятана по умолчанию */
+            background: rgba(0,0,0,0.8); padding: 12px; border-radius: 20px; border: 1.5px solid var(--main-color);
+            transition: 0.3s; transform: translateX(70px);
         }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
-        .theme-toggle { position: fixed; top: 65px; right: 15px; font-size: 24px; z-index: 1001; cursor: pointer; }
 
-        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        /* ИНТЕРФЕЙС */
         #app-content { opacity: 0; transition: opacity 1s ease; display: none; height: 100vh; overflow-y: auto; padding-bottom: 30px; }
         .bal-card { flex: 1; border-radius: 12px; padding: 10px; background: rgba(20, 20, 20, 0.9); border: 1.5px solid var(--main-color); }
         .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; }
@@ -73,8 +72,11 @@
         <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
     </div>
 
-    <div style="padding: 15px; display: flex; justify-content: center; gap: 15px; font-size: 24px;">
-        <span onclick="setLang('ru')">🇷🇺</span><span onclick="setLang('de')">🇩🇪</span>
+    <div style="padding: 15px; display: flex; justify-content: center; gap: 12px; font-size: 24px;">
+        <span onclick="setLang('ru')">🇷🇺</span>
+        <span onclick="setLang('ua')">🇺🇦</span>
+        <span onclick="setLang('de')">🇩🇪</span>
+        <span onclick="setLang('fr')">🇫🇷</span>
     </div>
 
     <div class="balance-container" style="display: flex; gap: 10px; padding: 15px;">
@@ -116,7 +118,19 @@
     }
     window.onload = runIntro;
 
-    // Сетка и логика (как в оригинале)
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN" },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER" }
+    };
+
+    function setLang(l) {
+        document.getElementById('main-btn').innerText = dict[l].btn;
+        document.getElementById('l-super').innerText = dict[l].super;
+        document.getElementById('topup-btn').innerText = dict[l].topup;
+    }
+
     let selected = [];
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
