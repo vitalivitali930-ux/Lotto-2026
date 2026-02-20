@@ -3,145 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helvetic Luck - Lotto Manifest</title>
+    <title>Swiss Lotto Manifest 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #000; color: #D4AF37; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; overflow-x: hidden; }
+        body { 
+            background: #000; color: #D4AF37; font-family: 'Arial', sans-serif; 
+            text-align: center; margin: 0; padding: 0; overflow-x: hidden;
+        }
         
-        /* ИНТРО И ПРИВЕТСТВИЕ */
-        #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        /* ИНТРО: ЛОГО -> GRUEZI -> WELCOME */
+        #splash-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: black; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 10000;
+            align-items: center; justify-content: center; z-index: 10000; 
         }
-        .logo-container { width: 200px; height: 200px; margin-bottom: 20px; position: relative; }
-        .logo-circle {
-            width: 100%; height: 100%; border-radius: 50%;
-            background: url('1771489965074(1).png') no-content center/cover;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
-            animation: pulse 2s infinite;
-        }
-        .intro-text { font-size: 2.5rem; font-weight: bold; color: #D4AF37; margin-top: 20px; min-height: 60px; }
+        .logo-img { width: 250px; display: block; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .intro-text { font-size: 2.8rem; font-weight: bold; color: #D4AF37; text-shadow: 0 0 15px gold; }
 
-        /* ИГРОВОЕ ПОЛЕ */
-        .main-content { padding: 15px; display: none; }
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 360px; margin: 20px auto; }
-        .cell { 
-            border: 1px solid #333; padding: 12px 0; border-radius: 5px; 
-            background: #111; cursor: pointer; transition: 0.3s; font-weight: bold;
+        /* ВЕРХНЯЯ ПАНЕЛЬ */
+        .top-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; font-size: 14px; }
+        .flags img { width: 24px; margin-left: 10px; cursor: pointer; border-radius: 2px; transition: 0.3s; }
+        .flags img:hover { transform: scale(1.2); }
+
+        /* БАЛАНСЫ */
+        .balance-container { display: flex; justify-content: center; gap: 10px; padding: 10px; }
+        .card { border: 1.5px solid #554422; background: #111; padding: 12px; border-radius: 12px; width: 45%; box-shadow: inset 0 0 10px #000; }
+        .label { font-size: 10px; color: #8A6D3B; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .value { font-size: 22px; font-weight: bold; color: #fff; }
+        .green { color: #00FF00 !important; }
+
+        /* КНОПКА И ТАЙМЕР (ИСПРАВЛЕННЫЙ ЦВЕТ) */
+        .topup-btn { 
+            background: linear-gradient(180deg, #F9D976 0%, #D4AF37 100%); 
+            color: #000; border: none; width: 92%; padding: 15px; border-radius: 15px; 
+            font-weight: bold; margin: 10px auto; display: block; cursor: pointer; font-size: 14px;
         }
-        .cell.selected { background: #D4AF37 !important; color: #000; box-shadow: 0 0 15px #D4AF37; }
-        
-        /* HEATMAP ЦВЕТА (от холодного к горячему) */
-        .heat-low { border-color: #222; }
-        .heat-mid { border-color: #8A6D3B; background: #1a150a; }
-        .heat-high { border-color: #D4AF37; background: #2a2205; }
+        .timer-red { 
+            color: #FF4500; font-size: 13px; font-weight: bold; margin-top: 10px; 
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.6); /* Яркое свечение */
+        }
+        .info-grey { color: #888; font-size: 10px; margin-top: 4px; letter-spacing: 1px; }
+
+        /* ЗАГОЛОВОК И СЕТКА */
+        .manifest-title { font-size: 26px; letter-spacing: 3px; font-weight: bold; margin: 25px 0 5px; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 0 20px; max-width: 380px; margin: 0 auto; }
+        .cell { 
+            border: 1px solid #333; padding: 15px 0; border-radius: 8px; 
+            background: #111; font-weight: bold; cursor: pointer; color: #D4AF37; font-size: 16px;
+        }
+        .cell.selected { background: #D4AF37 !important; color: #000; box-shadow: 0 0 15px #D4AF37; border-color: #fff; }
 
         /* SUPERZAHL */
-        .super-title { color: #ff4444; margin-top: 30px; font-size: 0.9rem; letter-spacing: 2px; }
-        .super-grid { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; margin: 15px 0; }
         .super-cell { 
-            width: 40px; height: 40px; border: 2px solid #ff4444; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; color: #ff4444;
-            cursor: pointer; font-weight: bold; transition: 0.3s;
+            width: 40px; height: 40px; border: 1.5px solid #ff4444; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; color: #ff4444; font-weight: bold; cursor: pointer; 
         }
-        .super-cell.selected { background: #ff4444; color: #000; box-shadow: 0 0 15px #ff4444; }
+        .super-cell.selected { background: #ff4444; color: #000; box-shadow: 0 0 12px #ff4444; }
 
-        .btn-confirm { 
-            background: linear-gradient(180deg, #D4AF37 0%, #8A6D3B 100%);
-            color: black; border: none; width: 90%; max-width: 340px;
-            padding: 18px; border-radius: 12px; font-weight: bold; 
-            font-size: 1rem; cursor: pointer; margin: 25px 0;
+        .confirm-btn { 
+            background: linear-gradient(180deg, #F9D976 0%, #D4AF37 100%); 
+            color: #000; border: none; width: 90%; padding: 18px; border-radius: 12px; 
+            font-weight: bold; margin: 25px 0; font-size: 18px; cursor: pointer; 
         }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="splash-screen">
-        <div class="logo-container">
-            <div class="logo-circle"></div>
-        </div>
-        <div class="intro-text" id="intro-msg">Grüezi</div>
+        <img src="1771489965074(1).png" class="logo-img" id="logo">
+        <div class="intro-text" id="intro-msg"></div>
     </div>
 
-    <div class="main-content" id="app">
-        <h2 style="letter-spacing: 4px;">⚜ LOTTO MANIFEST ⚜</h2>
-        <p id="field-label" style="font-size: 0.8rem; opacity: 0.7;">6 NUMMERN WÄHLEN (1-42)</p>
-        
+    <div id="main-app" style="display:none;">
+        <div class="top-row">
+            <div id="status-txt">Status: Ritual Aktiv</div>
+            <div class="flags">
+                <img src="https://flagcdn.com/w40/ru.png" onclick="setLang('ru')">
+                <img src="https://flagcdn.com/w40/de.png" onclick="setLang('de')">
+                <img src="https://flagcdn.com/w40/us.png" onclick="setLang('en')">
+                <img src="https://flagcdn.com/w40/fr.png" onclick="setLang('fr')">
+            </div>
+        </div>
+
+        <div class="balance-container">
+            <div class="card"><div class="label" id="vch-label">VIRTUAL VCHF</div><div class="value">100.00</div></div>
+            <div class="card"><div class="label" id="real-label">REAL CHF</div><div class="value green">0.00</div></div>
+        </div>
+
+        <button class="topup-btn" id="topup-text">TOP UP REAL BALANCE</button>
+        <div class="timer-red" id="timer-text">🕒 ТИРАЖ ЧЕРЕЗ: 02:14:05 (СТОП-ИГРА ЗА 3 ЧАСА)</div>
+        <div class="info-grey">🔒 END-TO-END ENCRYPTION ANONYMOUS PLAY</div>
+
+        <div class="manifest-title">⚜ LOTTO MANIFEST ⚜</div>
+        <div id="field-label" style="font-size:11px; color:#8A6D3B; margin-bottom:15px; letter-spacing: 1px;">FIELD 6 NUMBERS (1-42)</div>
+
         <div class="grid" id="lotto-grid"></div>
 
-        <p class="super-title">SELECT SUPERZAHL (1-6)</p>
+        <div id="super-label" style="color:#ff4444; font-size:12px; margin-top:30px; font-weight: bold;">SELECT SUPERZAHL (1-6)</div>
         <div class="super-grid" id="super-grid"></div>
 
-        <button class="btn-confirm" onclick="submitTicket()">TICKET BESTÄTIGEN</button>
+        <button class="confirm-btn" id="confirm-text" onclick="submitTicket()">TICKET BESTÄTIGEN</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        let selectedNums = [];
-        let selectedSZ = null;
-
-        // Имитация данных для Heatmap
-        const heatData = [5, 12, 23, 34, 41, 7]; // "Горячие" числа
-
-        // Логика приветствия
-        window.onload = () => {
-            const msg = document.getElementById('intro-msg');
-            setTimeout(() => msg.innerText = "Welcome", 1500);
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-            }, 3000);
+        const tg = window.Telegram.WebApp; tg.expand();
+        
+        const translations = {
+            ru: { status: "Статус: Ритуал Активен", vch: "ВИРТУАЛЬНЫЙ VCHF", real: "РЕАЛЬНЫЙ CHF", top: "ПОПОЛНИТЬ БАЛАНС", timer: "🕒 ТИРАЖ ЧЕРЕЗ: 02:14:05 (СТОП-ИГРА ЗА 3 ЧАСА)", field: "ВЫБЕРИТЕ 6 НОМЕРОВ (1-42)", super: "ВЫБЕРИТЕ SUPERZAHL (1-6)", confirm: "ПОДТВЕРДИТЬ БИЛЕТ" },
+            de: { status: "Status: Ritual Aktiv", vch: "VIRTUELL VCHF", real: "REAL CHF", top: "GUTHABEN AUFLADEN", timer: "🕒 ZIEHUNG IN: 02:14:05 (STOPP-SPIEL VOR 3 STD.)", field: "6 NUMMERN WÄHLEN (1-42)", super: "SELECT SUPERZAHL (1-6)", confirm: "TICKET BESTÄTIGEN" },
+            en: { status: "Status: Ritual Active", vch: "VIRTUAL VCHF", real: "REAL CHF", top: "TOP UP REAL BALANCE", timer: "🕒 DRAW IN: 02:14:05 (STOP-PLAY 3H BEFORE)", field: "FIELD 6 NUMBERS (1-42)", super: "SELECT SUPERZAHL (1-6)", confirm: "CONFIRM TICKET" },
+            fr: { status: "Statut: Rituel Actif", vch: "VIRTUEL VCHF", real: "RÉEL CHF", top: "RECHARGER LE SOLDE", timer: "🕒 TIRAGE DANS: 02:14:05 (STOP-JEU 3H AVANT)", field: "CHAMP: 6 NUMÉROS (1-42)", super: "CHOISIR SUPERZAHL (1-6)", confirm: "CONFIRMER LE BILLET" }
         };
 
-        // Генерация сетки с Heatmap
+        function setLang(lang) {
+            const t = translations[lang];
+            document.getElementById('status-txt').innerText = t.status;
+            document.getElementById('vch-label').innerText = t.vch;
+            document.getElementById('real-label').innerText = t.real;
+            document.getElementById('topup-text').innerText = t.top;
+            document.getElementById('timer-text').innerText = t.timer;
+            document.getElementById('field-label').innerText = t.field;
+            document.getElementById('super-label').innerText = t.super;
+            document.getElementById('confirm-text').innerText = t.confirm;
+        }
+
+        // Логика интро: Лого -> Grüezi -> Welcome
+        window.onload = () => {
+            const msg = document.getElementById('intro-msg');
+            const logo = document.getElementById('logo');
+            setTimeout(() => { logo.style.display='none'; msg.innerText = "Grüezi"; }, 1500);
+            setTimeout(() => { msg.innerText = "Welcome"; }, 3000);
+            setTimeout(() => { 
+                document.getElementById('splash-screen').style.opacity='0';
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display='none';
+                    document.getElementById('main-app').style.display='block';
+                }, 500);
+            }, 4500);
+        };
+
+        let selNums = []; let selSZ = null;
         const grid = document.getElementById('lotto-grid');
         for (let i = 1; i <= 42; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            if (heatData.includes(i)) cell.classList.add('heat-high');
-            cell.innerText = i;
-            cell.onclick = () => {
-                if (cell.classList.contains('selected')) {
-                    cell.classList.remove('selected');
-                    selectedNums = selectedNums.filter(n => n !== i);
-                } else if (selectedNums.length < 6) {
-                    cell.classList.add('selected');
-                    selectedNums.push(i);
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            c.onclick = () => {
+                if (c.classList.contains('selected')) { 
+                    c.classList.remove('selected'); selNums = selNums.filter(n => n !== i); 
+                } else if (selNums.length < 6) { 
+                    c.classList.add('selected'); selNums.push(i); 
                 }
             };
-            grid.appendChild(cell);
+            grid.appendChild(c);
         }
 
-        // Генерация Superzahl
         const sGrid = document.getElementById('super-grid');
         for (let i = 1; i <= 6; i++) {
-            const scell = document.createElement('div');
-            scell.className = 'super-cell';
-            scell.innerText = i;
-            scell.onclick = () => {
-                document.querySelectorAll('.super-cell').forEach(c => c.classList.remove('selected'));
-                scell.classList.add('selected');
-                selectedSZ = i;
+            const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+            sc.onclick = () => {
+                document.querySelectorAll('.super-cell').forEach(el => el.classList.remove('selected'));
+                sc.classList.add('selected'); selSZ = i;
             };
-            sGrid.appendChild(scell);
+            sGrid.appendChild(sc);
         }
 
-        // Отправка данных (Вставка)
         function submitTicket() {
-            if (selectedNums.length === 6 && selectedSZ) {
-                const result = {
-                    numbers: selectedNums.sort((a,b) => a-b),
-                    superzahl: selectedSZ
-                };
-                tg.sendData(JSON.stringify(result));
+            if (selNums.length === 6 && selSZ) {
+                tg.sendData(JSON.stringify({nums: selNums.sort((a,b)=>a-b), sz: selSZ}));
                 tg.close();
-            } else {
-                tg.showAlert("Bitte wählen Sie 6 Zahlen и 1 Superzahl!");
+            } else { 
+                tg.showAlert("Bitte 6 Zahlen и 1 Superzahl wählen!"); 
             }
         }
     </script>
