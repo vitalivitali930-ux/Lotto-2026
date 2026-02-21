@@ -1,285 +1,96 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF</title>
+    <title>Lotto VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { 
-            --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --cell-text: #d4af37; 
-            --hot-glow: #ff4500;
-            --cold-glow: #1e90ff;
-        }
-
-        body { 
-            background: #000 url('1771489965074(1).png') no-repeat center center; 
-            background-size: cover; color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow-x: hidden; 
-        }
-
-        #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
-        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
-        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
-        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-
-        #app-content { display: none; opacity: 0; transition: 1s ease; padding-top: 15px; height: 100vh; overflow-y: auto; }
-        
-        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
-        .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
-        .lang-btn.active-lang { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 5px var(--main-color)); }
-
-        .penthouse-header { border: 1px solid var(--main-color); border-radius: 12px; padding: 12px; margin: 0 15px 15px; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
-        .rooms-tabs { display: flex; justify-content: space-around; margin: 0 15px 10px; padding: 8px; border-bottom: 1px solid var(--main-color); font-size: 9px; font-weight: bold; }
-
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; border-radius: 50%; outline: none; -webkit-tap-highlight-color: transparent; }
-        
-        /* Состояния ячеек */
-        .cell.selected { background: var(--main-gradient) !important; color: #000 !important; box-shadow: 0 0 15px var(--main-color); opacity: 1 !important; transform: scale(1.1); }
-        .cell.shuffle { background: rgba(212, 175, 55, 0.4); transform: scale(1.2); color: #fff; }
-        .cell.highlight-hot { color: var(--hot-glow) !important; text-shadow: 0 0 10px var(--hot-glow); transform: scale(1.2); }
-        .cell.highlight-cold { color: var(--cold-glow) !important; text-shadow: 0 0 10px var(--cold-glow); transform: scale(1.2); }
-
-        .smart-control-panel { background: rgba(0,0,0,0.85); margin: 20px 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); }
-        .stat-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--main-color); background: transparent; color: #fff; font-size: 10px; cursor: pointer; }
-        .stat-btn.active-period { background: var(--main-color); color: #000; }
-        
-        .smart-pick-panel { display: flex; gap: 5px; margin-top: 12px; }
-        .smart-btn { padding: 10px 5px; border-radius: 8px; border: 1px solid var(--main-color); background: #000; color: var(--main-color); font-size: 10px; flex: 1; font-weight: bold; cursor: pointer; }
-
-        .super-cell { width: 40px; height: 40px; border: 2px solid var(--main-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--main-color); font-weight: bold; cursor: pointer; }
-        .super-cell.selected { background: var(--main-gradient); color: #000; }
-
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; background: var(--main-gradient); color: #000; font-weight: bold; font-size: 18px; margin: 20px 0 40px; border: none; cursor: pointer; }
-
-        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
-        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 10px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(100px); }
-        .theme-panel.open { transform: translateX(0); }
-        .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        :root { --gold: #d4af37; }
+        body { background: #000 url('1771489965074(1).png') no-repeat center center; background-size: cover; color: #fff; font-family: sans-serif; text-align: center; margin: 0; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 15px; max-width: 400px; margin: 0 auto; }
+        .cell { background: rgba(0,0,0,0.6); border: 1px solid rgba(212,175,55,0.3); padding: 12px 0; color: var(--gold); font-weight: bold; font-size: 18px; border-radius: 50%; cursor: pointer; transition: 0.2s; }
+        .cell.selected { background: linear-gradient(145deg, #f9e27d, #d4af37); color: #000; box-shadow: 0 0 15px var(--gold); transform: scale(1.1); }
+        .smart-panel { background: rgba(0,0,0,0.8); margin: 15px; padding: 15px; border-radius: 12px; border: 1px solid var(--gold); }
+        .s-btn { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 8px; font-size: 12px; margin: 2px; border-radius: 5px; cursor: pointer; }
+        .btn-main { width: 80%; padding: 15px; background: linear-gradient(145deg, #f9e27d, #d4af37); border: none; border-radius: 10px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
+    <h2 style="color:var(--gold); margin-top:20px;">ПЕНТХАУС УДАЧИ</h2>
+    
+    <div class="grid" id="grid"></div>
 
-<div id="intro-container">
-    <img src="Bild1.png" id="intro1" class="intro-img">
-    <img src="Bild2.png" id="intro2" class="intro-img">
-    <img src="Bild3.png" id="intro3" class="intro-img">
-</div>
-
-<div id="app-content">
-    <div class="lang-panel">
-        <span class="lang-btn" id="l-ru" onclick="setLang('ru')">🇷🇺</span>
-        <span class="lang-btn" id="l-ua" onclick="setLang('ua')">🇺🇦</span>
-        <span class="lang-btn" id="l-de" onclick="setLang('de')">🇩🇪</span>
-        <span class="lang-btn" id="l-en" onclick="setLang('en')">🇬🇧</span>
-        <span class="lang-btn" id="l-fr" onclick="setLang('fr')">🇫🇷</span>
+    <div class="smart-panel">
+        <button class="s-btn" onclick="quickPick('hot')">🔥 HOT</button>
+        <button class="s-btn" onclick="pickGiant()" style="color:#1e90ff; border-color:#1e90ff;">💤 GIANT</button>
+        <button class="s-btn" onclick="quickPick('cold')">❄️ COLD</button>
+        <button class="s-btn" onclick="randomShake()">🎲 RANDOM</button>
     </div>
 
-    <div class="penthouse-header">
-        <div id="p-name" style="color:var(--main-color); font-weight:900;">ПЕНТХАУС УДАЧИ</div>
-        <div id="p-sub" style="font-size:10px;">Где живут твои миллионы</div>
-    </div>
-
-    <div class="rooms-tabs">
-        <span id="t1" style="color:var(--main-color)">СЕЙФ</span>
-        <span id="t2">ПОГРЕБ</span>
-        <span id="t3">СИГАРНАЯ</span>
-    </div>
-
-    <div class="grid" id="main-grid"></div>
-
-    <div class="smart-control-panel">
-        <div style="display: flex; justify-content: center; gap: 8px;">
-            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">МЕСЯЦ</button>
-            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">ГОД</button>
-            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ВСЁ ВРЕМЯ</button>
-        </div>
-        <div class="smart-pick-panel">
-            <button class="smart-btn" ontouchstart="highlight('hot')" ontouchend="clearHighlight()" onmousedown="highlight('hot')" onmouseup="clearHighlight()">🔥 HOT</button>
-            <button class="smart-btn" id="btn-giant" onclick="pickSleepingGiant()" style="border-color: #1e90ff; color: #1e90ff;">💤 GIANT</button> 
-            <button class="smart-btn" ontouchstart="highlight('cold')" ontouchend="clearHighlight()" onmousedown="highlight('cold')" onmouseup="clearHighlight()">❄️ COLD</button>
-            <button class="smart-btn" onclick="smartPickRandom()">🎲 RANDOM</button>
-        </div>
-    </div>
-
-    <div id="l-super" style="color:var(--main-color); font-weight:bold; margin-bottom:10px; font-size: 14px;">БОНУСНОЕ ЧИСЛО</div>
-    <div style="display:flex; justify-content:center; gap:10px;" id="s-grid"></div>
-
-    <button class="btn-main" id="main-btn" onclick="runEngine()">ПОДТВЕРДИТЬ</button>
-</div>
-
-<div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
-<div class="theme-panel">
-    <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
-    <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
-    <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
-    <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
-    <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
-</div>
+    <button class="btn-main" onclick="confirm()">ПОДТВЕРДИТЬ</button>
 
 <script>
     const tg = window.Telegram.WebApp;
-    let selected = [], superNum = null, currentLang = 'en', currentPeriod = 'm';
+    let selected = [];
+    const giantNumbers = [3, 21, 35, 9, 2, 42];
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут миллионы", t1: "СЕЙФ", t2: "ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", giant: "Спящий Гигант проснулся!" },
-        en: { btn: "CONFIRM", super: "BONUS NUMBER", pN: "LUCKY PENTHOUSE", pS: "Where millions live", t1: "SAFE", t2: "CELLAR", t3: "CIGAR", m: "MONTH", y: "YEAR", a: "ALL", giant: "Sleeping Giant Awakened!" }
-        // ... (остальные языки можно добавить по аналогии)
-    };
-
-    const stats = {
-        m: { hot: [5, 12, 19, 33, 41], cold: [1, 7, 15, 28, 30] },
-        y: { hot: [10, 18, 24, 32, 40], cold: [3, 9, 21, 35, 39] },
-        a: { hot: [7, 17, 26, 38, 42], cold: [2, 11, 20, 31, 36] }
-    };
-
-    const sleepingData = [3, 21, 35, 9, 2, 42];
-
-    function setTheme(t) {
-        const themes = {
-            gold:   { main: '#d4af37', grad: 'linear-gradient(145deg, #f9e27d, #d4af37)', text: '#d4af37' },
-            lime:   { main: '#32CD32', grad: 'linear-gradient(145deg, #7FFF00, #32CD32)', text: '#32CD32' },
-            silver: { main: '#c0c0c0', grad: 'linear-gradient(145deg, #ffffff, #c0c0c0)', text: '#c0c0c0' },
-            cyan:   { main: '#00ffff', grad: 'linear-gradient(145deg, #e0ffff, #00ffff)', text: '#00ffff' },
-            cherry: { main: '#C511A4', grad: 'linear-gradient(145deg, #FF1493, #C511A4)', text: '#d4af37' }
-        };
-        const theme = themes[t];
-        document.documentElement.style.setProperty('--main-color', theme.main);
-        document.documentElement.style.setProperty('--main-gradient', theme.grad);
-        document.documentElement.style.setProperty('--cell-text', theme.text);
-        
-        document.querySelectorAll('.cell').forEach(c => {
-            c.style.color = theme.text;
-            c.style.textShadow = (t === 'cherry') ? '0 0 5px rgba(212, 175, 55, 0.5)' : 'none';
-        });
-        applyHeatmap();
-        document.querySelector('.theme-panel').classList.remove('open');
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function setLang(l) {
-        currentLang = dict[l] ? l : 'en'; const d = dict[currentLang];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('p-name').innerText = d.pN;
-        document.getElementById('p-sub').innerText = d.pS;
-        document.getElementById('t1').innerText = d.t1;
-        document.getElementById('t2').innerText = d.t2;
-        document.getElementById('t3').innerText = d.t3;
-        document.getElementById('btn-m').innerText = d.m;
-        document.getElementById('btn-y').innerText = d.y;
-        document.getElementById('btn-a').innerText = d.a;
-        document.getElementById('l-super').innerText = d.super;
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
-        if(document.getElementById('l-'+l)) document.getElementById('l-'+l).classList.add('active-lang');
-    }
-
-    function applyHeatmap() {
-        const data = stats[currentPeriod];
-        document.querySelectorAll('.cell').forEach(c => {
-            c.style.background = "transparent"; c.style.boxShadow = "none"; c.style.opacity = "0.7";
-            if (!c.classList.contains('selected')) c.style.color = 'var(--cell-text)';
-        });
-        data.hot.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if(el) { el.style.opacity = "1"; el.style.background = "rgba(212, 175, 55, 0.15)"; el.style.boxShadow = "inset 0 0 10px rgba(212, 175, 55, 0.3)"; }
-        });
-    }
-
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active-period'));
-        document.getElementById('btn-'+p).classList.add('active-period');
-        applyHeatmap(); tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    // Создание сетки
-    const grid = document.getElementById('main-grid');
+    // Создаем сетку
+    const gridEl = document.getElementById('grid');
     for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('button'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-        c.onclick = () => {
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
-        };
-        grid.appendChild(c);
+        const btn = document.createElement('button');
+        btn.className = 'cell';
+        btn.id = 'c-' + i;
+        btn.innerText = i;
+        btn.onclick = () => toggle(i);
+        gridEl.appendChild(btn);
     }
 
-    const sGrid = document.getElementById('s-grid');
-    for(let i=1; i<=6; i++) {
-        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.id = `super-${i}`; sc.innerText = i;
-        sc.onclick = () => {
-            document.querySelectorAll('.super-cell').forEach(el => el.classList.remove('selected'));
-            superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
-        };
-        sGrid.appendChild(sc);
+    function toggle(n) {
+        const el = document.getElementById('c-' + n);
+        if (selected.includes(n)) {
+            selected = selected.filter(x => x !== n);
+            el.classList.remove('selected');
+        } else if (selected.length < 6) {
+            selected.push(n);
+            el.classList.add('selected');
+            tg.HapticFeedback.impactOccurred('light');
+        }
     }
 
-    // Алгоритмы выбора
-    function highlight(t) {
-        const d = stats[currentPeriod];
-        const target = (t === 'hot' ? d.hot : d.cold);
-        target.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if(el) el.classList.add(t === 'hot' ? 'highlight-hot' : 'highlight-cold');
+    function pickGiant() {
+        reset();
+        giantNumbers.forEach((n, i) => {
+            setTimeout(() => toggle(n), i * 200);
         });
-        tg.HapticFeedback.impactOccurred('light');
+        tg.showAlert("Sleeping Giant проснулся!");
     }
 
-    function clearHighlight() {
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight-hot', 'highlight-cold'));
+    function reset() {
+        selected = [];
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
     }
 
-    function pickSleepingGiant() {
-        selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        sleepingData.forEach((num, i) => {
-            setTimeout(() => {
-                const el = document.getElementById(`cell-${num}`);
-                if(el) { selected.push(num); el.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium'); }
-            }, i * 200);
-        });
-        tg.showAlert(dict[currentLang].giant);
-    }
-
-    function smartPickRandom() {
-        selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected', 'shuffle'));
-        let count = 0;
-        const itv = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('shuffle'));
-            for(let i=0; i<6; i++) {
-                let r = Math.floor(Math.random()*42)+1;
-                document.getElementById(`cell-${r}`).classList.add('shuffle');
+    function randomShake() {
+        reset();
+        let i = 0;
+        const interval = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.style.opacity = Math.random() > 0.5 ? "1" : "0.3");
+            if (i++ > 10) {
+                clearInterval(interval);
+                document.querySelectorAll('.cell').forEach(c => c.style.opacity = "1");
+                while(selected.length < 6) toggle(Math.floor(Math.random()*42)+1);
             }
-            if(++count > 15) {
-                clearInterval(itv); document.querySelectorAll('.cell').forEach(c => c.classList.remove('shuffle'));
-                while(selected.length < 6) {
-                    let r = Math.floor(Math.random()*42)+1;
-                    if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
-                }
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }, 80);
+        }, 100);
     }
 
-    window.onload = () => {
-        setLang('ru');
-        applyHeatmap();
-        ['intro1', 'intro2', 'intro3'].forEach((id, i) => {
-            setTimeout(() => document.getElementById(id).classList.add('active'), i * 2200);
-            setTimeout(() => document.getElementById(id).style.opacity = '0', (i + 1) * 2100);
-        });
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 6800);
-    };
+    function quickPick(type) {
+        tg.showAlert("Алгоритм VCHF " + type.toUpperCase() + " готов!");
+    }
 
-    function runEngine() { 
-        if(selected.length < 6 || !superNum) tg.showAlert("Выберите числа!");
-        else tg.showAlert("Билет сформирован: " + selected.join(', ')); 
+    function confirm() {
+        if (selected.length < 6) tg.showAlert("Выберите 6 чисел!");
+        else tg.showAlert("Готово: " + selected.join(', '));
     }
 </script>
 </body>
