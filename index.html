@@ -21,7 +21,6 @@
             text-align: center; margin: 0; overflow: hidden; 
         }
 
-        /* ИНТРО */
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000 url('Hintergrund.png') no-repeat center center; 
@@ -32,11 +31,11 @@
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* ОСНОВНОЙ КОНТЕНТ */
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-top: 15px; }
         
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
-        .lang-btn { font-size: 24px; cursor: pointer; }
+        .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        .lang-btn.active-lang { opacity: 1; transform: scale(1.2); }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
@@ -49,22 +48,14 @@
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        /* УПРАВЛЕНИЕ БИЛЕТАМИ */
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .smart-tools { display: flex; gap: 8px; margin-bottom: 5px; }
-        .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
-        .tool-btn.active-hot { background: var(--hot-color); border-color: #fff; }
-        .tool-btn.active-cold { background: var(--cold-color); border-color: #fff; }
-        
-        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; }
-        .btn-round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--main-color); background: none; color: #fff; font-size: 18px; cursor: pointer; }
+        /* СТАТИСТИКА (ВИРТУАЛЬНАЯ СИМУЛЯЦИЯ) */
+        .stat-btn { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 9px; cursor: pointer; transition: 0.3s; }
+        .stat-btn.active-period { background: var(--main-color); color: #000; }
 
-        /* ИГРОВАЯ СЕТКА */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         
-        /* HEATMAP ЦВЕТА */
         .cell.is-hot { color: var(--hot-color) !important; text-shadow: 0 0 8px var(--hot-color); }
         .cell.is-cold { color: var(--cold-color) !important; text-shadow: 0 0 8px var(--cold-color); }
 
@@ -73,9 +64,8 @@
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
 
-        /* ТЕМЫ */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
-        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(80px); }
+        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(100px); }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
@@ -90,6 +80,184 @@
 
 <div id="app-content">
     <div class="lang-panel">
-        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
-        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
-        <span class="lang-btn" onclick
+        <span class="lang-btn" id="l-ru" onclick="setLang('ru')">🇷🇺</span>
+        <span class="lang-btn" id="l-ua" onclick="setLang('ua')">🇺🇦</span>
+        <span class="lang-btn" id="l-de" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" id="l-fr" onclick="setLang('fr')">🇫🇷</span>
+        <span class="lang-btn" id="l-it" onclick="setLang('it')">🇮🇹</span>
+    </div>
+
+    <div style="padding: 5px 15px 0;">
+        <div id="p-name" style="font-size: 18px; color: var(--main-color); font-weight: 900; letter-spacing: 1px;">GLÜCKS-PENTHOUSE</div>
+        <div id="p-sub" style="font-size: 9px; color: #888; margin-bottom: 10px;">Wo Ihre zukünftigen Millionen leben</div>
+    </div>
+
+    <div style="display: flex; justify-content: space-around; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 8px;">
+        <span id="t1" style="color: var(--main-color); font-size: 8px; font-weight: bold;">AKTIEN-TRESOR</span>
+        <span id="t2" style="color: #555; font-size: 8px;">WEINKELLER</span>
+        <span id="t3" style="color: #555; font-size: 8px;">ZIGARRENZIMMER</span>
+    </div>
+
+    <div id="sim-panel" style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
+            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">MONAT</button>
+            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">JAHR</button>
+            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ALLZEIT</button>
+        </div>
+        <div id="stat-info" style="font-size: 10px; color: #aaa; min-height: 12px; font-style: italic; padding: 0 15px;">Wählen Sie eine Zahl...</div>
+    </div>
+
+    <div class="balance-container">
+        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div><div class="bal-val" id="vchf-val">100.00</div></div>
+        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">REAL CHF</div><div class="bal-val">0.00</div></div>
+    </div>
+    
+    <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
+
+    <div class="grid" id="main-grid"></div>
+    <div id="l-super" class="super-title">SUPERZAHL</div>
+    <div class="super-grid" id="s-grid"></div>
+    <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+</div>
+
+<div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+<div class="theme-panel">
+    <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+    <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+    <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+    <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+    <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const root = document.documentElement;
+
+    const PREIS_PRO_TICKET = 2.50;
+    let vchfBalance = 100.00;
+    let selected = [];
+    let superNum = null;
+    let currentLang = 'de';
+    let currentPeriod = 'm';
+    let lastNum = null;
+
+    // СИМУЛЯЦИЯ ДАННЫХ
+    const statsData = {
+        m: { 5: 12, 12: 8, 19: 15, 24: 7, 33: 10, 41: 9 },
+        y: { 5: 142, 12: 120, 19: 156, 24: 101, 33: 110, 41: 98 },
+        a: { 5: 542, 12: 480, 19: 610, 24: 390, 33: 420, 41: 405 }
+    };
+
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", desc: (n, c) => `Число ${n} выпадало ${c} раз.` },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "TRESOR", t2: "KELLER", t3: "ZIGARREN", m: "MONAT", y: "JAHR", a: "ALLZEIT", desc: (n, c) => `Zahl ${n} erschien ${c} Mal.` },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", desc: (n, c) => `Numéro ${n} est sorti ${c} fois.` },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi milioni qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
+    };
+
+    function runIntro() {
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
+        });
+        setTimeout(() => {
+            document.getElementById('intro-container').style.display='none';
+            const app = document.getElementById('app-content');
+            app.style.display='block';
+            setTimeout(() => app.style.opacity='1', 50);
+        }, 7500);
+    }
+    window.onload = runIntro;
+
+    function setPeriod(p) {
+        currentPeriod = p;
+        document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active-period'));
+        document.getElementById('btn-' + p).classList.add('active-period');
+        if(lastNum) showStat(lastNum);
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function showStat(n) {
+        lastNum = n;
+        const count = (statsData[currentPeriod] && statsData[currentPeriod][n]) || Math.floor(Math.random() * 5);
+        document.getElementById('stat-info').innerText = dict[currentLang].desc(n, count);
+    }
+
+    function setLang(l) {
+        currentLang = l;
+        const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('topup-btn').innerText = d.topup;
+        document.getElementById('p-name').innerText = d.pN;
+        document.getElementById('p-sub').innerText = d.pS;
+        document.getElementById('t1').innerText = d.t1;
+        document.getElementById('t2').innerText = d.t2;
+        document.getElementById('t3').innerText = d.t3;
+        document.getElementById('btn-m').innerText = d.m;
+        document.getElementById('btn-y').innerText = d.y;
+        document.getElementById('btn-a').innerText = d.a;
+        
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
+        document.getElementById('l-' + l).classList.add('active-lang');
+        if(lastNum) showStat(lastNum);
+    }
+
+    const gridDiv = document.getElementById('main-grid');
+    for (let i = 1; i <= 42; i++) {
+        const c = document.createElement('div'); 
+        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        c.onclick = () => {
+            showStat(i);
+            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+        };
+        gridDiv.appendChild(c);
+    }
+
+    const sGridDiv = document.getElementById('s-grid');
+    for (let i = 1; i <= 6; i++) {
+        const sc = document.createElement('div'); 
+        sc.className = 'super-cell'; sc.innerText = i;
+        sc.onclick = () => {
+            document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
+            superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
+        };
+        sGridDiv.appendChild(sc);
+    }
+
+    function setTheme(t) {
+        const colors = {
+            gold: ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
+            lime: ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
+            silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)'],
+            cyan: ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
+            cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
+        };
+        root.style.setProperty('--main-color', colors[t][0]);
+        root.style.setProperty('--main-gradient', colors[t][1]);
+        root.style.setProperty('--cell-text', colors[t][0]);
+        document.querySelector('.theme-panel').classList.remove('open');
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function runEngine() {
+        if (selected.length !== 6 || !superNum) {
+            tg.showAlert("Заполните билет!"); return;
+        }
+        let total = PREIS_PRO_TICKET;
+        if (vchfBalance >= total) {
+            vchfBalance -= total;
+            document.getElementById('vchf-val').innerText = vchfBalance.toFixed(2);
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Ticket Fixiert!");
+        } else {
+            tg.showAlert("Недостаточно VCHF!");
+        }
+    }
+</script>
+</body>
+</html>
