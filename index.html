@@ -100,4 +100,143 @@
     <div class="lang-panel">
         <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
         <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
-        <span class="lang-
+        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
+    </div>
+
+    <div class="radio-box">
+        <span class="radio-btn" id="r-play" onclick="toggleRadio()">📻</span>
+        <select class="radio-select" id="r-select" onchange="changeStation()">
+            <option value="https://stream.lounge.fm/lounge/mp3/128">A: Jazz & Lounge 🎷</option>
+            <option value="https://stream.dancewave.online/dance.mp3">B: Electronic Chill 🍒</option>
+            <option value="https://streaming.radio.co/s68612501a/listen">C: Nature & Fire 🔥</option>
+        </select>
+        <audio id="audio-player"></audio>
+    </div>
+
+    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+    </div>
+
+    <div class="balance-container">
+        <div class="bal-card">
+            <div class="bal-label" id="l-virt">VIRTUAL VCHF</div>
+            <div class="bal-val">100.00</div>
+        </div>
+        <div class="bal-card">
+            <div class="bal-label" id="l-real">REAL CHF</div>
+            <div class="bal-val">0.00</div>
+        </div>
+    </div>
+    
+    <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
+
+    <div class="grid" id="main-grid"></div>
+    <div id="l-super" class="super-title">SUPERZAHL</div>
+    <div class="super-grid" id="s-grid"></div>
+
+    <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    const root = document.documentElement;
+
+    // --- ЛОГИКА ТЕМ (С ИСПРАВЛЕНИЕМ ДЛЯ CHERRY) ---
+    function setTheme(t) {
+        const colors = {
+            // [Основной цвет, Градиент кнопок, Цвет цифр/рамок]
+            gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)', '#d4af37'],
+            lime:   ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)', '#32CD32'],
+            silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)', '#c0c0c0'],
+            cyan:   ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)', '#00ffff'],
+            cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)', '#d4af37'] // Вишня + Золотые цифры
+        };
+        
+        root.style.setProperty('--main-color', colors[t][0]);
+        root.style.setProperty('--main-gradient', colors[t][1]);
+        root.style.setProperty('--cell-text', colors[t][2]);
+        
+        tg.HapticFeedback.impactOccurred('medium');
+        document.querySelector('.theme-panel').classList.remove('open');
+    }
+
+    // --- РАДИО ---
+    let isPlaying = false;
+    const player = document.getElementById('audio-player');
+    function toggleRadio() {
+        if (!isPlaying) {
+            player.src = document.getElementById('r-select').value;
+            player.play();
+            document.getElementById('r-play').innerText = '🎶';
+        } else {
+            player.pause();
+            document.getElementById('r-play').innerText = '📻';
+        }
+        isPlaying = !isPlaying;
+        tg.HapticFeedback.selectionChanged();
+    }
+    function changeStation() { if (isPlaying) { player.src = document.getElementById('r-select').value; player.play(); } }
+
+    // --- ЯЗЫКИ ---
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN" },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER" },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA" }
+    };
+    function setLang(l) {
+        document.getElementById('main-btn').innerText = dict[l].btn;
+        document.getElementById('l-super').innerText = dict[l].super;
+        document.getElementById('topup-btn').innerText = dict[l].topup;
+        tg.HapticFeedback.selectionChanged();
+    }
+
+    // --- СЕТКА ---
+    let selected = [];
+    const grid = document.getElementById('main-grid');
+    for (let i = 1; i <= 42; i++) {
+        const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+        c.onclick = () => {
+            if(selected.includes(i)) {
+                selected = selected.filter(n => n !== i); c.classList.remove('selected');
+            } else if(selected.length < 6) {
+                selected.push(i); c.classList.add('selected');
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        };
+        grid.appendChild(c);
+    }
+
+    // --- SUPERZAHL ---
+    let superNum = null;
+    const sGrid = document.getElementById('s-grid');
+    for (let i = 1; i <= 6; i++) {
+        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+        sc.onclick = () => {
+            document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
+            superNum = i; sc.classList.add('selected');
+            tg.HapticFeedback.impactOccurred('medium');
+        };
+        sGrid.appendChild(sc);
+    }
+
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            tg.HapticFeedback.notificationOccurred('success');
+            alert("Движок VCHF: Ticket подтвержден!");
+        } else {
+            tg.HapticFeedback.notificationOccurred('error');
+        }
+    }
+</script>
+</body>
+</html>
