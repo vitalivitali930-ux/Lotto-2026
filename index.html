@@ -41,10 +41,22 @@
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
             background: rgba(20, 20, 20, 0.85); border: 1.5px solid #444; 
-            transition: 0.3s; cursor: pointer;
+            transition: 0.4s; cursor: pointer;
+            opacity: 0.4; filter: grayscale(0.8); /* Затухание неактивного */
         }
-        .bal-card.active-wallet { border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .bal-card.active-wallet { 
+            opacity: 1; filter: grayscale(0); /* Яркость активного */
+            border-color: var(--main-color); 
+            background: rgba(212, 175, 55, 0.1); 
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+            transform: scale(1.02);
+        }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
+
+        /* Золотые числа специально для вишневой темы */
+        body.theme-cherry .cell, body.theme-cherry .super-cell {
+            color: #d4af37 !important;
+        }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
@@ -186,7 +198,7 @@
 
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", hot: "ГОРЯЧЕЕ", cold: "ХОЛОДНОЕ", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ", info_h: "Появлялось:", info_c: "Не было давно:", alert: "Заполните билет полностью!" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", hot: "ГАРЯЧЕ", cold: "ХОЛОДНЕ", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС", info_h: "З'являлося:", info_c: "Не було давно:", alert: "Заповніть квиток повністю!" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", hot: "ГАРЯЧЕ", cold: "ХОЛОДНЕ", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС", info_h: "З'являлося:", info_c: "Не было давно:", alert: "Заповніть квиток повністю!" },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", hot: "HEISS", cold: "KALT", month: "MONAT", year: "JAHR", all: "GESAMT", info_h: "Erschienen:", info_c: "Lange nicht:", alert: "Ticket vollständig ausfüllen!" },
         fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", hot: "CHAUD", cold: "FROID", month: "MOIS", year: "AN", all: "TOTAL", info_h: "Apparu:", info_c: "Pas vu depuis:", alert: "Remplissez le ticket!" },
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", hot: "CALDO", cold: "FREDDO", month: "MESE", year: "ANNO", all: "TOTALE", info_h: "Apparso:", info_c: "Manca da:", alert: "Completa il biglietto!" }
@@ -389,6 +401,10 @@
             cyan:   ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
             cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
         };
+        
+        // Устанавливаем класс темы на body для золотых цифр в cherry
+        document.body.className = 'theme-' + t;
+
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
         root.style.setProperty('--cell-text', colors[t][0]);
