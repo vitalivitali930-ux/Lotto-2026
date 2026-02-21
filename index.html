@@ -13,32 +13,25 @@
         }
 
         body { 
-            background: #000; color: #fff; 
+            background: #000 url('Hintergrund.png') no-repeat center center; 
+            background-size: cover; color: #fff; 
             font-family: -apple-system, sans-serif; 
             text-align: center; margin: 0; overflow: hidden; 
         }
 
-        /* ИНТРО (BILD 1, 2, 3) */
+        /* ИНТРО */
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('Hintergrund.png') no-repeat center center; 
+            background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; z-index: 20000; 
             display: flex; justify-content: center; align-items: center;
         }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
-
-        @keyframes shakePop { 
-            0% { transform: scale(0.1); opacity: 0; } 
-            50% { transform: scale(1.05); opacity: 1; } 
-            100% { transform: scale(1); opacity: 1; } 
-        }
+        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         /* ОСНОВНОЙ КОНТЕНТ */
-        #app-content { 
-            display: none; opacity: 0; transition: opacity 1s ease; 
-            height: 100vh; overflow-y: auto; padding-top: 15px; 
-        }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-top: 15px; }
         
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
         .lang-btn { font-size: 24px; cursor: pointer; }
@@ -46,30 +39,35 @@
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(20, 20, 20, 0.95); border: 1.5px solid var(--main-color); 
+            background: rgba(20, 20, 20, 0.85); border: 1.5px solid var(--main-color); 
         }
-        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; margin-bottom: 5px; }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 25px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        /* ИГРОВАЯ СЕТКА */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        /* ИГРОВАЯ СЕТКА БЕЗ РАМОК */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { 
-            background: rgba(35, 35, 35, 0.9); 
-            border: 1.5px solid var(--cell-text); 
-            padding: 15px 0; border-radius: 8px; 
+            background: transparent; 
+            border: none; /* УБРАЛА РАМКУ */
+            padding: 12px 0; 
             font-weight: bold; color: var(--cell-text); 
-            font-size: 18px; transition: 0.3s;
+            font-size: 20px; transition: 0.3s;
+            cursor: pointer;
         }
-        .cell.selected { background: var(--main-gradient); color: #000 !important; border-color: #fff; }
+        .cell.selected { 
+            background: var(--main-gradient); 
+            color: #000 !important; 
+            border-radius: 50%; /* Выбранное число в кружочке */
+        }
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { 
-            width: 42px; height: 42px; border: 2px solid var(--cell-text); 
+            width: 42px; height: 42px; 
+            border: 2px solid var(--cell-text); /* У Superzahl рамку оставляем как акцент или тоже убрать? Пока оставила тонкую */
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             color: var(--cell-text); font-weight: bold; 
         }
@@ -78,10 +76,8 @@
         /* ТЕМЫ */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { 
-            position: fixed; top: 60px; right: 15px; 
-            display: flex; flex-direction: column; gap: 12px; 
-            z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; 
-            border-radius: 20px; border: 1px solid var(--main-color); 
+            position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; 
+            z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); 
             transition: 0.3s; transform: translateX(80px); 
         }
         .theme-panel.open { transform: translateX(0); }
@@ -115,8 +111,8 @@
     </div>
 
     <div class="balance-container">
-        <div class="bal-card"><div class="bal-label">VIRTUAL VCHF</div><div class="bal-val">100.00</div></div>
-        <div class="bal-card"><div class="bal-label">REAL CHF</div><div class="bal-val">0.00</div></div>
+        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div><div class="bal-val">100.00</div></div>
+        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">REAL CHF</div><div class="bal-val">0.00</div></div>
     </div>
     
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
@@ -131,19 +127,11 @@
     tg.expand();
     const root = document.documentElement;
 
-    // --- ЛОГИКА ИНТРО ---
     function runIntro() {
-        const steps = [
-            {id:'intro1', s:500,  e:2500},
-            {id:'intro2', s:2700, e:4700},
-            {id:'intro3', s:4900, e:6900}
-        ];
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
         steps.forEach(st => {
             setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { 
-                const el = document.getElementById(st.id);
-                el.classList.remove('active'); el.style.opacity='0'; 
-            }, st.e);
+            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display='none';
@@ -154,7 +142,6 @@
     }
     window.onload = runIntro;
 
-    // --- ЛОГИКА ТЕМ ---
     function setTheme(t) {
         const colors = {
             gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)', '#d4af37'],
@@ -170,7 +157,6 @@
         document.querySelector('.theme-panel').classList.remove('open');
     }
 
-    // --- ЯЗЫКИ ---
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС" },
@@ -185,18 +171,13 @@
         tg.HapticFeedback.selectionChanged();
     }
 
-    // --- СЕТКА ---
     let selected = [];
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
         c.onclick = () => {
-            if(selected.includes(i)) {
-                selected = selected.filter(n => n !== i); c.classList.remove('selected');
-            } else if(selected.length < 6) {
-                selected.push(i); c.classList.add('selected');
-                tg.HapticFeedback.impactOccurred('light');
-            }
+            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
         grid.appendChild(c);
     }
@@ -207,15 +188,12 @@
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-            superNum = i; sc.classList.add('selected');
-            tg.HapticFeedback.impactOccurred('medium');
+            superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
         sGrid.appendChild(sc);
     }
 
-    function runEngine() {
-        if(selected.length === 6 && superNum) tg.HapticFeedback.notificationOccurred('success');
-    }
+    function runEngine() { if(selected.length === 6 && superNum) tg.HapticFeedback.notificationOccurred('success'); }
 </script>
 </body>
 </html>
