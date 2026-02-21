@@ -37,6 +37,16 @@
         .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.6; transition: 0.3s; }
         .lang-btn.active-lang { opacity: 1; transform: scale(1.2); }
 
+        /* ИЗМЕНЕНИЕ: Контрастный фон для Пентхауса */
+        .penthouse-header {
+            background: #000000;
+            border: 1px solid var(--main-color);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 0 15px 15px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
@@ -48,7 +58,6 @@
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        /* СТАТИСТИКА (ВИРТУАЛЬНАЯ СИМУЛЯЦИЯ) */
         .stat-btn { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 9px; cursor: pointer; transition: 0.3s; }
         .stat-btn.active-period { background: var(--main-color); color: #000; }
 
@@ -56,9 +65,6 @@
         .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         
-        .cell.is-hot { color: var(--hot-color) !important; text-shadow: 0 0 8px var(--hot-color); }
-        .cell.is-cold { color: var(--cold-color) !important; text-shadow: 0 0 8px var(--cold-color); }
-
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; }
@@ -87,9 +93,9 @@
         <span class="lang-btn" id="l-it" onclick="setLang('it')">🇮🇹</span>
     </div>
 
-    <div style="padding: 5px 15px 0;">
+    <div class="penthouse-header">
         <div id="p-name" style="font-size: 18px; color: var(--main-color); font-weight: 900; letter-spacing: 1px;">GLÜCKS-PENTHOUSE</div>
-        <div id="p-sub" style="font-size: 9px; color: #888; margin-bottom: 10px;">Wo Ihre zukünftigen Millionen leben</div>
+        <div id="p-sub" style="font-size: 9px; color: #fff; margin-bottom: 0;">Wo Ihre zukünftigen Millionen leben</div>
     </div>
 
     <div style="display: flex; justify-content: space-around; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 8px;">
@@ -142,7 +148,6 @@
     let currentPeriod = 'm';
     let lastNum = null;
 
-    // СИМУЛЯЦИЯ ДАННЫХ
     const statsData = {
         m: { 5: 12, 12: 8, 19: 15, 24: 7, 33: 10, 41: 9 },
         y: { 5: 142, 12: 120, 19: 156, 24: 101, 33: 110, 41: 98 },
@@ -151,7 +156,7 @@
 
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", desc: (n, c) => `Число ${n} выпадало ${c} раз.` },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
+        ua: { btn: "ПІДТВЕРДИТІ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "TRESOR", t2: "KELLER", t3: "ZIGARREN", m: "MONAT", y: "JAHR", a: "ALLZEIT", desc: (n, c) => `Zahl ${n} erschien ${c} Mal.` },
         fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", desc: (n, c) => `Numéro ${n} est sorti ${c} fois.` },
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi milioni qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
