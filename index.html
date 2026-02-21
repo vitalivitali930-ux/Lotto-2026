@@ -12,6 +12,7 @@
             --cell-text: #d4af37; 
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
+            --process-color: #00ffff; /* Цвет бегущих цифр */
         }
 
         body { 
@@ -49,7 +50,7 @@
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        /* НОВОЕ: УПРАВЛЕНИЕ БИЛЕТАМИ */
+        /* УПРАВЛЕНИЕ БИЛЕТАМИ */
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .smart-tools { display: flex; gap: 8px; margin-bottom: 5px; }
         .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
@@ -61,17 +62,20 @@
 
         /* ИГРОВАЯ СЕТКА */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         
-        /* HEATMAP ЦВЕТА */
+        /* Состояние процесса (бега по сетке) */
+        .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 10px var(--process-color); }
+
         .cell.is-hot { color: var(--hot-color) !important; text-shadow: 0 0 8px var(--hot-color); }
         .cell.is-cold { color: var(--cold-color) !important; text-shadow: 0 0 8px var(--cold-color); }
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
-        .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; }
+        .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; transition: 0.2s; }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
+        .super-cell.processing { background: var(--process-color); color: #000 !important; }
 
         /* ТЕМЫ */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
@@ -144,8 +148,8 @@
     let selected = [];
     let superNum = null;
     let warningsShown = 0;
+    let isProcessing = false;
 
-    // Фейк-статистика для Heatmap
     const hotNumbers = [5, 12, 19, 24, 33, 41];
     const coldNumbers = [2, 8, 15, 27, 30, 39];
 
@@ -188,22 +192,59 @@
         }
     }
 
+    // НОВЫЙ "ЖИВОЙ" РАНДОМ VCHF
     function randomFill() {
-        selected = [];
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        while(selected.length < 6) {
-            let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) {
-                selected.push(r);
-                document.getElementById(`cell-${r}`).classList.add('selected');
+        if (isProcessing) return;
+        isProcessing = true;
+
+        const cells = document.querySelectorAll('.cell');
+        const superCells = document.querySelectorAll('.super-cell');
+        let iterations = 0;
+        const maxIterations = 18; // Длительность забега
+
+        const interval = setInterval(() => {
+            // Очистка предыдущего "кадра"
+            cells.forEach(c => c.classList.remove('selected', 'processing'));
+            superCells.forEach(sc => sc.classList.remove('selected', 'processing'));
+
+            // Эффект беготни (случайные вспышки)
+            for(let i = 0; i < 6; i++) {
+                let r = Math.floor(Math.random() * 42) + 1;
+                document.getElementById(`cell-${r}`).classList.add('processing');
             }
+            let rs = Math.floor(Math.random() * 6) + 1;
+            superCells[rs-1].classList.add('processing');
+            
+            tg.HapticFeedback.impactOccurred('light');
+            iterations++;
+
+            if (iterations >= maxIterations) {
+                clearInterval(interval);
+                finalizeSelection();
+            }
+        }, 65);
+
+        function finalizeSelection() {
+            selected = [];
+            cells.forEach(c => c.classList.remove('selected', 'processing'));
+            superCells.forEach(sc => sc.classList.remove('selected', 'processing'));
+            
+            while(selected.length < 6) {
+                let r = Math.floor(Math.random() * 42) + 1;
+                if(!selected.includes(r)) {
+                    selected.push(r);
+                    document.getElementById(`cell-${r}`).classList.add('selected');
+                }
+            }
+            
+            superNum = Math.floor(Math.random() * 6) + 1;
+            document.querySelectorAll('.super-cell').forEach(sc => {
+                if(parseInt(sc.innerText) === superNum) sc.classList.add('selected');
+            });
+
+            isProcessing = false;
+            tg.HapticFeedback.notificationOccurred('success');
         }
-        let rs = Math.floor(Math.random() * 6) + 1;
-        superNum = rs;
-        document.querySelectorAll('.super-cell').forEach(sc => {
-            sc.classList.toggle('selected', parseInt(sc.innerText) === rs);
-        });
-        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function setTheme(t) {
@@ -242,6 +283,7 @@
         const c = document.createElement('div'); 
         c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
+            if(isProcessing) return;
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
@@ -253,6 +295,7 @@
         const sc = document.createElement('div'); 
         sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
+            if(isProcessing) return;
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
@@ -265,7 +308,6 @@
             return;
         }
 
-        // Логика 3-х предупреждений при дубликатах
         if (ticketCount > 1 && warningsShown < 3) {
             const warnKeys = ['warn1', 'warn2', 'warn3'];
             tg.showConfirm(dict[currentLang][warnKeys[warningsShown]], (ok) => {
@@ -281,14 +323,11 @@
         if (vchfBalance >= total) {
             vchfBalance -= total;
             document.getElementById('vchf-val').innerText = vchfBalance.toFixed(2);
-            
-            // Фиксация билета
             document.getElementById('app-content').style.pointerEvents = 'none';
             const btn = document.getElementById('main-btn');
             btn.disabled = true;
             btn.innerText = "FIXIERT (19:15)";
             btn.style.background = "#444";
-            
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(`Ticket fixiert! Списано: ${total.toFixed(2)} VCHF`);
             tg.sendData(JSON.stringify({selected, superNum, ticketCount}));
