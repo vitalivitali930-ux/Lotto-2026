@@ -6,7 +6,6 @@
     <title>Lotto - Движок VCHF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Базовые переменные (Gold по умолчанию) */
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
@@ -15,50 +14,48 @@
 
         body { 
             background: #000; color: #fff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, sans-serif; 
             text-align: center; margin: 0; overflow: hidden; 
-            -webkit-user-select: none; user-select: none;
         }
 
-        #app-content { height: 100vh; overflow-y: auto; padding-top: 15px; padding-bottom: 50px; }
+        /* ИНТРО (BILD 1, 2, 3) */
+        #intro-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('Hintergrund.png') no-repeat center center; 
+            background-size: cover; z-index: 20000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
+        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
+
+        @keyframes shakePop { 
+            0% { transform: scale(0.1); opacity: 0; } 
+            50% { transform: scale(1.05); opacity: 1; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        /* ОСНОВНОЙ КОНТЕНТ */
+        #app-content { 
+            display: none; opacity: 0; transition: opacity 1s ease; 
+            height: 100vh; overflow-y: auto; padding-top: 15px; 
+        }
         
-        /* Панель языков */
-        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
-        .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
-        .lang-btn:active { transform: scale(1.2); }
+        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+        .lang-btn { font-size: 24px; cursor: pointer; }
 
-        /* Радио-модуль */
-        .radio-box { 
-            margin: 10px auto 20px; width: 85%; 
-            background: rgba(25, 25, 25, 0.8); 
-            border: 1px solid var(--main-color); 
-            border-radius: 15px; padding: 10px; 
-            display: flex; align-items: center; justify-content: space-around; 
-        }
-        .radio-btn { font-size: 26px; cursor: pointer; filter: drop-shadow(0 0 5px var(--main-color)); }
-        .radio-select { 
-            background: none; color: #fff; border: none; font-size: 14px; 
-            outline: none; cursor: pointer; border-bottom: 1px solid var(--main-color); 
-        }
-        .radio-select option { background: #000; }
-
-        /* Баланс */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(20, 20, 20, 0.95); 
-            border: 1.5px solid var(--main-color); 
+            background: rgba(20, 20, 20, 0.95); border: 1.5px solid var(--main-color); 
         }
-        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; text-shadow: 0 0 8px rgba(50, 205, 50, 0.4); }
+        .bal-label { font-size: 10px; color: var(--main-color); text-transform: uppercase; margin-bottom: 5px; }
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* Кнопки */
-        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 25px; font-size: 14px; }
+        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
+        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 25px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* Игровая сетка */
+        /* ИГРОВАЯ СЕТКА */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { 
             background: rgba(35, 35, 35, 0.9); 
@@ -67,27 +64,24 @@
             font-weight: bold; color: var(--cell-text); 
             font-size: 18px; transition: 0.3s;
         }
-        .cell.selected { background: var(--main-gradient); color: #000 !important; border-color: #fff; text-shadow: none; }
+        .cell.selected { background: var(--main-gradient); color: #000 !important; border-color: #fff; }
 
-        /* Superzahl */
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { 
-            width: 42px; height: 42px; 
-            border: 2px solid var(--cell-text); 
+            width: 42px; height: 42px; border: 2px solid var(--cell-text); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             color: var(--cell-text); font-weight: bold; 
         }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
 
-        /* Переключатель тем */
+        /* ТЕМЫ */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { 
             position: fixed; top: 60px; right: 15px; 
             display: flex; flex-direction: column; gap: 12px; 
-            z-index: 1000; background: rgba(0,0,0,0.9); 
-            padding: 12px; border-radius: 20px; 
-            border: 1px solid var(--main-color); 
+            z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; 
+            border-radius: 20px; border: 1px solid var(--main-color); 
             transition: 0.3s; transform: translateX(80px); 
         }
         .theme-panel.open { transform: translateX(0); }
@@ -96,6 +90,12 @@
 </head>
 <body>
 
+<div id="intro-container">
+    <img src="Bild1.png" id="intro1" class="intro-img">
+    <img src="Bild2.png" id="intro2" class="intro-img">
+    <img src="Bild3.png" id="intro3" class="intro-img">
+</div>
+
 <div id="app-content">
     <div class="lang-panel">
         <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
@@ -103,16 +103,6 @@
         <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
         <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
         <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
-    </div>
-
-    <div class="radio-box">
-        <span class="radio-btn" id="r-play" onclick="toggleRadio()">📻</span>
-        <select class="radio-select" id="r-select" onchange="changeStation()">
-            <option value="https://stream.lounge.fm/lounge/mp3/128">A: Jazz & Lounge 🎷</option>
-            <option value="https://stream.dancewave.online/dance.mp3">B: Electronic Chill 🍒</option>
-            <option value="https://streaming.radio.co/s68612501a/listen">C: Nature & Fire 🔥</option>
-        </select>
-        <audio id="audio-player"></audio>
     </div>
 
     <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
@@ -125,22 +115,14 @@
     </div>
 
     <div class="balance-container">
-        <div class="bal-card">
-            <div class="bal-label" id="l-virt">VIRTUAL VCHF</div>
-            <div class="bal-val">100.00</div>
-        </div>
-        <div class="bal-card">
-            <div class="bal-label" id="l-real">REAL CHF</div>
-            <div class="bal-val">0.00</div>
-        </div>
+        <div class="bal-card"><div class="bal-label">VIRTUAL VCHF</div><div class="bal-val">100.00</div></div>
+        <div class="bal-card"><div class="bal-label">REAL CHF</div><div class="bal-val">0.00</div></div>
     </div>
     
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
-
     <div class="grid" id="main-grid"></div>
     <div id="l-super" class="super-title">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
-
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
@@ -149,41 +131,44 @@
     tg.expand();
     const root = document.documentElement;
 
-    // --- ЛОГИКА ТЕМ (С ИСПРАВЛЕНИЕМ ДЛЯ CHERRY) ---
+    // --- ЛОГИКА ИНТРО ---
+    function runIntro() {
+        const steps = [
+            {id:'intro1', s:500,  e:2500},
+            {id:'intro2', s:2700, e:4700},
+            {id:'intro3', s:4900, e:6900}
+        ];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { 
+                const el = document.getElementById(st.id);
+                el.classList.remove('active'); el.style.opacity='0'; 
+            }, st.e);
+        });
+        setTimeout(() => {
+            document.getElementById('intro-container').style.display='none';
+            const app = document.getElementById('app-content');
+            app.style.display='block';
+            setTimeout(() => app.style.opacity='1', 50);
+        }, 7500);
+    }
+    window.onload = runIntro;
+
+    // --- ЛОГИКА ТЕМ ---
     function setTheme(t) {
         const colors = {
-            // [Основной цвет, Градиент кнопок, Цвет цифр/рамок]
             gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)', '#d4af37'],
             lime:   ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)', '#32CD32'],
             silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)', '#c0c0c0'],
             cyan:   ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)', '#00ffff'],
-            cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)', '#d4af37'] // Вишня + Золотые цифры
+            cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)', '#d4af37']
         };
-        
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
         root.style.setProperty('--cell-text', colors[t][2]);
-        
         tg.HapticFeedback.impactOccurred('medium');
         document.querySelector('.theme-panel').classList.remove('open');
     }
-
-    // --- РАДИО ---
-    let isPlaying = false;
-    const player = document.getElementById('audio-player');
-    function toggleRadio() {
-        if (!isPlaying) {
-            player.src = document.getElementById('r-select').value;
-            player.play();
-            document.getElementById('r-play').innerText = '🎶';
-        } else {
-            player.pause();
-            document.getElementById('r-play').innerText = '📻';
-        }
-        isPlaying = !isPlaying;
-        tg.HapticFeedback.selectionChanged();
-    }
-    function changeStation() { if (isPlaying) { player.src = document.getElementById('r-select').value; player.play(); } }
 
     // --- ЯЗЫКИ ---
     const dict = {
@@ -216,7 +201,6 @@
         grid.appendChild(c);
     }
 
-    // --- SUPERZAHL ---
     let superNum = null;
     const sGrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
@@ -230,12 +214,7 @@
     }
 
     function runEngine() {
-        if(selected.length === 6 && superNum) {
-            tg.HapticFeedback.notificationOccurred('success');
-            alert("Движок VCHF: Ticket подтвержден!");
-        } else {
-            tg.HapticFeedback.notificationOccurred('error');
-        }
+        if(selected.length === 6 && superNum) tg.HapticFeedback.notificationOccurred('success');
     }
 </script>
 </body>
