@@ -12,7 +12,7 @@
             --cell-text: #d4af37; 
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
-            --process-color: #00ffff; /* Цвет бегущих цифр */
+            --process-color: #00ffff; 
         }
 
         body { 
@@ -50,7 +50,7 @@
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        /* УПРАВЛЕНИЕ БИЛЕТАМИ */
+        /* УПРАВЛЕНИЕ */
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .smart-tools { display: flex; gap: 8px; margin-bottom: 5px; }
         .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
@@ -60,13 +60,13 @@
         .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; }
         .btn-round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--main-color); background: none; color: #fff; font-size: 18px; cursor: pointer; }
 
-        /* ИГРОВАЯ СЕТКА */
+        /* СЕТКА */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         
-        /* Состояние процесса (бега по сетке) */
-        .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 10px var(--process-color); }
+        /* ЦВЕТ ПРОЦЕССА (БЕГА) */
+        .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 12px var(--process-color); transition: none; }
 
         .cell.is-hot { color: var(--hot-color) !important; text-shadow: 0 0 8px var(--hot-color); }
         .cell.is-cold { color: var(--cold-color) !important; text-shadow: 0 0 8px var(--cold-color); }
@@ -75,7 +75,7 @@
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; transition: 0.2s; }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
-        .super-cell.processing { background: var(--process-color); color: #000 !important; }
+        .super-cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 12px var(--process-color); }
 
         /* ТЕМЫ */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
@@ -192,22 +192,24 @@
         }
     }
 
-    // НОВЫЙ "ЖИВОЙ" РАНДОМ VCHF
+    // "ЖИВОЙ" РАНДОМ С ЭФФЕКТОМ ТОРМОЖЕНИЯ И ЗАТУХАНИЯ
     function randomFill() {
         if (isProcessing) return;
         isProcessing = true;
 
         const cells = document.querySelectorAll('.cell');
         const superCells = document.querySelectorAll('.super-cell');
-        let iterations = 0;
-        const maxIterations = 18; // Длительность забега
+        
+        let iteration = 0;
+        const totalSteps = 24; // Общее количество скачков
+        let currentDelay = 50; // Начальная скорость
 
-        const interval = setInterval(() => {
-            // Очистка предыдущего "кадра"
+        function step() {
+            // Очистка кадра
             cells.forEach(c => c.classList.remove('selected', 'processing'));
             superCells.forEach(sc => sc.classList.remove('selected', 'processing'));
 
-            // Эффект беготни (случайные вспышки)
+            // Вспышка случайных чисел (синий процесс)
             for(let i = 0; i < 6; i++) {
                 let r = Math.floor(Math.random() * 42) + 1;
                 document.getElementById(`cell-${r}`).classList.add('processing');
@@ -216,13 +218,19 @@
             superCells[rs-1].classList.add('processing');
             
             tg.HapticFeedback.impactOccurred('light');
-            iterations++;
+            iteration++;
 
-            if (iterations >= maxIterations) {
-                clearInterval(interval);
-                finalizeSelection();
+            if (iteration < totalSteps) {
+                // Замедление после 60% пути
+                if (iteration > totalSteps * 0.6) {
+                    currentDelay += 28; 
+                }
+                setTimeout(step, currentDelay);
+            } else {
+                // Конечная пауза перед фиксацией
+                setTimeout(finalizeSelection, currentDelay + 150);
             }
-        }, 65);
+        }
 
         function finalizeSelection() {
             selected = [];
@@ -245,6 +253,8 @@
             isProcessing = false;
             tg.HapticFeedback.notificationOccurred('success');
         }
+
+        step();
     }
 
     function setTheme(t) {
@@ -265,7 +275,7 @@
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", warn1: "Нелогично: билеты одинаковые. Продолжить?", warn2: "Вы берете несколько долей одного выигрыша. Уверены?", warn3: "Это не увеличит шанс. Последнее предупреждение!" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", warn1: "Нелогічно: квитки однакові. Продовжити?", warn2: "Ви берете кілька часток одного виграшу. Впевнені?", warn3: "Це не збільшить шанс. Останнє попередження!" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", warn1: "Unlogisch: Tickets sind identisch. Fortfahren?", warn2: "Mehrere Anteile am selben Gewinn? Sicher?", warn3: "Letzte Warnung: Chance wird nicht erhöht!" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", warn1: "Unlogisch: Tickets sind identisch. Fortfahren?", warn2: "Mehrere Anteile am selben Gewinn? Sicher?", warn3: "Letzte Warnung: Chance wird не erhöht!" },
         fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", warn1: "Illogique: tickets identiques. Continuer?", warn2: "Plusieurs parts du même gain? Sûr?", warn3: "Dernier avertissement!" },
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", warn1: "Illogico: biglietti identici. Continuare?", warn2: "Più quote della stessa vincita? Sicuro?", warn3: "Ultimo avvertimento!" }
     };
