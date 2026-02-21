@@ -37,7 +37,6 @@
         .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.6; transition: 0.3s; }
         .lang-btn.active-lang { opacity: 1; transform: scale(1.2); }
 
-        /* Контрастный черный блок для заголовка */
         .penthouse-header {
             background: #000000;
             border: 1px solid var(--main-color);
@@ -47,7 +46,6 @@
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
         }
 
-        /* Четкие названия комнат */
         .rooms-tabs {
             background: rgba(0, 0, 0, 0.7); 
             display: flex; 
@@ -72,10 +70,18 @@
         .stat-btn { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 9px; cursor: pointer; transition: 0.3s; }
         .stat-btn.active-period { background: var(--main-color); color: #000; }
 
+        /* HEATMAP STYLES */
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; border-radius: 50%; }
+        .cell.selected { background: var(--main-gradient) !important; color: #000 !important; opacity: 1 !important; }
+        .cell.hot { color: var(--hot-color) !important; text-shadow: 0 0 8px rgba(255, 69, 0, 0.6); }
+        .cell.cold { color: var(--cold-color) !important; opacity: 0.6; }
+
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; }
-        .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         
+        /* SMART PICK PANEL */
+        .smart-pick-panel { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+        .smart-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: var(--main-color); font-size: 10px; font-weight: bold; cursor: pointer; }
+
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; }
@@ -132,6 +138,13 @@
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
 
     <div class="grid" id="main-grid"></div>
+
+    <div class="smart-pick-panel">
+        <button class="smart-btn" id="sm-hot" onclick="smartPick('hot')">🔥 HOT</button>
+        <button class="smart-btn" id="sm-cold" onclick="smartPick('cold')">❄️ COLD</button>
+        <button class="smart-btn" id="sm-rand" onclick="smartPick('rand')">🎲 RANDOM</button>
+    </div>
+
     <div id="l-super" class="super-title">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
@@ -159,10 +172,11 @@
     let currentPeriod = 'm';
     let lastNum = null;
 
+    // Расширенная статистика для Heatmap
     const statsData = {
-        m: { 5: 12, 12: 8, 19: 15, 24: 7, 33: 10, 41: 9 },
-        y: { 5: 142, 12: 120, 19: 156, 24: 101, 33: 110, 41: 98 },
-        a: { 5: 542, 12: 480, 19: 610, 24: 390, 33: 420, 41: 405 }
+        m: { 1:2, 5:12, 12:8, 19:15, 24:7, 33:10, 41:9, 7:1, 15:2, 30:3 },
+        y: { 1:20, 5:142, 12:120, 19:156, 24:101, 33:110, 41:98, 7:15, 15:40, 30:33 },
+        a: { 1:100, 5:542, 12:480, 19:610, 24:390, 33:420, 41:405, 7:80, 15:150, 30:120 }
     };
 
     const dict = {
@@ -173,55 +187,59 @@
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi millions qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
     };
 
-    function runIntro() {
-        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
-        steps.forEach(st => {
-            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
-        });
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display='none';
-            const app = document.getElementById('app-content');
-            app.style.display='block';
-            setTimeout(() => app.style.opacity='1', 50);
-        }, 7500);
+    function updateHeatmap() {
+        const data = statsData[currentPeriod];
+        const values = Object.values(data);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const range = max - min;
+
+        for(let i=1; i<=42; i++) {
+            const cell = document.getElementById(`cell-${i}`);
+            const count = data[i] || 0;
+            cell.classList.remove('hot', 'cold');
+            if (count > min + range * 0.7) cell.classList.add('hot');
+            else if (count < min + range * 0.3) cell.classList.add('cold');
+        }
     }
-    window.onload = runIntro;
+
+    function smartPick(type) {
+        selected = [];
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+        const data = statsData[currentPeriod];
+        let indices = Array.from({length: 42}, (_, i) => i + 1);
+
+        if(type === 'hot') indices.sort((a,b) => (data[b]||0) - (data[a]||0));
+        else if(type === 'cold') indices.sort((a,b) => (data[a]||0) - (data[b]||0));
+        else indices.sort(() => Math.random() - 0.5);
+
+        selected = indices.slice(0, 6);
+        selected.forEach(num => document.getElementById(`cell-${num}`).classList.add('selected'));
+        
+        superNum = Math.floor(Math.random() * 6) + 1;
+        document.querySelectorAll('.super-cell').forEach(sc => {
+            sc.classList.remove('selected');
+            if(parseInt(sc.innerText) === superNum) sc.classList.add('selected');
+        });
+        tg.HapticFeedback.impactOccurred('medium');
+    }
 
     function setPeriod(p) {
         currentPeriod = p;
         document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active-period'));
         document.getElementById('btn-' + p).classList.add('active-period');
+        updateHeatmap();
         if(lastNum) showStat(lastNum);
         tg.HapticFeedback.impactOccurred('light');
     }
 
     function showStat(n) {
         lastNum = n;
-        const count = (statsData[currentPeriod] && statsData[currentPeriod][n]) || Math.floor(Math.random() * 5);
+        const count = statsData[currentPeriod][n] || 0;
         document.getElementById('stat-info').innerText = dict[currentLang].desc(n, count);
     }
 
-    function setLang(l) {
-        currentLang = l;
-        const d = dict[l];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('topup-btn').innerText = d.topup;
-        document.getElementById('p-name').innerText = d.pN;
-        document.getElementById('p-sub').innerText = d.pS;
-        document.getElementById('t1').innerText = d.t1;
-        document.getElementById('t2').innerText = d.t2;
-        document.getElementById('t3').innerText = d.t3;
-        document.getElementById('btn-m').innerText = d.m;
-        document.getElementById('btn-y').innerText = d.y;
-        document.getElementById('btn-a').innerText = d.a;
-        
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
-        document.getElementById('l-' + l).classList.add('active-lang');
-        if(lastNum) showStat(lastNum);
-    }
-
+    // Инициализация сетки и логики (остальное без изменений)
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
@@ -245,6 +263,24 @@
         sGridDiv.appendChild(sc);
     }
 
+    function setLang(l) {
+        currentLang = l;
+        const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('topup-btn').innerText = d.topup;
+        document.getElementById('p-name').innerText = d.pN;
+        document.getElementById('p-sub').innerText = d.pS;
+        document.getElementById('t1').innerText = d.t1;
+        document.getElementById('t2').innerText = d.t2;
+        document.getElementById('t3').innerText = d.t3;
+        document.getElementById('btn-m').innerText = d.m;
+        document.getElementById('btn-y').innerText = d.y;
+        document.getElementById('btn-a').innerText = d.a;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
+        document.getElementById('l-' + l).classList.add('active-lang');
+    }
+
     function setTheme(t) {
         const colors = {
             gold: ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
@@ -260,19 +296,29 @@
         tg.HapticFeedback.impactOccurred('medium');
     }
 
+    function runIntro() {
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
+        });
+        setTimeout(() => {
+            document.getElementById('intro-container').style.display='none';
+            const app = document.getElementById('app-content');
+            app.style.display='block';
+            setTimeout(() => { app.style.opacity='1'; updateHeatmap(); }, 50);
+        }, 7500);
+    }
+    window.onload = runIntro;
+
     function runEngine() {
         if (selected.length !== 6 || !superNum) {
             tg.showAlert("Заполните билет!"); return;
         }
-        
         tg.showPopup({
             title: 'Spielmodus / Режим игры',
             message: 'Wählen Sie VCHF Simulation oder Real CHF Participation.',
-            buttons: [
-                {id: 'vchf', type: 'default', text: 'VCHF SIM'},
-                {id: 'real', type: 'default', text: 'REAL CHF'},
-                {id: 'cancel', type: 'destructive', text: 'Cancel'}
-            ]
+            buttons: [{id: 'vchf', type: 'default', text: 'VCHF SIM'}, {id: 'real', type: 'default', text: 'REAL CHF'}, {id: 'cancel', type: 'destructive', text: 'Cancel'}]
         }, (id) => {
             if(id === 'vchf') {
                 if (vchfBalance >= PREIS_PRO_TICKET) {
@@ -281,8 +327,6 @@
                     tg.HapticFeedback.notificationOccurred('success');
                     tg.showAlert("VCHF Ticket Fixiert!");
                 } else { tg.showAlert("Недостаточно VCHF!"); }
-            } else if(id === 'real') {
-                tg.showAlert("Redirecting to CHF Payment...");
             }
         });
     }
