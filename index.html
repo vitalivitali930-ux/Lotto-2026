@@ -37,26 +37,24 @@
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
         .lang-btn { font-size: 24px; cursor: pointer; }
 
-        /* Стилизация карточек баланса */
+        /* Фокус на кошельках */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(10, 10, 10, 0.9); border: 1.5px solid #333; 
+            background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; 
             transition: 0.4s ease; cursor: pointer;
-            opacity: 0.3; /* Затенение неактивного */
-            filter: grayscale(1);
+            opacity: 0.3; filter: grayscale(1);
         }
         .bal-card.active-wallet { 
-            opacity: 1; /* Яркость активного */
-            filter: grayscale(0);
+            opacity: 1; filter: grayscale(0);
             border-color: var(--main-color); 
-            background: rgba(212, 175, 55, 0.05); 
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+            background: rgba(212, 175, 55, 0.08); 
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
             transform: scale(1.03);
         }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* Золотые цифры для вишневой темы */
+        /* Золотые числа для вишни */
         body.theme-cherry .cell, body.theme-cherry .super-cell { color: #d4af37 !important; }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
@@ -69,6 +67,11 @@
         .tool-btn.active-hot { background: var(--hot-color); border-color: #fff; box-shadow: 0 0 10px var(--hot-color); }
         .tool-btn.active-cold { background: var(--cold-color); border-color: #fff; box-shadow: 0 0 10px var(--cold-color); }
         
+        .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
+        .stats-period.visible { opacity: 1; pointer-events: all; }
+        .p-btn { font-size: 10px; padding: 3px 8px; border-radius: 10px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; }
+
         .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; }
         .btn-round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--main-color); background: none; color: #fff; font-size: 18px; cursor: pointer; }
 
@@ -84,11 +87,6 @@
         .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; transition: 0.2s; }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
-
-        .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
-        .stats-period.visible { opacity: 1; pointer-events: all; }
-        .p-btn { font-size: 10px; padding: 3px 8px; border-radius: 10px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
-        .p-btn.active { border-color: var(--main-color); color: #fff; }
 
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(80px); }
@@ -176,27 +174,14 @@
     let currentMode = null; 
     let currentPeriod = 'month';
 
+    // Статистика (имитация БД)
     const dbStats = {
-        month: { 
-            hot: [3, 11, 25, 29, 34, 42], 
-            cold: [1, 14, 20, 28, 33, 39], 
-            superHot: [5, 3], superCold: [2, 6],
-            freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} 
-        },
-        year:  { 
-            hot: [7, 18, 22, 31, 35, 41], 
-            cold: [4, 9, 15, 26, 30, 38], 
-            superHot: [1, 5], superCold: [4, 3],
-            freq: {7: 54, 18: 51, 22: 48, 31: 46, 35: 43, 41: 42, 4: 11, 9: 9, 15: 7, 26: 6, 30: 4, 38: 2} 
-        },
-        all:   { 
-            hot: [42, 12, 19, 1, 23, 37], 
-            cold: [2, 10, 17, 21, 32, 40], 
-            superHot: [3, 2], superCold: [6, 1],
-            freq: {42: 492, 12: 478, 19: 465, 1: 459, 23: 451, 37: 447, 2: 112, 10: 105, 17: 98, 21: 92, 32: 85, 40: 71} 
-        }
+        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} },
+        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1, 5], superCold: [4, 3], freq: {7: 54, 18: 51, 22: 48, 31: 46, 35: 43, 41: 42, 4: 11, 9: 9, 15: 7, 26: 6, 30: 4, 38: 2} },
+        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3, 2], superCold: [6, 1], freq: {42: 492, 12: 478, 19: 465, 1: 459, 23: 451, 37: 447, 2: 112, 10: 105, 17: 98, 21: 92, 32: 85, 40: 71} }
     };
 
+    // Словарь шуток
     const humorDict = {
         ru: {
             all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."],
@@ -204,7 +189,7 @@
             year_hot: ["Звезда соцсетей года!", "Энергетик — заряжен на успех.", "Карьерист — прет по головам.", "Мистер Популярность — чаще пиццы.", "На хайпе! Ловит волну.", "Швейцарские часы — без сбоев."],
             year_cold: ["В глубоком офшоре.", "Ушел в декрет — отдыхает.", "Партизан в засаде.", "Потерял ключи от лототрона.", "Прогульщик — видели в буфете.", "Космонавт — связи нет."],
             month_hot: ["Спринтер месяца — несется!", "Главный выскочка — уже тут.", "Любимчик — подмигивает шарам.", "В режиме Форсажа!", "Горячий пирожок из печи.", "Абонемент на все тиражи."],
-            month_cold: ["Стесняшка — прячется за всех.", "На больничном — горло болит.", "Держит дистанцию — изоляция.", "Слишком занят в других играх.", "Вне зоны доступа — связи нет.", "Турист в горах — шлет открытку."],
+            month_cold: ["Стесняшка — прячется за всех.", "На больничном — горло болит.", "Держит дистанцию — изоляция.", "Слишком занят в других играх.", "Вне зоны доступа.", "Турист в горах — шлет открытку."],
             times: "раз(а)"
         },
         ua: {
@@ -322,6 +307,7 @@
         const list = stats[currentMode];
         const index = list.indexOf(n);
         
+        // Если число в ТОП-6, выдаем смешное описание
         if (index !== -1) {
             const langData = humorDict[currentLang] || humorDict['de'];
             const periodKey = `${currentPeriod}_${currentMode}`;
@@ -333,11 +319,12 @@
                 text: `${isSuper ? 'Superzahl' : 'Zahl'} ${n}\n\n${funnyText}\n(${count} ${timesLabel})` 
             });
         } else {
+            // Обычное описание для остальных
             const freq = stats.freq[n] || "5";
             const label = currentMode === 'hot' ? dict[currentLang].info_h : dict[currentLang].info_c;
             tg.showScanQrPopup({ text: `${isSuper ? 'Superzahl' : 'Zahl'} ${n}: ${label} ${freq}` });
         }
-        setTimeout(() => tg.closeScanQrPopup(), 3000);
+        setTimeout(() => tg.closeScanQrPopup(), 3500);
     }
 
     function randomFill() {
@@ -384,6 +371,7 @@
         step();
     }
 
+    // Инициализация сетки
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
