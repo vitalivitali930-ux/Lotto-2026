@@ -37,26 +37,27 @@
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
         .lang-btn { font-size: 24px; cursor: pointer; }
 
+        /* Стилизация карточек баланса */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(20, 20, 20, 0.85); border: 1.5px solid #444; 
-            transition: 0.4s; cursor: pointer;
-            opacity: 0.4; filter: grayscale(0.8); /* Затухание неактивного */
+            background: rgba(10, 10, 10, 0.9); border: 1.5px solid #333; 
+            transition: 0.4s ease; cursor: pointer;
+            opacity: 0.3; /* Затенение неактивного */
+            filter: grayscale(1);
         }
         .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0); /* Яркость активного */
+            opacity: 1; /* Яркость активного */
+            filter: grayscale(0);
             border-color: var(--main-color); 
-            background: rgba(212, 175, 55, 0.1); 
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-            transform: scale(1.02);
+            background: rgba(212, 175, 55, 0.05); 
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+            transform: scale(1.03);
         }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* Золотые числа специально для вишневой темы */
-        body.theme-cherry .cell, body.theme-cherry .super-cell {
-            color: #d4af37 !important;
-        }
+        /* Золотые цифры для вишневой темы */
+        body.theme-cherry .cell, body.theme-cherry .super-cell { color: #d4af37 !important; }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
@@ -177,22 +178,70 @@
 
     const dbStats = {
         month: { 
-            hot: [5, 12, 19, 41, 23, 34], 
-            cold: [2, 27, 39, 11, 18, 40], 
-            superHot: [3, 5], superCold: [2, 6],
-            freq: {5: "14x", 12: "11x", 19: "9x", 41: "8x", 23: "7x", 34: "7x", 2: "1x", 27: "0x", 39: "1x", 11: "2x", 18: "1x", 40: "0x"} 
+            hot: [3, 11, 25, 29, 34, 42], 
+            cold: [1, 14, 20, 28, 33, 39], 
+            superHot: [5, 3], superCold: [2, 6],
+            freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} 
         },
         year:  { 
-            hot: [7, 24, 33, 42, 15, 29], 
-            cold: [8, 15, 30, 4, 21, 37], 
-            superHot: [1, 6], superCold: [3, 4],
-            freq: {7: "84x", 24: "79x", 33: "72x", 42: "70x", 15: "65x", 29: "60x", 8: "12x", 15: "10x", 30: "9x", 4: "5x", 21: "4x", 37: "2x"} 
+            hot: [7, 18, 22, 31, 35, 41], 
+            cold: [4, 9, 15, 26, 30, 38], 
+            superHot: [1, 5], superCold: [4, 3],
+            freq: {7: 54, 18: 51, 22: 48, 31: 46, 35: 43, 41: 42, 4: 11, 9: 9, 15: 7, 26: 6, 30: 4, 38: 2} 
         },
         all:   { 
-            hot: [1, 10, 22, 38, 14, 26], 
-            cold: [4, 18, 31, 9, 20, 35], 
-            superHot: [2, 4], superCold: [1, 5],
-            freq: {1: "450x", 10: "432x", 22: "411x", 38: "399x", 14: "380x", 26: "370x", 4: "102x", 18: "98x", 31: "85x", 9: "80x", 20: "75x", 35: "70x"} 
+            hot: [42, 12, 19, 1, 23, 37], 
+            cold: [2, 10, 17, 21, 32, 40], 
+            superHot: [3, 2], superCold: [6, 1],
+            freq: {42: 492, 12: 478, 19: 465, 1: 459, 23: 451, 37: 447, 2: 112, 10: 105, 17: 98, 21: 92, 32: 85, 40: 71} 
+        }
+    };
+
+    const humorDict = {
+        ru: {
+            all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."],
+            all_cold: ["Настоящий мамонт — вымер давно.", "Бермудский треугольник — пропал.", "Призрак оперы — никто не видел.", "Спящий красавец — спит век.", "Скромный отшельник из леса.", "Забытый багаж на складе."],
+            year_hot: ["Звезда соцсетей года!", "Энергетик — заряжен на успех.", "Карьерист — прет по головам.", "Мистер Популярность — чаще пиццы.", "На хайпе! Ловит волну.", "Швейцарские часы — без сбоев."],
+            year_cold: ["В глубоком офшоре.", "Ушел в декрет — отдыхает.", "Партизан в засаде.", "Потерял ключи от лототрона.", "Прогульщик — видели в буфете.", "Космонавт — связи нет."],
+            month_hot: ["Спринтер месяца — несется!", "Главный выскочка — уже тут.", "Любимчик — подмигивает шарам.", "В режиме Форсажа!", "Горячий пирожок из печи.", "Абонемент на все тиражи."],
+            month_cold: ["Стесняшка — прячется за всех.", "На больничном — горло болит.", "Держит дистанцию — изоляция.", "Слишком занят в других играх.", "Вне зоны доступа — связи нет.", "Турист в горах — шлет открытку."],
+            times: "раз(а)"
+        },
+        ua: {
+            all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотий стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановець — оре без вихідних."],
+            all_cold: ["Справжній мамонт — вимер давно.", "Бермудський трикутник — зник.", "Привид опери — ніхто не бачив.", "Сплячий красень — спить вік.", "Скромний відшельник з лісу.", "Забутий багаж на складі."],
+            year_hot: ["Зірка соцмереж року!", "Енергетик — заряджений на успіх.", "Кар'єрист — пре по головах.", "Містер Популярність — частіше за піцу.", "На хайпі! Ловить хвилю.", "Швейцарський годинник — без збоїв."],
+            year_cold: ["У глибокому офшорі.", "Пішов у декрет — відпочиває.", "Партизан у засідці.", "Загубив ключі від лототрона.", "Прогульник — бачили в буфеті.", "Космонавт — зв'язку немає."],
+            month_hot: ["Спринтер місяця — мчить!", "Головний вискочка — вже тут.", "Улюбленець — підмигує кулям.", "В режимі Форсажу!", "Гарячий пиріжок з печі.", "Абонемент на всі тиражі."],
+            month_cold: ["Сором'язливий — ховається за всіх.", "На лікарняному — горло болить.", "Тримає дистанцію — ізоляція.", "Занадто зайнятий в інших іграх.", "Поза зоною досяжності.", "Турист у горах — шле листівку."],
+            times: "раз(ів)"
+        },
+        de: {
+            all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."],
+            all_cold: ["Echtes Mammut — längst ausgestorben.", "Bermuda-Dreieck — verschwunden.", "Phantom der Oper — nie gesehen.", "Dornröschen — schläft ewig.", "Bescheidener Eremit aus dem Wald.", "Vergessenes Gepäck im Lager."],
+            year_hot: ["Social-Media-Star des Jahres!", "Energy-Drink — geladen auf Erfolg.", "Karrierist — geht über Leichen.", "Mr. Popularität — öfter als Pizza.", "Auf dem Hype! Reitet die Welle.", "Schweizer Uhr — ohne Fehler."],
+            year_cold: ["In der Tiefsee-Offshore.", "Im Mutterschutz — ruht sich aus.", "Partisan im Hinterhalt.", "Schlüssel zum Lotto verloren.", "Schwänzer — in der Kantine gesehen.", "Astronaut — kein Kontakt."],
+            month_hot: ["Monats-Sprinter — rast!", "Haupt-Emporkömmling — schon da.", "Glückspilz — zwinkert den Kugeln.", "Im Fast & Furious Modus!", "Heißes Pirogge aus dem Ofen.", "Dauerkarte für alle Ziehungen."],
+            month_cold: ["Schüchtern — versteckt sich.", "Krankgeschrieben — Halsweh.", "Hält Distanz — Isolation.", "Zu beschäftigt in anderen Spielen.", "Außer Reichweite — kein Signal.", "Tourist in Bergen — schickt Karte."],
+            times: "Mal"
+        },
+        fr: {
+            all_hot: ["Lapin — champion du piège !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."],
+            all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."],
+            year_hot: ["Star des réseaux de l'année !", "Énergétique — chargé à bloc.", "Carriériste — fonce tête baissée.", "Mr Popularité — plus que la pizza.", "Sur le buzz ! Surfe sur la vague.", "Montre suisse — sans faille."],
+            year_cold: ["En offshore profond.", "En congé — se repose.", "Partisan en embuscade.", "A perdu les clés du loto.", "Absentéiste — vu à la cafétéria.", "Astronaute — aucun signal."],
+            month_hot: ["Sprinteur du mois — fonce !", "L'intrus principal — déjà là.", "Chouchou — fait un clin d'œil.", "En mode Fast & Furious !", "Petit pain chaud du four.", "Abonnement à tous les tirages."],
+            month_cold: ["Timide — se cache derrière.", "En congé maladie — mal à la gorge.", "Garde ses distances — isolation.", "Trop occupé ailleurs.", "Hors zone — aucun signal.", "Touriste en montagne — envoie une carte."],
+            times: "fois"
+        },
+        it: {
+            all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — lavora sempre."],
+            all_cold: ["Vero mammut — estinto da tempo.", "Triangolo delle Bermuda — sparito.", "Fantasma dell'opera — mai visto.", "Bella addormentata — dorme da un secolo.", "Eremita modesto del bosco.", "Bagaglio dimenticato in deposito."],
+            year_hot: ["Star dei social dell'anno!", "Energetico — carico di successo.", "Carrierista — va dritto alla meta.", "Mr Popolarità — più della pizza.", "Sull'hype! Cavalca l'onda.", "Orologio svizzero — senza errori."],
+            year_cold: ["In offshore profondo.", "In maternità — si riposa.", "Partigiano in agguato.", "Ha perso le chiavi del loto.", "Assenteista — visto al bar.", "Astronauta — nessun segnale."],
+            month_hot: ["Sprinter del mese — corre!", "Il primo arrivato — già qui.", "Il preferito — fa l'occhiolino.", "In modalità Fast & Furious!", "Focaccina calda dal forno.", "Abbonamento a tutte le estrazioni."],
+            month_cold: ["Timido — si nasconde.", "In malattia — mal di gola.", "Mantiene le distanze — isolamento.", "Troppo occupato altrove.", "Fuori portata — nessun segnale.", "Turista in montagna — manda una cartolina."],
+            times: "volte"
         }
     };
 
@@ -253,14 +302,12 @@
         document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
         if (!currentMode) return;
 
-        // Основная сетка
         const list = dbStats[currentPeriod][currentMode];
         list.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
             if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
         });
 
-        // Суперчисло (Superzahl)
         const sList = (currentMode === 'hot') ? dbStats[currentPeriod].superHot : dbStats[currentPeriod].superCold; 
         const sCells = document.querySelectorAll('.super-cell');
         sList.forEach(sn => {
@@ -270,10 +317,27 @@
 
     function showCellInfo(n, isSuper = false) {
         if (!currentMode) return;
-        const freq = dbStats[currentPeriod].freq[n] || (isSuper ? "VIP" : "5x");
-        const label = currentMode === 'hot' ? dict[currentLang].info_h : dict[currentLang].info_c;
-        tg.showScanQrPopup({ text: `${isSuper ? 'Superzahl' : 'Zahl'} ${n}: ${label} ${freq}` });
-        setTimeout(() => tg.closeScanQrPopup(), 2000);
+        
+        const stats = dbStats[currentPeriod];
+        const list = stats[currentMode];
+        const index = list.indexOf(n);
+        
+        if (index !== -1) {
+            const langData = humorDict[currentLang] || humorDict['de'];
+            const periodKey = `${currentPeriod}_${currentMode}`;
+            const funnyText = langData[periodKey][index];
+            const count = stats.freq[n];
+            const timesLabel = langData.times;
+
+            tg.showScanQrPopup({ 
+                text: `${isSuper ? 'Superzahl' : 'Zahl'} ${n}\n\n${funnyText}\n(${count} ${timesLabel})` 
+            });
+        } else {
+            const freq = stats.freq[n] || "5";
+            const label = currentMode === 'hot' ? dict[currentLang].info_h : dict[currentLang].info_c;
+            tg.showScanQrPopup({ text: `${isSuper ? 'Superzahl' : 'Zahl'} ${n}: ${label} ${freq}` });
+        }
+        setTimeout(() => tg.closeScanQrPopup(), 3000);
     }
 
     function randomFill() {
@@ -394,6 +458,7 @@
     window.onload = runIntro;
 
     function setTheme(t) {
+        document.body.className = 'theme-' + t;
         const colors = {
             gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
             lime:   ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
@@ -401,10 +466,6 @@
             cyan:   ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
             cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
         };
-        
-        // Устанавливаем класс темы на body для золотых цифр в cherry
-        document.body.className = 'theme-' + t;
-
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
         root.style.setProperty('--cell-text', colors[t][0]);
