@@ -67,20 +67,19 @@
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
         .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
 
-        .stat-btn { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 9px; cursor: pointer; transition: 0.3s; }
+        .stat-btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; cursor: pointer; transition: 0.3s; }
         .stat-btn.active-period { background: var(--main-color); color: #000; }
 
-        /* HEATMAP STYLES */
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; border-radius: 50%; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; border-radius: 50%; position: relative; }
         .cell.selected { background: var(--main-gradient) !important; color: #000 !important; opacity: 1 !important; }
         .cell.hot { color: var(--hot-color) !important; text-shadow: 0 0 8px rgba(255, 69, 0, 0.6); }
         .cell.cold { color: var(--cold-color) !important; opacity: 0.6; }
-
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         
-        /* SMART PICK PANEL */
-        .smart-pick-panel { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .smart-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: var(--main-color); font-size: 10px; font-weight: bold; cursor: pointer; }
+        /* Панель управления внизу */
+        .smart-control-panel { background: rgba(0,0,0,0.6); margin: 20px 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.2); }
+        .smart-pick-panel { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+        .smart-btn { padding: 10px 15px; border-radius: 8px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.8); color: var(--main-color); font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; }
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
         .super-grid { display: flex; justify-content: center; gap: 10px; }
@@ -111,23 +110,14 @@
     </div>
 
     <div class="penthouse-header">
-        <div id="p-name" style="font-size: 18px; color: var(--main-color); font-weight: 900; letter-spacing: 1px;">GLÜCKS-PENTHOUSE</div>
-        <div id="p-sub" style="font-size: 9px; color: #fff; margin-bottom: 0;">Wo Ihre zukünftigen Millionen leben</div>
+        <div id="p-name">GLÜCKS-PENTHOUSE</div>
+        <div id="p-sub">Wo Millionen leben</div>
     </div>
 
     <div class="rooms-tabs">
-        <span id="t1" style="color: var(--main-color); font-size: 9px; font-weight: bold;">AKTIEN-TRESOR</span>
-        <span id="t2" style="color: #fff; font-size: 9px; font-weight: bold;">WEINKELLER</span>
-        <span id="t3" style="color: #fff; font-size: 9px; font-weight: bold;">ZIGARRENZIMMER</span>
-    </div>
-
-    <div id="sim-panel" style="margin-bottom: 15px;">
-        <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
-            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">MONAT</button>
-            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">JAHR</button>
-            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ALLZEIT</button>
-        </div>
-        <div id="stat-info" style="font-size: 10px; color: #aaa; min-height: 12px; font-style: italic; padding: 0 15px;">Wählen Sie eine Zahl...</div>
+        <span id="t1">AKTIEN-TRESOR</span>
+        <span id="t2">WEINKELLER</span>
+        <span id="t3">ZIGARRENZIMMER</span>
     </div>
 
     <div class="balance-container">
@@ -139,10 +129,18 @@
 
     <div class="grid" id="main-grid"></div>
 
-    <div class="smart-pick-panel">
-        <button class="smart-btn" id="sm-hot" onclick="smartPick('hot')">🔥 HOT</button>
-        <button class="smart-btn" id="sm-cold" onclick="smartPick('cold')">❄️ COLD</button>
-        <button class="smart-btn" id="sm-rand" onclick="smartPick('rand')">🎲 RANDOM</button>
+    <div class="smart-control-panel">
+        <div style="display: flex; justify-content: center; gap: 8px;">
+            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">MONAT</button>
+            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">JAHR</button>
+            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ALLZEIT</button>
+        </div>
+        <div id="stat-info" style="font-size: 11px; color: #aaa; margin-top: 10px; min-height: 14px; font-style: italic;">Wählen Sie eine Zahl...</div>
+        <div class="smart-pick-panel">
+            <button class="smart-btn" onclick="smartPick('hot')">🔥 HOT</button>
+            <button class="smart-btn" onclick="smartPick('cold')">❄️ COLD</button>
+            <button class="smart-btn" onclick="smartPick('rand')">🎲 RANDOM</button>
+        </div>
     </div>
 
     <div id="l-super" class="super-title">SUPERZAHL</div>
@@ -172,7 +170,7 @@
     let currentPeriod = 'm';
     let lastNum = null;
 
-    // Расширенная статистика для Heatmap
+    // Статистика для движка VCHF
     const statsData = {
         m: { 1:2, 5:12, 12:8, 19:15, 24:7, 33:10, 41:9, 7:1, 15:2, 30:3 },
         y: { 1:20, 5:142, 12:120, 19:156, 24:101, 33:110, 41:98, 7:15, 15:40, 30:33 },
@@ -180,11 +178,11 @@
     };
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ВИННЫЙ ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", desc: (n, c) => `Число ${n} выпадало ${c} раз.` },
-        ua: { btn: "ПІДТВЕРДИТІ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ВИННИЙ ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "AKTIEN-TRESOR", t2: "WEINKELLER", t3: "ZIGARRENZIMMER", m: "MONAT", y: "JAHR", a: "ALLZEIT", desc: (n, c) => `Zahl ${n} erschien ${c} Mal.` },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", desc: (n, c) => `Numéro ${n} est sorti ${c} fois.` },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi millions qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ВИННЫЙ ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", history: "Инфо о числе", desc: (n, c) => `Число ${n} выпадало ${c} раз.` },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ВИННИЙ ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", history: "Інфо про число", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "AKTIEN-TRESOR", t2: "WEINKELLER", t3: "ZIGARRENZIMMER", m: "MONAT", y: "JAHR", a: "ALLZEIT", history: "Zahlen-Info", desc: (n, c) => `Zahl ${n} erschien ${c} Mal.` },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", history: "Info nombre", desc: (n, c) => `Numéro ${n} est sorti ${c} fois.` },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi millions qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", history: "Info numero", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
     };
 
     function updateHeatmap() {
@@ -203,25 +201,17 @@
         }
     }
 
-    function smartPick(type) {
-        selected = [];
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        const data = statsData[currentPeriod];
-        let indices = Array.from({length: 42}, (_, i) => i + 1);
-
-        if(type === 'hot') indices.sort((a,b) => (data[b]||0) - (data[a]||0));
-        else if(type === 'cold') indices.sort((a,b) => (data[a]||0) - (data[b]||0));
-        else indices.sort(() => Math.random() - 0.5);
-
-        selected = indices.slice(0, 6);
-        selected.forEach(num => document.getElementById(`cell-${num}`).classList.add('selected'));
-        
-        superNum = Math.floor(Math.random() * 6) + 1;
-        document.querySelectorAll('.super-cell').forEach(sc => {
-            sc.classList.remove('selected');
-            if(parseInt(sc.innerText) === superNum) sc.classList.add('selected');
+    function initLongPress(element, num) {
+        let timer;
+        element.addEventListener('touchstart', (e) => {
+            timer = setTimeout(() => {
+                const count = statsData[currentPeriod][num] || 0;
+                tg.showAlert(`${dict[currentLang].history} ${num}:\n${dict[currentLang].desc(num, count)}`);
+                tg.HapticFeedback.notificationOccurred('warning');
+            }, 800);
         });
-        tg.HapticFeedback.impactOccurred('medium');
+        element.addEventListener('touchend', () => clearTimeout(timer));
+        element.addEventListener('touchmove', () => clearTimeout(timer));
     }
 
     function setPeriod(p) {
@@ -239,7 +229,6 @@
         document.getElementById('stat-info').innerText = dict[currentLang].desc(n, count);
     }
 
-    // Инициализация сетки и логики (остальное без изменений)
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
@@ -249,6 +238,7 @@
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
+        initLongPress(c, i);
         gridDiv.appendChild(c);
     }
 
@@ -261,6 +251,21 @@
             superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
         sGridDiv.appendChild(sc);
+    }
+
+    function smartPick(type) {
+        selected = [];
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+        const data = statsData[currentPeriod];
+        let indices = Array.from({length: 42}, (_, i) => i + 1);
+
+        if(type === 'hot') indices.sort((a,b) => (data[b]||0) - (data[a]||0));
+        else if(type === 'cold') indices.sort((a,b) => (data[a]||0) - (data[b]||0));
+        else indices.sort(() => Math.random() - 0.5);
+
+        selected = indices.slice(0, 6);
+        selected.forEach(num => document.getElementById(`cell-${num}`).classList.add('selected'));
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function setLang(l) {
