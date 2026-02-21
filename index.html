@@ -18,78 +18,54 @@
             background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; color: #fff; 
             font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow: hidden; 
+            text-align: center; margin: 0; overflow-x: hidden; 
         }
 
-        #intro-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000 url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; z-index: 20000; 
-            display: flex; justify-content: center; align-items: center;
-        }
+        /* Интро-заставка */
+        #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-top: 15px; }
+        #app-content { display: none; opacity: 0; transition: 1s ease; padding-top: 15px; height: 100vh; overflow-y: auto; }
         
+        /* Выбор языка */
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
-        .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.6; transition: 0.3s; }
-        .lang-btn.active-lang { opacity: 1; transform: scale(1.2); }
+        .lang-btn { font-size: 24px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
 
-        .penthouse-header {
-            background: #000000;
-            border: 1px solid var(--main-color);
-            border-radius: 12px;
-            padding: 12px;
-            margin: 0 15px 15px;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-        }
+        /* Шапка Пентхауса */
+        .penthouse-header { border: 1px solid var(--main-color); border-radius: 12px; padding: 12px; margin: 0 15px 15px; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+        .rooms-tabs { display: flex; justify-content: space-around; margin: 0 15px 10px; padding: 8px; border-bottom: 1px solid var(--main-color); font-size: 9px; font-weight: bold; }
 
-        .rooms-tabs {
-            background: rgba(0, 0, 0, 0.7); 
-            display: flex; 
-            justify-content: space-around; 
-            margin: 0 15px 10px; 
-            padding: 8px 5px; 
-            border-bottom: 1px solid var(--main-color);
-            border-radius: 8px;
-        }
-
-        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(20, 20, 20, 0.85); border: 1.5px solid var(--main-color); 
-        }
-        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
-
-        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
-        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
-
-        .stat-btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; cursor: pointer; transition: 0.3s; }
-        .stat-btn.active-period { background: var(--main-color); color: #000; }
-
+        /* Сетка чисел */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.3s; cursor: pointer; border-radius: 50%; position: relative; }
-        .cell.selected { background: var(--main-gradient) !important; color: #000 !important; opacity: 1 !important; }
-        .cell.hot { color: var(--hot-color) !important; text-shadow: 0 0 8px rgba(255, 69, 0, 0.6); }
-        .cell.cold { color: var(--cold-color) !important; opacity: 0.6; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; border-radius: 50%; position: relative; }
+        .cell.selected { background: var(--main-gradient) !important; color: #000 !important; box-shadow: 0 0 15px var(--main-color); }
         
-        /* Панель управления внизу */
-        .smart-control-panel { background: rgba(0,0,0,0.6); margin: 20px 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.2); }
-        .smart-pick-panel { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
-        .smart-btn { padding: 10px 15px; border-radius: 8px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.8); color: var(--main-color); font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; }
+        /* Подсветка VCHF */
+        .cell.highlight-hot { color: var(--hot-color) !important; text-shadow: 0 0 12px var(--hot-color); transform: scale(1.1); }
+        .cell.highlight-cold { color: var(--cold-color) !important; text-shadow: 0 0 12px var(--cold-color); transform: scale(0.9); opacity: 0.8; }
+        .cell.shuffle { background: rgba(212, 175, 55, 0.3); transform: scale(1.1); }
 
-        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
-        .super-grid { display: flex; justify-content: center; gap: 10px; }
-        .super-cell { width: 42px; height: 42px; border: 2px solid var(--cell-text); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: bold; cursor: pointer; }
-        .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
+        /* Нижняя панель */
+        .smart-control-panel { background: rgba(0,0,0,0.85); margin: 20px 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); }
+        .stat-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--main-color); background: transparent; color: #fff; font-size: 10px; cursor: pointer; }
+        .stat-btn.active-period { background: var(--main-color); color: #000; }
+        .smart-btn { padding: 10px; border-radius: 8px; border: 1px solid var(--main-color); background: #000; color: var(--main-color); font-size: 11px; flex: 1; font-weight: bold; cursor: pointer; }
 
+        /* Бонусные числа */
+        .super-cell { width: 40px; height: 40px; border: 2px solid var(--main-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--main-color); font-weight: bold; cursor: pointer; }
+        .super-cell.selected { background: var(--main-gradient); color: #000; }
+        .super-cell.highlight-hot { border-color: var(--hot-color); color: var(--hot-color); }
+        .super-cell.highlight-cold { border-color: var(--cold-color); color: var(--cold-color); }
+
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; background: var(--main-gradient); color: #000; font-weight: bold; font-size: 18px; margin: 20px 0 40px; border: none; cursor: pointer; }
+
+        /* Темы */
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
-        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(100px); }
+        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 10px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(100px); }
         .theme-panel.open { transform: translateX(0); }
-        .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        .dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -110,42 +86,37 @@
     </div>
 
     <div class="penthouse-header">
-        <div id="p-name">GLÜCKS-PENTHOUSE</div>
-        <div id="p-sub">Wo Millionen leben</div>
+        <div id="p-name" style="color:var(--main-color); font-weight:900; font-size: 18px;">ПЕНТХАУС УДАЧИ</div>
+        <div id="p-sub" style="font-size:10px; margin-top: 4px;">Где живут твои миллионы</div>
     </div>
 
     <div class="rooms-tabs">
-        <span id="t1">AKTIEN-TRESOR</span>
-        <span id="t2">WEINKELLER</span>
-        <span id="t3">ZIGARRENZIMMER</span>
+        <span id="t1" style="color:var(--main-color)">СЕЙФ</span>
+        <span id="t2">ВИННЫЙ ПОГРЕБ</span>
+        <span id="t3">СИГАРНАЯ</span>
     </div>
-
-    <div class="balance-container">
-        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div><div class="bal-val" id="vchf-val">100.00</div></div>
-        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">REAL CHF</div><div class="bal-val">0.00</div></div>
-    </div>
-    
-    <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
 
     <div class="grid" id="main-grid"></div>
 
     <div class="smart-control-panel">
-        <div style="display: flex; justify-content: center; gap: 8px;">
-            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">MONAT</button>
-            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">JAHR</button>
-            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ALLZEIT</button>
+        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">
+            <button id="btn-m" class="stat-btn active-period" onclick="setPeriod('m')">МЕСЯЦ</button>
+            <button id="btn-y" class="stat-btn" onclick="setPeriod('y')">ГОД</button>
+            <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ВСЁ ВРЕМЯ</button>
         </div>
-        <div id="stat-info" style="font-size: 11px; color: #aaa; margin-top: 10px; min-height: 14px; font-style: italic;">Wählen Sie eine Zahl...</div>
-        <div class="smart-pick-panel">
-            <button class="smart-btn" onclick="smartPick('hot')">🔥 HOT</button>
-            <button class="smart-btn" onclick="smartPick('cold')">❄️ COLD</button>
-            <button class="smart-btn" onclick="smartPick('rand')">🎲 RANDOM</button>
+        
+        <div class="smart-pick-panel" style="display:flex; gap:8px;">
+            <button class="smart-btn" ontouchstart="highlight('hot')" ontouchend="clearHighlight()" onmousedown="highlight('hot')" onmouseup="clearHighlight()">🔥 HOT</button>
+            <button class="smart-btn" ontouchstart="highlight('cold')" ontouchend="clearHighlight()" onmousedown="highlight('cold')" onmouseup="clearHighlight()">❄️ COLD</button>
+            <button class="smart-btn" onclick="smartPickRandomWithAnim()">🎲 RANDOM</button>
         </div>
+        <div id="stat-info" style="font-size: 10px; color: #aaa; margin-top: 10px; font-style: italic;">...</div>
     </div>
 
-    <div id="l-super" class="super-title">SUPERZAHL</div>
-    <div class="super-grid" id="s-grid"></div>
-    <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+    <div id="l-super" style="color:var(--main-color); font-weight:bold; margin-bottom:10px; font-size: 14px;">БОНУСНОЕ ЧИСЛО</div>
+    <div style="display:flex; justify-content:center; gap:10px;" id="s-grid"></div>
+
+    <button class="btn-main" id="main-btn" onclick="runEngine()">ПОДТВЕРДИТЬ</button>
 </div>
 
 <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
@@ -159,121 +130,107 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.expand();
-    const root = document.documentElement;
-
-    const PREIS_PRO_TICKET = 2.50;
-    let vchfBalance = 100.00;
     let selected = [];
     let superNum = null;
     let currentLang = 'de';
     let currentPeriod = 'm';
-    let lastNum = null;
-
-    // Статистика для движка VCHF
-    const statsData = {
-        m: { 1:2, 5:12, 12:8, 19:15, 24:7, 33:10, 41:9, 7:1, 15:2, 30:3 },
-        y: { 1:20, 5:142, 12:120, 19:156, 24:101, 33:110, 41:98, 7:15, 15:40, 30:33 },
-        a: { 1:100, 5:542, 12:480, 19:610, 24:390, 33:420, 41:405, 7:80, 15:150, 30:120 }
-    };
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ВИННЫЙ ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", history: "Инфо о числе", desc: (n, c) => `Число ${n} выпадало ${c} раз.` },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ВИННИЙ ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", history: "Інфо про число", desc: (n, c) => `Число ${n} випадало ${c} разів.` },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "AKTIEN-TRESOR", t2: "WEINKELLER", t3: "ZIGARRENZIMMER", m: "MONAT", y: "JAHR", a: "ALLZEIT", history: "Zahlen-Info", desc: (n, c) => `Zahl ${n} erschien ${c} Mal.` },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", history: "Info nombre", desc: (n, c) => `Numéro ${n} est sorti ${c} fois.` },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", pN: "ATTICO FORTUNA", pS: "I tuoi millions qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", history: "Info numero", desc: (n, c) => `Numero ${n} uscito ${c} volte.` }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут твои миллионы", t1: "СЕЙФ", t2: "ВИННЫЙ ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", analysis: "АНАЛИЗ VCHF", hotMsg: "🔥 ГОРЯЧЕЕ", coldMsg: "❄️ ХОЛОДНОЕ" },
+        ua: { btn: "ПІДТВЕРДИТІ", super: "БОНУСНЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть твої мільйони", t1: "СЕЙФ", t2: "ВИННИЙ ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС", analysis: "АНАЛІЗ VCHF", hotMsg: "🔥 ГАРЯЧЕ", coldMsg: "❄️ ХОЛОДНЕ" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "AKTIEN-TRESOR", t2: "WEINKELLER", t3: "ZIGARRENZIMMER", m: "MONAT", y: "JAHR", a: "ALLZEIT", analysis: "VCHF ANALYSE", hotMsg: "🔥 HEISS", coldMsg: "❄️ KALT" },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "HISTOIRE", analysis: "ANALYSE VCHF", hotMsg: "🔥 CHAUD", coldMsg: "❄️ FROID" },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", pN: "ATTICO FORTUNA", pS: "I tuoi millions qui", t1: "CASSAFORTE", t2: "CANTINA", t3: "SALA SIGARI", m: "MESE", y: "ANNO", a: "STORIA", analysis: "ANALISI VCHF", hotMsg: "🔥 CALDO", coldMsg: "❄️ FREDDO" }
     };
 
-    function updateHeatmap() {
-        const data = statsData[currentPeriod];
-        const values = Object.values(data);
-        const max = Math.max(...values);
-        const min = Math.min(...values);
-        const range = max - min;
+    const stats = {
+        m: { hot: [5, 12, 19, 33, 41], cold: [1, 7, 15, 28, 30], sHot: 2, sCold: 5 },
+        y: { hot: [10, 18, 24, 32, 40], cold: [3, 9, 21, 35, 39], sHot: 1, sCold: 6 },
+        a: { hot: [7, 17, 26, 38, 42], cold: [2, 11, 20, 31, 36], sHot: 4, sCold: 3 }
+    };
 
-        for(let i=1; i<=42; i++) {
-            const cell = document.getElementById(`cell-${i}`);
-            const count = data[i] || 0;
-            cell.classList.remove('hot', 'cold');
-            if (count > min + range * 0.7) cell.classList.add('hot');
-            else if (count < min + range * 0.3) cell.classList.add('cold');
-        }
-    }
-
-    function initLongPress(element, num) {
+    // Создание сетки и инициализация Long Press
+    const grid = document.getElementById('main-grid');
+    for (let i = 1; i <= 42; i++) {
+        const c = document.createElement('div');
+        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        c.onclick = () => toggleSelect(i, c);
+        
         let timer;
-        element.addEventListener('touchstart', (e) => {
+        c.addEventListener('touchstart', () => {
             timer = setTimeout(() => {
-                const count = statsData[currentPeriod][num] || 0;
-                tg.showAlert(`${dict[currentLang].history} ${num}:\n${dict[currentLang].desc(num, count)}`);
+                const isHot = stats[currentPeriod].hot.includes(i);
+                const isCold = stats[currentPeriod].cold.includes(i);
+                const status = isHot ? dict[currentLang].hotMsg : (isCold ? dict[currentLang].coldMsg : "Neutral");
+                tg.showAlert(`${dict[currentLang].analysis}\nNumber: ${i}\nStatus: ${status}`);
                 tg.HapticFeedback.notificationOccurred('warning');
             }, 800);
         });
-        element.addEventListener('touchend', () => clearTimeout(timer));
-        element.addEventListener('touchmove', () => clearTimeout(timer));
+        c.addEventListener('touchend', () => clearTimeout(timer));
+        grid.appendChild(c);
     }
 
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active-period'));
-        document.getElementById('btn-' + p).classList.add('active-period');
-        updateHeatmap();
-        if(lastNum) showStat(lastNum);
+    // Бонусные числа
+    const sGrid = document.getElementById('s-grid');
+    for(let i=1; i<=6; i++) {
+        const sc = document.createElement('div');
+        sc.className = 'super-cell'; sc.id = `super-${i}`; sc.innerText = i;
+        sc.onclick = () => {
+            document.querySelectorAll('.super-cell').forEach(el => el.classList.remove('selected'));
+            superNum = i; sc.classList.add('selected');
+            tg.HapticFeedback.impactOccurred('medium');
+        };
+        sGrid.appendChild(sc);
+    }
+
+    function toggleSelect(i, el) {
+        if(selected.includes(i)) {
+            selected = selected.filter(n => n !== i);
+            el.classList.remove('selected');
+        } else if(selected.length < 6) {
+            selected.push(i);
+            el.classList.add('selected');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    function highlight(type) {
+        const data = stats[currentPeriod];
+        const targets = type === 'hot' ? data.hot : data.cold;
+        const cls = type === 'hot' ? 'highlight-hot' : 'highlight-cold';
+        targets.forEach(n => document.getElementById(`cell-${n}`).classList.add(cls));
+        document.getElementById(`super-${type==='hot'?data.sHot:data.sCold}`).classList.add(cls);
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    function showStat(n) {
-        lastNum = n;
-        const count = statsData[currentPeriod][n] || 0;
-        document.getElementById('stat-info').innerText = dict[currentLang].desc(n, count);
+    function clearHighlight() {
+        document.querySelectorAll('.cell, .super-cell').forEach(el => el.classList.remove('highlight-hot', 'highlight-cold'));
     }
 
-    const gridDiv = document.getElementById('main-grid');
-    for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('div'); 
-        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-        c.onclick = () => {
-            showStat(i);
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
-        };
-        initLongPress(c, i);
-        gridDiv.appendChild(c);
-    }
-
-    const sGridDiv = document.getElementById('s-grid');
-    for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div'); 
-        sc.className = 'super-cell'; sc.innerText = i;
-        sc.onclick = () => {
-            document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-            superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
-        };
-        sGridDiv.appendChild(sc);
-    }
-
-    function smartPick(type) {
+    function smartPickRandomWithAnim() {
         selected = [];
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        const data = statsData[currentPeriod];
-        let indices = Array.from({length: 42}, (_, i) => i + 1);
-
-        if(type === 'hot') indices.sort((a,b) => (data[b]||0) - (data[a]||0));
-        else if(type === 'cold') indices.sort((a,b) => (data[a]||0) - (data[b]||0));
-        else indices.sort(() => Math.random() - 0.5);
-
-        selected = indices.slice(0, 6);
-        selected.forEach(num => document.getElementById(`cell-${num}`).classList.add('selected'));
-        tg.HapticFeedback.impactOccurred('medium');
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected', 'shuffle'));
+        let count = 0;
+        const itv = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('shuffle'));
+            for(let i=0; i<6; i++) document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`).classList.add('shuffle');
+            tg.HapticFeedback.impactOccurred('light');
+            if(++count > 12) {
+                clearInterval(itv);
+                document.querySelectorAll('.cell').forEach(c => c.classList.remove('shuffle'));
+                while(selected.length < 6) {
+                    let r = Math.floor(Math.random()*42)+1;
+                    if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
+                }
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }, 80);
     }
 
     function setLang(l) {
-        currentLang = l;
-        const d = dict[l];
+        currentLang = dict[l] ? l : 'de';
+        const d = dict[currentLang];
         document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('topup-btn').innerText = d.topup;
         document.getElementById('p-name').innerText = d.pN;
         document.getElementById('p-sub').innerText = d.pS;
         document.getElementById('t1').innerText = d.t1;
@@ -282,58 +239,54 @@
         document.getElementById('btn-m').innerText = d.m;
         document.getElementById('btn-y').innerText = d.y;
         document.getElementById('btn-a').innerText = d.a;
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active-lang'));
-        document.getElementById('l-' + l).classList.add('active-lang');
+        document.getElementById('l-super').innerText = d.super;
+        document.querySelectorAll('.lang-btn').forEach(b => b.style.opacity = '0.5');
+        document.getElementById('l-' + currentLang).style.opacity = '1';
     }
 
     function setTheme(t) {
-        const colors = {
+        const themes = {
             gold: ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
             lime: ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
             silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)'],
             cyan: ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
             cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
         };
-        root.style.setProperty('--main-color', colors[t][0]);
-        root.style.setProperty('--main-gradient', colors[t][1]);
-        root.style.setProperty('--cell-text', colors[t][0]);
+        document.documentElement.style.setProperty('--main-color', themes[t][0]);
+        document.documentElement.style.setProperty('--main-gradient', themes[t][1]);
+        document.documentElement.style.setProperty('--cell-text', themes[t][0]);
         document.querySelector('.theme-panel').classList.remove('open');
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function runIntro() {
-        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
-        steps.forEach(st => {
-            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
+    function setPeriod(p) {
+        currentPeriod = p;
+        document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active-period'));
+        document.getElementById('btn-' + p).classList.add('active-period');
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    window.onload = () => {
+        // Автоопределение языка
+        const userLang = (tg.initDataUnsafe?.user?.language_code || 'de').substring(0, 2).toLowerCase();
+        setLang(userLang);
+
+        // Интро-запуск
+        const steps = ['intro1', 'intro2', 'intro3'];
+        steps.forEach((id, i) => {
+            setTimeout(() => document.getElementById(id).classList.add('active'), i * 2200);
+            setTimeout(() => document.getElementById(id).style.opacity = '0', (i + 1) * 2100);
         });
         setTimeout(() => {
-            document.getElementById('intro-container').style.display='none';
-            const app = document.getElementById('app-content');
-            app.style.display='block';
-            setTimeout(() => { app.style.opacity='1'; updateHeatmap(); }, 50);
-        }, 7500);
-    }
-    window.onload = runIntro;
+            document.getElementById('intro-container').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+        }, 6800);
+    };
 
     function runEngine() {
-        if (selected.length !== 6 || !superNum) {
-            tg.showAlert("Заполните билет!"); return;
-        }
-        tg.showPopup({
-            title: 'Spielmodus / Режим игры',
-            message: 'Wählen Sie VCHF Simulation oder Real CHF Participation.',
-            buttons: [{id: 'vchf', type: 'default', text: 'VCHF SIM'}, {id: 'real', type: 'default', text: 'REAL CHF'}, {id: 'cancel', type: 'destructive', text: 'Cancel'}]
-        }, (id) => {
-            if(id === 'vchf') {
-                if (vchfBalance >= PREIS_PRO_TICKET) {
-                    vchfBalance -= PREIS_PRO_TICKET;
-                    document.getElementById('vchf-val').innerText = vchfBalance.toFixed(2);
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert("VCHF Ticket Fixiert!");
-                } else { tg.showAlert("Недостаточно VCHF!"); }
-            }
-        });
+        if(selected.length < 6 || !superNum) tg.showAlert("Error: Ticket incomplete!");
+        else tg.showAlert(`VCHF OK!\nNumbers: ${selected.sort((a,b)=>a-b).join(', ')}\nSuper: ${superNum}`);
     }
 </script>
 </body>
