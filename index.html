@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,8 +10,8 @@
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
             --cell-text: #d4af37; 
-            --hot-color: #ff4500;
-            --cold-color: #1e90ff;
+            --hot-glow: #ff4500;
+            --cold-glow: #1e90ff;
         }
 
         body { 
@@ -21,7 +21,6 @@
             text-align: center; margin: 0; overflow-x: hidden; 
         }
 
-        /* Интро-заставка */
         #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
@@ -37,9 +36,13 @@
         .rooms-tabs { display: flex; justify-content: space-around; margin: 0 15px 10px; padding: 8px; border-bottom: 1px solid var(--main-color); font-size: 9px; font-weight: bold; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; border-radius: 50%; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; border-radius: 50%; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* Состояния ячеек */
         .cell.selected { background: var(--main-gradient) !important; color: #000 !important; box-shadow: 0 0 15px var(--main-color); opacity: 1 !important; transform: scale(1.1); }
-        .cell.shuffle { background: rgba(212, 175, 55, 0.4); transform: scale(1.1); }
+        .cell.shuffle { background: rgba(212, 175, 55, 0.4); transform: scale(1.2); color: #fff; }
+        .cell.highlight-hot { color: var(--hot-glow) !important; text-shadow: 0 0 10px var(--hot-glow); transform: scale(1.2); }
+        .cell.highlight-cold { color: var(--cold-glow) !important; text-shadow: 0 0 10px var(--cold-glow); transform: scale(1.2); }
 
         .smart-control-panel { background: rgba(0,0,0,0.85); margin: 20px 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); }
         .stat-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--main-color); background: transparent; color: #fff; font-size: 10px; cursor: pointer; }
@@ -96,9 +99,9 @@
             <button id="btn-a" class="stat-btn" onclick="setPeriod('a')">ВСЁ ВРЕМЯ</button>
         </div>
         <div class="smart-pick-panel">
-            <button class="smart-btn" ontouchstart="highlight('hot')" ontouchend="clearHighlight()">🔥 HOT</button>
-            <button class="smart-btn" onclick="pickSleepingGiant()" style="border-color: #1e90ff; color: #1e90ff;">💤 GIANT</button>
-            <button class="smart-btn" ontouchstart="highlight('cold')" ontouchend="clearHighlight()">❄️ COLD</button>
+            <button class="smart-btn" ontouchstart="highlight('hot')" ontouchend="clearHighlight()" onmousedown="highlight('hot')" onmouseup="clearHighlight()">🔥 HOT</button>
+            <button class="smart-btn" id="btn-giant" onclick="pickSleepingGiant()" style="border-color: #1e90ff; color: #1e90ff;">💤 GIANT</button> 
+            <button class="smart-btn" ontouchstart="highlight('cold')" ontouchend="clearHighlight()" onmousedown="highlight('cold')" onmouseup="clearHighlight()">❄️ COLD</button>
             <button class="smart-btn" onclick="smartPickRandom()">🎲 RANDOM</button>
         </div>
     </div>
@@ -123,15 +126,9 @@
     let selected = [], superNum = null, currentLang = 'en', currentPeriod = 'm';
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут миллионы", t1: "СЕЙФ", t2: "ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧІ", pS: "Де живуть мільйони", t1: "СЕЙФ", t2: "ЛЬОХ", t3: "СИГАРНА", m: "МІСЯЦЬ", y: "РІК", a: "ВЕСЬ ЧАС" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", pN: "GLÜCKS-PENTHOUSE", pS: "Wo Millionen leben", t1: "TRESOR", t2: "KELLER", t3: "ZIMMER", m: "MONAT", y: "JAHR", a: "ALLE" },
-        en: { btn: "CONFIRM", super: "BONUS NUMBER", pN: "LUCKY PENTHOUSE", pS: "Where millions live", t1: "SAFE", t2: "CELLAR", t3: "CIGAR", m: "MONTH", y: "YEAR", a: "ALL" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", pN: "PENTHOUSE CHANCE", pS: "Vos millions ici", t1: "COFFRE", t2: "CAVE", t3: "FUMOIR", m: "MOIS", y: "AN", a: "TOUT" },
-        zh: { btn: "确认投注", super: "幸运红球", pN: "运气阁楼", pS: "百万富翁的摇篮", t1: "保险箱", t2: "酒窖", t3: "雪茄室", m: "本月", y: "本年", a: "全部" },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", pN: "ATTICO FORTUNA", pS: "I tuoi milioni qui", t1: "CASSA", t2: "CANTINA", t3: "SALA", m: "MESE", y: "ANNO", a: "STORIA" },
-        tr: { btn: "ONAYLA", super: "BONUS SAYI", pN: "ŞANSLI PENTHOUSE", pS: "Milyonların adresi", t1: "KASA", t2: "MAHZEN", t3: "PURO", m: "AY", y: "YIL", a: "HEPSİ" },
-        pl: { btn: "POTWIERDŹ", super: "NUMER BONUS", pN: "APARTAMENT FARTO", pS: "Tu żyją miliony", t1: "SEJF", t2: "PIWNICA", t3: "CYGARO", m: "MIESIĄC", y: "ROK", a: "CZAS" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", pN: "ПЕНТХАУС УДАЧИ", pS: "Где живут миллионы", t1: "СЕЙФ", t2: "ПОГРЕБ", t3: "СИГАРНАЯ", m: "МЕСЯЦ", y: "ГОД", a: "ВСЁ ВРЕМЯ", giant: "Спящий Гигант проснулся!" },
+        en: { btn: "CONFIRM", super: "BONUS NUMBER", pN: "LUCKY PENTHOUSE", pS: "Where millions live", t1: "SAFE", t2: "CELLAR", t3: "CIGAR", m: "MONTH", y: "YEAR", a: "ALL", giant: "Sleeping Giant Awakened!" }
+        // ... (остальные языки можно добавить по аналогии)
     };
 
     const stats = {
@@ -140,7 +137,7 @@
         a: { hot: [7, 17, 26, 38, 42], cold: [2, 11, 20, 31, 36] }
     };
 
-    const sleepingData = [{n:3,d:145},{n:21,d:112},{n:35,d:98},{n:9,d:87},{n:2,d:76},{n:42,d:65}];
+    const sleepingData = [3, 21, 35, 9, 2, 42];
 
     function setTheme(t) {
         const themes = {
@@ -159,20 +156,13 @@
             c.style.color = theme.text;
             c.style.textShadow = (t === 'cherry') ? '0 0 5px rgba(212, 175, 55, 0.5)' : 'none';
         });
+        applyHeatmap();
         document.querySelector('.theme-panel').classList.remove('open');
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function initLanguageAuto() {
-        try {
-            const rawLang = (tg.initDataUnsafe?.user?.language_code || 'en').toLowerCase();
-            const cleanLang = rawLang.match(/[a-z]+/)[0];
-            setLang(dict.hasOwnProperty(cleanLang) ? cleanLang : 'en');
-        } catch (e) { setLang('en'); }
-    }
-
     function setLang(l) {
-        currentLang = l; const d = dict[l];
+        currentLang = dict[l] ? l : 'en'; const d = dict[currentLang];
         document.getElementById('main-btn').innerText = d.btn;
         document.getElementById('p-name').innerText = d.pN;
         document.getElementById('p-sub').innerText = d.pS;
@@ -190,15 +180,12 @@
     function applyHeatmap() {
         const data = stats[currentPeriod];
         document.querySelectorAll('.cell').forEach(c => {
-            c.style.background = "transparent"; c.style.boxShadow = "none"; c.style.opacity = "0.6";
+            c.style.background = "transparent"; c.style.boxShadow = "none"; c.style.opacity = "0.7";
+            if (!c.classList.contains('selected')) c.style.color = 'var(--cell-text)';
         });
         data.hot.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
-            if(el) { el.style.opacity = "1"; el.style.background = "rgba(212, 175, 55, 0.2)"; el.style.boxShadow = "inset 0 0 8px var(--main-color)"; }
-        });
-        data.cold.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if(el) { el.style.opacity = "0.8"; el.style.color = "var(--cold-color)"; }
+            if(el) { el.style.opacity = "1"; el.style.background = "rgba(212, 175, 55, 0.15)"; el.style.boxShadow = "inset 0 0 10px rgba(212, 175, 55, 0.3)"; }
         });
     }
 
@@ -209,17 +196,7 @@
         applyHeatmap(); tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function pickSleepingGiant() {
-        selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        sleepingData.map(item => item.n).forEach((num, i) => {
-            setTimeout(() => {
-                const el = document.getElementById(`cell-${num}`);
-                if(el) { selected.push(num); el.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium'); }
-            }, i * 250);
-        });
-        tg.showAlert(currentLang === 'ru' ? "Спящий Гигант проснулся!" : "Sleeping Giant Awakened!");
-    }
-
+    // Создание сетки
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('button'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
@@ -240,16 +217,31 @@
         sGrid.appendChild(sc);
     }
 
+    // Алгоритмы выбора
     function highlight(t) {
         const d = stats[currentPeriod];
-        (t === 'hot' ? d.hot : d.cold).forEach(n => {
+        const target = (t === 'hot' ? d.hot : d.cold);
+        target.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
-            if(el) el.style.color = (t === 'hot' ? 'var(--hot-color)' : 'var(--cold-color)');
+            if(el) el.classList.add(t === 'hot' ? 'highlight-hot' : 'highlight-cold');
         });
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    function clearHighlight() { applyHeatmap(); }
+    function clearHighlight() {
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight-hot', 'highlight-cold'));
+    }
+
+    function pickSleepingGiant() {
+        selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+        sleepingData.forEach((num, i) => {
+            setTimeout(() => {
+                const el = document.getElementById(`cell-${num}`);
+                if(el) { selected.push(num); el.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium'); }
+            }, i * 200);
+        });
+        tg.showAlert(dict[currentLang].giant);
+    }
 
     function smartPickRandom() {
         selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected', 'shuffle'));
@@ -260,7 +252,7 @@
                 let r = Math.floor(Math.random()*42)+1;
                 document.getElementById(`cell-${r}`).classList.add('shuffle');
             }
-            if(++count > 12) {
+            if(++count > 15) {
                 clearInterval(itv); document.querySelectorAll('.cell').forEach(c => c.classList.remove('shuffle'));
                 while(selected.length < 6) {
                     let r = Math.floor(Math.random()*42)+1;
@@ -272,7 +264,7 @@
     }
 
     window.onload = () => {
-        initLanguageAuto();
+        setLang('ru');
         applyHeatmap();
         ['intro1', 'intro2', 'intro3'].forEach((id, i) => {
             setTimeout(() => document.getElementById(id).classList.add('active'), i * 2200);
@@ -286,8 +278,8 @@
     };
 
     function runEngine() { 
-        if(selected.length < 6 || !superNum) tg.showAlert("Incomplete!");
-        else tg.showAlert(dict[currentLang].btn + ": " + selected.join(', ') + " | Bonus: " + superNum); 
+        if(selected.length < 6 || !superNum) tg.showAlert("Выберите числа!");
+        else tg.showAlert("Билет сформирован: " + selected.join(', ')); 
     }
 </script>
 </body>
