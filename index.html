@@ -39,11 +39,15 @@
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
         .lang-btn { font-size: 24px; cursor: pointer; }
 
+        /* БАЛАНС С ПЕРЕКЛЮЧЕНИЕМ */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(20, 20, 20, 0.85); border: 1.5px solid var(--main-color); 
+            background: rgba(20, 20, 20, 0.85); border: 1.5px solid #444; 
+            transition: 0.3s; cursor: pointer;
         }
+        /* Подсветка активной валюты */
+        .bal-card.active-wallet { border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
@@ -64,7 +68,6 @@
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; position: relative; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
-        
         .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 12px var(--process-color); transition: none; }
 
         /* Цвета статистики */
@@ -116,8 +119,14 @@
     </div>
 
     <div class="balance-container">
-        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div><div class="bal-val" id="vchf-val">100.00</div></div>
-        <div class="bal-card"><div style="font-size:10px; color:var(--main-color)">REAL CHF</div><div class="bal-val">0.00</div></div>
+        <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+            <div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div>
+            <div class="bal-val" id="vchf-val">100.00</div>
+        </div>
+        <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+            <div style="font-size:10px; color:var(--main-color)">REAL CHF</div>
+            <div class="bal-val" id="chf-val">0.00</div>
+        </div>
     </div>
     
     <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
@@ -138,7 +147,7 @@
             <span id="ticket-count" style="font-size: 18px; font-weight: bold;">1</span>
             <button class="btn-round" onclick="updateTicketCount(1)">+</button>
         </div>
-        <div style="font-size: 12px; color: #aaa;">TOTAL: <span id="total-price" style="color:#fff">2.50</span> CHF</div>
+        <div style="font-size: 12px; color: #aaa;">TOTAL: <span id="total-price" style="color:#fff">2.50</span> <span id="currency-label">VCHF</span></div>
     </div>
 
     <div class="grid" id="main-grid"></div>
@@ -154,15 +163,15 @@
 
     const PREIS_PRO_TICKET = 2.50;
     let vchfBalance = 100.00;
+    let chfBalance = 0.00; // Реальный баланс
     let ticketCount = 1;
     let selected = [];
     let superNum = null;
-    let warningsShown = 0;
+    let activeCurrency = 'VCHF'; // По умолчанию виртуальная
     let isProcessing = false;
-    let currentMode = null; // 'hot' or 'cold'
+    let currentMode = null; 
     let currentPeriod = 'month';
 
-    // РЕАЛЬНАЯ СТАТИСТИКА (Имитация БД)
     const dbStats = {
         month: { hot: [5, 12, 19, 41], cold: [2, 27, 39], freq: {5: "14x", 12: "11x", 19: "9x", 41: "8x", 2: "1x", 27: "0x", 39: "1x"} },
         year:  { hot: [7, 24, 33, 42], cold: [8, 15, 30], freq: {7: "84x", 24: "79x", 33: "72x", 42: "70x", 8: "12x", 15: "10x", 30: "9x"} },
@@ -177,6 +186,15 @@
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", hot: "CALDO", cold: "FREDDO", month: "MESE", year: "ANNO", all: "TOTALE", info_h: "Apparso:", info_c: "Manca da:", alert: "Completa il biglietto!" }
     };
     let currentLang = 'de';
+
+    // ПЕРЕКЛЮЧЕНИЕ ВАЛЮТЫ
+    function switchCurrency(type) {
+        activeCurrency = type;
+        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
+        document.getElementById('currency-label').innerText = type;
+        tg.HapticFeedback.impactOccurred('medium');
+    }
 
     function setLang(l) {
         currentLang = l;
@@ -217,7 +235,6 @@
     function refreshGrid() {
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
         if (!currentMode) return;
-
         const list = dbStats[currentPeriod][currentMode];
         list.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
@@ -230,12 +247,11 @@
         const freq = dbStats[currentPeriod].freq[n];
         if (freq) {
             const label = currentMode === 'hot' ? dict[currentLang].info_h : dict[currentLang].info_c;
-            tg.showScanQrPopup({ text: `Zahl ${n}: ${label} ${freq}` }); // Хак для показа инфо через UI
+            tg.showScanQrPopup({ text: `Zahl ${n}: ${label} ${freq}` });
             setTimeout(() => tg.closeScanQrPopup(), 2000);
         }
     }
 
-    // ЛОГИКА РАНДОМА (ОСТАВЛЯЕМ ТВОЮ ЛЮБИМУЮ)
     function randomFill() {
         if (isProcessing) return;
         isProcessing = true;
@@ -280,7 +296,40 @@
         step();
     }
 
-    // ИНИЦИАЛИЗАЦИЯ СЕТКИ
+    // ЛОГИКА ОПЛАТЫ С УЧЕТОМ ВАЛЮТЫ
+    function runEngine() {
+        if (selected.length !== 6 || !superNum) {
+            tg.showAlert(dict[currentLang].alert);
+            return;
+        }
+
+        let total = ticketCount * PREIS_PRO_TICKET;
+        let balance = (activeCurrency === 'VCHF') ? vchfBalance : chfBalance;
+
+        if (balance >= total) {
+            if (activeCurrency === 'VCHF') {
+                vchfBalance -= total;
+                document.getElementById('vchf-val').innerText = vchfBalance.toFixed(2);
+            } else {
+                chfBalance -= total;
+                document.getElementById('chf-val').innerText = chfBalance.toFixed(2);
+            }
+            
+            document.getElementById('app-content').style.pointerEvents = 'none';
+            const btn = document.getElementById('main-btn');
+            btn.disabled = true;
+            btn.innerText = "FIXIERT (19:15)";
+            btn.style.background = "#444";
+            
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert(`Ticket fixiert via ${activeCurrency}!`);
+            tg.sendData(JSON.stringify({selected, superNum, ticketCount, currency: activeCurrency}));
+        } else {
+            tg.showAlert(`Insufficient ${activeCurrency} balance!`);
+        }
+    }
+
+    // ИНИЦИАЛИЗАЦИЯ
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
@@ -323,27 +372,6 @@
     }
     window.onload = runIntro;
 
-    function runEngine() {
-        if (selected.length !== 6 || !superNum) {
-            tg.showAlert(dict[currentLang].alert);
-            return;
-        }
-        // ... остальная логика подтверждения (баланс и т.д.) без изменений
-        let total = ticketCount * PREIS_PRO_TICKET;
-        if (vchfBalance >= total) {
-            vchfBalance -= total;
-            document.getElementById('vchf-val').innerText = vchfBalance.toFixed(2);
-            document.getElementById('app-content').style.pointerEvents = 'none';
-            const btn = document.getElementById('main-btn');
-            btn.disabled = true;
-            btn.innerText = "FIXIERT (19:15)";
-            btn.style.background = "#444";
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert(`Ticket fixiert!`);
-            tg.sendData(JSON.stringify({selected, superNum, ticketCount}));
-        }
-    }
-    
     function setTheme(t) {
         const colors = {
             gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
