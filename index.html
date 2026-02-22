@@ -44,11 +44,9 @@
 
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
         
-        /* Стили страниц */
         .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
         .page.active { display: block; }
 
-        /* Навигация */
         .nav-bar {
             position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
             background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
@@ -119,7 +117,6 @@
         .cell.is-hot { border: 2.5px solid #ff4500 !important; box-shadow: 0 0 20px #ff4500 !important; transform: scale(1.05); }
         .cell.is-cold { border: 2.5px solid #00ffff !important; box-shadow: 0 0 20px #00ffff !important; transform: scale(1.05); }
 
-        /* Билеты */
         .ticket-card {
             background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px;
             padding: 15px; margin: 0 15px 12px; text-align: left; position: relative;
@@ -178,13 +175,8 @@
 <div id="app-content">
     
     <div id="page-play" class="page active">
-        <div class="lang-panel">
-            <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
-            <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
-            <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
-            <span class="lang-btn" onclick="setLang('en')">🇺🇸</span>
-            <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
-        </div>
+        <div class="lang-panel" id="dynamic-langs">
+            </div>
 
         <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
         <div class="theme-panel">
@@ -208,11 +200,11 @@
 
         <div class="ticket-controls">
             <div class="smart-tools">
-                <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
-                <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="smartPick('hot')" id="btn-hot">🔥 HOT PICK</button>
+                <button class="tool-btn" onclick="smartPick('cold')" id="btn-cold">❄️ COLD PICK</button>
                 <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
             </div>
-            <div class="stats-period" id="stats-p-box">
+            <div class="stats-period visible" id="stats-p-box">
                 <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
                 <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
                 <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
@@ -261,7 +253,7 @@
 
     let realStatsDB = {};
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
+    let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en';
     const realPrice = 2.50;
 
     const dict = {
@@ -272,7 +264,6 @@
         fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
     };
 
-    // --- ЛОГИКА КОМНАТ ---
     function showPage(pId, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -327,7 +318,6 @@
         }
     }
 
-    // --- ЛОГИКА АВТОМАТИЗАЦИИ ---
     async function fetchOfficialStats() {
         const now = new Date();
         const lastUpdate = localStorage.getItem('vchf_last_update') || 0;
@@ -361,15 +351,10 @@
     function updateInternalStats(newNums) {
         let saved = localStorage.getItem('vchf_db');
         realStatsDB = saved ? JSON.parse(saved) : {};
-        let wasChanged = false;
         for(let i=1; i<=42; i++) if(!realStatsDB[i]) realStatsDB[i] = [0,0,0];
-        newNums.forEach(n => { if(realStatsDB[n]) { realStatsDB[n][0]++; realStatsDB[n][1]++; realStatsDB[n][2]++; wasChanged = true; } });
-        if (wasChanged) {
-            localStorage.setItem('vchf_db', JSON.stringify(realStatsDB));
-            const msg = dict[currentLang] ? dict[currentLang].status : dict['de'].status;
-            tg.showAlert(msg);
-            tg.HapticFeedback.notificationOccurred('success');
-        }
+        newNums.forEach(n => { if(realStatsDB[n]) { realStatsDB[n][0]++; realStatsDB[n][1]++; realStatsDB[n][2]++; } });
+        localStorage.setItem('vchf_db', JSON.stringify(realStatsDB));
+        tg.showAlert(dict[currentLang].status);
         refreshGrid();
     }
 
@@ -389,15 +374,28 @@
         document.getElementById('p-year').innerText = d.year;
         document.getElementById('p-all').innerText = d.all;
         document.getElementById('l-total').innerText = d.total;
-        
         document.getElementById('n-game').innerText = d.game;
         document.getElementById('n-tickets').innerText = d.tickets;
         document.getElementById('n-stats').innerText = d.stats;
         document.getElementById('l-active-tickets-title').innerText = d.activeT;
         document.getElementById('l-personal-stats-title').innerText = d.stats;
         document.getElementById('l-heatmap-desc').innerText = d.hit;
-        
         tg.HapticFeedback.selectionChanged();
+    }
+
+    // --- ГИБКИЙ SMART PICK ---
+    function smartPick(type) {
+        selected = [];
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        if (type === 'hot') { sorted.sort((a, b) => b.val - a.val); } 
+        else { sorted.sort((a, b) => a.val - b.val); }
+        selected = sorted.slice(0, 6).map(i => i.num);
+        superNum = Math.floor(Math.random() * 6) + 1;
+        refreshGrid();
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
+        tg.HapticFeedback.notificationOccurred('success');
+        sndWin.play();
     }
 
     function updateTicketCount(val) {
@@ -419,12 +417,6 @@
         document.getElementById('display-total').innerText = `${total} ${currentCurrency}`;
     }
 
-    function toggleHeatmap(type) {
-        currentMode = (currentMode === type) ? null : type;
-        document.getElementById('stats-p-box').classList.toggle('visible', currentMode !== null);
-        refreshGrid();
-    }
-
     function setPeriod(p) {
         currentPeriod = p;
         document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
@@ -434,8 +426,9 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        if(selected.includes(i)) { selected = selected.filter(n => n !== i); tg.HapticFeedback.impactOccurred('light'); }
-        else if(selected.length < 6) { selected.push(i); tg.HapticFeedback.impactOccurred('light'); }
+        if(selected.includes(i)) { selected = selected.filter(n => n !== i); }
+        else if(selected.length < 6) { selected.push(i); }
+        tg.HapticFeedback.impactOccurred('light');
         refreshGrid();
     }
 
@@ -445,17 +438,17 @@
         let hotNums = [], coldNums = [];
         const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
 
-        if (currentMode && Object.keys(realStatsDB).length > 0) {
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-            if (currentMode === 'hot') { sorted.sort((a, b) => b.val - a.val); hotNums = sorted.slice(0, 6).map(item => item.num); }
-            else { sorted.sort((a, b) => a.val - b.val); coldNums = sorted.slice(0, 6).map(item => item.num); }
-        }
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        let hSort = [...sorted].sort((a, b) => b.val - a.val);
+        let cSort = [...sorted].sort((a, b) => a.val - b.val);
+        hotNums = hSort.slice(0, 6).map(i => i.num);
+        coldNums = cSort.slice(0, 6).map(i => i.num);
 
         for (let i = 1; i <= 42; i++) {
             const c = document.createElement('div'); 
             c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            if (currentMode === 'hot' && hotNums.includes(i)) c.classList.add('is-hot');
-            if (currentMode === 'cold' && coldNums.includes(i)) c.classList.add('is-cold');
+            if (hotNums.includes(i)) c.classList.add('is-hot');
+            if (coldNums.includes(i)) c.classList.add('is-cold');
             if (selected.includes(i)) c.classList.add('selected');
             c.onclick = () => handleCellClick(i);
             grid.appendChild(c);
@@ -510,38 +503,51 @@
 
     function runEngine() {
         if(selected.length === 6 && superNum) {
-            const ticket = {
-                nums: [...selected],
-                super: superNum,
-                timestamp: new Date().toLocaleString(),
-                currency: currentCurrency
-            };
+            const ticket = { nums: [...selected], super: superNum, timestamp: new Date().toLocaleString(), currency: currentCurrency };
             myTickets.push(ticket);
             localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-            
             tg.showAlert(dict[currentLang].status + "\nTotal: " + (ticketCount * realPrice).toFixed(2) + " " + currentCurrency);
             selected = []; superNum = null; refreshGrid();
-        } else { tg.showAlert("Bitte alles ausfüllen!"); }
+        } else { tg.showAlert("Please fill everything!"); }
     }
 
     window.onload = () => {
-        setLang('de');
+        let userLang = (tg.initDataUnsafe?.user?.language_code) || navigator.language.slice(0,2);
+        const langContainer = document.getElementById('dynamic-langs');
+        
+        let buttons = {
+            ua: '<span class="lang-btn" onclick="setLang(\'ua\')">🇺🇦</span>',
+            en: '<span class="lang-btn" onclick="setLang(\'en\')">🇺🇸</span>',
+            de: '<span class="lang-btn" onclick="setLang(\'de\'); runAutoScraper();">🇩🇪</span>',
+            fr: '<span class="lang-btn" onclick="setLang(\'fr\')">🇫🇷</span>',
+            ru: '<span class="lang-btn" onclick="setLang(\'ru\')">🇷🇺</span>'
+        };
+
+        // ДИНАМИЧЕСКАЯ РОКИРОВКА (Украина и Россия всегда максимально удалены)
+        if (userLang === 'uk' || userLang === 'ua') {
+            langContainer.innerHTML = buttons.ua + buttons.en + buttons.de + buttons.fr + buttons.ru;
+            setLang('ua');
+        } else if (userLang === 'ru') {
+            langContainer.innerHTML = buttons.ru + buttons.fr + buttons.de + buttons.en + buttons.ua;
+            setLang('ru');
+        } else if (userLang === 'de') {
+            langContainer.innerHTML = buttons.ua + buttons.de + buttons.en + buttons.fr + buttons.ru;
+            setLang('de');
+        } else if (userLang === 'fr') {
+            langContainer.innerHTML = buttons.ua + buttons.fr + buttons.de + buttons.en + buttons.ru;
+            setLang('fr');
+        } else {
+            // Весь остальной мир - Английский первый
+            langContainer.innerHTML = buttons.en + buttons.de + buttons.fr + buttons.ua + buttons.ru;
+            setLang('en'); 
+        }
+
         fetchOfficialStats();
-        const steps = [
-            {id:'intro1', s:500, e:2500}, 
-            {id:'intro2', s:2600, e:4600}, 
-            {id:'intro3', s:4700, e:6700}
-        ];
+        const steps = [{id:'intro1', s:500, e:2500}, {id:'intro2', s:2600, e:4600}, {id:'intro3', s:4700, e:6700}];
         steps.forEach(st => {
             const img = document.getElementById(st.id);
-            setTimeout(() => {
-                img.classList.add('active');
-                img.style.opacity = '1';
-            }, st.s);
-            setTimeout(() => { 
-                img.style.opacity = '0'; 
-                setTimeout(() => img.style.display = 'none', 500); 
-            }, st.e);
+            setTimeout(() => { img.classList.add('active'); img.style.opacity = '1'; }, st.s);
+            setTimeout(() => { img.style.opacity = '0'; setTimeout(() => img.style.display = 'none', 500); }, st.e);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display = 'none';
