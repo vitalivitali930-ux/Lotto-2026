@@ -223,10 +223,32 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
+    // ОБЪЕДИНЕННАЯ СТРУКТУРА СТАТИСТИКИ И ЮМОРА (6х2х3)
     const dbStats = {
-        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39] },
-        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38] },
-        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40] }
+        month: { 
+            hot: [5, 12, 21, 33, 38, 41], 
+            cold: [2, 17, 24, 30, 39, 42],
+            humor: {
+                hot: "🔥 Жаркий месяц! Мамонт греется у этих цифр!",
+                cold: "❄️ Эти числа замерзли. Заяц принес им плед."
+            }
+        },
+        year:  { 
+            hot: [1, 9, 18, 22, 27, 36], 
+            cold: [6, 13, 25, 28, 31, 40],
+            humor: {
+                hot: "🏆 Чемпионы года! Трудятся не покладая лап.",
+                cold: "🛌 Сонное царство... Они всё ещё в демо-версии смерти."
+            }
+        },
+        all:   { 
+            hot: [18, 37, 42, 1, 23, 12], 
+            cold: [2, 10, 15, 26, 32, 35],
+            humor: {
+                hot: "👑 Вечные короли! Совесть проекта — честны и популярны.",
+                cold: "👻 Призраки... Редкие, как мамонт в посудной лавке."
+            }
+        }
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
@@ -274,6 +296,9 @@
     function toggleHeatmap(type) {
         currentMode = (currentMode === type) ? null : type;
         document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
+        if (currentMode) {
+            tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
+        }
         refreshGrid();
     }
 
@@ -281,6 +306,9 @@
         currentPeriod = p;
         document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`p-${p}`).classList.add('active');
+        if (currentMode) {
+             tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
+        }
         refreshGrid();
     }
 
@@ -326,7 +354,6 @@
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
         c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-        // Эффект мерцающих звезд (случайная задержка анимации)
         c.style.animationDelay = `${Math.random() * 5}s`;
         c.onclick = () => {
             sndClick.currentTime = 0; sndClick.play();
@@ -339,7 +366,6 @@
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
-        // Для супер-боллов тоже добавим дыхание
         sc.style.animationDelay = `${Math.random() * 5}s`;
         sc.onclick = () => {
             sndClick.currentTime = 0; sndClick.play();
