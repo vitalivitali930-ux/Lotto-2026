@@ -3,63 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF (Classic)</title>
+    <title>Lotto - Движок VCHF v1.8</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --cell-bg: rgba(255, 255, 255, 0.1);
+            --cell-text: #ffffff; /* ШАРЫ БЕЛЫЕ */
+            --hot-color: #ff4500;
+            --cold-color: #00ffff;
         }
 
         body { 
             background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; color: #fff; 
             font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow-x: hidden;
+            text-align: center; margin: 0; overflow-y: auto; 
         }
 
-        /* Тот самый чистый белый цвет для шаров */
-        .cell, .super-cell { 
-            color: #ffffff !important; 
-            font-weight: bold; 
-            font-size: 20px;
-            transition: transform 0.1s ease;
-        }
-
-        /* Эффект нажатия (визуальный отклик) */
-        .cell:active, .super-cell:active { transform: scale(0.9); }
-
-        .grid { 
-            display: grid; grid-template-columns: repeat(7, 1fr); 
-            gap: 12px; padding: 15px; max-width: 400px; margin: 0 auto; 
-        }
-
-        .cell { 
-            background: var(--cell-bg); border-radius: 50%; 
-            aspect-ratio: 1; display: flex; align-items: center; 
-            justify-content: center; cursor: pointer; 
-        }
-
-        .cell.selected, .super-cell.selected { 
-            background: var(--main-gradient) !important; 
-            color: #000 !important; 
-            box-shadow: 0 0 15px var(--main-color);
-        }
-
-        /* Статистика: огонь и лед */
-        .is-hot { color: #ff4500 !important; text-shadow: 0 0 8px #ff4500; }
-        .is-cold { color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
-
-        /* Остальные стили (Интро, Баланс) остаются как в v1.0 для стабильности */
+        /* Интро */
         #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
-        .intro-img { position: absolute; width: 80%; opacity: 0; }
-        .intro-img.active { animation: pop 0.6s forwards; }
-        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .intro-img { position: absolute; width: 85%; opacity: 0; }
+        .intro-img.active { animation: pop 0.7s ease-out forwards; }
+        @keyframes pop { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        #app-content { display: none; opacity: 0; transition: opacity 1s; padding-top: 15px; }
+
+        /* Кошельки */
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; opacity: 0.3; transition: 0.3s; }
+        .bal-card.active-wallet { opacity: 1; border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); }
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
+
+        /* Сетка - ШАРЫ */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: var(--cell-text); cursor: pointer; border-radius: 50%; transition: 0.2s; }
+        .cell.selected { background: var(--main-gradient); color: #000 !important; }
         
-        #app-content { display: none; padding-top: 20px; }
-        .bal-card { background: rgba(20,20,20,0.8); border: 1px solid #333; padding: 10px; border-radius: 10px; flex: 1; }
-        .active-wallet { border-color: var(--main-color); }
+        .super-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .super-cell { width: 42px; height: 42px; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; cursor: pointer; }
+        .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
+
+        /* Подсветка статистики */
+        .is-hot { color: var(--hot-color) !important; text-shadow: 0 0 10px var(--hot-color); }
+        .is-cold { color: var(--cold-color) !important; text-shadow: 0 0 10px var(--cold-color); }
+
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; background: var(--main-gradient); border: none; font-weight: bold; margin: 30px 0; }
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; }
+        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -71,9 +62,24 @@
 </div>
 
 <div id="app-content">
+    <div class="lang-panel">
+        <span onclick="setLang('ru')">🇷🇺</span><span onclick="setLang('ua')">🇺🇦</span><span onclick="setLang('de')">🇩🇪</span><span onclick="setLang('fr')">🇫🇷</span><span onclick="setLang('it')">🇮🇹</span>
+    </div>
+
+    <div class="balance-container">
+        <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+            <div style="font-size:10px;">VIRTUAL VCHF</div>
+            <div class="bal-val" id="vchf-val">100.00</div>
+        </div>
+        <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+            <div style="font-size:10px;">REAL CHF</div>
+            <div class="bal-val" id="chf-val">0.00</div>
+        </div>
+    </div>
+
     <div class="grid" id="main-grid"></div>
-    <div class="super-grid" id="s-grid" style="display:flex; justify-content:center; gap:10px;"></div>
-    <button onclick="runEngine()" id="main-btn" style="margin-top:30px; padding:15px 40px; border-radius:20px; background:var(--main-gradient); font-weight:bold;">BESTÄTIGEN</button>
+    <div class="super-grid" id="s-grid"></div>
+    <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
 </div>
 
 <script>
@@ -82,73 +88,76 @@
 
     let selected = [];
     let superNum = null;
+    let currentLang = 'de';
+    let activeCurrency = 'VCHF';
 
-    // Восстановленная функция клика со звуком (Haptic) и юмором
-    function handleCellClick(i, isSuper = false) {
-        // Звук/Вибрация
+    // Твой словарь юмора (сокращенно для примера, верни свой полный)
+    const humorDict = {
+        ru: { times: "раз", hot: ["Зайчик — чемпион!", "Железный Феликс!"], alert: "Заполни билет!" },
+        de: { times: "Mal", hot: ["Hase — Champion!", "Eiserner Felix!"], alert: "Ticket ausfüllen!" }
+    };
+
+    function switchCurrency(type) {
+        activeCurrency = type;
+        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
         tg.HapticFeedback.impactOccurred('medium');
-
-        // Логика выбора
-        if (isSuper) {
-            document.querySelectorAll('.super-cell').forEach(c => c.classList.remove('selected'));
-            superNum = i;
-            event.target.classList.add('selected');
-        } else {
-            if (selected.includes(i)) {
-                selected = selected.filter(n => n !== i);
-                event.target.classList.remove('selected');
-            } else if (selected.length < 6) {
-                selected.push(i);
-                event.target.classList.add('selected');
-            }
-        }
-
-        // Юмор (если включен режим статистики)
-        if (currentMode && event.target.classList.contains('is-hot')) {
-            showHumor(i);
-        }
     }
 
-    function showHumor(n) {
-        // Та самая функция через системный QR-попап
-        tg.showScanQrPopup({ text: "Число " + n + "\n\nЗайчик — чемпион по капканам!" });
-        setTimeout(() => tg.closeScanQrPopup(), 2000);
-    }
-
-    // Мгновенная отрисовка шаров
     function render() {
         const g = document.getElementById('main-grid');
+        g.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
             const c = document.createElement('div');
             c.className = 'cell';
             c.innerText = i;
-            c.onclick = (e) => handleCellClick(i);
+            c.onclick = () => {
+                tg.HapticFeedback.impactOccurred('light');
+                if(selected.includes(i)) {
+                    selected = selected.filter(n => n !== i);
+                    c.classList.remove('selected');
+                } else if(selected.length < 6) {
+                    selected.push(i);
+                    c.classList.add('selected');
+                }
+            };
             g.appendChild(c);
         }
-        
+
         const sg = document.getElementById('s-grid');
+        sg.innerHTML = '';
         for (let i = 1; i <= 6; i++) {
             const sc = document.createElement('div');
             sc.className = 'super-cell';
-            sc.style = "width:40px; height:40px; border:1px solid #fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;";
             sc.innerText = i;
-            sc.onclick = (e) => handleCellClick(i, true);
+            sc.onclick = () => {
+                tg.HapticFeedback.impactOccurred('medium');
+                document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
+                superNum = i;
+                sc.classList.add('selected');
+            };
             sg.appendChild(sc);
         }
     }
 
-    // Тайминги Интро
     window.onload = () => {
         setTimeout(() => document.getElementById('i1').classList.add('active'), 500);
-        setTimeout(() => document.getElementById('i1').classList.remove('active'), 2000);
-        setTimeout(() => document.getElementById('i2').classList.add('active'), 2200);
-        setTimeout(() => document.getElementById('i2').classList.remove('active'), 4000);
+        setTimeout(() => document.getElementById('i1').classList.remove('active'), 2500);
+        setTimeout(() => document.getElementById('i2').classList.add('active'), 2700);
+        setTimeout(() => document.getElementById('i2').classList.remove('active'), 4700);
         setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('intro-container').style.display='none';
+            document.getElementById('app-content').style.display='block';
+            setTimeout(() => document.getElementById('app-content').style.opacity='1', 50);
             render();
-        }, 4500);
+        }, 5000);
     };
+
+    function runEngine() {
+        if (selected.length < 6 || !superNum) { tg.showAlert("Error!"); return; }
+        tg.HapticFeedback.notificationOccurred('success');
+        tg.showAlert("Фиксирую тираж!");
+    }
 </script>
 </body>
 </html>
