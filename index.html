@@ -3,87 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Neo-Glass 2026</title>
+    <title>Lotto - Движок VCHF Ultimate 2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
-            --gold-light: #f9e27d;
-            --bg-glass: rgba(20, 20, 20, 0.75);
-            --white-sphere: radial-gradient(circle at 30% 30%, #ffffff 0%, #d9d9d9 100%);
-            --gold-sphere: radial-gradient(circle at 30% 30%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
-            --hot-glow: rgba(255, 69, 0, 0.5);
-            --cold-glow: rgba(0, 255, 255, 0.4);
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
+            --white-sphere: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0f0f0 40%, #d9d9d9 70%, #bcbcbc 100%);
+            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
+            --cell-text: #2c2105; 
+            --hot-color: #ff4500;
+            --cold-color: #1e90ff;
+            --process-color: #00ffff; 
         }
 
         body { 
-            background: #000 url('Hintergrund.png') no-repeat center center fixed; 
+            background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; color: #fff; 
-            font-family: -apple-system, system-ui, sans-serif; 
-            text-align: center; margin: 0; overflow: hidden;
-            -webkit-user-select: none; user-select: none;
+            font-family: -apple-system, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; 
         }
 
-        /* INTRO */
         #intro-container {
-            position: fixed; inset: 0; background: #000; z-index: 20000; 
+            position: fixed; inset: 0;
+            background: #000 url('Hintergrund.png') no-repeat center center; 
+            background-size: cover; z-index: 20000; 
             display: flex; justify-content: center; align-items: center;
         }
-        .intro-img { position: absolute; width: 85%; opacity: 0; }
+        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* MAIN UI */
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-bottom: 50px; }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
+        
+        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+        .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
 
-        .balance-container { display: flex; gap: 12px; padding: 20px 15px; perspective: 1000px; }
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
-            flex: 1; border-radius: 18px; padding: 15px; 
-            background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            flex: 1; border-radius: 12px; padding: 12px; 
+            background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; 
+            transition: 0.5s ease; cursor: pointer;
+            opacity: 0.15; filter: grayscale(1) brightness(0.6);
         }
-        .bal-card.active-wallet { border-color: var(--main-color); box-shadow: 0 0 25px rgba(212, 175, 55, 0.25); transform: translateZ(15px); }
-        .bal-val { font-size: 22px; font-weight: 800; color: #32CD32; margin-top: 5px; }
+        .bal-card.active-wallet { 
+            opacity: 1; filter: grayscale(0) brightness(1);
+            border-color: var(--main-color); 
+            background: rgba(212, 175, 55, 0.1); 
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            transform: scale(1.05);
+        }
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* GRID & SPHERES */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 420px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { 
-            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
+            aspect-ratio: 1/1; 
+            background: var(--white-sphere);
+            border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #222; font-size: 18px; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), 0 8px 15px rgba(0,0,0,0.4);
-            cursor: pointer;
+            font-weight: 800; color: #333; font-size: 19px; 
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; position: relative;
+            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
         }
         .cell.selected { 
-            background: var(--gold-sphere); color: #000;
-            transform: scale(1.15) translateY(-5px);
-            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+            background: var(--gold-sphere); 
+            color: var(--cell-text);
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 0 12px 20px rgba(212,175,55,0.5);
         }
+        .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); }
+        .cell.is-hot { border: 2.5px solid #ff4500; box-shadow: 0 0 15px #ff4500; }
+        .cell.is-cold { border: 2.5px solid #00ffff; box-shadow: 0 0 15px #00ffff; }
 
-        /* STATS HIGHLIGHT */
-        .cell.is-hot { border: 2.5px solid #ff4500; animation: pulseHot 2s infinite; }
-        .cell.is-cold { border: 2.5px solid #00ffff; animation: pulseCold 2s infinite; }
-        @keyframes pulseHot { 0%, 100% { box-shadow: 0 0 5px var(--hot-glow); } 50% { box-shadow: 0 0 15px var(--hot-glow); } }
-        @keyframes pulseCold { 0%, 100% { box-shadow: 0 0 5px var(--cold-glow); } 50% { box-shadow: 0 0 15px var(--cold-glow); } }
-
-        /* HUMOR BOX */
-        #humor-box { height: 45px; margin: 15px 0; font-style: italic; font-size: 13px; color: var(--main-color); padding: 0 25px; transition: 0.3s; opacity: 0; }
-        #humor-box.show { opacity: 1; }
-
-        /* CONTROLS */
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .tool-btn { 
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3);
-            padding: 10px 18px; border-radius: 25px; color: #fff; font-size: 11px; font-weight: bold; cursor: pointer;
-        }
-        .stats-period { display: flex; gap: 8px; opacity: 0; transition: 0.5s; pointer-events: none; }
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .smart-tools { display: flex; gap: 8px; }
+        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
+        
+        .stats-period { display: flex; justify-content: center; gap: 5px; opacity: 0; transition: 0.3s; pointer-events: none; height: 30px; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
-        .p-btn { background: #111; border: 1px solid #444; color: #888; padding: 5px 12px; border-radius: 15px; font-size: 10px; }
+        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
         .p-btn.active { border-color: var(--main-color); color: #fff; }
 
-        .btn-main { width: 85%; padding: 22px; border-radius: 20px; font-size: 18px; margin-top: 25px; background: var(--main-gradient); color: #000; border: none; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .counter-box { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.2); }
+        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
+
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
+        .super-cell { 
+            width: 58px; height: 58px; background: var(--gold-sphere); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; 
+            transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
+            opacity: 0.6;
+        }
+        .super-cell.selected { opacity: 1; transform: scale(1.25) translateY(-8px); border: 2px solid #fff9d6; }
+
+        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 30px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
+        .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -95,40 +116,59 @@
 </div>
 
 <div id="app-content">
-    <div class="lang-panel" style="padding:15px">
-        <span onclick="setLang('ru')">🇷🇺</span> <span onclick="setLang('ua')">🇺🇦</span> 
-        <span onclick="setLang('de')">🇩🇪</span> <span onclick="setLang('fr')">🇫🇷</span> <span onclick="setLang('it')">🇮🇹</span>
+    <div class="lang-panel">
+        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
+        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
+        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
+    </div>
+
+    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
     </div>
 
     <div class="balance-container">
         <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
             <div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div>
-            <div class="bal-val" id="val-vchf">100.00</div>
+            <div class="bal-val" id="vchf-val">100.00</div>
         </div>
         <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
             <div style="font-size:10px; color:var(--main-color)">REAL CHF</div>
-            <div class="bal-val" id="val-chf">0.00</div>
+            <div class="bal-val" id="chf-val">0.00</div>
         </div>
     </div>
 
     <div class="ticket-controls">
-        <div style="display:flex; gap:10px">
-            <button class="tool-btn" onclick="toggleHeatmap('hot')">🔥 HOT</button>
-            <button class="tool-btn" onclick="toggleHeatmap('cold')">❄️ COLD</button>
-            <button class="tool-btn" onclick="randomFill()" id="btn-rand">🎲 RANDOM</button>
+        <div class="smart-tools">
+            <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
+            <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
+            <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
         </div>
         <div class="stats-period" id="stats-p-box">
             <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
             <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
             <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
         </div>
+        <div class="counter-box">
+            <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+            <span id="ticket-count" style="font-size: 20px; font-weight: bold;">1</span>
+            <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+        </div>
     </div>
 
     <div class="grid" id="main-grid"></div>
-    <div id="humor-box"></div>
-    
-    <div style="font-size:12px; color:var(--main-color); margin-top:20px" id="l-super">SUPERZAHL</div>
-    <div class="grid" style="grid-template-columns: repeat(6, 1fr); padding: 10px 40px;" id="s-grid"></div>
+    <div id="l-super" class="super-title">SUPERZAHL</div>
+    <div class="super-grid" id="s-grid"></div>
+
+    <div style="margin: 15px 0; font-size: 16px; color: #bbb;">
+        Total: <span id="display-total" style="color:var(--main-color); font-weight:bold;">2.50 VCHF</span>
+    </div>
 
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
@@ -141,133 +181,163 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
-    function unlockAudio() {
-        [sndClick, sndShuffle, sndWin].forEach(s => { s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{}); });
-        window.removeEventListener('touchstart', unlockAudio);
-    }
-    window.addEventListener('touchstart', unlockAudio);
-
     const dbStats = {
-        month: { hot: [6, 14, 21, 33, 38, 42], cold: [2, 10, 19, 27, 31, 40] },
-        year:  { hot: [3, 11, 24, 29, 35, 41], cold: [5, 17, 23, 28, 32, 39] },
-        all:   { hot: [42, 18, 1, 37, 23, 12], cold: [4, 9, 15, 21, 30, 36] }
+        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39] },
+        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38] },
+        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40] }
     };
 
-    const humorData = {
-        ru: {
-            hot: ["Эта комета летит прямо в твой карман!","Наглый выскочка! Опять он?","Звезда танцпола! Не наступи на ноги!","Заряженная батарейка! Энергия прет!","Золотой мачо! Слишком горяч!","Скорый поезд до богатства! Чу-чу!"],
-            cold: ["Мамонт спит с ледникового периода. Пора будить!","Ленивый пельмень присох к кастрюле.","Ушел в отпуск и забыл дорогу назад.","Айсберг! Скрыт под водой, но мы его вытащим.","Замёрзший носок из стирки судьбы.","Призрак оперы... Время сорвать маску!"]
-        },
-        de: { hot: ["Komet fliegt!","Frecher Kerl!","Discoking!","Batterie!","Macho!","ICE Express!"], cold: ["Mammut schläft!","Fauler Knödel!","Dauerurlaub!","Eisberg!","Socke!","Operngeist!"] },
-        ua: { hot: ["Комета летить!","Нахабний!","Зірка!","Батарейка!","Мачо!","Поїзд!"], cold: ["Мамонт спить!","Пельмень!","Відпустка!","Айсберг!","Шкарпетка!","Привид!"] },
-        fr: { hot: ["Comète!","Insolent!","Star!","Batterie!","Macho!","Express!"], cold: ["Mammouth!","Ravioli!","Vacances!","Iceberg!","Chaussette!","Fantôme!"] },
-        it: { hot: ["Cometa!","Sfacciato!","Re!","Batteria!","Macho!","Treno!"], cold: ["Mammut!","Raviolo!","Vacanza!","Iceberg!","Calzino!","Fantasma!"] }
-    };
+    let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF';
+    const realPrice = 2.50;
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВЕСЬ ЧАС" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "GESAMT" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", month: "MOIS", year: "AN", all: "TOTAL" },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", month: "MESE", year: "ANNO", all: "TOTALE" }
-    };
-
-    let selected = [], superNum = null, currentLang = 'de', currentMode = null, currentPeriod = 'month';
-
-    function setLang(l) {
-        currentLang = l;
-        document.getElementById('main-btn').innerText = dict[l].btn;
-        document.getElementById('l-super').innerText = dict[l].super;
-        document.getElementById('p-month').innerText = dict[l].month;
-        document.getElementById('p-year').innerText = dict[l].year;
-        document.getElementById('p-all').innerText = dict[l].all;
+    function updateTicketCount(val) {
+        ticketCount = Math.max(1, ticketCount + val);
+        document.getElementById('ticket-count').innerText = ticketCount;
+        updatePriceDisplay();
         tg.HapticFeedback.selectionChanged();
     }
 
-    function showHumor(num) {
-        let text = "";
-        let hIdx = dbStats[currentPeriod].hot.indexOf(num);
-        let cIdx = dbStats[currentPeriod].cold.indexOf(num);
-        if(hIdx !== -1) text = humorData[currentLang].hot[hIdx];
-        else if(cIdx !== -1) text = humorData[currentLang].cold[cIdx];
-        const box = document.getElementById('humor-box');
-        if(text) { box.innerText = text; box.classList.add('show'); setTimeout(() => box.classList.remove('show'), 3000); }
+    function switchCurrency(type) {
+        currentCurrency = type;
+        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
+        updatePriceDisplay();
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function toggleHeatmap(t) { currentMode = (currentMode === t) ? null : t; document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode); refreshGrid(); }
-    function setPeriod(p) { currentPeriod = p; document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active')); document.getElementById(`p-${p}`).classList.add('active'); refreshGrid(); }
-    function refreshGrid() { document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold')); if (!currentMode) return; dbStats[currentPeriod].hot.forEach(n => document.getElementById(`cell-${n}`)?.classList.add('is-hot')); dbStats[currentPeriod].cold.forEach(n => document.getElementById(`cell-${n}`)?.classList.add('is-cold')); }
+    function updatePriceDisplay() {
+        const total = (ticketCount * realPrice).toFixed(2);
+        document.getElementById('display-total').innerText = `${total} ${currentCurrency}`;
+    }
+
+    function setLang(l) {
+        const dict = {
+            ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ" },
+            de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "GESAMT" },
+            ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС" }
+        };
+        document.getElementById('main-btn').innerText = dict[l]?.btn || "BESTÄTIGEN";
+        document.getElementById('l-super').innerText = dict[l]?.super || "SUPERZAHL";
+        tg.HapticFeedback.selectionChanged();
+    }
+
+    function toggleHeatmap(type) {
+        currentMode = (currentMode === type) ? null : type;
+        document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
+        refreshGrid();
+    }
+
+    function setPeriod(p) {
+        currentPeriod = p;
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`p-${p}`).classList.add('active');
+        refreshGrid();
+    }
+
+    function refreshGrid() {
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
+        if (!currentMode) return;
+        dbStats[currentPeriod][currentMode].forEach(n => {
+            const el = document.getElementById(`cell-${n}`);
+            if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
+        });
+    }
+
+    function randomFill() {
+        selected = []; superNum = null;
+        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing'));
+        sndShuffle.play();
+        let i = 0;
+        const interval = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
+            for(let j=0; j<6; j++) {
+                let r = Math.floor(Math.random() * 42) + 1;
+                document.getElementById(`cell-${r}`).classList.add('processing');
+            }
+            tg.HapticFeedback.impactOccurred('light');
+            if(i++ > 12) {
+                clearInterval(interval);
+                finalizeRandom();
+            }
+        }, 60);
+    }
+
+    function finalizeRandom() {
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing', 'selected'));
+        selected = [];
+        while(selected.length < 6) {
+            let r = Math.floor(Math.random() * 42) + 1;
+            if(!selected.includes(r)) {
+                selected.push(r);
+                document.getElementById(`cell-${r}`).classList.add('selected');
+            }
+        }
+        superNum = Math.floor(Math.random() * 6) + 1;
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
+        sndWin.play();
+        tg.HapticFeedback.notificationOccurred('success');
+    }
 
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        const c = document.createElement('div'); 
+        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
-            sndClick.currentTime = 0; sndClick.play().catch(()=>{});
-            showHumor(i);
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+            sndClick.currentTime = 0; sndClick.play();
+            if(selected.includes(i)) {
+                selected = selected.filter(n => n !== i);
+                c.classList.remove('selected');
+            } else if(selected.length < 6) {
+                selected.push(i);
+                c.classList.add('selected');
+                tg.HapticFeedback.impactOccurred('light');
+            }
         };
         grid.appendChild(c);
     }
 
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div'); sc.className = 'cell'; sc.innerText = i;
+        const sc = document.createElement('div'); 
+        sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
-            sndClick.currentTime = 0; sndClick.play().catch(()=>{});
-            superNum = i; document.querySelectorAll('#s-grid .cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
+            sndClick.currentTime = 0; sndClick.play();
+            superNum = i;
+            document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
             tg.HapticFeedback.impactOccurred('medium');
         };
         sgrid.appendChild(sc);
     }
 
-    function randomFill() {
-        selected = []; superNum = null;
-        document.querySelectorAll('.cell').forEach(c => { c.classList.remove('selected'); c.style.transform = ''; });
-        sndShuffle.currentTime = 0; sndShuffle.play().catch(()=>{});
-        let steps = 0;
-        const interval = setInterval(() => {
-            for(let j=0; j<4; j++) {
-                let r = Math.floor(Math.random()*42)+1;
-                let el = document.getElementById(`cell-${r}`);
-                el.style.transform = 'scale(1.2)'; setTimeout(() => el.style.transform = '', 100);
-            }
-            tg.HapticFeedback.impactOccurred('light');
-            if(steps++ > 15) {
-                clearInterval(interval);
-                while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); } }
-                superNum = Math.floor(Math.random()*6)+1;
-                document.querySelectorAll('#s-grid .cell').forEach((sc, idx) => sc.classList.toggle('selected', idx+1 === superNum));
-                sndWin.play(); tg.HapticFeedback.notificationOccurred('success');
-            }
-        }, 100);
+    function setTheme(t) {
+        document.body.className = 'theme-' + t;
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
+        document.documentElement.style.setProperty('--main-color', colors[t]);
+        document.querySelector('.theme-panel').classList.remove('open');
     }
 
-    function switchCurrency(t) {
-        document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF');
-        document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF');
-        tg.HapticFeedback.impactOccurred('medium');
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            const total = (ticketCount * realPrice).toFixed(2);
+            tg.showAlert(`Движок VCHF: Ticket fixiert!\nTotal: ${total} ${currentCurrency}`);
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            tg.showAlert("Bitte alles ausfüllen!");
+        }
     }
 
-    function runIntro() {
-        const ids = ['intro1', 'intro2', 'intro3'];
-        ids.forEach((id, i) => {
-            setTimeout(() => document.getElementById(id).classList.add('active'), i * 2200 + 500);
-            setTimeout(() => document.getElementById(id).style.opacity = '0', i * 2200 + 2000);
+    window.onload = () => {
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { document.getElementById(st.id).style.opacity='0'; }, st.e);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 7000);
-    }
-
-    function runEngine() {
-        if(selected.length === 6 && superNum) { tg.showAlert("Движок VCHF: Ticket fixiert!"); tg.HapticFeedback.notificationOccurred('success'); }
-        else { tg.showAlert("Bitte alles ausfüllen!"); }
-    }
-
-    window.onload = runIntro;
+        }, 7200);
+    };
 </script>
 </body>
 </html>
