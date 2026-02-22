@@ -99,7 +99,6 @@
 
         .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
         
-        /* Исправленная подсветка: анимация проигрывается 3 раза и замирает, чтобы не раздражать */
         .cell.is-hot { 
             border: 3px solid #ff4500 !important; 
             box-shadow: 0 0 20px #ff4500 !important; 
@@ -177,7 +176,7 @@
 <div id="intro-container">
     <img src="Bild1.png" id="intro1" class="intro-img">
     <img src="Bild2.png" id="intro2" class="intro-img">
-    <img src="1771489965074(1).png" id="intro3" class="intro-img">
+    <img src="Bild3.png" id="intro3" class="intro-img">
 </div>
 
 <div id="app-content">
@@ -270,7 +269,7 @@
         fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
     };
 
-    // --- ИСПРАВЛЕННОЕ ИНТРО (ПОСЛЕДОВАТЕЛЬНОЕ ПОЯВЛЕНИЕ) ---
+    // --- АКСИОМА: ПОЛНОЕ ИНТРО (Bild1 -> Bild2 -> Bild3 на фоне Hintergrund) ---
     function startIntroSequence() {
         const i1 = document.getElementById('intro1');
         const i2 = document.getElementById('intro2');
@@ -287,27 +286,24 @@
                 document.getElementById('app-content').style.display = 'block';
                 setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
             }, 1000);
-        }, 4000);
+        }, 3600);
     }
 
-    // --- ОБНОВЛЕННАЯ ЛОГИКА ПОДСВЕТКИ (SLEEPING GIANT И УМЕРЕННАЯ АНИМАЦИЯ) ---
     function togglePick(type) {
         const btnHot = document.getElementById('btn-hot');
         const btnCold = document.getElementById('btn-cold');
         const btnSleep = document.getElementById('btn-sleeping');
-        
         selected = []; 
-        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-        
         document.querySelectorAll('.cell').forEach(c => {
             c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected');
-            c.style.animation = 'none'; // Сброс анимации для возможности повтора
+            c.style.animation = 'none';
         });
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
 
         if (type === 'hot') {
             btnHot.classList.add('active-tool');
+            const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
             sorted.sort((a, b) => b.val - a.val);
             selected = sorted.slice(0, 6).map(i => i.num);
             selected.forEach(n => {
@@ -317,6 +313,7 @@
             });
         } else if (type === 'cold') {
             btnCold.classList.add('active-tool');
+            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][2] }));
             sorted.sort((a, b) => a.val - b.val);
             selected = sorted.slice(0, 6).map(i => i.num);
             selected.forEach(n => {
@@ -326,15 +323,15 @@
             });
         } else if (type === 'sleeping') {
             btnSleep.classList.add('active-tool');
-            // Sleeping Giant: Берем тех, у кого наименьший показатель за месяц (или кастомный индекс)
+            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][0] }));
             sorted.sort((a, b) => a.val - b.val);
             selected = sorted.slice(0, 6).map(i => i.num);
             selected.forEach(n => {
                 const el = document.getElementById(`cell-${n}`);
                 el.classList.add('is-sleeping', 'selected');
+                el.style.animation = 'pulse-hot 1.2s 3 alternate';
             });
         }
-        
         superNum = Math.floor(Math.random() * 6) + 1;
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
         tg.HapticFeedback.notificationOccurred('success');
@@ -367,9 +364,7 @@
         });
     }
 
-    async function fetchOfficialStats() {
-        loadLocalStats(); 
-    }
+    async function fetchOfficialStats() { loadLocalStats(); }
 
     function loadLocalStats() {
         const saved = localStorage.getItem('vchf_db');
@@ -424,7 +419,6 @@
         sndClick.currentTime = 0; sndClick.play();
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
-
         if(selected.includes(i)) { selected = selected.filter(n => n !== i); }
         else if(selected.length < 6) { selected.push(i); }
         refreshGrid();
@@ -505,20 +499,11 @@
             fr: '<span class="lang-btn" onclick="setLang(\'fr\')">🇫🇷</span>',
             ru: '<span class="lang-btn" onclick="setLang(\'ru\')">🇷🇺</span>'
         };
-
-        if (userLang === 'ru') {
-            langContainer.innerHTML = buttons.ru + buttons.fr + buttons.de + buttons.en + buttons.ua;
-            setLang('ru');
-        } else if (userLang === 'uk' || userLang === 'ua' || userLang === 'uk-UA') {
-            langContainer.innerHTML = buttons.ua + buttons.en + buttons.de + buttons.fr + buttons.ru;
-            setLang('ua');
-        } else {
-            langContainer.innerHTML = buttons.en + buttons.de + buttons.fr + buttons.ua + buttons.ru;
-            setLang('en'); 
-        }
-
+        if (userLang === 'ru') { langContainer.innerHTML = buttons.ru + buttons.fr + buttons.de + buttons.en + buttons.ua; setLang('ru'); } 
+        else if (userLang === 'uk' || userLang === 'ua' || userLang === 'uk-UA') { langContainer.innerHTML = buttons.ua + buttons.en + buttons.de + buttons.fr + buttons.ru; setLang('ua'); } 
+        else { langContainer.innerHTML = buttons.en + buttons.de + buttons.fr + buttons.ua + buttons.ru; setLang('en'); }
         fetchOfficialStats();
-        startIntroSequence(); // Запуск исправленного интро
+        startIntroSequence();
     };
 </script>
 </body>
