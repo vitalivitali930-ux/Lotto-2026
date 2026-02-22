@@ -3,90 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Ultimate 2.0 3D Sound & Humor</title>
+    <title>Lotto - Движок VCHF Neo-Glass 2026</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --white-sphere: radial-gradient(circle at 35% 35%, #ffffff 0%, #f0f0f0 40%, #d9d9d9 70%, #bcbcbc 100%);
-            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
-            --cell-text: #2c2105; 
-            --hot-color: #ff4500;
-            --cold-color: #00ffff;
+            --gold-light: #f9e27d;
+            --bg-glass: rgba(20, 20, 20, 0.75);
+            --white-sphere: radial-gradient(circle at 30% 30%, #ffffff 0%, #d9d9d9 100%);
+            --gold-sphere: radial-gradient(circle at 30% 30%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
+            --hot-glow: rgba(255, 69, 0, 0.5);
+            --cold-glow: rgba(0, 255, 255, 0.4);
         }
 
         body { 
-            background: #000 url('Hintergrund.png') no-repeat center center; 
+            background: #000 url('Hintergrund.png') no-repeat center center fixed; 
             background-size: cover; color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow: hidden; 
+            font-family: -apple-system, system-ui, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden;
+            -webkit-user-select: none; user-select: none;
         }
 
-        /* INTRO LAYER */
+        /* INTRO */
         #intro-container {
-            position: fixed; inset: 0;
-            background: #000 url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; z-index: 20000; 
+            position: fixed; inset: 0; background: #000; z-index: 20000; 
             display: flex; justify-content: center; align-items: center;
         }
-        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
+        .intro-img { position: absolute; width: 85%; opacity: 0; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* MAIN CONTENT */
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
-        
-        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
-        .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
+        /* MAIN UI */
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-bottom: 50px; }
 
-        /* 3D SPHERES */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .balance-container { display: flex; gap: 12px; padding: 20px 15px; perspective: 1000px; }
+        .bal-card { 
+            flex: 1; border-radius: 18px; padding: 15px; 
+            background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .bal-card.active-wallet { border-color: var(--main-color); box-shadow: 0 0 25px rgba(212, 175, 55, 0.25); transform: translateZ(15px); }
+        .bal-val { font-size: 22px; font-weight: 800; color: #32CD32; margin-top: 5px; }
+
+        /* GRID & SPHERES */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 420px; margin: 0 auto; }
         .cell { 
             aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #333; font-size: 19px; 
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            cursor: pointer; position: relative;
-            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
+            font-weight: 800; color: #222; font-size: 18px; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), 0 8px 15px rgba(0,0,0,0.4);
+            cursor: pointer;
         }
         .cell.selected { 
-            background: var(--gold-sphere); color: var(--cell-text);
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 0 12px 20px rgba(212,175,55,0.5);
+            background: var(--gold-sphere); color: #000;
+            transform: scale(1.15) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
         }
-        .cell.is-hot { border: 2.5px solid var(--hot-color); box-shadow: 0 0 12px var(--hot-color); }
-        .cell.is-cold { border: 2.5px solid var(--cold-color); box-shadow: 0 0 12px var(--cold-color); }
 
-        /* HUMOR BUBBLE */
-        #humor-box { height: 40px; margin: 10px 0; font-style: italic; font-size: 13px; color: var(--main-color); padding: 0 20px; transition: 0.3s; opacity: 0; pointer-events: none;}
+        /* STATS HIGHLIGHT */
+        .cell.is-hot { border: 2.5px solid #ff4500; animation: pulseHot 2s infinite; }
+        .cell.is-cold { border: 2.5px solid #00ffff; animation: pulseCold 2s infinite; }
+        @keyframes pulseHot { 0%, 100% { box-shadow: 0 0 5px var(--hot-glow); } 50% { box-shadow: 0 0 15px var(--hot-glow); } }
+        @keyframes pulseCold { 0%, 100% { box-shadow: 0 0 5px var(--cold-glow); } 50% { box-shadow: 0 0 15px var(--cold-glow); } }
+
+        /* HUMOR BOX */
+        #humor-box { height: 45px; margin: 15px 0; font-style: italic; font-size: 13px; color: var(--main-color); padding: 0 25px; transition: 0.3s; opacity: 0; }
         #humor-box.show { opacity: 1; }
 
-        /* SUPER BALLS */
-        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
-        .super-grid { display: flex; justify-content: center; gap: 12px; }
-        .super-cell { 
-            width: 55px; height: 55px; background: var(--gold-sphere); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: var(--cell-text); font-weight: 900; font-size: 22px; cursor: pointer; opacity: 0.5;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
+        /* CONTROLS */
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .tool-btn { 
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 10px 18px; border-radius: 25px; color: #fff; font-size: 11px; font-weight: bold; cursor: pointer;
         }
-        .super-cell.selected { opacity: 1; transform: scale(1.2) translateY(-5px); box-shadow: 0 15px 25px rgba(212,175,55,0.6); }
-
-        /* CARDS & BUTTONS */
-        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; opacity: 0.2; transition: 0.5s; cursor: pointer;}
-        .bal-card.active-wallet { opacity: 1; border-color: var(--main-color); background: rgba(212,175,55,0.1); transform: scale(1.05); }
-        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
-        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .smart-tools { display: flex; gap: 8px; }
-        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
-        .stats-period { display: flex; justify-content: center; gap: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
+        .stats-period { display: flex; gap: 8px; opacity: 0; transition: 0.5s; pointer-events: none; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
-        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn { background: #111; border: 1px solid #444; color: #888; padding: 5px 12px; border-radius: 15px; font-size: 10px; }
         .p-btn.active { border-color: var(--main-color); color: #fff; }
-        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 20px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+
+        .btn-main { width: 85%; padding: 22px; border-radius: 20px; font-size: 18px; margin-top: 25px; background: var(--main-gradient); color: #000; border: none; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
@@ -98,30 +95,27 @@
 </div>
 
 <div id="app-content">
-    <div class="lang-panel">
-        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
-        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
-        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
-        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
-        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
+    <div class="lang-panel" style="padding:15px">
+        <span onclick="setLang('ru')">🇷🇺</span> <span onclick="setLang('ua')">🇺🇦</span> 
+        <span onclick="setLang('de')">🇩🇪</span> <span onclick="setLang('fr')">🇫🇷</span> <span onclick="setLang('it')">🇮🇹</span>
     </div>
 
     <div class="balance-container">
         <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
             <div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div>
-            <div class="bal-val">100.00</div>
+            <div class="bal-val" id="val-vchf">100.00</div>
         </div>
         <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
             <div style="font-size:10px; color:var(--main-color)">REAL CHF</div>
-            <div class="bal-val">0.00</div>
+            <div class="bal-val" id="val-chf">0.00</div>
         </div>
     </div>
 
     <div class="ticket-controls">
-        <div class="smart-tools">
-            <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
-            <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
-            <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
+        <div style="display:flex; gap:10px">
+            <button class="tool-btn" onclick="toggleHeatmap('hot')">🔥 HOT</button>
+            <button class="tool-btn" onclick="toggleHeatmap('cold')">❄️ COLD</button>
+            <button class="tool-btn" onclick="randomFill()" id="btn-rand">🎲 RANDOM</button>
         </div>
         <div class="stats-period" id="stats-p-box">
             <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
@@ -132,8 +126,10 @@
 
     <div class="grid" id="main-grid"></div>
     <div id="humor-box"></div>
-    <div id="l-super" class="super-title">SUPERZAHL</div>
-    <div class="super-grid" id="s-grid"></div>
+    
+    <div style="font-size:12px; color:var(--main-color); margin-top:20px" id="l-super">SUPERZAHL</div>
+    <div class="grid" style="grid-template-columns: repeat(6, 1fr); padding: 10px 40px;" id="s-grid"></div>
+
     <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
@@ -141,51 +137,35 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // SOUNDS ENGINE
     const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
-    // UNLOCK AUDIO ON FIRST TOUCH
     function unlockAudio() {
-        sndClick.play().then(() => { sndClick.pause(); sndClick.currentTime = 0; }).catch(()=>{});
-        window.removeEventListener('click', unlockAudio);
+        [sndClick, sndShuffle, sndWin].forEach(s => { s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{}); });
         window.removeEventListener('touchstart', unlockAudio);
     }
-    window.addEventListener('click', unlockAudio);
     window.addEventListener('touchstart', unlockAudio);
 
     const dbStats = {
-        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39] },
-        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38] },
-        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40] }
+        month: { hot: [6, 14, 21, 33, 38, 42], cold: [2, 10, 19, 27, 31, 40] },
+        year:  { hot: [3, 11, 24, 29, 35, 41], cold: [5, 17, 23, 28, 32, 39] },
+        all:   { hot: [42, 18, 1, 37, 23, 12], cold: [4, 9, 15, 21, 30, 36] }
     };
 
     const humorData = {
         ru: {
-            hot: ["Падающая комета! Прямо в карман!","Наглый выскочка! Опять он?","Звезда танцпола! Не наступи на ноги!","Заряженная батарейка! Энергия прет!","Золотой мачо! Слишком горяч!","Скорый поезд до богатства! Чу-чу!"],
-            cold: ["Спящий мамонт... Пора будить пинком!","Ленивый пельмень присох к кастрюле.","Ушел в отпуск и забыл дорогу назад.","Айсберг! Скрыт под водой, но мы его вытащим.","Замёрзший носок из стирки судьбы.","Призрак оперы... Время сорвать маску!"]
+            hot: ["Эта комета летит прямо в твой карман!","Наглый выскочка! Опять он?","Звезда танцпола! Не наступи на ноги!","Заряженная батарейка! Энергия прет!","Золотой мачо! Слишком горяч!","Скорый поезд до богатства! Чу-чу!"],
+            cold: ["Мамонт спит с ледникового периода. Пора будить!","Ленивый пельмень присох к кастрюле.","Ушел в отпуск и забыл дорогу назад.","Айсберг! Скрыт под водой, но мы его вытащим.","Замёрзший носок из стирки судьбы.","Призрак оперы... Время сорвать маску!"]
         },
-        de: {
-            hot: ["Fallender Komet! Direkt in deine Tasche!","Frecher Kerl! Schon wieder dabei?","Discoking! Tanz auf dem Ticket!","Volle Batterie! Pure Energie!","Goldener Macho! Zu heiß für heute!","ICE Express zum Reichtum!"],
-            cold: ["Schlafendes Mammut... Weck es auf!","Fauler Knödel am Topfboden.","Im Dauerurlaub vergessen.","Titanic-Eisberg voraus! Hol ihn raus.","Gefrorene Socke der Vorсеhung.","Operngeist... Maske ab!"]
-        },
-        ua: {
-            hot: ["Падаюча комета! Прямо в кишеню!","Нахабний вискочка! Знову він?","Зірка танцполу! Не наступи на ноги!","Заряджена батарейка! Енергія пре!","Золотий мачо! Занадто гарячий!","Швидкий поїзд до багатства! Чу-чу!"],
-            cold: ["Сплячий мамонт... Пора будити стусаном!","Лінивий пельмень присох до каструлі.","Пішов у відпустку і забув дорогу.","Айсберг! Ми його витягнемо на світ.","Замерзла шкарпетка з прання долі.","Привид опери... Час зірвати маску!"]
-        },
-        fr: {
-            hot: ["Comète filante! Droit dans la poche!","Un insolent! Encore lui?","Star de la piste! Ne le ratez pas!","Batterie pleine! Quelle énergie!","Macho doré! Trop chaud!","Train express vers la fortune!"],
-            cold: ["Mammouth en hibernation... Réveillez-le!","Ravioli paresseux au fond du plat.","En vacances éternelles.","L'iceberg du Titanic! Sortez-le de l'eau.","Chaussette gelée du destin.","Fantôme de l'opéra... Démasquez-le!"]
-        },
-        it: {
-            hot: ["Cometa cadente! Dritta in tasca!","Sfacciato! Ancora qui?","Re della pista! Balla con noi!","Batteria carica! Che energia!","Macho d'oro! Troppo sexy!","Treno espresso per la ricchezza!"],
-            cold: ["Mammut dormiglione... Sveglialo!","Raviolo pigro sul fondo.","In vacanza perenne.","L'iceberg del Titanic! Tiralo su.","Calzino gelato del destino.","Fantasma dell'opera... Giù la maschera!"]
-        }
+        de: { hot: ["Komet fliegt!","Frecher Kerl!","Discoking!","Batterie!","Macho!","ICE Express!"], cold: ["Mammut schläft!","Fauler Knödel!","Dauerurlaub!","Eisberg!","Socke!","Operngeist!"] },
+        ua: { hot: ["Комета летить!","Нахабний!","Зірка!","Батарейка!","Мачо!","Поїзд!"], cold: ["Мамонт спить!","Пельмень!","Відпустка!","Айсберг!","Шкарпетка!","Привид!"] },
+        fr: { hot: ["Comète!","Insolent!","Star!","Batterie!","Macho!","Express!"], cold: ["Mammouth!","Ravioli!","Vacances!","Iceberg!","Chaussette!","Fantôme!"] },
+        it: { hot: ["Cometa!","Sfacciato!","Re!","Batteria!","Macho!","Treno!"], cold: ["Mammut!","Raviolo!","Vacanza!","Iceberg!","Calzino!","Fantasma!"] }
     };
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЕ ВРЕМЯ" },
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВЕСЬ ЧАС" },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "GESAMT" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС" },
         fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", month: "MOIS", year: "AN", all: "TOTAL" },
@@ -206,120 +186,85 @@
 
     function showHumor(num) {
         let text = "";
-        let hotIdx = dbStats[currentPeriod].hot.indexOf(num);
-        let coldIdx = dbStats[currentPeriod].cold.indexOf(num);
-        if(hotIdx !== -1) text = humorData[currentLang].hot[hotIdx];
-        else if(coldIdx !== -1) text = humorData[currentLang].cold[coldIdx];
-        
+        let hIdx = dbStats[currentPeriod].hot.indexOf(num);
+        let cIdx = dbStats[currentPeriod].cold.indexOf(num);
+        if(hIdx !== -1) text = humorData[currentLang].hot[hIdx];
+        else if(cIdx !== -1) text = humorData[currentLang].cold[cIdx];
         const box = document.getElementById('humor-box');
-        if(text) {
-            box.innerText = text; box.classList.add('show');
-            setTimeout(() => box.classList.remove('show'), 3000);
-        }
+        if(text) { box.innerText = text; box.classList.add('show'); setTimeout(() => box.classList.remove('show'), 3000); }
     }
 
-    function toggleHeatmap(type) {
-        currentMode = (currentMode === type) ? null : type;
-        document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
-        refreshGrid();
-    }
-
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
-        refreshGrid();
-    }
-
-    function refreshGrid() {
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
-        if (!currentMode) return;
-        dbStats[currentPeriod].hot.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if(el) el.classList.add('is-hot');
-        });
-        dbStats[currentPeriod].cold.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if(el) el.classList.add('is-cold');
-        });
-    }
-
-    function switchCurrency(type) {
-        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
-        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
-        tg.HapticFeedback.impactOccurred('medium');
-    }
+    function toggleHeatmap(t) { currentMode = (currentMode === t) ? null : t; document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode); refreshGrid(); }
+    function setPeriod(p) { currentPeriod = p; document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active')); document.getElementById(`p-${p}`).classList.add('active'); refreshGrid(); }
+    function refreshGrid() { document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold')); if (!currentMode) return; dbStats[currentPeriod].hot.forEach(n => document.getElementById(`cell-${n}`)?.classList.add('is-hot')); dbStats[currentPeriod].cold.forEach(n => document.getElementById(`cell-${n}`)?.classList.add('is-cold')); }
 
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('div'); 
-        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
             sndClick.currentTime = 0; sndClick.play().catch(()=>{});
             showHumor(i);
-            if(selected.includes(i)) {
-                selected = selected.filter(n => n !== i); c.classList.remove('selected');
-            } else if(selected.length < 6) {
-                selected.push(i); c.classList.add('selected');
-                tg.HapticFeedback.impactOccurred('light');
-            }
+            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
         grid.appendChild(c);
     }
 
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div'); 
-        sc.className = 'super-cell'; sc.innerText = i;
+        const sc = document.createElement('div'); sc.className = 'cell'; sc.innerText = i;
         sc.onclick = () => {
             sndClick.currentTime = 0; sndClick.play().catch(()=>{});
-            superNum = i;
-            document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
+            superNum = i; document.querySelectorAll('#s-grid .cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
             tg.HapticFeedback.impactOccurred('medium');
         };
         sgrid.appendChild(sc);
     }
 
     function randomFill() {
-        selected = []; document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-        sndShuffle.currentTime = 0; sndShuffle.loop = true; sndShuffle.play().catch(()=>{});
-        let i = 0;
+        selected = []; superNum = null;
+        document.querySelectorAll('.cell').forEach(c => { c.classList.remove('selected'); c.style.transform = ''; });
+        sndShuffle.currentTime = 0; sndShuffle.play().catch(()=>{});
+        let steps = 0;
         const interval = setInterval(() => {
-            tg.HapticFeedback.impactOccurred('light');
-            if(i++ > 15) {
-                clearInterval(interval); sndShuffle.pause(); sndShuffle.currentTime = 0;
-                while(selected.length < 6) {
-                    let r = Math.floor(Math.random() * 42) + 1;
-                    if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
-                }
-                superNum = Math.floor(Math.random() * 6) + 1;
-                document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-                sndWin.currentTime = 0; sndWin.play().catch(()=>{});
-                tg.HapticFeedback.notificationOccurred('success');
+            for(let j=0; j<4; j++) {
+                let r = Math.floor(Math.random()*42)+1;
+                let el = document.getElementById(`cell-${r}`);
+                el.style.transform = 'scale(1.2)'; setTimeout(() => el.style.transform = '', 100);
             }
-        }, 80);
+            tg.HapticFeedback.impactOccurred('light');
+            if(steps++ > 15) {
+                clearInterval(interval);
+                while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); } }
+                superNum = Math.floor(Math.random()*6)+1;
+                document.querySelectorAll('#s-grid .cell').forEach((sc, idx) => sc.classList.toggle('selected', idx+1 === superNum));
+                sndWin.play(); tg.HapticFeedback.notificationOccurred('success');
+            }
+        }, 100);
+    }
+
+    function switchCurrency(t) {
+        document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF');
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function runIntro() {
-        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
-        steps.forEach(st => {
-            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).classList.remove('active'); document.getElementById(st.id).style.opacity='0'; }, st.e);
+        const ids = ['intro1', 'intro2', 'intro3'];
+        ids.forEach((id, i) => {
+            setTimeout(() => document.getElementById(id).classList.add('active'), i * 2200 + 500);
+            setTimeout(() => document.getElementById(id).style.opacity = '0', i * 2200 + 2000);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 7200);
+        }, 7000);
     }
 
     function runEngine() {
-        if(selected.length === 6 && superNum) {
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Движок VCHF: Ticket fixiert!");
-        } else {
-            tg.showAlert("Bitte alles ausfüllen!");
-        }
+        if(selected.length === 6 && superNum) { tg.showAlert("Движок VCHF: Ticket fixiert!"); tg.HapticFeedback.notificationOccurred('success'); }
+        else { tg.showAlert("Bitte alles ausfüllen!"); }
     }
 
     window.onload = runIntro;
