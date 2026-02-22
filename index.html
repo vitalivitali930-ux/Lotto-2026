@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF</title>
+    <title>Lotto - Движок VCHF 1.1</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
             --cell-text: #d4af37; 
-            --hot-color: #ff4500;
-            --cold-color: #1e90ff;
+            --hot-neon: #ff0000; 
+            --cold-neon: #00f2ff; 
             --process-color: #00ffff; 
         }
 
@@ -22,7 +22,6 @@
             text-align: center; margin: 0; overflow: hidden; 
         }
 
-        /* МОДАЛЬНОЕ ОКНО ДЛЯ ЮМОРА */
         #humor-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 30000;
@@ -38,9 +37,17 @@
         .modal-content.show { transform: scale(1); }
         .modal-title { font-size: 22px; color: var(--main-color); margin-bottom: 10px; font-weight: bold; }
         .modal-text { font-size: 16px; line-height: 1.4; margin-bottom: 20px; }
-        .modal-btn { 
-            background: var(--main-gradient); border: none; padding: 10px 30px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; 
+        .modal-btn { background: var(--main-gradient); border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        .cell.is-hot, .super-cell.is-hot { 
+            color: var(--hot-neon) !important; 
+            text-shadow: 0 0 10px var(--hot-neon), 0 0 20px var(--hot-neon) !important;
+            filter: brightness(1.5);
+        }
+        .cell.is-cold, .super-cell.is-cold { 
+            color: var(--cold-neon) !important; 
+            text-shadow: 0 0 10px var(--cold-neon), 0 0 20px var(--cold-neon) !important;
+            filter: brightness(1.5);
         }
 
         #intro-container {
@@ -62,30 +69,13 @@
         .bal-card { 
             flex: 1; border-radius: 12px; padding: 12px; 
             background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; 
-            transition: 0.4s ease; cursor: pointer;
-            opacity: 0.3; filter: grayscale(1);
+            transition: 0.4s ease; cursor: pointer; opacity: 0.3; filter: grayscale(1);
         }
         .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0);
-            border-color: var(--main-color); 
-            background: rgba(212, 175, 55, 0.08); 
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
-            transform: scale(1.03);
+            opacity: 1; filter: grayscale(0); border-color: var(--main-color); 
+            background: rgba(212, 175, 55, 0.08); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); transform: scale(1.03);
         }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
-
-        body.theme-cherry .cell, body.theme-cherry .super-cell { color: #d4af37 !important; }
-
-        .cell.is-hot, .super-cell.is-hot { 
-            color: #ff4500 !important; 
-            text-shadow: 0 0 8px #ff4500, 0 0 15px #ff4500, 0 0 5px #fff !important; 
-            font-weight: 900;
-        }
-        .cell.is-cold, .super-cell.is-cold { 
-            color: #00ffff !important; 
-            text-shadow: 0 0 8px #00ffff, 0 0 15px #00bfff, 0 0 5px #fff !important; 
-            font-weight: 900;
-        }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
         .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
@@ -94,8 +84,8 @@
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .smart-tools { display: flex; gap: 8px; margin-bottom: 5px; }
         .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
-        .tool-btn.active-hot { background: var(--hot-color); border-color: #fff; box-shadow: 0 0 10px var(--hot-color); }
-        .tool-btn.active-cold { background: var(--cold-color); border-color: #fff; box-shadow: 0 0 10px var(--cold-color); }
+        .tool-btn.active-hot { background: #ff0000; border-color: #fff; box-shadow: 0 0 10px #ff0000; }
+        .tool-btn.active-cold { background: #00f2ff; border-color: #fff; box-shadow: 0 0 10px #00f2ff; }
         
         .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
@@ -106,7 +96,7 @@
         .btn-round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--main-color); background: none; color: #fff; font-size: 18px; cursor: pointer; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; position: relative; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; }
         .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
         .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 12px var(--process-color); transition: none; }
 
@@ -208,69 +198,105 @@
     let isProcessing = false;
     let currentMode = null; 
     let currentPeriod = 'month';
+    let prevStats = null; // Для отслеживания смены статуса
 
-    const dbStats = {
+    let dbStats = {
         month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} },
         year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1, 5], superCold: [4, 3], freq: {7: 54, 18: 51, 22: 48, 31: 46, 35: 43, 41: 42, 4: 11, 9: 9, 15: 7, 26: 6, 30: 4, 38: 2} },
         all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3, 2], superCold: [6, 1], freq: {42: 492, 12: 478, 19: 465, 1: 459, 23: 451, 37: 447, 2: 112, 10: 105, 17: 98, 21: 92, 32: 85, 40: 71} }
     };
 
     const humorDict = {
-        ru: {
-            all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."],
-            all_cold: ["Настоящий мамонт — вымер давно.", "Бермудский треугольник — пропал.", "Призрак оперы — никто не видел.", "Спящий красавец — спит век.", "Скромный отшельник из леса.", "Забытый багаж на складе."],
-            year_hot: ["Звезда соцсетей года!", "Энергетик — заряжен на успех.", "Карьерист — прет по головам.", "Мистер Популярность — чаще пиццы.", "На хайпе! Ловит волну.", "Швейцарские часы — без сбоев."],
-            year_cold: ["В глубоком офшоре.", "Ушел в декрет — отдыхает.", "Партизан в засаде.", "Потерял ключи от лототрона.", "Прогульщик — видели в буфете.", "Космонавт — связи нет."],
-            month_hot: ["Спринтер месяца — несется!", "Главный выскочка — уже тут.", "Любимчик — подмигивает шарам.", "В режиме Форсажа!", "Горячий пирожок из печи.", "Абонемент на все тиражи."],
-            month_cold: ["Стесняшка — прячется за всех.", "На больничном — горло болит.", "Держит дистанцию — изоляция.", "Слишком занят в других играх.", "Вне зоны доступа.", "Турист в горах — шлет открытку."],
-            times: "раз(а)", title: "Число"
+        ru: { 
+            all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."], 
+            all_cold: ["Настоящий мамонт — вымер давно.", "Бермудский треугольник — пропал.", "Призрак оперы — никто не видел.", "Спящий красавец — спит век.", "Скромный отшельник из леса.", "Забытый багаж на складе."], 
+            new_hot: "🚀 У нас новый чемпион! Свежая кровь в зале славы!",
+            new_cold: "🧊 Еще один отмороженный! Добро пожаловать в холодильник!",
+            times: "раз(а)", title: "Число" 
         },
-        ua: {
-            all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотой стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановець — оре без вихідних."],
-            all_cold: ["Справжній мамонт — вимер давно.", "Бермудський трикутник — зник.", "Привид опери — ніхто не бачив.", "Сплячий красень — спить вік.", "Скромний відшельник з лісу.", "Забутий багаж на складі."],
-            year_hot: ["Зірка соцмереж року!", "Енергетик — заряджений на успіх.", "Кар'єрист — пре по головах.", "Містер Популярність — частіше за піцу.", "На хайпі! Ловить хвилю.", "Швейцарський годинник — без збоїв."],
-            year_cold: ["У глибокому офшорі.", "Пішов у декрет — відпочиває.", "Партизан у засідці.", "Загубив ключі від лототрона.", "Прогульник — бачили в буфеті.", "Космонавт — зв'язку немає."],
-            month_hot: ["Спринтер місяця — мчить!", "Головний выскочка — вже тут.", "Улюбленець — підмигує кулям.", "В режимі Форсажу!", "Гарячий пиріжок з печі.", "Абонемент на всі тиражі."],
-            month_cold: ["Сором'язливий — ховається за всіх.", "На лікарняному — горло болить.", "Тримає дистанцію — ізоляція.", "Занадто зайнятий в інших іграх.", "Поза зоною досяжності.", "Турист у горах — шле листівку."],
-            times: "раз(ів)", title: "Число"
+        ua: { 
+            all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотой стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановець — оре без вихідних."], 
+            all_cold: ["Справжній мамонт — вимер давно.", "Бермудський трикутник — зник.", "Привид опери — ніхто не бачив.", "Сплячий красень — спить вік.", "Скромний відшельник з лісу.", "Забутий багаж на складі."], 
+            new_hot: "🚀 У нас новий чемпіон! Свіжа кров у залі слави!",
+            new_cold: "🧊 Ще один відморожений! Ласкаво просимо до холодильника!",
+            times: "раз(ів)", title: "Число" 
         },
-        de: {
-            all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."],
-            all_cold: ["Echtes Mammut — längst ausgestorben.", "Bermuda-Dreieck — verschwunden.", "Phantom der Oper — nie gesehen.", "Dornröschen — schläft ewig.", "Bescheidener Eremit aus dem Wald.", "Vergessenes Gepäck im Lager."],
-            year_hot: ["Social-Media-Star des Jahres!", "Energy-Drink — geladen auf Erfolg.", "Karrierist — geht über Leichen.", "Mr. Popularität — öfter als Pizza.", "Auf dem Hype! Reitet die Welle.", "Schweizer Uhr — ohne Fehler."],
-            year_cold: ["In der Tiefsee-Offshore.", "Im Mutterschutz — ruht sich aus.", "Partisan im Hinterhalt.", "Schlüssel zum Lotto verloren.", "Schwänzer — in der Kantine gesehen.", "Astronaut — kein Kontakt."],
-            month_hot: ["Monats-Sprinter — rast!", "Haupt-Emporkömmling — schon da.", "Glückspilz — zwinkert den Kugeln.", "Im Fast & Furious Modus!", "Heißes Pirogge aus dem Ofen.", "Dauerkarte für alle Ziehungen."],
-            month_cold: ["Schüchtern — versteckt sich.", "Krankgeschrieben — Halsweh.", "Hält Distanz — Isolation.", "Zu beschäftigt in anderen Spielen.", "Außer Reichweite — kein Signal.", "Tourist in Bergen — schickt Karte."],
-            times: "Mal", title: "Zahl"
+        de: { 
+            all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."], 
+            all_cold: ["Echtes Mammut — längst ausgestorben.", "Bermuda-Dreieck — verschwunden.", "Phantom der Oper — nie gesehen.", "Dornröschen — schläft ewig.", "Bescheidener Eremit aus dem Wald.", "Vergessenes Gepäck im Lager."], 
+            new_hot: "🚀 Ein neuer Champion! Frisches Blut in der Hall of Fame!",
+            new_cold: "🧊 Noch einer tiefgekühlt! Willkommen im Eisschrank!",
+            times: "Mal", title: "Zahl" 
         },
-        fr: {
-            all_hot: ["Lapin — champion du piège !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."],
-            all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."],
-            year_hot: ["Star des réseaux de l'année !", "Énergétique — chargé à bloc.", "Carriériste — fonce tête baissée.", "Mr Popularité — plus que la pizza.", "Sur le buzz ! Surfe sur la vague.", "Montre suisse — sans faille."],
-            year_cold: ["En offshore profond.", "En congé — se repose.", "Partisan en embuscade.", "A perdu les clés du loto.", "Absentéiste — vu à la cafétéria.", "Astronaute — aucun signal."],
-            month_hot: ["Sprinteur du mois — fonce !", "L'intrus principal — déjà là.", "Chouchou — fait un clin d'œil.", "En mode Fast & Furious !", "Petit pain chaud du four.", "Abonnement sur tous les tirages."],
-            month_cold: ["Timide — se cache derrière.", "En congé maladie — mal à la gorge.", "Garde ses distances — isolation.", "Trop occupé ailleurs.", "Hors zone — aucun signal.", "Touriste en montagne — envoie une carte."],
-            times: "fois", title: "Nombre"
+        fr: { 
+            all_hot: ["Lapin — champion du piège !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."], 
+            all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."], 
+            new_hot: "🚀 Un nouveau champion ! Du sang neuf au Hall of Fame !",
+            new_cold: "🧊 Un autre givré ! Bienvenue au congélateur !",
+            times: "fois", title: "Nombre" 
         },
-        it: {
-            all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — lavora sempre."],
-            all_cold: ["Vero mammut — estinto da tempo.", "Triangolo delle Bermuda — sparito.", "Fantasma dell'opera — mai visto.", "Bella addormentata — dorme da un secolo.", "Eremita modesto del bosco.", "Bagaglio dimenticato in deposito."],
-            year_hot: ["Star dei social dell'anno!", "Energetico — carico di successo.", "Carrierista — va dritto alla meta.", "Mr Popolarità — più della pizza.", "Sull'hype! Cavalca l'onda.", "Orologio svizzero — senza errori."],
-            year_cold: ["In offshore profondo.", "In maternità — si riposа.", "Partigiano in agguato.", "Ha perso le chiavi del loto.", "Assenteista — visto al bar.", "Astronauta — nessun segnale."],
-            month_hot: ["Sprinter del mese — corre!", "Il primo arrivato — già qui.", "Il preferito — fa l'occhiolino.", "In modalità Fast & Furious!", "Focaccina calda dal forno.", "Abbonamento a tutte le estrazioni."],
-            month_cold: ["Timido — si nasconde.", "In malattia — mal di gola.", "Mantiene le distanze — isolamento.", "Troppo occupato altrove.", "Fuori portata — nessun segnale.", "Turista in montagna — manda una cartolina."],
-            times: "volte", title: "Numero"
+        it: { 
+            all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — работает всегда."], 
+            all_cold: ["Vero mammut — estinto da tempo.", "Triangolo delle Bermuda — sparito.", "Fantasma dell'opera — mai visto.", "Bella addormentata — dorme da un secolo.", "Eremita modesto del bosco.", "Bagaglio dimenticato in deposito."], 
+            new_hot: "🚀 Un nuovo campione! Sangue fresco nella Hall of Fame!",
+            new_cold: "🧊 Un altro congelato! Benvenuti nel freezer!",
+            times: "volte", title: "Numero" 
         }
     };
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", hot: "ГОРЯЧЕЕ", cold: "ХОЛОДНОЕ", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ", alert: "Заполните билет полностью!" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", hot: "ГАРЯЧЕ", cold: "ХОЛОДНЕ", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС", alert: "Заповніть квиток повністю!" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", hot: "HEISS", cold: "KALT", month: "MONAT", year: "JAHR", all: "GESAMT", alert: "Ticket vollständig ausfüllen!" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", hot: "CHAUD", cold: "FROID", month: "MOIS", year: "AN", all: "TOTAL", alert: "Remplissez le ticket!" },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", hot: "CALDO", cold: "FREDDO", month: "MESE", year: "ANNO", all: "TOTALE", alert: "Completa il biglietto!" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", alert: "Заполните билет полностью!" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", alert: "Заповніть квиток повністю!" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", alert: "Ticket vollständig ausfüllen!" },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", alert: "Remplissez le ticket!" },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", alert: "Completa il biglietto!" }
     };
     let currentLang = 'de';
+
+    async function syncSwissLotto() {
+        try {
+            // Имитация получения живых данных (в реале fetch к API)
+            // Для теста 1.1: представим, что число 5 стало HOT, а 40 стало COLD
+            prevStats = JSON.parse(JSON.stringify(dbStats)); 
+            
+            // Здесь будет реальный fetch('https://api...')
+            console.log("Движок VCHF 1.1: Синхронизация со Swiss Lotto...");
+            
+            // Обновляем сетку после загрузки
+            if(currentMode) refreshGrid();
+        } catch(e) { console.error("Ошибка синхронизации"); }
+    }
+
+    function showCellInfo(n, isSuper = false) {
+        const stats = dbStats[currentPeriod];
+        const list = stats[currentMode];
+        const index = list.indexOf(n);
+        
+        if (index !== -1) {
+            const langData = humorDict[currentLang] || humorDict['de'];
+            let text = "";
+            
+            // Проверка на "Нового чемпиона" (сравнение с предыдущим состоянием)
+            if (prevStats) {
+                const wasInList = prevStats[currentPeriod][currentMode].includes(n);
+                if (!wasInList) {
+                    text = `<span style="color:var(--main-color); font-weight:bold;">${currentMode === 'hot' ? langData.new_hot : langData.new_cold}</span><br><br>`;
+                }
+            }
+
+            // Основной юмор
+            const humorKey = (currentMode === 'hot') ? 'all_hot' : 'all_cold';
+            text += langData[humorKey][index % langData[humorKey].length];
+
+            document.getElementById('m-title').innerText = `${langData.title} ${n}${isSuper ? ' (Super)' : ''}`;
+            document.getElementById('m-text').innerHTML = `${text}<br><br><b>${stats.freq[n] || 0} ${langData.times}</b>`;
+            
+            const modal = document.getElementById('humor-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.querySelector('.modal-content').classList.add('show'), 10);
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+    }
 
     function switchCurrency(type) {
         activeCurrency = type;
@@ -285,22 +311,16 @@
         document.getElementById('main-btn').innerText = dict[l].btn;
         document.getElementById('l-super').innerText = dict[l].super;
         document.getElementById('topup-btn').innerText = dict[l].topup;
-        document.getElementById('p-month').innerText = dict[l].month;
-        document.getElementById('p-year').innerText = dict[l].year;
-        document.getElementById('p-all').innerText = dict[l].all;
-        tg.HapticFeedback.selectionChanged();
     }
 
     function toggleHeatmap(type) {
         const box = document.getElementById('stats-p-box');
         if (currentMode === type) {
-            currentMode = null;
-            box.classList.remove('visible');
+            currentMode = null; box.classList.remove('visible');
             document.getElementById('btn-hot').classList.remove('active-hot');
             document.getElementById('btn-cold').classList.remove('active-cold');
         } else {
-            currentMode = type;
-            box.classList.add('visible');
+            currentMode = type; box.classList.add('visible');
             document.getElementById('btn-hot').classList.toggle('active-hot', type === 'hot');
             document.getElementById('btn-cold').classList.toggle('active-cold', type === 'cold');
         }
@@ -328,27 +348,6 @@
         sList.forEach(sn => { if (sCells[sn-1]) sCells[sn-1].classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold'); });
     }
 
-    function showCellInfo(n, isSuper = false) {
-        const stats = dbStats[currentPeriod];
-        const list = stats[currentMode];
-        const index = list.indexOf(n);
-        
-        if (index !== -1) {
-            const langData = humorDict[currentLang] || humorDict['de'];
-            const periodKey = `${currentPeriod}_${currentMode}`;
-            const funnyText = langData[periodKey][index];
-            const count = stats.freq[n] || 0;
-
-            document.getElementById('m-title').innerText = `${langData.title} ${n}${isSuper ? ' (Super)' : ''}`;
-            document.getElementById('m-text').innerHTML = `${funnyText}<br><br><b>${count} ${langData.times}</b>`;
-            
-            const modal = document.getElementById('humor-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.querySelector('.modal-content').classList.add('show'), 10);
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-    }
-
     function closeHumor() {
         const modal = document.getElementById('humor-modal');
         modal.querySelector('.modal-content').classList.remove('show');
@@ -356,8 +355,7 @@
     }
 
     function randomFill() {
-        if (isProcessing) return;
-        isProcessing = true;
+        if (isProcessing) return; isProcessing = true;
         const cells = document.querySelectorAll('.cell');
         const superCells = document.querySelectorAll('.super-cell');
         let iteration = 0; const totalSteps = 24; let currentDelay = 50;
@@ -370,36 +368,27 @@
             }
             tg.HapticFeedback.impactOccurred('light');
             iteration++;
-            if (iteration < totalSteps) {
-                if (iteration > totalSteps * 0.6) currentDelay += 28; 
-                setTimeout(step, currentDelay);
-            } else { finalizeSelection(); }
+            if (iteration < totalSteps) { setTimeout(step, currentDelay); } else { finalize(); }
         }
-        function finalizeSelection() {
-            selected = [];
-            cells.forEach(c => c.classList.remove('selected', 'processing'));
+        function finalize() {
+            selected = []; cells.forEach(c => c.classList.remove('selected', 'processing'));
             while(selected.length < 6) {
                 let r = Math.floor(Math.random() * 42) + 1;
                 if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
             }
             superNum = Math.floor(Math.random() * 6) + 1;
             superCells[superNum-1].classList.add('selected');
-            isProcessing = false;
-            tg.HapticFeedback.notificationOccurred('success');
+            isProcessing = false; tg.HapticFeedback.notificationOccurred('success');
         }
         step();
     }
 
-    // ЛОГИКА КЛИКА: ОПИСАНИЕ + ВЫБОР
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
-        const c = document.createElement('div'); 
-        c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) {
-                showCellInfo(i);
-            }
+            if(currentMode && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) showCellInfo(i);
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
@@ -408,13 +397,10 @@
 
     const sGridDiv = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div'); 
-        sc.className = 'super-cell'; sc.innerText = i;
+        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) {
-                showCellInfo(i, true);
-            }
+            if(currentMode && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) showCellInfo(i, true);
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
@@ -431,7 +417,6 @@
             document.getElementById('app-content').style.pointerEvents = 'none';
             const btn = document.getElementById('main-btn');
             btn.disabled = true; btn.innerText = "FIXIERT (19:15)"; btn.style.background = "#444";
-            tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(`Ticket fixiert via ${activeCurrency}!`);
         } else { tg.showAlert(`Insufficient balance!`); }
     }
@@ -446,6 +431,7 @@
             document.getElementById('intro-container').style.display='none';
             const app = document.getElementById('app-content');
             app.style.display='block'; setTimeout(() => app.style.opacity='1', 50);
+            syncSwissLotto(); // Синхронизация при старте
         }, 7500);
     }
     window.onload = runIntro;
@@ -453,16 +439,15 @@
     function setTheme(t) {
         document.body.className = 'theme-' + t;
         const colors = {
-            gold:   ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
-            lime:   ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
+            gold: ['#d4af37', 'linear-gradient(145deg, #f9e27d, #d4af37)'],
+            lime: ['#32CD32', 'linear-gradient(145deg, #7FFF00, #32CD32)'],
             silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)'],
-            cyan:   ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
+            cyan: ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
             cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
         };
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
         root.style.setProperty('--cell-text', colors[t][0]);
-        tg.HapticFeedback.impactOccurred('medium');
         document.querySelector('.theme-panel').classList.remove('open');
     }
 
@@ -472,7 +457,6 @@
             ticketCount = newCount;
             document.getElementById('ticket-count').innerText = ticketCount;
             document.getElementById('total-price').innerText = (ticketCount * PREIS_PRO_TICKET).toFixed(2);
-            tg.HapticFeedback.selectionChanged();
         }
     }
 </script>
