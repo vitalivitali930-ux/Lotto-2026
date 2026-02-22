@@ -38,7 +38,7 @@
             background-size: cover; z-index: 20000; 
             display: flex; justify-content: center; align-items: center;
         }
-        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
+        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -253,9 +253,15 @@
     function updateInternalStats(newNums) {
         let saved = localStorage.getItem('vchf_db');
         realStatsDB = saved ? JSON.parse(saved) : {};
+        let wasChanged = false;
         for(let i=1; i<=42; i++) if(!realStatsDB[i]) realStatsDB[i] = [0,0,0];
-        newNums.forEach(n => { if(realStatsDB[n]) { realStatsDB[n][0]++; realStatsDB[n][1]++; realStatsDB[n][2]++; } });
-        localStorage.setItem('vchf_db', JSON.stringify(realStatsDB));
+        newNums.forEach(n => { if(realStatsDB[n]) { realStatsDB[n][0]++; realStatsDB[n][1]++; realStatsDB[n][2]++; wasChanged = true; } });
+        if (wasChanged) {
+            localStorage.setItem('vchf_db', JSON.stringify(realStatsDB));
+            const msg = dict[currentLang] ? dict[currentLang].status : dict['de'].status;
+            tg.showAlert(msg);
+            tg.HapticFeedback.notificationOccurred('success');
+        }
         refreshGrid();
     }
 
@@ -267,11 +273,11 @@
     }
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "HOT/COLD статус обновлён!" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", status: "HOT/COLD статус оновлено!" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", status: "HOT/COLD Status aktualisiert!" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", status: "HOT/COLD status updated!" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut HOT/COLD mis à jour!" }
     };
 
     function setLang(l) {
@@ -403,11 +409,21 @@
     window.onload = () => {
         setLang('de');
         fetchOfficialStats();
-        const steps = [{id:'intro1', s:500, e:2500}, {id:'intro2', s:2700, e:4700}, {id:'intro3', s:4900, e:6900}];
+        const steps = [
+            {id:'intro1', s:500, e:2500}, 
+            {id:'intro2', s:2600, e:4600}, 
+            {id:'intro3', s:4700, e:6700}
+        ];
         steps.forEach(st => {
             const img = document.getElementById(st.id);
-            setTimeout(() => img.classList.add('active'), st.s);
-            setTimeout(() => { img.style.opacity = '0'; setTimeout(() => img.style.display = 'none', 500); }, st.e);
+            setTimeout(() => {
+                img.classList.add('active');
+                img.style.opacity = '1';
+            }, st.s);
+            setTimeout(() => { 
+                img.style.opacity = '0'; 
+                setTimeout(() => img.style.display = 'none', 500); 
+            }, st.e);
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display = 'none';
