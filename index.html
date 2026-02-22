@@ -3,98 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF v1.8</title>
+    <title>Lotto - Движок VCHF v1.5</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --cell-text: #ffffff; /* ШАРЫ БЕЛЫЕ */
+            --cell-text: #ffffff; 
             --hot-color: #ff4500;
-            --cold-color: #00ffff;
+            --cold-color: #1e90ff;
+            --process-color: #00ffff; 
         }
 
         body { 
             background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; color: #fff; 
             font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow-y: auto; 
+            text-align: center; margin: 0; overflow: hidden; 
         }
 
-        /* Интро */
-        #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
-        .intro-img { position: absolute; width: 85%; opacity: 0; }
-        .intro-img.active { animation: pop 0.7s ease-out forwards; }
-        @keyframes pop { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        #intro-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 20000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
+        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
+        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        #app-content { display: none; opacity: 0; transition: opacity 1s; padding-top: 15px; }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-top: 15px; }
+        
+        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .lang-btn { font-size: 24px; cursor: pointer; }
 
-        /* Кошельки */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; opacity: 0.3; transition: 0.3s; }
-        .bal-card.active-wallet { opacity: 1; border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); }
+        .bal-card { 
+            flex: 1; border-radius: 12px; padding: 12px; 
+            background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; 
+            transition: 0.5s ease; cursor: pointer;
+            opacity: 0.15; filter: grayscale(1) brightness(0.6);
+        }
+        .bal-card.active-wallet { 
+            opacity: 1; filter: grayscale(0) brightness(1);
+            border-color: var(--main-color); 
+            background: rgba(212, 175, 55, 0.1); 
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            transform: scale(1.05);
+        }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* Сетка - ШАРЫ */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: var(--cell-text); cursor: pointer; border-radius: 50%; transition: 0.2s; }
-        .cell.selected { background: var(--main-gradient); color: #000 !important; }
+        #smart-hint {
+            display: none; background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--main-color); border-radius: 12px;
+            margin: 0 15px 15px; padding: 10px; animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hint-btn { background: none; border: 1px solid var(--main-color); color: #fff; font-size: 10px; padding: 4px 10px; border-radius: 8px; cursor: pointer; margin: 5px 3px 0; }
+        .hint-btn.active { background: var(--main-gradient); color: #000; }
+
+        .cell.is-hot, .super-cell.is-hot { 
+            color: #ff4500 !important; 
+            text-shadow: 0 0 10px #ff4500, 0 0 5px #fff !important; 
+            font-weight: 900;
+        }
+        .cell.is-cold, .super-cell.is-cold { 
+            color: #00ffff !important; 
+            text-shadow: 0 0 10px #00ffff, 0 0 5px #fff !important; 
+            font-weight: 900;
+        }
+
+        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
+        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin-top: 25px; margin-bottom: 50px; }
+
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .smart-tools { display: flex; gap: 8px; margin-bottom: 5px; }
+        .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
+        .tool-btn.active-hot { background: var(--hot-color); border-color: #fff; }
+        .tool-btn.active-cold { background: var(--cold-color); border-color: #fff; }
         
-        .super-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
+        .stats-period.visible { opacity: 1; pointer-events: all; }
+        .p-btn { font-size: 10px; padding: 3px 8px; border-radius: 10px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; }
+
+        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; }
+        .btn-round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--main-color); background: none; color: #fff; font-size: 18px; cursor: pointer; }
+
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: var(--cell-text); font-size: 20px; transition: 0.2s; cursor: pointer; position: relative; }
+        .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; }
+        .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; }
+
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; }
+        .super-grid { display: flex; justify-content: center; gap: 10px; }
         .super-cell { width: 42px; height: 42px; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; cursor: pointer; }
         .super-cell.selected { background: var(--main-gradient); color: #000 !important; }
 
-        /* Подсветка статистики */
-        .is-hot { color: var(--hot-color) !important; text-shadow: 0 0 10px var(--hot-color); }
-        .is-cold { color: var(--cold-color) !important; text-shadow: 0 0 10px var(--cold-color); }
-
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; background: var(--main-gradient); border: none; font-weight: bold; margin: 30px 0; }
-        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; }
-        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
+        .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(80px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="intro-container">
-    <img src="Bild1.png" id="i1" class="intro-img">
-    <img src="Bild2.png" id="i2" class="intro-img">
-    <img src="Bild3.png" id="i3" class="intro-img">
+    <img src="Bild1.png" id="intro1" class="intro-img">
+    <img src="Bild2.png" id="intro2" class="intro-img">
+    <img src="Bild3.png" id="intro3" class="intro-img">
 </div>
 
 <div id="app-content">
     <div class="lang-panel">
-        <span onclick="setLang('ru')">🇷🇺</span><span onclick="setLang('ua')">🇺🇦</span><span onclick="setLang('de')">🇩🇪</span><span onclick="setLang('fr')">🇫🇷</span><span onclick="setLang('it')">🇮🇹</span>
+        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
+        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
+        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
+    </div>
+
+    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
     </div>
 
     <div class="balance-container">
         <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-            <div style="font-size:10px;">VIRTUAL VCHF</div>
+            <div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div>
             <div class="bal-val" id="vchf-val">100.00</div>
         </div>
         <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-            <div style="font-size:10px;">REAL CHF</div>
+            <div style="font-size:10px; color:var(--main-color)">REAL CHF</div>
             <div class="bal-val" id="chf-val">0.00</div>
         </div>
     </div>
 
+    <div id="smart-hint">
+        <div id="hint-text" style="font-size: 11px; margin-bottom: 5px;"></div>
+        <button class="hint-btn active" id="btn-mara" onclick="selectStrategy('mara')">MARATHON</button>
+        <button class="hint-btn" id="btn-oboyma" onclick="selectStrategy('oboyma')">OBOYMA</button>
+    </div>
+    
+    <button class="btn-topup" id="topup-btn">💰 BALANCE AUFFÜLLEN</button>
+
+    <div class="ticket-controls">
+        <div class="smart-tools">
+            <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
+            <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
+            <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
+        </div>
+        <div class="stats-period" id="stats-p-box">
+            <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+            <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+            <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+        </div>
+        <div class="counter-box">
+            <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+            <span id="ticket-count" style="font-size: 18px; font-weight: bold;">1</span>
+            <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+        </div>
+        <div style="font-size: 12px; color: #aaa;">TOTAL: <span id="total-price" style="color:#fff">2.50</span> <span id="currency-label">VCHF</span></div>
+    </div>
+
     <div class="grid" id="main-grid"></div>
+    <div id="l-super" class="super-title">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
-    <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
+    <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+    const root = document.documentElement;
 
+    const PREIS_PRO_TICKET = 2.50;
+    let vchfBalance = 100.00;
+    let chfBalance = 0.00;
+    let ticketCount = 1;
     let selected = [];
     let superNum = null;
-    let currentLang = 'de';
     let activeCurrency = 'VCHF';
+    let isProcessing = false;
+    let currentMode = null; 
+    let currentPeriod = 'month';
+    let currentLang = 'de';
 
-    // Твой словарь юмора (сокращенно для примера, верни свой полный)
+    const dbStats = {
+        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3} },
+        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1, 5], superCold: [4, 3], freq: {7: 54, 18: 51, 22: 48} },
+        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3, 2], superCold: [6, 1], freq: {42: 492, 12: 478} }
+    };
+
     const humorDict = {
-        ru: { times: "раз", hot: ["Зайчик — чемпион!", "Железный Феликс!"], alert: "Заполни билет!" },
-        de: { times: "Mal", hot: ["Hase — Champion!", "Eiserner Felix!"], alert: "Ticket ausfüllen!" }
+        ru: { times: "раз", hint: "Выбрано билетов: ", mara: "МАРАФОН", obo: "ОБОЙМА", all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс!"] },
+        de: { times: "Mal", hint: "Tickets: ", mara: "MARATHON", obo: "OBOYMA", all_hot: ["Hase — Champion!", "Eiserner Felix!"] }
+    };
+
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN" }
     };
 
     function switchCurrency(type) {
@@ -104,59 +216,81 @@
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function render() {
-        const g = document.getElementById('main-grid');
-        g.innerHTML = '';
+    function initGrids() {
+        const gridDiv = document.getElementById('main-grid');
+        gridDiv.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.innerText = i;
+            const c = document.createElement('div'); 
+            c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
             c.onclick = () => {
                 tg.HapticFeedback.impactOccurred('light');
-                if(selected.includes(i)) {
-                    selected = selected.filter(n => n !== i);
-                    c.classList.remove('selected');
-                } else if(selected.length < 6) {
-                    selected.push(i);
-                    c.classList.add('selected');
-                }
+                if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+                else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); }
             };
-            g.appendChild(c);
+            gridDiv.appendChild(c);
         }
 
-        const sg = document.getElementById('s-grid');
-        sg.innerHTML = '';
+        const sGridDiv = document.getElementById('s-grid');
+        sGridDiv.innerHTML = '';
         for (let i = 1; i <= 6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'super-cell';
-            sc.innerText = i;
+            const sc = document.createElement('div'); 
+            sc.className = 'super-cell'; sc.innerText = i;
             sc.onclick = () => {
                 tg.HapticFeedback.impactOccurred('medium');
                 document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-                superNum = i;
-                sc.classList.add('selected');
+                superNum = i; sc.classList.add('selected');
             };
-            sg.appendChild(sc);
+            sGridDiv.appendChild(sc);
         }
     }
 
     window.onload = () => {
-        setTimeout(() => document.getElementById('i1').classList.add('active'), 500);
-        setTimeout(() => document.getElementById('i1').classList.remove('active'), 2500);
-        setTimeout(() => document.getElementById('i2').classList.add('active'), 2700);
-        setTimeout(() => document.getElementById('i2').classList.remove('active'), 4700);
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => document.getElementById(st.id).classList.remove('active'), st.e);
+        });
         setTimeout(() => {
             document.getElementById('intro-container').style.display='none';
             document.getElementById('app-content').style.display='block';
             setTimeout(() => document.getElementById('app-content').style.opacity='1', 50);
-            render();
-        }, 5000);
+            initGrids();
+        }, 7500);
     };
 
+    function setTheme(t) {
+        document.body.className = 'theme-' + t;
+        tg.HapticFeedback.impactOccurred('medium');
+        document.querySelector('.theme-panel').classList.remove('open');
+    }
+
+    function toggleHeatmap(type) {
+        currentMode = (currentMode === type) ? null : type;
+        document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
+        if (currentMode) {
+            dbStats[currentPeriod][currentMode].forEach(n => {
+                const el = document.getElementById(`cell-${n}`);
+                if (el) el.classList.add('is-' + currentMode);
+            });
+        }
+    }
+
+    function updateTicketCount(val) {
+        ticketCount = Math.max(1, ticketCount + val);
+        document.getElementById('ticket-count').innerText = ticketCount;
+        document.getElementById('total-price').innerText = (ticketCount * PREIS_PRO_TICKET).toFixed(2);
+        document.getElementById('smart-hint').style.display = (ticketCount > 1) ? 'block' : 'none';
+        tg.HapticFeedback.selectionChanged();
+    }
+    
     function runEngine() {
-        if (selected.length < 6 || !superNum) { tg.showAlert("Error!"); return; }
-        tg.HapticFeedback.notificationOccurred('success');
-        tg.showAlert("Фиксирую тираж!");
+        if (selected.length === 6 && superNum) {
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Ticket fixiert!");
+        } else {
+            tg.showAlert("Заполните билет!");
+        }
     }
 </script>
 </body>
