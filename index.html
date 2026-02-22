@@ -115,7 +115,6 @@
         .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
         .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); }
 
-        /* VCHF Custom Modal */
         .vchf-alert {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             background: rgba(0,0,0,0.95); padding: 25px; border-radius: 25px; 
@@ -241,11 +240,8 @@
                     officialData[i].allTimeCount
                 ];
             }
-            console.log("Движок VCHF: Данные синхронизированы с официальным архивом.");
             refreshGrid();
-        } catch (e) {
-            console.error("Ошибка совести: не удалось получить данные лотереи.");
-        }
+        } catch (e) { console.error("Data error"); }
     }
 
     function simulateParsingSwissLotto() {
@@ -262,60 +258,21 @@
         });
     }
 
-    const rankEngine = {
-        getColor: (pos) => {
-            if (pos <= 8) return 'var(--main-color)'; 
-            if (pos <= 17) return '#32CD32'; 
-            if (pos <= 26) return '#00ffff'; 
-            if (pos <= 34) return '#c0c0c0'; 
-            return '#1e90ff';
-        },
-        getJoke: (num, pos, type, lang) => {
-            const isHot = type === 'hot';
-            const fates = {
-                ru: {
-                    hot: [`№${num}: Искрит! Совесть проекта на пике.`, `№${num}: Крылья Колибри!`, `№${num}: В огне VCHF!`, `№${num}: Энергия Wanderer!`],
-                    cold: [`№${num}: Фотография костра — не горит.`, `№${num}: Демо-версия смерти (сон).`, `№${num}: Число спит.`, `№${num}: Ждёт искру бога.`]
-                },
-                ua: {
-                    hot: [`№${num}: Іскрить! Совість проекту.`, `№${num}: Крила Колібрі!`, `№${num}: У вогні VCHF!`, `№${num}: Енергія Wanderer!`],
-                    cold: [`№${num}: Фотографія багаття — не горить.`, `№${num}: Демо-версія смерті (сон).`, `№${num}: Число спить.`, `№${num}: Чекає на іскру божу.`]
-                },
-                de: {
-                    hot: [`Nr. ${num}: VCHF-Power!`, `Nr. ${num}: Kolibri-Flügel!`, `Nr. ${num}: Heißes Eisen!`, `Nr. ${num}: Wanderer-Energie!`],
-                    cold: [`Nr. ${num}: Foto vom Feuer — brennt nicht.`, `Nr. ${num}: Schlaf (Demo-Tod).`, `Nr. ${num}: Winterschlaf.`, `Nr. ${num}: Wartet auf Gott.`]
-                },
-                en: {
-                    hot: [`No. ${num}: VCHF Sparking!`, `No. ${num}: Hummingbird Wings!`, `No. ${num}: On Fire!`, `No. ${num}: Wanderer Energy!`],
-                    cold: [`No. ${num}: Photo of a fire — cold.`, `No. ${num}: Death demo version (sleep).`, `No. ${num}: Sleeping now.`, `No. ${num}: Waiting for spark.`]
-                },
-                fr: {
-                    hot: [`N° ${num}: Étincelle VCHF!`, `N° ${num}: Ailes de Colibri!`, `N° ${num}: En feu!`, `N° ${num}: Énergie Wanderer!`],
-                    cold: [`N° ${num}: Photo d'un feu — froid.`, `N° ${num}: Démo de la mort (sommeil).`, `N° ${num}: En sommeil.`, `N° ${num}: Attend l'étincelle.`]
-                }
-            };
-            const currentSet = fates[lang] || fates['de'];
-            const pool = isHot ? currentSet.hot : currentSet.cold;
-            if (num === 7) return lang === 'ru' ? `🍀 №7: Счастливая звезда.` : `🍀 No. 7: Lucky Star.`;
-            return pool[num % pool.length];
-        }
-    };
-
     const dbStats = {
-        month: { hot: [4, 18, 29, 33, 37, 42], cold: [2, 7, 15, 21, 30, 39], humor: { hot: "🔥", cold: "❄️" } },
-        year:  { hot: [12, 18, 26, 31, 38, 41], cold: [1, 5, 13, 22, 28, 40], humor: { hot: "🏆", cold: "🛌" } },
-        all:   { hot: [18, 37, 42, 12, 1, 23], cold: [6, 10, 19, 24, 32, 35], humor: { hot: "👑", cold: "👻" } }
+        month: { hot: [4, 18, 29, 33, 37, 42], cold: [2, 7, 15, 21, 30, 39] },
+        year:  { hot: [12, 18, 26, 31, 38, 41], cold: [1, 5, 13, 22, 28, 40] },
+        all:   { hot: [18, 37, 42, 12, 1, 23], cold: [6, 10, 19, 24, 32, 35] }
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", pulled: "Вытянуто", times: "раз" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Витягнуто", times: "разів" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", pulled: "Gezogen", times: "Mal" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", pulled: "Drawn", times: "times" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", pulled: "Tiré", times: "fois" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", pulled: "Официально выпадало", times: "раз" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Офіційно випадало", times: "разів" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", pulled: "Offiziell gezogen", times: "Mal" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", pulled: "Officially drawn", times: "times" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", pulled: "Officiellement tiré", times: "fois" }
     };
 
     function setLang(l) {
@@ -330,21 +287,16 @@
         tg.HapticFeedback.selectionChanged();
     }
 
-    function showVCHFAlert(num, pos, count) {
-        const color = rankEngine.getColor(pos);
-        const joke = rankEngine.getJoke(num, pos, currentMode, currentLang);
+    function showVCHFAlert(num, count) {
         const d = dict[currentLang];
         const alertBox = document.createElement('div');
         alertBox.className = 'vchf-alert';
-        alertBox.style.borderColor = color;
-        alertBox.style.boxShadow = `0 0 25px ${color}`;
         alertBox.innerHTML = `
-            <div style="color:${color}; font-size:24px; font-weight:900;"># ${num}</div>
-            <p style="font-size:16px; margin:15px 0;">${joke}</p>
-            <div style="border-top:1px solid #333; padding-top:10px; font-size:14px;">
-                ${d.pulled}: <b style="color:#fff">${count} ${d.times}</b>
+            <div style="color:var(--main-color); font-size:24px; font-weight:900;"># ${num}</div>
+            <div style="margin:20px 0; font-size:16px; border-top:1px solid #333; padding-top:15px;">
+                ${d.pulled}:<br><b style="color:#fff; font-size:20px;">${count} ${d.times}</b>
             </div>
-            <button onclick="this.parentElement.remove()" style="margin-top:15px; background:${color}; border:none; padding:10px 20px; border-radius:10px; color:#000; font-weight:bold;">OK</button>
+            <button onclick="this.parentElement.remove()" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
         `;
         document.body.appendChild(alertBox);
         tg.HapticFeedback.notificationOccurred('success');
@@ -362,7 +314,6 @@
         document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
         document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
         updatePriceDisplay();
-        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function updatePriceDisplay() {
@@ -371,20 +322,14 @@
     }
 
     function toggleHeatmap(type) {
-        if (currentMode === type) {
-            currentMode = null;
-            document.getElementById('stats-p-box').classList.remove('visible');
-        } else {
-            currentMode = type;
-            document.getElementById('stats-p-box').classList.add('visible');
-        }
+        currentMode = (currentMode === type) ? null : type;
+        document.getElementById('stats-p-box').classList.toggle('visible', currentMode !== null);
         refreshGrid();
     }
 
     function setPeriod(p) {
         currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
         refreshGrid();
         tg.HapticFeedback.selectionChanged();
     }
@@ -393,12 +338,16 @@
         sndClick.currentTime = 0; sndClick.play();
         if (currentMode && realStatsDB[i]) {
             const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            const sorted = Object.keys(realStatsDB).map(n => ({ n: parseInt(n), val: realStatsDB[n][pIdx] })).sort((a, b) => currentMode === 'hot' ? b.val - a.val : a.val - b.val);
-            const rankPos = sorted.findIndex(item => item.n === i) + 1;
-            showVCHFAlert(i, rankPos, realStatsDB[i][pIdx]);
+            showVCHFAlert(i, realStatsDB[i][pIdx]);
         } else {
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); document.getElementById(`cell-${i}`).classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); document.getElementById(`cell-${i}`).classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+            if(selected.includes(i)) { 
+                selected = selected.filter(n => n !== i); 
+                document.getElementById(`cell-${i}`).classList.remove('selected'); 
+            } else if(selected.length < 6) { 
+                selected.push(i); 
+                document.getElementById(`cell-${i}`).classList.add('selected'); 
+                tg.HapticFeedback.impactOccurred('light'); 
+            }
         }
     }
 
@@ -462,7 +411,6 @@
         document.body.className = 'theme-' + t;
         const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
         document.documentElement.style.setProperty('--main-color', colors[t]);
-        tg.HapticFeedback.impactOccurred('light');
     }
 
     function runEngine() {
@@ -481,12 +429,9 @@
             setTimeout(() => { img.style.opacity = '0'; setTimeout(() => img.style.display = 'none', 500); }, st.e);
         });
         setTimeout(() => {
-            document.getElementById('intro-container').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('intro-container').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-            }, 800);
+            document.getElementById('intro-container').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
         }, 6900);
     };
 </script>
