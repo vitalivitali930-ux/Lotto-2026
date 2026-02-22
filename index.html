@@ -229,8 +229,6 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
-    // --- ИНТЕЛЛЕКТУАЛЬНЫЙ МОДУЛЬ СИНХРОНИЗАЦИИ VCHF ---
-    // Исправление: инициализируем объект для корректной работы до загрузки данных
     let realStatsDB = {};
 
     async function fetchOfficialStats() {
@@ -272,32 +270,37 @@
             if (pos <= 34) return '#c0c0c0'; 
             return '#1e90ff';
         },
-        getJoke: (pos, type, lang) => {
+        getJoke: (num, pos, type, lang) => {
             const isHot = type === 'hot';
             const jokes = {
                 ru: {
-                    top: "🔥 Позиция №1: Крылья Колибри! Машет быстрее света. Совесть проекта на пике!",
-                    bottom: "❄️ Позиция №42: Замёрзший мамонт. Ушёл в демо-версию смерти. Даже лёд не тает.",
-                    mid_hot: `🔥 Ранг ${pos}: Разогретая сталь! Колибри уже в пути.`,
-                    mid_cold: `❄️ Ранг ${pos}: Ящер в анабиозе. Спит крепко, видит сны.`
+                    top: `🔥 №${num}: Крылья Колибри! Машет быстрее света. Совесть на пике!`,
+                    bottom: `❄️ №${num}: Замёрзший мамонт. Ушёл в демо-версию смерти.`,
+                    hot_mid: `🔥 №${num}: Ранг ${pos}. Число в огне, движок VCHF разогрет!`,
+                    cold_mid: `❄️ №${num}: Ранг ${pos}. Спит как фотография костра — красиво, но не горит.`
                 },
                 de: {
-                    top: "🔥 Rang 1: Kolibri-Flügel! Schneller als eine Schweizer Uhr. Absolute Spitze!",
-                    bottom: "❄️ Rang 42: Eingefроrenes Mammut. Im Tiefschlaf. Schlaf ist die Demo-Version des Todes.",
-                    mid_hot: `🔥 Rang ${pos}: Heißes Eisen! Fast so präzise wie eine Bank.`,
-                    mid_cold: `❄️ Rang ${pos}: Echsen-Modus. Diese Zahl macht Winterschlaf.`
+                    top: `🔥 №${num}: Kolibri-Flügel! Schneller als Licht. VCHF Power!`,
+                    bottom: `❄️ №${num}: Mammut-Modus. Schlaf ist die Demo-Version des Todes.`,
+                    hot_mid: `🔥 №${num}: Rang ${pos}. Heißes Eisen im VCHF-System!`,
+                    cold_mid: `❄️ №${num}: Rang ${pos}. Winterschlaf. Schön, aber eiskalt.`
                 },
                 ua: {
-                    top: "🔥 Позиція №1: Крила Колібрі! Летить швидше за вітер. Гарячий козак!",
-                    bottom: "❄️ Позиція №42: Замерзлий мамонт. Пішов у демо-версію смерті. Спить глибоко.",
-                    mid_hot: `🔥 Ранг ${pos}: Розігріта сталь! Колібрі на підході.`,
-                    mid_cold: `❄️ Ящірка в анабіозі. Ранг ${pos}. Чекає на весну.`
+                    top: `🔥 №${num}: Крила Колібрі! Летить швидше вітру. Совість проекту!`,
+                    bottom: `❄️ №${num}: Замерзлий мамонт. Пішов у демо-версію смерті.`,
+                    hot_mid: `🔥 №${num}: Ранг ${pos}. Число палає, двигун VCHF працює!`,
+                    cold_mid: `❄️ №${num}: Ранг ${pos}. Спить міцно, чекає на свій час.`
                 }
             };
             const current = jokes[lang] || jokes['de'];
+            
+            // Уникальные вставки для твоего стиля
+            if (num === 7) return `🍀 №7: Счастливая звезда Wanderer. Ранг ${pos}.`;
+            if (num === 13) return `🛸 №13: Космическая аномалия движка. Ранг ${pos}.`;
+            
             if (pos === 1 && isHot) return current.top;
             if (pos === 42 && !isHot) return current.bottom;
-            return isHot ? current.mid_hot : current.mid_cold;
+            return isHot ? current.hot_mid : current.cold_mid;
         }
     };
 
@@ -331,7 +334,8 @@
 
     function showVCHFAlert(num, pos, count) {
         const color = rankEngine.getColor(pos);
-        const joke = rankEngine.getJoke(pos, currentMode, currentLang);
+        // Исправлено: передаем num в getJoke
+        const joke = rankEngine.getJoke(num, pos, currentMode, currentLang);
         const alertBox = document.createElement('div');
         alertBox.className = 'vchf-alert';
         alertBox.style.borderColor = color;
@@ -393,7 +397,6 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        // Исправление: добавлена проверка ключей объекта, чтобы избежать ошибок при расчете ранга
         if (currentMode && realStatsDB[i]) {
             const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
             const sorted = Object.keys(realStatsDB)
