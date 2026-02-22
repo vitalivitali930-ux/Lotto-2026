@@ -372,16 +372,37 @@
 
     window.onload = () => {
         updateLiveStats();
-        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        const steps = [
+            {id:'intro1', s:500,  e:2500},
+            {id:'intro2', s:2700, e:4700},
+            {id:'intro3', s:4900, e:6900}
+        ];
+
         steps.forEach(st => {
-            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).style.opacity='0'; }, st.e);
+            const img = document.getElementById(st.id);
+            setTimeout(() => {
+                img.classList.add('active');
+            }, st.s);
+            setTimeout(() => {
+                img.style.transition = "opacity 0.5s ease";
+                img.style.opacity = '0';
+                setTimeout(() => img.style.display = 'none', 500);
+            }, st.e);
         });
+
         setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 7200);
+            const intro = document.getElementById('intro-container');
+            const content = document.getElementById('app-content');
+            
+            intro.style.transition = "opacity0.8s ease";
+            intro.style.opacity = '0';
+            
+            setTimeout(() => {
+                intro.style.display = 'none';
+                content.style.display = 'block';
+                setTimeout(() => content.style.opacity = '1', 50);
+            }, 800);
+        }, 6900);
     };
 </script>
 </body>
