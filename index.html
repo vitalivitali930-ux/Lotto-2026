@@ -104,9 +104,19 @@
         }
         .super-cell.selected { opacity: 1; transform: scale(1.25) translateY(-8px); border: 2px solid #fff9d6; }
 
-        /* HUMOR BOX */
-        #humor-box { height: 30px; margin: 10px 0; font-style: italic; font-size: 13px; color: var(--main-color); opacity: 0; transition: 0.3s; }
-        #humor-box.show { opacity: 1; }
+        /* ЭФФЕКТНОЕ ПЛАВАЮЩЕЕ ОКОШКО ЮМОРА */
+        #humor-box { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            width: 280px; min-height: 60px; padding: 15px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--main-color); border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10000; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+        #humor-box.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .humor-text { background: var(--main-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .humor-count { font-size: 12px; color: #fff; opacity: 0.8; }
 
         .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
 
@@ -170,7 +180,12 @@
     </div>
 
     <div class="grid" id="main-grid"></div>
-    <div id="humor-box"></div>
+
+    <div id="humor-box">
+        <div class="humor-text" id="h-text"></div>
+        <div class="humor-count" id="h-count"></div>
+    </div>
+
     <div id="l-super" class="super-title">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
 
@@ -189,7 +204,6 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
-    // БАЗА ДАННЫХ
     const dbStats = {
         month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39] },
         year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38] },
@@ -202,41 +216,51 @@
     };
 
     const humorData = {
-        ru: { hot: ["Комета летит в карман!","Опять он? Наглец!","Звезда танцпола!"], cold: ["Мамонт спит...","Ленивый пельмень!","Ушел в отпуск."] },
-        de: { hot: ["Komet!","Frecher!","Disco!"], cold: ["Mammut!","Knödel!","Urlaub!"] }
+        ru: { hot: ["Комета летит в карман!","Опять оно? Наглец!","Звезда танцпола!"], cold: ["Мамонт спит...","Ленивый пельмень!","Ушел в отпуск."] },
+        ua: { hot: ["Комета летить у кишеню!","Знову воно? Нахаба!","Зірка танцполу!"], cold: ["Мамонт спить...","Лінивий пельмень!","Пішов у відпустку."] },
+        de: { hot: ["Komet im Anflug!","Schon wieder? Frechheit!","Disco-Star!"], cold: ["Mammut schläft...","Faule Nudel!","Im Urlaub."] }
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
 
-    // --- ГЛАВНАЯ ФУНКЦИЯ АКТУАЛИЗАЦИИ ---
     function updateLiveStats() {
         const now = new Date();
         const day = now.getDay(); 
         const hour = now.getHours();
-        // Четверг(4) или Воскресенье(0) после 6 утра
         if ((day === 4 && hour >= 6) || (day === 0 && hour >= 6)) {
             dbStats.month.hot.forEach(n => { if(statsCount[n]) statsCount[n] += 1; });
-            console.log("Stats updated automatically.");
         }
     }
 
     function showHumor(num) {
         let text = "";
-        const lang = humorData[currentLang] ? currentLang : 'de';
         let hIdx = dbStats[currentPeriod].hot.indexOf(num);
         let cIdx = dbStats[currentPeriod].cold.indexOf(num);
         let timesDrawn = statsCount[num] || Math.floor(Math.random() * 80);
 
-        if(hIdx !== -1) text = humorData[lang].hot[hIdx % 3];
-        else if(cIdx !== -1) text = humorData[lang].cold[cIdx % 3];
+        if(hIdx !== -1) text = humorData[currentLang].hot[hIdx % 3];
+        else if(cIdx !== -1) text = humorData[currentLang].cold[cIdx % 3];
 
-        const box = document.getElementById('humor-box');
-        if(text) { 
-            box.innerHTML = `${text} <span style="color:#fff; font-weight:bold; margin-left:10px;">×${timesDrawn} раз</span>`; 
-            box.classList.add('show'); 
-            setTimeout(() => box.classList.remove('show'), 3000); 
+        if(text) {
+            const box = document.getElementById('humor-box');
+            document.getElementById('h-text').innerText = text;
+            document.getElementById('h-count').innerText = `× ${timesDrawn} раз`;
+            box.classList.add('show');
+            setTimeout(() => box.classList.remove('show'), 2500);
         }
+    }
+
+    function setLang(l) {
+        currentLang = l;
+        const dict = {
+            ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО" },
+            de: { btn: "BESTÄTIGEN", super: "SUPERZAHL" },
+            ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО" }
+        };
+        document.getElementById('main-btn').innerText = dict[l]?.btn || "BESTÄTIGEN";
+        document.getElementById('l-super').innerText = dict[l]?.super || "SUPERZAHL";
+        tg.HapticFeedback.selectionChanged();
     }
 
     function updateTicketCount(val) {
@@ -284,16 +308,14 @@
     function randomFill() {
         selected = []; superNum = null;
         document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing'));
-        sndShuffle.play();
+        sndShuffle.currentTime = 0;
+        sndShuffle.play().catch(e => {});
         let i = 0;
         const interval = setInterval(() => {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
             for(let j=0; j<6; j++) document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`).classList.add('processing');
             tg.HapticFeedback.impactOccurred('light');
-            if(i++ > 12) {
-                clearInterval(interval);
-                finalizeRandom();
-            }
+            if(i++ > 12) { clearInterval(interval); finalizeRandom(); }
         }, 60);
     }
 
@@ -309,7 +331,6 @@
         tg.HapticFeedback.notificationOccurred('success');
     }
 
-    // ИНИЦИАЛИЗАЦИЯ СЕТКИ
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
@@ -337,31 +358,4 @@
 
     function setTheme(t) {
         document.body.className = 'theme-' + t;
-        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
-        document.documentElement.style.setProperty('--main-color', colors[t]);
-    }
-
-    function runEngine() {
-        if(selected.length === 6 && superNum) {
-            const total = (ticketCount * realPrice).toFixed(2);
-            tg.showAlert(`Ticket fixiert!\nTotal: ${total} ${currentCurrency}\nNumbers: ${selected.sort((a,b)=>a-b).join(', ')} [${superNum}]`);
-            tg.HapticFeedback.notificationOccurred('success');
-        } else { tg.showAlert("Bitte alles ausfüllen!"); }
-    }
-
-    window.onload = () => {
-        updateLiveStats();
-        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
-        steps.forEach(st => {
-            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
-            setTimeout(() => { document.getElementById(st.id).style.opacity='0'; }, st.e);
-        });
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 7200);
-    };
-</script>
-</body>
-</html>
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#
