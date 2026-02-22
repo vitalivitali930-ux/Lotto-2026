@@ -38,7 +38,7 @@
         /* MAIN CONTENT */
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
         
-        .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+        .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
@@ -60,6 +60,8 @@
         /* THEMES */
         body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); }
         body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); }
 
         /* GRID */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
@@ -141,6 +143,8 @@
         <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
         <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
         <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+        <span class="lang-btn" onclick="setLang('en')">🇺🇸</span>
+        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
     </div>
 
     <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
@@ -220,11 +224,30 @@
     const humorData = {
         ru: { hot: ["Комета летит в карман!","Опять оно? Наглец!","Звезда танцпола!"], cold: ["Мамонт спит...","Ленивый пельмень!","Ушел в отпуск."] },
         ua: { hot: ["Комета летить у кишеню!","Знову воно? Нахаба!","Зірка танцполу!"], cold: ["Мамонт спить...","Лінивий пельмень!","Пішов у відпустку."] },
-        de: { hot: ["Komet im Anflug!","Schon wieder? Frechheit!","Disco-Star!"], cold: ["Mammut schläft...","Faule Nudel!","Im Urlaub."] }
+        de: { hot: ["Komet im Anflug!","Schon wieder? Frechheit!","Disco-Star!"], cold: ["Mammut schläft...","Faule Nudel!","Im Urlaub."] },
+        en: { hot: ["Comet incoming!","Again? Audacious!","Dancefloor Star!"], cold: ["Mammoth sleeps...","Lazy dumpling!","On vacation."] },
+        fr: { hot: ["Comète en approche!","Encore? Audacieux!","Star du dancefloor!"], cold: ["Le mammouth dort...","Boulette paresseuse!","En vacances."] }
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
+
+    function setLang(l) {
+        currentLang = l;
+        const dict = {
+            ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ" },
+            de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT" },
+            ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС" },
+            en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME" },
+            fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT TEMPS" }
+        };
+        document.getElementById('main-btn').innerText = dict[l].btn;
+        document.getElementById('l-super').innerText = dict[l].super;
+        document.getElementById('p-month').innerText = dict[l].month;
+        document.getElementById('p-year').innerText = dict[l].year;
+        document.getElementById('p-all').innerText = dict[l].all;
+        tg.HapticFeedback.selectionChanged();
+    }
 
     function updateLiveStats() {
         const now = new Date();
@@ -247,22 +270,10 @@
         if(text) {
             const box = document.getElementById('humor-box');
             document.getElementById('h-text').innerText = text;
-            document.getElementById('h-count').innerText = `× ${timesDrawn} раз`;
+            document.getElementById('h-count').innerText = `× ${timesDrawn}`;
             box.classList.add('show');
             setTimeout(() => box.classList.remove('show'), 2500);
         }
-    }
-
-    function setLang(l) {
-        currentLang = l;
-        const dict = {
-            ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО" },
-            de: { btn: "BESTÄTIGEN", super: "SUPERZAHL" },
-            ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО" }
-        };
-        document.getElementById('main-btn').innerText = dict[l]?.btn || "BESTÄTIGEN";
-        document.getElementById('l-super').innerText = dict[l]?.super || "SUPERZAHL";
-        tg.HapticFeedback.selectionChanged();
     }
 
     function updateTicketCount(val) {
@@ -315,7 +326,10 @@
         let i = 0;
         const interval = setInterval(() => {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
-            for(let j=0; j<6; j++) document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`).classList.add('processing');
+            for(let j=0; j<6; j++) {
+                let r = Math.floor(Math.random()*42)+1;
+                document.getElementById(`cell-${r}`).classList.add('processing');
+            }
             tg.HapticFeedback.impactOccurred('light');
             if(i++ > 12) { clearInterval(interval); finalizeRandom(); }
         }, 60);
@@ -374,6 +388,7 @@
 
     window.onload = () => {
         updateLiveStats();
+        setLang(currentLang); // Устанавливаем перевод сразу при загрузке
         const steps = [
             {id:'intro1', s:500,  e:2500},
             {id:'intro2', s:2700, e:4700},
@@ -382,9 +397,7 @@
 
         steps.forEach(st => {
             const img = document.getElementById(st.id);
-            setTimeout(() => {
-                img.classList.add('active');
-            }, st.s);
+            setTimeout(() => { img.classList.add('active'); }, st.s);
             setTimeout(() => {
                 img.style.transition = "opacity 0.5s ease";
                 img.style.opacity = '0';
@@ -395,10 +408,8 @@
         setTimeout(() => {
             const intro = document.getElementById('intro-container');
             const content = document.getElementById('app-content');
-            
             intro.style.transition = "opacity 0.8s ease";
             intro.style.opacity = '0';
-            
             setTimeout(() => {
                 intro.style.display = 'none';
                 content.style.display = 'block';
