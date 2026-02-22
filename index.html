@@ -22,6 +22,27 @@
             text-align: center; margin: 0; overflow: hidden; 
         }
 
+        /* МОДАЛЬНОЕ ОКНО ДЛЯ ЮМОРА */
+        #humor-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 30000;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #1a1a1a; border: 2px solid var(--main-color);
+            width: 80%; padding: 25px; border-radius: 20px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            transform: scale(0.8); transition: 0.3s;
+        }
+        .modal-content.show { transform: scale(1); }
+        .modal-title { font-size: 22px; color: var(--main-color); margin-bottom: 10px; font-weight: bold; }
+        .modal-text { font-size: 16px; line-height: 1.4; margin-bottom: 20px; }
+        .modal-btn { 
+            background: var(--main-gradient); border: none; padding: 10px 30px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; 
+        }
+
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000 url('Hintergrund.png') no-repeat center center; 
@@ -53,10 +74,8 @@
         }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* ЦИФРЫ В ВИШНЕ - ВСЕГДА ЗОЛОТО */
         body.theme-cherry .cell, body.theme-cherry .super-cell { color: #d4af37 !important; }
 
-        /* УСИЛЕННАЯ ПОДСВЕТКА (ГОРЯЧЕЕ/ХОЛОДНОЕ) */
         .cell.is-hot, .super-cell.is-hot { 
             color: #ff4500 !important; 
             text-shadow: 0 0 8px #ff4500, 0 0 15px #ff4500, 0 0 5px #fff !important; 
@@ -66,18 +85,6 @@
             color: #00ffff !important; 
             text-shadow: 0 0 8px #00ffff, 0 0 15px #00bfff, 0 0 5px #fff !important; 
             font-weight: 900;
-        }
-
-        /* ЭКСТРЕМАЛЬНЫЙ НЕОН ДЛЯ ВИШНИ (чтобы пробить фон) */
-        body.theme-cherry .cell.is-hot, body.theme-cherry .super-cell.is-hot { 
-            color: #ff2200 !important; 
-            text-shadow: 0 0 12px #ff0000, 0 0 25px #ff4500, 0 0 5px #fff !important;
-            filter: drop-shadow(0 0 3px #ff4500);
-        }
-        body.theme-cherry .cell.is-cold, body.theme-cherry .super-cell.is-cold { 
-            color: #00ffff !important; 
-            text-shadow: 0 0 12px #00ffff, 0 0 25px #1e90ff, 0 0 5px #fff !important;
-            filter: drop-shadow(0 0 3px #00ffff);
         }
 
         .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
@@ -115,6 +122,14 @@
     </style>
 </head>
 <body>
+
+<div id="humor-modal" onclick="closeHumor()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title" id="m-title">Zahl</div>
+        <div class="modal-text" id="m-text">...</div>
+        <button class="modal-btn" onclick="closeHumor()">OK</button>
+    </div>
+</div>
 
 <div id="intro-container">
     <img src="Bild1.png" id="intro1" class="intro-img">
@@ -208,7 +223,7 @@
             year_cold: ["В глубоком офшоре.", "Ушел в декрет — отдыхает.", "Партизан в засаде.", "Потерял ключи от лототрона.", "Прогульщик — видели в буфете.", "Космонавт — связи нет."],
             month_hot: ["Спринтер месяца — несется!", "Главный выскочка — уже тут.", "Любимчик — подмигивает шарам.", "В режиме Форсажа!", "Горячий пирожок из печи.", "Абонемент на все тиражи."],
             month_cold: ["Стесняшка — прячется за всех.", "На больничном — горло болит.", "Держит дистанцию — изоляция.", "Слишком занят в других играх.", "Вне зоны доступа.", "Турист в горах — шлет открытку."],
-            times: "раз(а)"
+            times: "раз(а)", title: "Число"
         },
         ua: {
             all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотой стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановець — оре без вихідних."],
@@ -217,7 +232,7 @@
             year_cold: ["У глибокому офшорі.", "Пішов у декрет — відпочиває.", "Партизан у засідці.", "Загубив ключі від лототрона.", "Прогульник — бачили в буфеті.", "Космонавт — зв'язку немає."],
             month_hot: ["Спринтер місяця — мчить!", "Головний выскочка — вже тут.", "Улюбленець — підмигує кулям.", "В режимі Форсажу!", "Гарячий пиріжок з печі.", "Абонемент на всі тиражі."],
             month_cold: ["Сором'язливий — ховається за всіх.", "На лікарняному — горло болить.", "Тримає дистанцію — ізоляція.", "Занадто зайнятий в інших іграх.", "Поза зоною досяжності.", "Турист у горах — шле листівку."],
-            times: "раз(ів)"
+            times: "раз(ів)", title: "Число"
         },
         de: {
             all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."],
@@ -226,16 +241,16 @@
             year_cold: ["In der Tiefsee-Offshore.", "Im Mutterschutz — ruht sich aus.", "Partisan im Hinterhalt.", "Schlüssel zum Lotto verloren.", "Schwänzer — in der Kantine gesehen.", "Astronaut — kein Kontakt."],
             month_hot: ["Monats-Sprinter — rast!", "Haupt-Emporkömmling — schon da.", "Glückspilz — zwinkert den Kugeln.", "Im Fast & Furious Modus!", "Heißes Pirogge aus dem Ofen.", "Dauerkarte für alle Ziehungen."],
             month_cold: ["Schüchtern — versteckt sich.", "Krankgeschrieben — Halsweh.", "Hält Distanz — Isolation.", "Zu beschäftigt in anderen Spielen.", "Außer Reichweite — kein Signal.", "Tourist in Bergen — schickt Karte."],
-            times: "Mal"
+            times: "Mal", title: "Zahl"
         },
         fr: {
             all_hot: ["Lapin — champion du piège !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."],
             all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."],
             year_hot: ["Star des réseaux de l'année !", "Énergétique — chargé à bloc.", "Carriériste — fonce tête baissée.", "Mr Popularité — plus que la pizza.", "Sur le buzz ! Surfe sur la vague.", "Montre suisse — sans faille."],
             year_cold: ["En offshore profond.", "En congé — se repose.", "Partisan en embuscade.", "A perdu les clés du loto.", "Absentéiste — vu à la cafétéria.", "Astronaute — aucun signal."],
-            month_hot: ["Sprinteur du mois — fonce !", "L'intrus principal — déjà là.", "Chouchou — fait un clin d'œil.", "En mode Fast & Furious !", "Petit pain chaud du four.", "Aбонемент на все тиражи."],
+            month_hot: ["Sprinteur du mois — fonce !", "L'intrus principal — déjà là.", "Chouchou — fait un clin d'œil.", "En mode Fast & Furious !", "Petit pain chaud du four.", "Abonnement sur tous les tirages."],
             month_cold: ["Timide — se cache derrière.", "En congé maladie — mal à la gorge.", "Garde ses distances — isolation.", "Trop occupé ailleurs.", "Hors zone — aucun signal.", "Touriste en montagne — envoie une carte."],
-            times: "fois"
+            times: "fois", title: "Nombre"
         },
         it: {
             all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — lavora sempre."],
@@ -244,7 +259,7 @@
             year_cold: ["In offshore profondo.", "In maternità — si riposа.", "Partigiano in agguato.", "Ha perso le chiavi del loto.", "Assenteista — visto al bar.", "Astronauta — nessun segnale."],
             month_hot: ["Sprinter del mese — corre!", "Il primo arrivato — già qui.", "Il preferito — fa l'occhiolino.", "In modalità Fast & Furious!", "Focaccina calda dal forno.", "Abbonamento a tutte le estrazioni."],
             month_cold: ["Timido — si nasconde.", "In malattia — mal di gola.", "Mantiene le distanze — isolamento.", "Troppo occupato altrove.", "Fuori portata — nessun segnale.", "Turista in montagna — manda una cartolina."],
-            times: "volte"
+            times: "volte", title: "Numero"
         }
     };
 
@@ -314,18 +329,30 @@
     }
 
     function showCellInfo(n, isSuper = false) {
-        if (!currentMode) return;
         const stats = dbStats[currentPeriod];
         const list = stats[currentMode];
         const index = list.indexOf(n);
+        
         if (index !== -1) {
             const langData = humorDict[currentLang] || humorDict['de'];
             const periodKey = `${currentPeriod}_${currentMode}`;
             const funnyText = langData[periodKey][index];
-            const count = stats.freq[n];
-            tg.showScanQrPopup({ text: `${isSuper ? 'Super' : 'Zahl'} ${n}\n\n${funnyText}\n(${count} ${langData.times})` });
+            const count = stats.freq[n] || 0;
+
+            document.getElementById('m-title').innerText = `${langData.title} ${n}${isSuper ? ' (Super)' : ''}`;
+            document.getElementById('m-text').innerHTML = `${funnyText}<br><br><b>${count} ${langData.times}</b>`;
+            
+            const modal = document.getElementById('humor-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.querySelector('.modal-content').classList.add('show'), 10);
+            tg.HapticFeedback.impactOccurred('medium');
         }
-        setTimeout(() => tg.closeScanQrPopup(), 4000);
+    }
+
+    function closeHumor() {
+        const modal = document.getElementById('humor-modal');
+        modal.querySelector('.modal-content').classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
     }
 
     function randomFill() {
@@ -363,14 +390,16 @@
         step();
     }
 
-    // Инициализация сетки: ПОДКАЗКА + ВЫБОР ОДНОВРЕМЕННО
+    // ЛОГИКА КЛИКА: ОПИСАНИЕ + ВЫБОР
     const gridDiv = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
         c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) { showCellInfo(i); }
+            if(currentMode && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) {
+                showCellInfo(i);
+            }
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
@@ -383,7 +412,9 @@
         sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) { showCellInfo(i, true); }
+            if(currentMode && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) {
+                showCellInfo(i, true);
+            }
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
