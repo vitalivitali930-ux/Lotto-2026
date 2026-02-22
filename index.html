@@ -115,14 +115,6 @@
         .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
         .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); }
 
-        .vchf-alert {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: rgba(0,0,0,0.95); padding: 25px; border-radius: 25px; 
-            z-index: 35000; width: 80%; border: 2px solid var(--main-color);
-            box-shadow: 0 0 30px var(--main-color); animation: shakePop 0.4s ease-out;
-            backdrop-filter: blur(8px);
-        }
-
         .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); box-shadow: 0 0 10px rgba(var(--main-color), 0.2); }
         .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
 
@@ -262,11 +254,11 @@
     const realPrice = 2.50;
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", pulled: "Официально выпадало", times: "раз" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Офіційно випадало", times: "разів" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", pulled: "Offiziell gezogen", times: "Mal" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", pulled: "Officially drawn", times: "times" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", pulled: "Officiellement tiré", times: "fois" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total" }
     };
 
     function setLang(l) {
@@ -279,38 +271,6 @@
         document.getElementById('p-all').innerText = d.all;
         document.getElementById('l-total').innerText = d.total;
         tg.HapticFeedback.selectionChanged();
-    }
-
-    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ВЫБОРА ЧИСЛА ПОСЛЕ ОК ---
-    function confirmSelection(num) {
-        const alert = document.querySelector('.vchf-alert');
-        if (alert) alert.remove();
-        
-        if (!selected.includes(num)) {
-            if (selected.length < 6) {
-                selected.push(num);
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        }
-        
-        currentMode = null; // Сбрасываем режим рамок
-        document.getElementById('stats-p-box').classList.remove('visible');
-        refreshGrid();
-    }
-
-    function showVCHFAlert(num, count) {
-        const d = dict[currentLang];
-        const alertBox = document.createElement('div');
-        alertBox.className = 'vchf-alert';
-        alertBox.innerHTML = `
-            <div style="color:var(--main-color); font-size:24px; font-weight:900;"># ${num}</div>
-            <div style="margin:20px 0; font-size:16px; border-top:1px solid #333; padding-top:15px;">
-                ${d.pulled}:<br><b style="color:#fff; font-size:20px;">${count} ${d.times}</b>
-            </div>
-            <button onclick="confirmSelection(${num})" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
-        `;
-        document.body.appendChild(alertBox);
-        tg.HapticFeedback.notificationOccurred('success');
     }
 
     function updateTicketCount(val) {
@@ -345,21 +305,18 @@
         tg.HapticFeedback.selectionChanged();
     }
 
+    // --- ОБЛЕГЧЕННЫЙ КЛИК БЕЗ ОКОН ---
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        if (currentMode && realStatsDB[i]) {
-            const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            showVCHFAlert(i, realStatsDB[i][pIdx]);
-        } else {
-            if(selected.includes(i)) { 
-                selected = selected.filter(n => n !== i); 
-                document.getElementById(`cell-${i}`).classList.remove('selected'); 
-            } else if(selected.length < 6) { 
-                selected.push(i); 
-                document.getElementById(`cell-${i}`).classList.add('selected'); 
-                tg.HapticFeedback.impactOccurred('light'); 
-            }
+        
+        if(selected.includes(i)) { 
+            selected = selected.filter(n => n !== i); 
+            tg.HapticFeedback.impactOccurred('light'); 
+        } else if(selected.length < 6) { 
+            selected.push(i); 
+            tg.HapticFeedback.impactOccurred('light'); 
         }
+        refreshGrid();
     }
 
     function refreshGrid() {
@@ -418,9 +375,10 @@
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing', 'selected'));
         while(selected.length < 6) {
             let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
+            if(!selected.includes(r)) { selected.push(r); }
         }
         superNum = Math.floor(Math.random() * 6) + 1;
+        refreshGrid();
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
         sndWin.play();
         tg.HapticFeedback.notificationOccurred('success');
