@@ -44,7 +44,7 @@
 
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
         
-        .lang-panel { display: flex; justify fabric: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
+        .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
@@ -108,34 +108,36 @@
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; }
         .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .tool-btn:active { box-shadow: 0 0 10px var(--main-color); }
         
         .stats-period { display: flex; justify-content: center; gap: 5px; opacity: 0; transition: 0.3s; pointer-events: none; height: 30px; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
         .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
         .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); }
 
-        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
+        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); box-shadow: 0 0 10px rgba(var(--main-color), 0.2); }
         .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
 
-        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
-        #display-total { color: var(--neon-blue); font-weight: 900; }
+        .total-display { margin: 15px 0; font-size: 18px; color: #fff; text-shadow: 0 0 8px rgba(0, 163, 255, 0.4); }
+        #display-total { color: var(--neon-blue); font-weight: 900; text-shadow: 0 0 12px var(--neon-blue); }
 
-        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
         .super-cell { 
             width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             color: #333; font-weight: 900; font-size: 24px; cursor: pointer; 
             transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
+            opacity: 0.8; overflow: hidden; position: relative;
         }
-        .super-cell.selected { transform: scale(1.2) translateY(-8px); background: var(--main-gradient); color: #fff; box-shadow: 0 0 25px var(--main-color); }
+        .super-cell.selected { opacity: 1; transform: scale(1.2) translateY(-8px); background: var(--main-gradient); color: #fff; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
 
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
-        .theme-panel.open { transform: translateX(0); }
+        .theme-panel.open { transform: translateX(0); box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.6), 0 0 10px rgba(var(--main-color), 0.3); }
     </style>
 </head>
 <body>
@@ -217,15 +219,15 @@
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
 
-    // --- БЛОК АВТОМАТИЗАЦИИ VCHF ---
+    // --- ЛОГИКА АВТОМАТИЗАЦИИ ---
     async function fetchOfficialStats() {
         const now = new Date();
         const lastUpdate = localStorage.getItem('vchf_last_update') || 0;
         const day = now.getDay(); 
         const hour = now.getHours();
-        
-        // ЧТ или ВС после 6:00
-        if (((day === 4 || day === 0) && hour >= 6) && (Date.now() - lastUpdate > 43200000)) {
+        const isUpdateDay = (day === 4 || day === 0) && hour >= 6;
+
+        if (isUpdateDay && (Date.now() - lastUpdate > 43200000)) {
             await runAutoScraper();
         } else {
             loadLocalStats();
@@ -264,7 +266,6 @@
         refreshGrid();
     }
 
-    // --- ОРИГИНАЛЬНАЯ ЛОГИКА ---
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом" },
