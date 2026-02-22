@@ -358,4 +358,31 @@
 
     function setTheme(t) {
         document.body.className = 'theme-' + t;
-        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
+        document.documentElement.style.setProperty('--main-color', colors[t]);
+    }
+
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            const total = (ticketCount * realPrice).toFixed(2);
+            tg.showAlert(`Ticket fixiert!\nTotal: ${total} ${currentCurrency}`);
+            tg.HapticFeedback.notificationOccurred('success');
+        } else { tg.showAlert("Bitte alles ausfüllen!"); }
+    }
+
+    window.onload = () => {
+        updateLiveStats();
+        const steps = [{id:'intro1',s:500,e:2500},{id:'intro2',s:2700,e:4700},{id:'intro3',s:4900,e:6900}];
+        steps.forEach(st => {
+            setTimeout(() => document.getElementById(st.id).classList.add('active'), st.s);
+            setTimeout(() => { document.getElementById(st.id).style.opacity='0'; }, st.e);
+        });
+        setTimeout(() => {
+            document.getElementById('intro-container').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+        }, 7200);
+    };
+</script>
+</body>
+</html>
