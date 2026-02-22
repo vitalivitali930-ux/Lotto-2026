@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF 1.3</title>
+    <title>Lotto - Движок VCHF 1.6</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
@@ -12,7 +12,6 @@
             --cell-text: #d4af37; 
             --hot-neon: #ff0000; 
             --cold-neon: #00f2ff; 
-            --process-color: #00ffff;
             --ball-bg: radial-gradient(circle at 30% 30%, #ffffff 0%, #e0e0e0 60%, #999 100%);
         }
 
@@ -37,93 +36,57 @@
             transform: scale(0.8); transition: 0.3s;
         }
         .modal-content.show { transform: scale(1); }
-        .modal-btn { background: var(--main-gradient); border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .modal-btn { background: var(--main-gradient); border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
 
-        /* ИНТРО */
-        #intro-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000 url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; z-index: 20000; 
-            display: flex; justify-content: center; align-items: center;
-        }
+        /* ИНТЕРФЕЙС */
+        #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
-        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
-        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .intro-img.active { animation: shakePop 0.7s forwards; }
+        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-top: 15px; }
-        
-        /* ПАНЕЛИ И КНОПКИ (ИЗ 1.1) */
+        #app-content { display: none; opacity: 0; transition: 1s; padding-top: 15px; }
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
         .lang-btn { font-size: 24px; cursor: pointer; }
+
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 60px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 20px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(80px); }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; 
-            background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; 
-            transition: 0.4s; cursor: pointer; opacity: 0.3; filter: grayscale(1);
-        }
-        .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0); border-color: var(--main-color); 
-            background: rgba(212, 175, 55, 0.08); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); transform: scale(1.03);
-        }
-        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; transition: 0.4s; opacity: 0.3; filter: grayscale(1); cursor: pointer; }
+        .bal-card.active-wallet { opacity: 1; filter: grayscale(0); border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); transform: scale(1.03); }
 
-        .btn-topup, .btn-main { background: var(--main-gradient); color: #000; border: none; font-weight: bold; cursor: pointer; }
-        .btn-topup { width: 85%; padding: 14px; border-radius: 10px; margin-bottom: 15px; }
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin: 25px 0 50px; }
-
-        /* СЕТКА ШАРОВ 6x7 */
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 0 15px; max-width: 420px; margin: 0 auto; }
+        .smart-tools { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+        .tool-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: #000; color: #fff; font-size: 11px; cursor: pointer; }
+        .tool-btn.active { background: var(--main-color); color: #000; }
         
-        /* ДИЗАЙН 3D ШАРА (БЕЛЫЙ) */
+        .stats-period { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .stats-period.visible { opacity: 1; pointer-events: all; }
+        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 10px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; }
+
+        /* ШАРЫ */
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 0 15px; max-width: 420px; margin: 0 auto; }
         .cell, .super-cell { 
-            aspect-ratio: 1/1;
-            background: var(--ball-bg);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 18px;
-            color: var(--cell-text);
-            position: relative;
-            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 3px 5px 10px rgba(0,0,0,0.5);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+            aspect-ratio: 1/1; background: var(--ball-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 18px; color: var(--cell-text); position: relative;
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 3px 5px 10px rgba(0,0,0,0.5); transition: 0.3s; cursor: pointer;
         }
-        .cell::after, .super-cell::after {
-            content: ''; position: absolute; top: 15%; left: 15%; width: 30%; height: 20%;
-            background: rgba(255,255,255,0.8); border-radius: 50%; filter: blur(1.5px);
-        }
+        .cell::after, .super-cell::after { content: ''; position: absolute; top: 15%; left: 15%; width: 30%; height: 20%; background: rgba(255,255,255,0.8); border-radius: 50%; filter: blur(1.5px); }
 
-        /* ТРОЙНОЙ ЭФФЕКТ ВЫБОРА */
-        .cell.selected, .super-cell.selected { 
-            transform: scale(1.2) translateY(-4px);
-            box-shadow: 0 0 15px var(--main-color), inset -2px -2px 8px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-        .cell.selected::before, .super-cell.selected::before {
-            content: ''; position: absolute; bottom: -6px; width: 70%; height: 8px;
-            background: radial-gradient(ellipse at center, rgba(212,175,55,1) 0%, rgba(0,0,0,0) 70%);
-            border-radius: 50%;
-        }
+        .cell.selected, .super-cell.selected { transform: scale(1.2) translateY(-4px); box-shadow: 0 0 15px var(--main-color); z-index: 10; }
+        .cell.selected::before, .super-cell.selected::before { content: ''; position: absolute; bottom: -6px; width: 70%; height: 8px; background: radial-gradient(ellipse at center, var(--main-color) 0%, rgba(0,0,0,0) 70%); }
 
-        /* HOT / COLD / HEATMAP */
         .cell.is-hot { box-shadow: 0 0 12px var(--hot-neon), inset 0 0 8px var(--hot-neon) !important; color: var(--hot-neon) !important; }
         .cell.is-cold { box-shadow: 0 0 12px var(--cold-neon), inset 0 0 8px var(--cold-neon) !important; color: var(--cold-neon) !important; }
         .cell.heat-node { background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(212, 175, 55, var(--heat-opacity)) 100%) !important; color: #000 !important; }
 
-        .shaking { animation: shakeBall 0.1s infinite; }
-        @keyframes shakeBall { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(1px, -1px); } }
-
-        .super-grid { display: flex; justify-content: center; gap: 10px; }
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin: 25px 0 50px; background: var(--main-gradient); font-weight: bold; border: none; cursor: pointer; }
+        .super-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
         .super-cell { width: 45px; height: 45px; }
-        
-        .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
-        .stats-period.visible { opacity: 1; pointer-events: all; }
-        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 10px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
-        .p-btn.active { border-color: var(--main-color); color: #fff; }
+        .shaking { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(1px, -1px); } }
     </style>
 </head>
 <body>
@@ -131,22 +94,17 @@
 <div id="humor-modal" onclick="closeHumor()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <div id="m-title" style="color:var(--main-color); font-weight:bold; font-size:22px;">Zahl</div>
-        <div id="m-text" style="margin: 20px 0;">...</div>
+        <div id="m-text" style="margin: 20px 0; font-size: 16px;">...</div>
         <button class="modal-btn" onclick="closeHumor()">OK</button>
     </div>
 </div>
 
-<div id="intro-container">
-    <img src="1771489965074(1).png" id="intro1" class="intro-img">
-</div>
+<div id="intro-container"><img src="1771489965074(1).png" id="intro1" class="intro-img active"></div>
 
 <div id="app-content">
     <div class="lang-panel">
         <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
-        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
         <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
-        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
-        <span class="lang-btn" onclick="setLang('it')">🇮🇹</span>
     </div>
 
     <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
@@ -160,174 +118,170 @@
 
     <div class="balance-container">
         <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-            <div style="font-size:10px; color:var(--main-color)">VIRTUAL VCHF</div>
-            <div class="bal-val" id="vchf-val">100.00</div>
+            <div style="font-size:10px;">VIRTUAL VCHF</div>
+            <div class="bal-val" id="v-val">100.00</div>
         </div>
         <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-            <div style="font-size:10px; color:var(--main-color)">REAL CHF</div>
-            <div class="bal-val" id="chf-val">0.00</div>
+            <div style="font-size:10px;">REAL CHF</div>
+            <div class="bal-val" id="r-val">0.00</div>
         </div>
     </div>
 
     <div class="ticket-controls">
-        <div class="smart-tools" style="display:flex; justify-content:center; gap:8px; margin-bottom:10px;">
-            <button class="p-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
-            <button class="p-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
-            <button class="p-btn" onclick="toggleHeatmap('heat')" id="btn-heat">🌡️ HEAT</button>
-            <button class="p-btn" onclick="randomFill()" style="color:#fff; border-color:#fff;">🎲 RANDOM</button>
+        <div class="smart-tools">
+            <button class="tool-btn" id="t-hot" onclick="toggleMode('hot')">🔥 HOT</button>
+            <button class="tool-btn" id="t-cold" onclick="toggleMode('cold')">❄️ COLD</button>
+            <button class="tool-btn" id="t-heat" onclick="toggleMode('heat')">🌡️ HEAT</button>
+            <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
         </div>
         <div class="stats-period" id="stats-p-box">
-            <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
-            <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
-            <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            <button class="p-btn active" id="p-month" onclick="setPeriod('month')">MONTH</button>
+            <button class="p-btn" id="p-year" onclick="setPeriod('year')">YEAR</button>
+            <button class="p-btn" id="p-all" onclick="setPeriod('all')">ALL TIME</button>
         </div>
     </div>
 
     <div class="grid" id="main-grid"></div>
-    <div id="l-super" style="margin:25px 0 10px; color:var(--main-color); font-weight:bold;">SUPERZAHL</div>
+    <div id="l-super" style="margin-top:20px; font-size:12px; color:var(--main-color); font-weight:bold;">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
 
+    <div style="margin-top:20px; font-size:14px;">TOTAL: <span id="total-price">2.50</span> <span id="cur-label">VCHF</span></div>
     <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    const root = document.documentElement;
+    
+    // ЗВУКИ: Клик и Лототрон
+    const sndClick = new Audio('https://www.soundjay.com/buttons/button-16.mp3');
+    const sndDrum = new Audio('https://www.soundjay.com/misc/sounds/bell-ring-01.mp3');
 
-    const sndDice = new Audio('https://assets.mixkit.co/active_storage/sfx/2006/2006-preview.mp3');
-    const sndCash = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3');
+    let selected = []; let superNum = null; let currentMode = null; let currentPeriod = 'month'; let currentLang = 'de';
+    let balanceV = 100.00; let balanceR = 0.00; let activeCur = 'VCHF';
 
-    let selected = []; let superNum = null; let isProcessing = false;
-    let currentMode = null; let currentPeriod = 'month'; let currentLang = 'de';
-
-    let dbStats = {
-        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], freq: {3:12, 11:10, 42:15} },
-        year: { hot: [7, 18, 31], cold: [4, 9, 38], freq: {7:54, 18:51} },
-        all: { hot: [42, 12, 1], cold: [2, 10, 40], freq: {42:492} }
+    const humorData = {
+        ru: { hot:["Зайчик — чемпион!", "Железный Феликс.", "Золотой стандарт."], cold:["Мамонт — вымер.", "Призрак оперы.", "Спящий красавец."] },
+        de: { hot:["Hase — Champion!", "Eiserner Felix.", "Goldstandard."], cold:["Mammut — weg.", "Phantom der Oper.", "Dornröschen."] }
     };
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "ПОПОЛНИТЬ", alert: "Заполните билет!" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "AUFFÜLLEN", alert: "Ticket ausfüllen!" }
+    const dbStats = {
+        month: { hot:[3,11,42], cold:[1,20,33], freq:{3:12, 42:15} },
+        year: { hot:[7,31,41], cold:[4,30,38], freq:{7:50, 31:45} },
+        all: { hot:[42,1,19], cold:[2,10,21], freq:{42:500, 1:450} }
     };
 
-    // АВТО-ПАРСИНГ (РЕАЛЬНОЕ ВРЕМЯ)
-    async function fetchSwissResults() {
-        const proxy = "https://api.allorigins.win/get?url=";
-        const target = encodeURIComponent("https://www.swisslotto.ch/en/swiss-lotto/results");
-        try {
-            const response = await fetch(proxy + target);
-            const data = await response.json();
-            // Здесь будет логика разбора реальных чисел тиража
-            console.log("Данные Swiss Lotto синхронизированы");
-            refreshGrid();
-        } catch (e) { console.log("Работаем на локальной базе данных"); }
+    function switchCurrency(type) {
+        activeCur = type;
+        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
+        document.getElementById('cur-label').innerText = type;
+        sndClick.play();
     }
 
-    // СЕТКА 6x7
-    const gridDiv = document.getElementById('main-grid');
-    for (let i = 1; i <= 42; i++) {
-        const b = document.createElement('div'); b.className = 'cell'; b.id = `ball-${i}`; b.innerText = i;
-        b.onclick = () => {
-            if(isProcessing) return;
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); b.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); b.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
-        };
-        gridDiv.appendChild(b);
-    }
-
-    const sGridDiv = document.getElementById('s-grid');
-    for (let i = 1; i <= 6; i++) {
-        const sb = document.createElement('div'); sb.className = 'super-cell'; sb.innerText = i;
-        sb.onclick = () => {
-            if(isProcessing) return;
-            document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
-            superNum = i; sb.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
-        };
-        sGridDiv.appendChild(sb);
-    }
-
-    function toggleHeatmap(mode) {
-        const box = document.getElementById('stats-p-box');
-        if (currentMode === mode) { currentMode = null; box.classList.remove('visible'); }
-        else { currentMode = mode; box.classList.add('visible'); }
+    function toggleMode(m) {
+        currentMode = (currentMode === m) ? null : m;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        if(currentMode) document.getElementById('t-'+m).classList.add('active');
+        document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
         refreshGrid();
     }
 
     function setPeriod(p) {
         currentPeriod = p;
         document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
+        document.getElementById('p-'+p).classList.add('active');
         refreshGrid();
     }
 
     function refreshGrid() {
-        document.querySelectorAll('.cell').forEach(b => {
-            b.classList.remove('is-hot', 'is-cold', 'heat-node');
-            b.style.removeProperty('--heat-opacity');
-        });
-        if (!currentMode) return;
-        const stats = dbStats[currentPeriod];
-        if (currentMode === 'heat') {
-            const max = Math.max(...Object.values(stats.freq), 1);
-            for(let n in stats.freq) {
-                const el = document.getElementById(`ball-${n}`);
-                if(el) { el.classList.add('heat-node'); el.style.setProperty('--heat-opacity', (stats.freq[n]/max)); }
+        document.querySelectorAll('.cell').forEach(b => b.classList.remove('is-hot', 'is-cold', 'heat-node'));
+        if(!currentMode) return;
+        const s = dbStats[currentPeriod];
+        if(currentMode === 'heat') {
+            const max = Math.max(...Object.values(s.freq), 1);
+            for(let n in s.freq) {
+                const el = document.getElementById('ball-'+n);
+                if(el) { el.classList.add('heat-node'); el.style.setProperty('--heat-opacity', s.freq[n]/max); }
             }
         } else {
-            stats[currentMode].forEach(n => {
-                const el = document.getElementById(`ball-${n}`);
-                if(el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
-            });
+            s[currentMode].forEach(n => document.getElementById('ball-'+n)?.classList.add('is-'+currentMode));
         }
     }
 
+    const g = document.getElementById('main-grid');
+    for(let i=1; i<=42; i++) {
+        const b = document.createElement('div'); b.className = 'cell'; b.id = 'ball-'+i; b.innerText = i;
+        b.onclick = () => {
+            if(currentMode && b.classList.contains('is-hot')) return showHumor(i, 'hot');
+            if(currentMode && b.classList.contains('is-cold')) return showHumor(i, 'cold');
+            sndClick.play();
+            if(selected.includes(i)) { selected = selected.filter(x => x!==i); b.classList.remove('selected'); }
+            else if(selected.length < 6) { selected.push(i); b.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+        };
+        g.appendChild(b);
+    }
+
+    const sg = document.getElementById('s-grid');
+    for(let i=1; i<=6; i++) {
+        const b = document.createElement('div'); b.className = 'super-cell'; b.innerText = i;
+        b.onclick = () => {
+            sndClick.play();
+            document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
+            superNum = i; b.classList.add('selected');
+        };
+        sg.appendChild(b);
+    }
+
     function randomFill() {
-        if (isProcessing) return; isProcessing = true;
-        sndDice.currentTime = 0; sndDice.play().catch(e => {});
-        const balls = document.querySelectorAll('.cell');
-        balls.forEach(b => b.classList.add('shaking'));
+        sndDrum.play();
+        document.querySelectorAll('.cell').forEach(b => b.classList.add('shaking'));
         setTimeout(() => {
-            balls.forEach(b => { b.classList.remove('shaking', 'selected'); });
-            selected = [];
+            selected = []; document.querySelectorAll('.cell').forEach(b => b.classList.remove('shaking','selected'));
             while(selected.length < 6) {
                 let r = Math.floor(Math.random()*42)+1;
-                if(!selected.includes(r)) { selected.push(r); document.getElementById(`ball-${r}`).classList.add('selected'); }
+                if(!selected.includes(r)) { selected.push(r); document.getElementById('ball-'+r).classList.add('selected'); }
             }
             superNum = Math.floor(Math.random()*6)+1;
-            document.querySelectorAll('.super-cell').forEach((s, i) => { s.classList.toggle('selected', i+1 === superNum); });
-            isProcessing = false; tg.HapticFeedback.notificationOccurred('success');
+            document.querySelectorAll('.super-cell').forEach((s,i) => s.classList.toggle('selected', i+1 === superNum));
         }, 1200);
     }
 
-    function setLang(l) {
-        currentLang = l;
-        const d = dict[l] || dict['de'];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-    }
-
     function setTheme(t) {
-        const colors = { gold: '#d4af37', lime: '#32CD32', silver: '#c0c0c0', cyan: '#00ffff', cherry: '#C511A4' };
-        root.style.setProperty('--main-color', colors[t]);
-        root.style.setProperty('--cell-text', t === 'cherry' ? '#d4af37' : colors[t]);
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
+        document.documentElement.style.setProperty('--main-color', colors[t]);
+        // Специальное условие для Cherry: золотые цифры
+        document.documentElement.style.setProperty('--cell-text', t === 'cherry' ? '#d4af37' : colors[t]);
         document.querySelector('.theme-panel').classList.remove('open');
     }
 
-    function runEngine() {
-        if (selected.length < 6 || !superNum) { tg.showAlert(dict[currentLang]?.alert || "Ticket!"); return; }
-        sndCash.play(); tg.showAlert("FIXIERT!");
+    function showHumor(n, type) {
+        const lang = humorData[currentLang] || humorData['de'];
+        document.getElementById('m-title').innerText = "Zahl " + n;
+        document.getElementById('m-text').innerText = lang[type][n % lang[type].length];
+        document.getElementById('humor-modal').style.display = 'flex';
+        setTimeout(() => document.querySelector('.modal-content').classList.add('show'), 10);
     }
 
-    window.onload = () => {
-        setTimeout(() => document.getElementById('intro1').classList.add('active'), 500);
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display='none';
-            document.getElementById('app-content').style.display='block';
-            setTimeout(() => document.getElementById('app-content').style.opacity='1', 50);
-            fetchSwissResults();
-        }, 2500);
+    function closeHumor() { 
+        document.querySelector('.modal-content').classList.remove('show');
+        setTimeout(() => document.getElementById('humor-modal').style.display = 'none', 300);
+    }
+
+    function setLang(l) { 
+        currentLang = l; 
+        document.getElementById('main-btn').innerText = l === 'ru' ? "ПОДТВЕРДИТЬ" : "BESTÄTIGEN"; 
+        document.getElementById('l-super').innerText = l === 'ru' ? "БОНУС" : "SUPERZAHL";
+    }
+
+    function runEngine() { tg.showAlert("FIXIERT!"); }
+
+    window.onload = () => { 
+        setTimeout(() => { 
+            document.getElementById('intro-container').style.display='none'; 
+            document.getElementById('app-content').style.display='block'; 
+            setTimeout(() => document.getElementById('app-content').style.opacity='1', 50); 
+        }, 2000); 
     };
 </script>
 </body>
