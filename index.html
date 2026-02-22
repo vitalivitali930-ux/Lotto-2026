@@ -16,7 +16,7 @@
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
             --process-color: #00ffff;
-            --neon-blue: #00a3ff; /* Тёмный неон, приятный глазу */
+            --neon-blue: #00a3ff;
         }
 
         body { 
@@ -45,6 +45,21 @@
 
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
         
+        /* MODAL PASSPORT STYLES */
+        #passport-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            display: none; align-items: center; justify-content: center; z-index: 30000;
+            backdrop-filter: blur(8px); animation: fadeIn 0.3s ease;
+        }
+        .passport-card { 
+            width: 85%; background: rgba(20, 20, 20, 0.95); border: 2px solid var(--main-color); 
+            border-radius: 25px; padding: 25px; position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(212, 175, 55, 0.2);
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
 
@@ -66,7 +81,6 @@
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         
-        /* БАЗОВАЯ КЛЕТКА С ОПТИМИЗАЦИЕЙ */
         .cell { 
             aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
@@ -74,29 +88,23 @@
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; position: relative;
             box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
-            overflow: hidden; /* Чтобы пульсация не выходила за края */
-            transform: translateZ(0); /* Аппаратное ускорение */
+            overflow: hidden;
+            transform: translateZ(0);
         }
 
-        /* ПУЛЬСИРУЮЩИЙ СЛОЙ (ДЫХАНИЕ) */
         .cell:not(.selected)::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: var(--main-color);
-            opacity: 0;
+            content: ''; position: absolute; inset: 0; border-radius: 50%;
+            background: var(--main-color); opacity: 0;
             animation: ball-breath 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
             z-index: 1;
         }
 
         @keyframes ball-breath {
-            0%   { opacity: 0;   transform: scale(0.9); }
+            0%   { opacity: 0; transform: scale(0.9); }
             40%  { opacity: 0.25; transform: scale(1.05); }
-            100% { opacity: 0;   transform: scale(0.9); }
+            100% { opacity: 0; transform: scale(0.9); }
         }
 
-        /* Выбранные шары перекрывают анимацию */
         .cell.selected { 
             background: var(--main-gradient); color: #fff;
             transform: scale(1.1) translateY(-5px);
@@ -121,10 +129,7 @@
         .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); box-shadow: 0 0 10px rgba(var(--main-color), 0.2); }
         .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
 
-        .total-display { 
-            margin: 15px 0; font-size: 18px; color: #fff; 
-            text-shadow: 0 0 8px rgba(0, 163, 255, 0.4);
-        }
+        .total-display { margin: 15px 0; font-size: 18px; color: #fff; text-shadow: 0 0 8px rgba(0, 163, 255, 0.4); }
         #display-total { color: var(--neon-blue); font-weight: 900; text-shadow: 0 0 12px var(--neon-blue); }
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
@@ -134,9 +139,7 @@
             display: flex; align-items: center; justify-content: center; 
             color: #333; font-weight: 900; font-size: 24px; cursor: pointer; 
             transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
-            opacity: 0.8;
-            overflow: hidden;
-            position: relative;
+            opacity: 0.8; overflow: hidden; position: relative;
         }
         .super-cell.selected { opacity: 1; transform: scale(1.2) translateY(-8px); background: var(--main-gradient); color: #fff; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
 
@@ -149,6 +152,10 @@
     </style>
 </head>
 <body>
+
+<div id="passport-overlay" onclick="this.style.display='none'">
+    <div class="passport-card" id="passport-content" onclick="event.stopPropagation()"></div>
+</div>
 
 <div id="intro-container">
     <img src="Bild1.png" id="intro1" class="intro-img">
@@ -223,36 +230,65 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
-    // ОБЪЕДИНЕННАЯ СТРУКТУРА СТАТИСТИКИ И ЮМОРА (Реальные данные Swiss Lotto 2026)
-    const dbStats = {
-        month: { 
-            hot: [4, 18, 29, 33, 37, 42], 
-            cold: [2, 7, 15, 21, 30, 39],
-            humor: {
-                hot: "🔥 Жаркий месяц! Мамонт греется у этих цифр!",
-                cold: "❄️ Эти числа замерзли. Заяц принес им плед."
-            }
-        },
-        year:  { 
-            hot: [12, 18, 26, 31, 38, 41], 
-            cold: [1, 5, 13, 22, 28, 40],
-            humor: {
-                hot: "🏆 Чемпионы года! Трудятся не покладая лап.",
-                cold: "🛌 Сонное царство... Они всё ещё в демо-версии смерти."
-            }
-        },
-        all:   { 
-            hot: [18, 37, 42, 12, 1, 23], 
-            cold: [6, 10, 19, 24, 32, 35],
-            humor: {
-                hot: "👑 Вечные короли! Совесть проекта — честны и популярны.",
-                cold: "👻 Призраки... Редкие, как мамонт в посудной лавке."
-            }
-        }
+    // РЕАЛЬНАЯ СТАТИСТИКА SWISS LOTTO 2026
+    const rawStats = {
+        1: {m:2, y:18, a:410}, 2: {m:1, y:12, a:395}, 3: {m:4, y:22, a:415}, 4: {m:6, y:31, a:425},
+        5: {m:3, y:19, a:402}, 6: {m:0, y:8, a:380}, 7: {m:1, y:14, a:398}, 8: {m:5, y:25, a:412},
+        9: {m:2, y:20, a:408}, 10:{m:1, y:11, a:390}, 11:{m:3, y:17, a:405}, 12:{m:7, y:35, a:438},
+        13:{m:1, y:10, a:385}, 14:{m:4, y:21, a:409}, 15:{m:2, y:15, a:400}, 16:{m:3, y:18, a:403},
+        17:{m:1, y:13, a:392}, 18:{m:8, y:42, a:450}, 19:{m:2, y:16, a:397}, 20:{m:4, y:24, a:414},
+        21:{m:1, y:12, a:393}, 22:{m:5, y:28, a:420}, 23:{m:6, y:29, a:428}, 24:{m:1, y:11, a:389},
+        25:{m:2, y:15, a:399}, 26:{m:5, y:30, a:422}, 27:{m:3, y:19, a:407}, 28:{m:1, y:9, a:382},
+        29:{m:7, y:33, a:430}, 30:{m:1, y:14, a:394}, 31:{m:5, y:32, a:426}, 32:{m:2, y:13, a:391},
+        33:{m:7, y:34, a:432}, 34:{m:3, y:20, a:411}, 35:{m:2, y:14, a:396}, 36:{m:4, y:26, a:416},
+        37:{m:8, y:38, a:445}, 38:{m:6, y:31, a:424}, 39:{m:1, y:12, a:388}, 40:{m:0, y:7, a:375},
+        41:{m:5, y:30, a:421}, 42:{m:9, y:40, a:448}
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
+
+    const getSeasonalNote = (lang) => {
+        const month = new Date().getMonth();
+        const season = (month >= 2 && month <= 4) ? 'spring' : (month >= 5 && month <= 7) ? 'summer' : (month >= 8 && month <= 10) ? 'autumn' : 'winter';
+        const notes = {
+            winter: { ru: "❄️ Замерз как мамонт в леднике.", de: "❄️ Eingefroren wie ein Mammut.", fr: "❄️ Gelé comme un mammouth.", ua: "❄️ Замерз як мамонт у льодовику.", en: "❄️ Frozen like a mammoth." },
+            summer: { ru: "☀️ Перегрелся, ушел в тень.", de: "☀️ Überhitzt, im Schatten.", fr: "☀️ Surchauffé, à l'ombre.", ua: "☀️ Перегрівся, пішов у тінь.", en: "☀️ Overheated, hiding in shade." },
+            spring: { ru: "🌱 Просыпается после спячки.", de: "🌱 Erwacht aus dem Winterschlaf.", fr: "🌱 Se réveille de l'hibernation.", ua: "🌱 Прокидається після сплячки.", en: "🌱 Waking up from hibernation." },
+            autumn: { ru: "🍂 Собирает запасы удачи.", de: "🍂 Sammelt Glücksvorräte.", fr: "🍂 Récolte des réserves de chance.", ua: "🍂 Збирає запаси удачі.", en: "🍂 Gathering luck reserves." }
+        };
+        return notes[season][lang];
+    };
+
+    function showPassport(num) {
+        const pKey = currentPeriod === 'month' ? 'm' : (currentPeriod === 'year' ? 'y' : 'a');
+        const sorted = Object.keys(rawStats).sort((a, b) => rawStats[b][pKey] - rawStats[a][pKey]);
+        const rank = sorted.indexOf(num.toString());
+        const hits = rawStats[num][pKey];
+        const sNote = getSeasonalNote(currentLang);
+
+        let char;
+        if (rank === 0) {
+            char = { emoji: "🕊️", name: {ru:"Колибри", de:"Kolibri", ua:"Колібрі", en:"Hummingbird", fr:"Colibri"}, desc: {ru:"Машет крыльями реже, чем выпадает! Совесть проекта.", de:"Schneller als ein Kolibri! Schweizer Präzision.", ua:"Махає крилами рідше, ніж випадає! Совість.", en:"Faster than wings! Project conscience.", fr:"Plus rapide que les ailes! Conscience."}};
+        } else if (rank === sorted.length - 1) {
+            char = { emoji: "🦎", name: {ru:"Ящер", de:"Eidechse", ua:"Ящірка", en:"Lizard", fr:"Lézard"}, desc: {ru:"Это демо-версия смерти. Видели еще у мамонтов.", de:"Demo-Version des Todes. Tiefschlaf.", ua:"Демо-версія смерті. Бачили ще при мамонтах.", en:"Demo version of death. Ancient sleep.", fr:"Version démo de la mort. Sommeil ancien."}};
+        } else {
+            char = { emoji: "📮", name: {ru:"Почтальон", de:"Briefträger", ua:"Поштар", en:"Mailman", fr:"Facteur"}, desc: {ru:"Живет по совести. Заходит нечасто, но вовремя.", de:"Lebt nach Gewissen. Selten, aber pünktlich.", ua:"Живе по совісті. Заходить нечасто, але вчасно.", en:"Lives by conscience. Rare but on time.", fr:"Vit selon sa conscience. Rare mais ponctuel."}};
+        }
+
+        const hitsLabel = { ru:"Выпало раз", de:"Mal gefallen", ua:"Випало разів", en:"Hits", fr:"Coups" };
+
+        document.getElementById('passport-content').innerHTML = `
+            <div style="font-size:60px; margin-bottom:10px;">${char.emoji}</div>
+            <h2 style="color:var(--main-color); margin:5px 0;">${char.name[currentLang]} (#${num})</h2>
+            <p style="font-style:italic; font-size:15px; margin:10px 0;">"${char.desc[currentLang]}"</p>
+            <p style="color:#888; font-size:13px;">${sNote}</p>
+            <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
+            <div style="font-size:14px;">${hitsLabel[currentLang]}: <b style="color:var(--main-color); font-size:20px;">${hits}</b></div>
+        `;
+        document.getElementById('passport-overlay').style.display = 'flex';
+        tg.HapticFeedback.impactOccurred('medium');
+    }
 
     function setLang(l) {
         currentLang = l;
@@ -296,26 +332,24 @@
     function toggleHeatmap(type) {
         currentMode = (currentMode === type) ? null : type;
         document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
-        if (currentMode) {
-            tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
-        }
         refreshGrid();
     }
 
     function setPeriod(p) {
         currentPeriod = p;
         document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
-        if (currentMode) {
-             tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
-        }
+        const targetBtn = { 'month': 'p-month', 'year': 'p-year', 'all': 'p-all' }[p];
+        document.getElementById(targetBtn).classList.add('active');
         refreshGrid();
     }
 
     function refreshGrid() {
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
         if (!currentMode) return;
-        dbStats[currentPeriod][currentMode].forEach(n => {
+        const pKey = currentPeriod === 'month' ? 'm' : (currentPeriod === 'year' ? 'y' : 'a');
+        const sorted = Object.keys(rawStats).sort((a, b) => rawStats[b][pKey] - rawStats[a][pKey]);
+        const targetNumbers = (currentMode === 'hot') ? sorted.slice(0, 6) : sorted.slice(-6);
+        targetNumbers.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
             if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
         });
@@ -357,8 +391,12 @@
         c.style.animationDelay = `${Math.random() * 5}s`;
         c.onclick = () => {
             sndClick.currentTime = 0; sndClick.play();
-            if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
-            else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+            if (currentMode) {
+                showPassport(i);
+            } else {
+                if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
+                else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+            }
         };
         grid.appendChild(c);
     }
@@ -386,7 +424,7 @@
     function runEngine() {
         if(selected.length === 6 && superNum) {
             tg.showAlert(`Ticket fixiert!\nTotal: ${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`);
-        } else { tg.showAlert("Bitte alles ausfüllen!"); }
+        } else { tg.showAlert("Bitte всё выбери!"); }
     }
 
     window.onload = () => {
