@@ -20,231 +20,109 @@
         }
 
         body { 
-            background: #000; 
-            color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow: hidden; 
-            transition: background 0.5s ease;
+            background: #000; color: #fff; font-family: -apple-system, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; transition: background 0.5s ease;
         }
 
+        /* ТЕМЫ */
         body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --sphere-base: rgba(255, 220, 240, 0.95); }
         body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --sphere-base: rgba(240, 240, 240, 0.95); }
         body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --sphere-base: rgba(230, 255, 230, 0.95); }
         body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --sphere-base: rgba(220, 255, 255, 0.95); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: var(--gold-sphere); --sphere-base: rgba(255, 249, 214, 0.95); }
 
         #intro-container {
-            position: fixed; inset: 0;
-            background: #000 url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; z-index: 20000; 
-            display: flex; justify-content: center; align-items: center;
-            transition: opacity 1s ease;
+            position: fixed; inset: 0; background: #000 url('Hintergrund.png') no-repeat center center; 
+            background-size: cover; z-index: 20000; display: flex; justify-content: center; align-items: center; transition: opacity 1s ease;
         }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; opacity: 1; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
-        
         .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
         .page.active { display: block; }
 
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
-            background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
-            align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000;
-        }
-        .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
-        .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; }
-
-        .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
-        .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
-
-        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; 
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
-            border: 1.5px solid #444; 
-            transition: all 0.4s ease; cursor: pointer;
-            opacity: 0.5; filter: grayscale(0.7) brightness(0.8);
-        }
-        .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0) brightness(1.2);
-            border-color: var(--main-color); 
-            background: rgba(255, 255, 255, 0.07); 
-            box-shadow: 0 0 15px var(--main-color);
-            transform: scale(1.05);
-        }
-
-        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
-
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { 
-            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #333; font-size: 19px; 
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            cursor: pointer; position: relative;
-            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
-            overflow: hidden;
-            transform: translateZ(0);
-        }
-
-        .cell.selected { 
-            background: var(--main-gradient); color: #fff;
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color);
-            z-index: 10;
-        }
-
-        .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
-        
-        .cell.is-hot { 
-            border: 3px solid #ff4500 !important; 
-            box-shadow: 0 0 20px #ff4500 !important; 
-            animation: pulse-hot 1.2s 3 alternate;
-            z-index: 5; 
-        }
-        .cell.is-cold { 
-            border: 3px solid #1e90ff !important; 
-            box-shadow: 0 0 20px #1e90ff !important; 
-            animation: pulse-cold 1.2s 3 alternate;
-            z-index: 5; 
-        }
-        .cell.is-sleeping {
-            border: 3px solid var(--process-color) !important;
-            box-shadow: 0 0 20px var(--process-color) !important;
-            animation: pulse-hot 1.2s 3 alternate;
-        }
-
-        @keyframes pulse-hot {
-            from { box-shadow: 0 0 10px #ff4500; transform: scale(1.02); }
-            to { box-shadow: 0 0 25px #ff4500; transform: scale(1.1); }
-        }
-
-        @keyframes pulse-cold {
-            from { box-shadow: 0 0 10px #1e90ff; transform: scale(1.02); }
-            to { box-shadow: 0 0 25px #1e90ff; transform: scale(1.1); }
-        }
-
-        .ticket-card {
-            background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px;
-            padding: 15px; margin: 0 15px 12px; text-align: left; position: relative;
-        }
-        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-        .mini-ball { 
-            width: 30px; height: 30px; background: var(--main-gradient); border-radius: 50%;
-            color: #000; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800;
-        }
-        .super-ball-mini { background: #ff4500 !important; color: #fff !important; }
-
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
-        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
-        
-        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
-        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
-        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); }
-
-        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
-        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
-
-        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
-        #display-total { color: var(--neon-blue); font-weight: 900; }
-
-        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
-        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
-        .super-cell { 
-            width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: #333; font-weight: 900; font-size: 24px; cursor: pointer; 
-            transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
-        }
-        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #fff; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
-
+        /* ИНФО И ТЕМЫ */
+        .info-btn { position: fixed; top: 15px; left: 15px; font-size: 26px; z-index: 1001; cursor: pointer; filter: drop-shadow(0 0 5px var(--main-color)); }
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+        /* МОДАЛЬНОЕ ОКНО ИНФО */
+        #info-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 30000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s;
+        }
+        .modal-content {
+            width: 85%; max-height: 70vh; background: rgba(20,20,20,0.95); border: 1.5px solid var(--main-color);
+            border-radius: 25px; padding: 25px; overflow-y: auto; color: #fff; text-align: left;
+        }
+        .modal-content h3 { color: var(--main-color); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-item { margin-bottom: 15px; font-size: 13px; line-height: 1.4; }
+        .modal-item b { color: var(--main-color); }
+
+        /* ГРИД И ШАРЫ */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { 
+            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-weight: 800; 
+            color: #333; font-size: 19px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
+        }
+        body.theme-silver .cell { color: #000; }
+        .cell.selected { background: var(--main-gradient); color: #fff !important; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); z-index: 10; }
+
+        /* ОСТАЛЬНОЕ */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000; }
+        .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
+        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; margin-top: 15px; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding: 10px 0 20px; }
+        .super-cell { width: 50px; height: 50px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #333; font-weight: 900; cursor: pointer; }
+        .super-cell.selected { background: var(--main-gradient); color: #fff !important; border: 2px solid #fff; box-shadow: 0 0 20px var(--main-color); }
     </style>
 </head>
-<body>
+<body class="theme-silver">
 
 <div id="intro-container">
-    <img src="Bild1.png" id="intro1" class="intro-img">
+    <img src="1771489965074(1).png" id="intro1" class="intro-img">
     <img src="Bild2.png" id="intro2" class="intro-img">
     <img src="Bild3.png" id="intro3" class="intro-img">
 </div>
 
+<div id="info-modal" onclick="closeInfo()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="info-title">ДВИЖОК VCHF INFO</h3>
+        <div id="info-body"></div>
+        <button class="btn-main" style="padding: 12px; font-size: 16px;" onclick="closeInfo()">OK</button>
+    </div>
+</div>
+
 <div id="app-content">
+    <div class="info-btn" onclick="openInfo()">ℹ️</div>
+    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+    </div>
+
     <div id="page-play" class="page active">
         <div class="lang-panel" id="dynamic-langs"></div>
-
-        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
-        <div class="theme-panel">
-            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
-            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
-            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
-            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
-            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
-        </div>
-
-        <div class="balance-container">
-            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-                <div style="font-size:10px;">VIRTUAL VCHF</div>
-                <div class="bal-val" id="vchf-val">100.00</div>
-            </div>
-            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:10px;">REAL CHF</div>
-                <div class="bal-val" id="chf-val">0.00</div>
-            </div>
-        </div>
-
-        <div class="ticket-controls">
-            <div class="smart-tools">
-                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
-                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
-                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
-                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
-            </div>
-            <div class="stats-period" id="stats-p-box">
-                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
-                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
-                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
-            </div>
-            <div class="counter-box">
-                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
-                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
-                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
-            </div>
-        </div>
-
         <div class="grid" id="main-grid"></div>
-        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div style="color:var(--main-color); font-weight:bold; margin-top:20px;">SUPERZAHL</div>
         <div class="super-grid" id="s-grid"></div>
-        <div class="total-display">
-            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
-        </div>
-        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
-    </div>
-
-    <div id="page-tickets" class="page">
-        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
-        <div id="active-list"></div>
-    </div>
-
-    <div id="page-stats" class="page">
-        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
-        <div class="grid" id="personal-heatmap"></div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
-        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
-        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">GAME</label></div>
+        <div class="nav-item"><span>🎟️</span><label>TICKETS</label></div>
+        <div class="nav-item"><span>📊</span><label>STATS</label></div>
     </div>
 </div>
 
@@ -252,225 +130,62 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
-    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
-
-    let realStatsDB = {};
-    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en';
-    const realPrice = 2.50;
-
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
+        ru: { 
+            btn: "ПОДТВЕРДИТЬ", game: "ИГРА", 
+            title: "ИНСТРУКЦИЯ",
+            info: `
+                <div class="modal-item"><b>🎨 ТЕМЫ:</b> Смена стиля шаров и интерфейса (5 вариантов).</div>
+                <div class="modal-item"><b>🔥 HOT:</b> Выбор самых частых чисел.</div>
+                <div class="modal-item"><b>❄️ COLD:</b> Выбор редких чисел.</div>
+                <div class="modal-item"><b>🎲 RANDOM:</b> Полная случайность.</div>
+                <div class="modal-item"><b>🌟 SUPERZAHL:</b> Обязательный бонусный шар (1-6).</div>
+            `
+        },
+        de: { 
+            btn: "BESTÄTIGEN", game: "SPIEL", 
+            title: "ANLEITUNG",
+            info: `
+                <div class="modal-item"><b>🎨 THEMEN:</b> Ändert das Design der Kugeln (5 Optionen).</div>
+                <div class="modal-item"><b>🔥 HOT:</b> Wählt die häufigsten Zahlen.</div>
+                <div class="modal-item"><b>❄️ COLD:</b> Wählt seltene Zahlen.</div>
+                <div class="modal-item"><b>🎲 RANDOM:</b> Zufallsprinzip.</div>
+                <div class="modal-item"><b>🌟 SUPERZAHL:</b> Obligatorische Bonus-Kugel (1-6).</div>
+            `
+        },
+        en: { 
+            btn: "CONFIRM", game: "GAME", 
+            title: "INFORMATION",
+            info: `
+                <div class="modal-item"><b>🎨 THEMES:</b> Change sphere styles (5 options).</div>
+                <div class="modal-item"><b>🔥 HOT:</b> Pick most frequent numbers.</div>
+                <div class="modal-item)<b>❄️ COLD:</b> Pick rare numbers.</div>
+                <div class="modal-item"><b>🎲 RANDOM:</b> Pure luck.</div>
+                <div class="modal-item"><b>🌟 SUPERZAHL:</b> Mandatory bonus ball (1-6).</div>
+            `
+        }
     };
 
-    // --- АКСИОМА: ПОЛНОЕ ИНТРО (Bild1 -> Bild2 -> Bild3 на фоне Hintergrund) ---
-    function startIntroSequence() {
-        const i1 = document.getElementById('intro1');
-        const i2 = document.getElementById('intro2');
-        const i3 = document.getElementById('intro3');
-        const container = document.getElementById('intro-container');
+    let selected = [], superNum = null, currentLang = 'de';
 
-        setTimeout(() => { i1.classList.add('active'); }, 100);
-        setTimeout(() => { i1.classList.remove('active'); i2.classList.add('active'); }, 1200);
-        setTimeout(() => { i2.classList.remove('active'); i3.classList.add('active'); }, 2400);
-        setTimeout(() => { 
-            container.style.opacity = '0';
-            setTimeout(() => {
-                container.style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-            }, 1000);
-        }, 3600);
+    function openInfo() {
+        const modal = document.getElementById('info-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.style.opacity = '1', 10);
     }
 
-    function togglePick(type) {
-        const btnHot = document.getElementById('btn-hot');
-        const btnCold = document.getElementById('btn-cold');
-        const btnSleep = document.getElementById('btn-sleeping');
-        selected = []; 
-        document.querySelectorAll('.cell').forEach(c => {
-            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected');
-            c.style.animation = 'none';
-        });
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-
-        if (type === 'hot') {
-            btnHot.classList.add('active-tool');
-            const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-            sorted.sort((a, b) => b.val - a.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-hot', 'selected');
-                el.style.animation = 'pulse-hot 1.2s 3 alternate';
-            });
-        } else if (type === 'cold') {
-            btnCold.classList.add('active-tool');
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][2] }));
-            sorted.sort((a, b) => a.val - b.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-cold', 'selected');
-                el.style.animation = 'pulse-cold 1.2s 3 alternate';
-            });
-        } else if (type === 'sleeping') {
-            btnSleep.classList.add('active-tool');
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][0] }));
-            sorted.sort((a, b) => a.val - b.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-sleeping', 'selected');
-                el.style.animation = 'pulse-hot 1.2s 3 alternate';
-            });
-        }
-        superNum = Math.floor(Math.random() * 6) + 1;
-        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-        tg.HapticFeedback.notificationOccurred('success');
-        sndWin.play();
-    }
-
-    function showPage(pId, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pId).classList.add('active');
-        el.classList.add('active');
-        if(pId === 'tickets') renderTickets();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function renderTickets() {
-        const container = document.getElementById('active-list');
-        container.innerHTML = '';
-        myTickets.forEach((t, idx) => {
-            const card = document.createElement('div');
-            card.className = 'ticket-card';
-            card.innerHTML = `
-                <div style="font-size:11px; color:#888;">ID: ${t.timestamp}</div>
-                <div class="ticket-nums">
-                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
-                    <div class="mini-ball super-ball-mini">${t.super}</div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    async function fetchOfficialStats() { loadLocalStats(); }
-
-    function loadLocalStats() {
-        const saved = localStorage.getItem('vchf_db');
-        if (saved) { realStatsDB = JSON.parse(saved); } 
-        else { for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)]; }
-        refreshGrid();
+    function closeInfo() {
+        const modal = document.getElementById('info-modal');
+        modal.style.opacity = '0';
+        setTimeout(() => modal.style.display = 'none', 300);
     }
 
     function setLang(l) {
         currentLang = l;
-        const d = dict[l];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('l-total').innerText = d.total;
-        document.getElementById('p-month').innerText = d.month;
-        document.getElementById('p-year').innerText = d.year;
-        document.getElementById('p-all').innerText = d.all;
-        document.getElementById('n-game').innerText = d.game;
-        document.getElementById('n-tickets').innerText = d.tickets;
-        document.getElementById('n-stats').innerText = d.stats;
-        document.getElementById('l-active-tickets-title').innerText = d.activeT;
-        document.getElementById('l-personal-stats-title').innerText = d.stats;
-        tg.HapticFeedback.selectionChanged();
-    }
-
-    function updateTicketCount(val) {
-        ticketCount = Math.max(1, ticketCount + val);
-        document.getElementById('ticket-count').innerText = ticketCount;
-        updatePriceDisplay();
-    }
-
-    function switchCurrency(type) {
-        currentCurrency = type;
-        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
-        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
-        updatePriceDisplay();
-    }
-
-    function updatePriceDisplay() {
-        const total = (ticketCount * realPrice).toFixed(2);
-        document.getElementById('display-total').innerText = `${total} ${currentCurrency}`;
-    }
-
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        refreshGrid();
-    }
-
-    function handleCellClick(i) {
-        sndClick.currentTime = 0; sndClick.play();
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
-        if(selected.includes(i)) { selected = selected.filter(n => n !== i); }
-        else if(selected.length < 6) { selected.push(i); }
-        refreshGrid();
-    }
-
-    function refreshGrid() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); 
-            c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            if (selected.includes(i)) c.classList.add('selected');
-            c.onclick = () => handleCellClick(i);
-            grid.appendChild(c);
-        }
-    }
-
-    function randomFill() {
-        selected = []; superNum = null;
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing', 'is-hot', 'is-cold', 'is-sleeping'));
-        sndShuffle.play();
-        let i = 0;
-        const interval = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
-            for(let j=0; j<6; j++) {
-                let rnd = Math.floor(Math.random()*42)+1;
-                document.getElementById(`cell-${rnd}`).classList.add('processing');
-            }
-            if(i++ > 10) { clearInterval(interval); finalizeRandom(); }
-        }, 70);
-    }
-
-    function finalizeRandom() {
-        while(selected.length < 6) {
-            let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) selected.push(r);
-        }
-        superNum = Math.floor(Math.random() * 6) + 1;
-        refreshGrid();
-        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-        sndWin.play();
-    }
-
-    const sgrid = document.getElementById('s-grid');
-    for (let i = 1; i <= 6; i++) {
-        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
-        sc.onclick = () => {
-            superNum = i;
-            document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
-        };
-        sgrid.appendChild(sc);
+        document.getElementById('main-btn').innerText = dict[l].btn;
+        document.getElementById('n-game').innerText = dict[l].game;
+        document.getElementById('info-title').innerText = dict[l].title;
+        document.getElementById('info-body').innerHTML = dict[l].info;
     }
 
     function setTheme(t) {
@@ -479,31 +194,36 @@
         document.documentElement.style.setProperty('--main-color', colors[t]);
     }
 
-    function runEngine() {
-        if(selected.length === 6 && superNum) {
-            const ticket = { nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() };
-            myTickets.push(ticket);
-            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-            tg.showAlert(dict[currentLang].status);
-            selected = []; superNum = null; refreshGrid();
-        } else { tg.showAlert("Select 6 numbers + Superzahl!"); }
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if (selected.includes(i)) c.classList.add('selected');
+            c.onclick = () => { if(selected.includes(i)) selected=selected.filter(n=>n!==i); else if(selected.length<6) selected.push(i); refreshGrid(); };
+            grid.appendChild(c);
+        }
+    }
+
+    const sgrid = document.getElementById('s-grid');
+    for (let i = 1; i <= 6; i++) {
+        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+        sc.onclick = () => { superNum = i; document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i)); };
+        sgrid.appendChild(sc);
+    }
+
+    function startIntro() {
+        const i1=document.getElementById('intro1'), i2=document.getElementById('intro2'), i3=document.getElementById('intro3'), c=document.getElementById('intro-container');
+        setTimeout(()=>{i1.classList.add('active')},100);
+        setTimeout(()=>{i1.classList.remove('active');i2.classList.add('active')},1200);
+        setTimeout(()=>{i2.classList.remove('active');i3.classList.add('active')},2400);
+        setTimeout(()=>{c.style.opacity='0';setTimeout(()=>{c.style.display='none';document.getElementById('app-content').style.display='block';setTimeout(()=>document.getElementById('app-content').style.opacity='1',50)},1000)},3600);
     }
 
     window.onload = () => {
-        let userLang = (tg.initDataUnsafe?.user?.language_code) || 'en';
-        const langContainer = document.getElementById('dynamic-langs');
-        let buttons = {
-            ua: '<span class="lang-btn" onclick="setLang(\'ua\')">🇺🇦</span>',
-            en: '<span class="lang-btn" onclick="setLang(\'en\')">🇺🇸</span>',
-            de: '<span class="lang-btn" onclick="setLang(\'de\')">🇩🇪</span>',
-            fr: '<span class="lang-btn" onclick="setLang(\'fr\')">🇫🇷</span>',
-            ru: '<span class="lang-btn" onclick="setLang(\'ru\')">🇷🇺</span>'
-        };
-        if (userLang === 'ru') { langContainer.innerHTML = buttons.ru + buttons.fr + buttons.de + buttons.en + buttons.ua; setLang('ru'); } 
-        else if (userLang === 'uk' || userLang === 'ua' || userLang === 'uk-UA') { langContainer.innerHTML = buttons.ua + buttons.en + buttons.de + buttons.fr + buttons.ru; setLang('ua'); } 
-        else { langContainer.innerHTML = buttons.en + buttons.de + buttons.fr + buttons.ua + buttons.ru; setLang('en'); }
-        fetchOfficialStats();
-        startIntroSequence();
+        setLang('de');
+        document.getElementById('dynamic-langs').innerHTML = '<span class="lang-btn" onclick="setLang(\'ru\')">🇷🇺</span><span class="lang-btn" onclick="setLang(\'de\')">🇩🇪</span><span class="lang-btn" onclick="setLang(\'en\')">🇺🇸</span>';
+        refreshGrid();
+        startIntro();
     };
 </script>
 </body>
