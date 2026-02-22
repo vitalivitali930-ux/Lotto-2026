@@ -230,6 +230,7 @@
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
     // --- ИНТЕЛЛЕКТУАЛЬНЫЙ МОДУЛЬ СИНХРОНИЗАЦИИ VCHF ---
+    // Исправление: инициализируем объект для корректной работы до загрузки данных
     let realStatsDB = {};
 
     async function fetchOfficialStats() {
@@ -282,7 +283,7 @@
                 },
                 de: {
                     top: "🔥 Rang 1: Kolibri-Flügel! Schneller als eine Schweizer Uhr. Absolute Spitze!",
-                    bottom: "❄️ Rang 42: Eingefrorenes Mammut. Im Tiefschlaf. Schlaf ist die Demo-Version des Todes.",
+                    bottom: "❄️ Rang 42: Eingefроrenes Mammut. Im Tiefschlaf. Schlaf ist die Demo-Version des Todes.",
                     mid_hot: `🔥 Rang ${pos}: Heißes Eisen! Fast so präzise wie eine Bank.`,
                     mid_cold: `❄️ Rang ${pos}: Echsen-Modus. Diese Zahl macht Winterschlaf.`
                 },
@@ -392,9 +393,12 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
+        // Исправление: добавлена проверка ключей объекта, чтобы избежать ошибок при расчете ранга
         if (currentMode && realStatsDB[i]) {
             const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            const sorted = Object.keys(realStatsDB).map(n => ({ n: parseInt(n), val: realStatsDB[n][pIdx] }))
+            const sorted = Object.keys(realStatsDB)
+                .filter(key => realStatsDB[key] !== undefined)
+                .map(n => ({ n: parseInt(n), val: realStatsDB[n][pIdx] }))
                 .sort((a, b) => currentMode === 'hot' ? b.val - a.val : a.val - b.val);
             const rankPos = sorted.findIndex(item => item.n === i) + 1;
             showVCHFAlert(i, rankPos, realStatsDB[i][pIdx]);
