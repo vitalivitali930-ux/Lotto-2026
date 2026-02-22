@@ -49,6 +49,14 @@
             text-shadow: 0 0 10px var(--cold-neon), 0 0 20px var(--cold-neon) !important;
             filter: brightness(1.5);
         }
+        
+        /* Стили для Тепловой Карты */
+        .cell.heat-node {
+            background: rgba(212, 175, 55, var(--heat-opacity)) !important;
+            color: #fff !important;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(212, 175, 55, var(--heat-shadow));
+        }
 
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -86,6 +94,7 @@
         .tool-btn { padding: 6px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
         .tool-btn.active-hot { background: #ff0000; border-color: #fff; box-shadow: 0 0 10px #ff0000; }
         .tool-btn.active-cold { background: #00f2ff; border-color: #fff; box-shadow: 0 0 10px #00f2ff; }
+        .tool-btn.active-heat { background: var(--main-color); color: #000; box-shadow: 0 0 10px var(--main-color); }
         
         .stats-period { display: flex; justify-content: center; gap: 5px; margin-top: 5px; opacity: 0; transition: 0.3s; pointer-events: none; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
@@ -162,6 +171,7 @@
         <div class="smart-tools">
             <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
             <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
+            <button class="tool-btn" onclick="toggleHeatmap('heat')" id="btn-heat">🌡️ HEAT</button>
             <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
         </div>
         <div class="stats-period" id="stats-p-box">
@@ -198,7 +208,7 @@
     let isProcessing = false;
     let currentMode = null; 
     let currentPeriod = 'month';
-    let prevStats = null; // Для отслеживания смены статуса
+    let prevStats = null;
 
     let dbStats = {
         month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} },
@@ -229,10 +239,10 @@
             times: "Mal", title: "Zahl" 
         },
         fr: { 
-            all_hot: ["Lapin — champion du piège !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."], 
+            all_hot: ["Lapin — champion du pièге !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."], 
             all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."], 
             new_hot: "🚀 Un nouveau champion ! Du sang neuf au Hall of Fame !",
-            new_cold: "🧊 Un autre givré ! Bienvenue au congélateur !",
+            new_cold: "🧊 Un altro givré ! Bienvenue au congélateur !",
             times: "fois", title: "Nombre" 
         },
         it: { 
@@ -246,7 +256,7 @@
 
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", topup: "💰 ПОПОЛНИТЬ БАЛАНС", alert: "Заполните билет полностью!" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", alert: "Заповніть квиток повністю!" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", topup: "💰 ПОПОВНИТИ БАЛАНС", alert: "Заповніть квиток полностью!" },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", topup: "💰 BALANCE AUFFÜLLEN", alert: "Ticket vollständig ausfüllen!" },
         fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", topup: "💰 RECHARGER", alert: "Remplissez le ticket!" },
         it: { btn: "CONFERMA", super: "NUMERO BONUS", topup: "💰 RICARICA", alert: "Completa il biglietto!" }
@@ -255,14 +265,8 @@
 
     async function syncSwissLotto() {
         try {
-            // Имитация получения живых данных (в реале fetch к API)
-            // Для теста 1.1: представим, что число 5 стало HOT, а 40 стало COLD
             prevStats = JSON.parse(JSON.stringify(dbStats)); 
-            
-            // Здесь будет реальный fetch('https://api...')
             console.log("Движок VCHF 1.1: Синхронизация со Swiss Lotto...");
-            
-            // Обновляем сетку после загрузки
             if(currentMode) refreshGrid();
         } catch(e) { console.error("Ошибка синхронизации"); }
     }
@@ -270,27 +274,22 @@
     function showCellInfo(n, isSuper = false) {
         const stats = dbStats[currentPeriod];
         const list = stats[currentMode];
+        if (!list) return; // Для heatmap инфо пока нет в словаре
+
         const index = list.indexOf(n);
-        
         if (index !== -1) {
             const langData = humorDict[currentLang] || humorDict['de'];
             let text = "";
-            
-            // Проверка на "Нового чемпиона" (сравнение с предыдущим состоянием)
             if (prevStats) {
                 const wasInList = prevStats[currentPeriod][currentMode].includes(n);
                 if (!wasInList) {
                     text = `<span style="color:var(--main-color); font-weight:bold;">${currentMode === 'hot' ? langData.new_hot : langData.new_cold}</span><br><br>`;
                 }
             }
-
-            // Основной юмор
             const humorKey = (currentMode === 'hot') ? 'all_hot' : 'all_cold';
             text += langData[humorKey][index % langData[humorKey].length];
-
             document.getElementById('m-title').innerText = `${langData.title} ${n}${isSuper ? ' (Super)' : ''}`;
             document.getElementById('m-text').innerHTML = `${text}<br><br><b>${stats.freq[n] || 0} ${langData.times}</b>`;
-            
             const modal = document.getElementById('humor-modal');
             modal.style.display = 'flex';
             setTimeout(() => modal.querySelector('.modal-content').classList.add('show'), 10);
@@ -317,13 +316,14 @@
         const box = document.getElementById('stats-p-box');
         if (currentMode === type) {
             currentMode = null; box.classList.remove('visible');
-            document.getElementById('btn-hot').classList.remove('active-hot');
-            document.getElementById('btn-cold').classList.remove('active-cold');
         } else {
             currentMode = type; box.classList.add('visible');
-            document.getElementById('btn-hot').classList.toggle('active-hot', type === 'hot');
-            document.getElementById('btn-cold').classList.toggle('active-cold', type === 'cold');
         }
+        
+        document.getElementById('btn-hot').classList.toggle('active-hot', currentMode === 'hot');
+        document.getElementById('btn-cold').classList.toggle('active-cold', currentMode === 'cold');
+        document.getElementById('btn-heat').classList.toggle('active-heat', currentMode === 'heat');
+        
         refreshGrid();
     }
 
@@ -336,16 +336,38 @@
     }
 
     function refreshGrid() {
-        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
-        if (!currentMode) return;
-        const list = dbStats[currentPeriod][currentMode];
-        list.forEach(n => {
-            const el = document.getElementById(`cell-${n}`);
-            if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
+        document.querySelectorAll('.cell, .super-cell').forEach(c => {
+            c.classList.remove('is-hot', 'is-cold', 'heat-node');
+            c.style.setProperty('--heat-opacity', 0);
+            c.style.setProperty('--heat-shadow', 0);
         });
-        const sList = (currentMode === 'hot') ? dbStats[currentPeriod].superHot : dbStats[currentPeriod].superCold; 
-        const sCells = document.querySelectorAll('.super-cell');
-        sList.forEach(sn => { if (sCells[sn-1]) sCells[sn-1].classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold'); });
+
+        if (!currentMode) return;
+        const stats = dbStats[currentPeriod];
+
+        if (currentMode === 'heat') {
+            const frequencies = Object.values(stats.freq);
+            const maxFreq = Math.max(...frequencies);
+            for (let n = 1; n <= 42; n++) {
+                const f = stats.freq[n] || 0;
+                const el = document.getElementById(`cell-${n}`);
+                if (el && f > 0) {
+                    const intensity = (f / maxFreq) * 0.8;
+                    el.classList.add('heat-node');
+                    el.style.setProperty('--heat-opacity', intensity);
+                    el.style.setProperty('--heat-shadow', intensity / 2);
+                }
+            }
+        } else {
+            const list = stats[currentMode];
+            list.forEach(n => {
+                const el = document.getElementById(`cell-${n}`);
+                if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
+            });
+            const sList = (currentMode === 'hot') ? stats.superHot : stats.superCold; 
+            const sCells = document.querySelectorAll('.super-cell');
+            sList.forEach(sn => { if (sCells[sn-1]) sCells[sn-1].classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold'); });
+        }
     }
 
     function closeHumor() {
@@ -388,7 +410,7 @@
         const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
         c.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) showCellInfo(i);
+            if(currentMode && (currentMode !== 'heat') && (c.classList.contains('is-hot') || c.classList.contains('is-cold'))) showCellInfo(i);
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); c.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
         };
@@ -400,7 +422,7 @@
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
         sc.onclick = () => {
             if(isProcessing) return;
-            if(currentMode && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) showCellInfo(i, true);
+            if(currentMode && (currentMode !== 'heat') && (sc.classList.contains('is-hot') || sc.classList.contains('is-cold'))) showCellInfo(i, true);
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i; sc.classList.add('selected'); tg.HapticFeedback.impactOccurred('medium');
         };
@@ -431,7 +453,7 @@
             document.getElementById('intro-container').style.display='none';
             const app = document.getElementById('app-content');
             app.style.display='block'; setTimeout(() => app.style.opacity='1', 50);
-            syncSwissLotto(); // Синхронизация при старте
+            syncSwissLotto(); 
         }, 7500);
     }
     window.onload = runIntro;
@@ -444,7 +466,7 @@
             silver: ['#c0c0c0', 'linear-gradient(145deg, #ffffff, #c0c0c0)'],
             cyan: ['#00ffff', 'linear-gradient(145deg, #e0ffff, #00ffff)'],
             cherry: ['#C511A4', 'linear-gradient(145deg, #FF1493, #C511A4)']
-        };
+        }
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
         root.style.setProperty('--cell-text', colors[t][0]);
