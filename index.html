@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Ultimate 2.0</title>
+    <title>Lotto - Движок VCHF Ultimate 2.0 3D</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --cell-text: #ffffff; 
+            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
+            --cell-text: #2c2105; 
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
             --process-color: #00ffff; 
@@ -38,7 +39,6 @@
         
         .lang-panel { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
-        .lang-btn:active { transform: scale(1.2); }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
         .bal-card { 
@@ -56,26 +56,42 @@
         }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
-        /* THEMES - CHERRY NEON */
+        /* THEMES */
         body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); }
-        body.theme-cherry .cell.is-hot { text-shadow: 0 0 15px #FF1493, 0 0 5px #fff !important; }
 
-        /* GRID & CELLS */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        .cell { background: transparent; border: none; padding: 12px 0; font-weight: bold; color: #fff; font-size: 20px; transition: 0.2s; cursor: pointer; position: relative; }
-        .cell.selected { background: var(--main-gradient); color: #000 !important; border-radius: 50%; box-shadow: 0 0 15px var(--main-color); }
-        .cell.processing { background: var(--process-color); color: #000 !important; border-radius: 50%; box-shadow: 0 0 12px var(--process-color); }
+        /* GRID & 3D SPHERES */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        
+        .cell { 
+            aspect-ratio: 1/1; 
+            background: radial-gradient(circle at 35% 35%, #444, #111);
+            border: 1px solid #333; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #777; font-size: 18px; 
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; position: relative;
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.5);
+        }
+        
+        /* Выбранный золотой шар */
+        .cell.selected { 
+            background: var(--gold-sphere); 
+            color: var(--cell-text);
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.5), 0 10px 20px rgba(212,175,55,0.4);
+            transform: scale(1.1) translateY(-5px);
+        }
+        
+        .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); }
 
-        /* HEATMAP EFFECTS */
-        .cell.is-hot, .super-cell.is-hot { color: #ff4500 !important; text-shadow: 0 0 10px #ff4500, 0 0 5px #fff !important; font-weight: 900; }
-        .cell.is-cold, .super-cell.is-cold { color: #00ffff !important; text-shadow: 0 0 10px #00ffff, 0 0 5px #fff !important; font-weight: 900; }
+        /* HEATMAP */
+        .cell.is-hot { border: 2px solid #ff4500; color: #ff4500; box-shadow: 0 0 15px #ff4500; }
+        .cell.is-cold { border: 2px solid #00ffff; color: #00ffff; box-shadow: 0 0 15px #00ffff; }
 
         /* CONTROLS */
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; }
         .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; }
-        .tool-btn.active-hot { background: var(--hot-color); border-color: #fff; box-shadow: 0 0 10px var(--hot-color); }
-        .tool-btn.active-cold { background: var(--cold-color); border-color: #fff; box-shadow: 0 0 10px var(--cold-color); }
         
         .stats-period { display: flex; justify-content: center; gap: 5px; opacity: 0; transition: 0.3s; pointer-events: none; height: 30px; }
         .stats-period.visible { opacity: 1; pointer-events: all; }
@@ -85,14 +101,31 @@
         .counter-box { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.2); }
         .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
 
+        /* ГИГАНТСКИЕ SUPER-ШАРЫ */
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .super-grid { display: flex; justify-content: center; gap: 12px; }
-        .super-cell { width: 45px; height: 45px; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .super-cell.selected { background: var(--main-gradient); color: #000 !important; border-color: transparent; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
+        
+        .super-cell { 
+            width: 58px; height: 58px; 
+            background: radial-gradient(circle at 35% 35%, #333, #000);
+            border: 2px solid #555; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: #555; font-weight: 900; font-size: 22px; cursor: pointer; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.9), 0 10px 15px rgba(0,0,0,0.6);
+        }
+        
+        .super-cell.selected { 
+            background: var(--gold-sphere); 
+            color: var(--cell-text);
+            transform: scale(1.2) translateY(-8px); 
+            box-shadow: inset -5px -5px 12px rgba(0,0,0,0.4), 0 20px 30px rgba(212,175,55,0.6);
+            border-color: #fff9d6;
+        }
 
         .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 30px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; filter: drop-shadow(0 0 5px #000); }
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(100px); }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
@@ -151,7 +184,6 @@
             <span id="ticket-count" style="font-size: 20px; font-weight: bold;">1</span>
             <button class="btn-round" onclick="updateTicketCount(1)">+</button>
         </div>
-        <div style="font-size: 13px; color: #aaa;">TOTAL: <span id="total-price" style="color:#fff">2.50</span> <span id="currency-label">VCHF</span></div>
     </div>
 
     <div class="grid" id="main-grid"></div>
@@ -164,22 +196,20 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // -- DATA ENGINE --
     const dbStats = {
-        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5], superCold: [2] },
-        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1], superCold: [4] },
-        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3], superCold: [6] }
+        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39] },
+        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38] },
+        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40] }
     };
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "GESAMT" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС" },
-        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS", month: "MOIS", year: "AN", all: "TOTAL" },
-        it: { btn: "CONFERMA", super: "NUMERO BONUS", month: "MESE", year: "ANNO", all: "TOTALE" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО" },
+        fr: { btn: "CONFIRMER", super: "NOMBRE BONUS" },
+        it: { btn: "CONFERMA", super: "NUMERO BONUS" }
     };
 
-    // -- STATE --
     let selected = [];
     let superNum = null;
     let activeCurrency = 'VCHF';
@@ -187,29 +217,22 @@
     let currentPeriod = 'month';
     let ticketCount = 1;
 
-    // -- CORE LOGIC --
     function setLang(l) {
         tg.HapticFeedback.selectionChanged();
         document.getElementById('main-btn').innerText = dict[l].btn;
         document.getElementById('l-super').innerText = dict[l].super;
-        document.getElementById('p-month').innerText = dict[l].month;
-        document.getElementById('p-year').innerText = dict[l].year;
-        document.getElementById('p-all').innerText = dict[l].all;
     }
 
     function switchCurrency(type) {
         activeCurrency = type;
         document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
         document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
-        document.getElementById('currency-label').innerText = type;
         tg.HapticFeedback.impactOccurred('medium');
     }
 
     function toggleHeatmap(type) {
         currentMode = (currentMode === type) ? null : type;
         document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
-        document.getElementById('btn-hot').classList.toggle('active-hot', currentMode === 'hot');
-        document.getElementById('btn-cold').classList.toggle('active-cold', currentMode === 'cold');
         refreshGrid();
     }
 
@@ -222,7 +245,7 @@
     }
 
     function refreshGrid() {
-        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
         if (!currentMode) return;
         dbStats[currentPeriod][currentMode].forEach(n => {
             const el = document.getElementById(`cell-${n}`);
@@ -241,7 +264,7 @@
                 document.getElementById(`cell-${r}`).classList.add('processing');
             }
             tg.HapticFeedback.impactOccurred('light');
-            if(i++ > 10) {
+            if(i++ > 12) {
                 clearInterval(interval);
                 finalizeRandom();
             }
@@ -266,7 +289,6 @@
     function updateTicketCount(val) {
         ticketCount = Math.max(1, ticketCount + val);
         document.getElementById('ticket-count').innerText = ticketCount;
-        document.getElementById('total-price').innerText = (ticketCount * 2.5).toFixed(2);
         tg.HapticFeedback.selectionChanged();
     }
 
@@ -275,10 +297,8 @@
         const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
         document.documentElement.style.setProperty('--main-color', colors[t]);
         tg.HapticFeedback.impactOccurred('medium');
-        document.querySelector('.theme-panel').classList.remove('open');
     }
 
-    // -- INIT --
     const grid = document.getElementById('main-grid');
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
@@ -316,9 +336,8 @@
         });
         setTimeout(() => {
             document.getElementById('intro-container').style.display = 'none';
-            const app = document.getElementById('app-content');
-            app.style.display = 'block';
-            setTimeout(() => app.style.opacity = '1', 50);
+            document.getElementById('app-content').style.display = 'block';
+            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
         }, 7200);
     }
 
