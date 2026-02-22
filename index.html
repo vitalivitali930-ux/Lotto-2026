@@ -272,35 +272,46 @@
         },
         getJoke: (num, pos, type, lang) => {
             const isHot = type === 'hot';
-            const jokes = {
+            const langKey = (lang === 'ru' || lang === 'ua') ? 'ru' : 'de';
+            
+            const fates = {
                 ru: {
-                    top: `🔥 №${num}: Крылья Колибри! Машет быстрее света. Совесть на пике!`,
-                    bottom: `❄️ №${num}: Замёрзший мамонт. Ушёл в демо-версию смерти.`,
-                    hot_mid: `🔥 №${num}: Ранг ${pos}. Число в огне, движок VCHF разогрет!`,
-                    cold_mid: `❄️ №${num}: Ранг ${pos}. Спит как фотография костра — красиво, но не горит.`
+                    hot: [
+                        `№${num}: Искрит! Совесть проекта на пике.`,
+                        `№${num}: Крылья Колибри! Машет быстрее света.`,
+                        `№${num}: Число в огне, движок VCHF разогрет!`,
+                        `№${num}: Энергия Wanderer! Ранг ${pos} в топе.`
+                    ],
+                    cold: [
+                        `№${num}: Спит как фотография костра — красиво, но не горит.`,
+                        `№${num}: Замёрзший мамонт. Ушёл в демо-версию смерти.`,
+                        `№${num}: Число в глубоком сне. Ранг ${pos} (холод).`,
+                        `№${num}: Ждёт искру бога, чтобы проснуться.`
+                    ]
                 },
                 de: {
-                    top: `🔥 №${num}: Kolibri-Flügel! Schneller als Licht. VCHF Power!`,
-                    bottom: `❄️ №${num}: Mammut-Modus. Schlaf ist die Demo-Version des Todes.`,
-                    hot_mid: `🔥 №${num}: Rang ${pos}. Heißes Eisen im VCHF-System!`,
-                    cold_mid: `❄️ №${num}: Rang ${pos}. Winterschlaf. Schön, aber eiskalt.`
-                },
-                ua: {
-                    top: `🔥 №${num}: Крила Колібрі! Летить швидше вітру. Совість проекту!`,
-                    bottom: `❄️ №${num}: Замерзлий мамонт. Пішов у демо-версію смерті.`,
-                    hot_mid: `🔥 №${num}: Ранг ${pos}. Число палає, двигун VCHF працює!`,
-                    cold_mid: `❄️ №${num}: Ранг ${pos}. Спить міцно, чекає на свій час.`
+                    hot: [
+                        `Nr. ${num}: VCHF-Power! Das Gewissen ist rein.`,
+                        `Nr. ${num}: Kolibri-Flügel! Schneller als Licht.`,
+                        `Nr. ${num}: Heißes Eisen im System!`,
+                        `Nr. ${num}: Wanderer-Energie! Rang ${pos} ist aktiv.`
+                    ],
+                    cold: [
+                        `Nr. ${num}: Wie ein Foto vom Feuer — brennt nicht.`,
+                        `Nr. ${num}: Mammut-Modus. Schlaf ist die Demo-Version des Todes.`,
+                        `Nr. ${num}: Winterschlaf. Rang ${pos} (eiskalt).`,
+                        `Nr. ${num}: Wartet auf den göttlichen Funken.`
+                    ]
                 }
             };
-            const current = jokes[lang] || jokes['de'];
+
+            const currentSet = fates[langKey] || fates['de'];
+            const pool = isHot ? currentSet.hot : currentSet.cold;
             
-            // Уникальные вставки для твоего стиля
-            if (num === 7) return `🍀 №7: Счастливая звезда Wanderer. Ранг ${pos}.`;
-            if (num === 13) return `🛸 №13: Космическая аномалия движка. Ранг ${pos}.`;
+            if (num === 7) return langKey === 'ru' ? `🍀 №7: Счастливая звезда Wanderer. Совесть чиста.` : `🍀 Nr. 7: Wanderers Glücksstern. Reines Gewissen.`;
+            if (num === 13) return langKey === 'ru' ? `🛸 №13: Космическая аномалия движка VCHF.` : `🛸 Nr. 13: Kosmische VCHF-Anomalie.`;
             
-            if (pos === 1 && isHot) return current.top;
-            if (pos === 42 && !isHot) return current.bottom;
-            return isHot ? current.hot_mid : current.cold_mid;
+            return pool[num % pool.length];
         }
     };
 
@@ -334,7 +345,6 @@
 
     function showVCHFAlert(num, pos, count) {
         const color = rankEngine.getColor(pos);
-        // Исправлено: передаем num в getJoke
         const joke = rankEngine.getJoke(num, pos, currentMode, currentLang);
         const alertBox = document.createElement('div');
         alertBox.className = 'vchf-alert';
