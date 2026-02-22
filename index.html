@@ -37,9 +37,10 @@
             background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; z-index: 20000; 
             display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s ease;
         }
         .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
-        .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
+        .intro-img.active { animation: shakePop 0.7s ease-out forwards; opacity: 1; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
@@ -98,18 +99,23 @@
 
         .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
         
-        /* Блок "Дышащей" подсветки из видео */
+        /* Исправленная подсветка: анимация проигрывается 3 раза и замирает, чтобы не раздражать */
         .cell.is-hot { 
             border: 3px solid #ff4500 !important; 
             box-shadow: 0 0 20px #ff4500 !important; 
-            animation: pulse-hot 1.2s infinite alternate;
+            animation: pulse-hot 1.2s 3 alternate;
             z-index: 5; 
         }
         .cell.is-cold { 
             border: 3px solid #1e90ff !important; 
             box-shadow: 0 0 20px #1e90ff !important; 
-            animation: pulse-cold 1.2s infinite alternate;
+            animation: pulse-cold 1.2s 3 alternate;
             z-index: 5; 
+        }
+        .cell.is-sleeping {
+            border: 3px solid var(--process-color) !important;
+            box-shadow: 0 0 20px var(--process-color) !important;
+            animation: pulse-hot 1.2s 3 alternate;
         }
 
         @keyframes pulse-hot {
@@ -134,7 +140,7 @@
         .super-ball-mini { background: #ff4500 !important; color: #fff !important; }
 
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .smart-tools { display: flex; gap: 8px; }
+        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
         .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
         .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
         
@@ -200,9 +206,10 @@
 
         <div class="ticket-controls">
             <div class="smart-tools">
-                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT PICK</button>
-                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD PICK</button>
-                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
+                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
             </div>
             <div class="stats-period" id="stats-p-box">
                 <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
@@ -263,34 +270,69 @@
         fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
     };
 
-    // --- ОБНОВЛЕННАЯ ЛОГИКА ПОДСВЕТКИ (КАК НА ВИДЕО) ---
+    // --- ИСПРАВЛЕННОЕ ИНТРО (ПОСЛЕДОВАТЕЛЬНОЕ ПОЯВЛЕНИЕ) ---
+    function startIntroSequence() {
+        const i1 = document.getElementById('intro1');
+        const i2 = document.getElementById('intro2');
+        const i3 = document.getElementById('intro3');
+        const container = document.getElementById('intro-container');
+
+        setTimeout(() => { i1.classList.add('active'); }, 100);
+        setTimeout(() => { i1.classList.remove('active'); i2.classList.add('active'); }, 1200);
+        setTimeout(() => { i2.classList.remove('active'); i3.classList.add('active'); }, 2400);
+        setTimeout(() => { 
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+            }, 1000);
+        }, 4000);
+    }
+
+    // --- ОБНОВЛЕННАЯ ЛОГИКА ПОДСВЕТКИ (SLEEPING GIANT И УМЕРЕННАЯ АНИМАЦИЯ) ---
     function togglePick(type) {
         const btnHot = document.getElementById('btn-hot');
         const btnCold = document.getElementById('btn-cold');
+        const btnSleep = document.getElementById('btn-sleeping');
         
         selected = []; 
         const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
         let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
         
-        // Очистка перед активацией нового режима
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'selected'));
+        document.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected');
+            c.style.animation = 'none'; // Сброс анимации для возможности повтора
+        });
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
 
         if (type === 'hot') {
-            btnHot.classList.toggle('active-tool');
-            btnCold.classList.remove('active-tool');
-            if (btnHot.classList.contains('active-tool')) {
-                sorted.sort((a, b) => b.val - a.val);
-                selected = sorted.slice(0, 6).map(i => i.num);
-                selected.forEach(n => document.getElementById(`cell-${n}`).classList.add('is-hot'));
-            }
-        } else {
-            btnCold.classList.toggle('active-tool');
-            btnHot.classList.remove('active-tool');
-            if (btnCold.classList.contains('active-tool')) {
-                sorted.sort((a, b) => a.val - b.val);
-                selected = sorted.slice(0, 6).map(i => i.num);
-                selected.forEach(n => document.getElementById(`cell-${n}`).classList.add('is-cold'));
-            }
+            btnHot.classList.add('active-tool');
+            sorted.sort((a, b) => b.val - a.val);
+            selected = sorted.slice(0, 6).map(i => i.num);
+            selected.forEach(n => {
+                const el = document.getElementById(`cell-${n}`);
+                el.classList.add('is-hot', 'selected');
+                el.style.animation = 'pulse-hot 1.2s 3 alternate';
+            });
+        } else if (type === 'cold') {
+            btnCold.classList.add('active-tool');
+            sorted.sort((a, b) => a.val - b.val);
+            selected = sorted.slice(0, 6).map(i => i.num);
+            selected.forEach(n => {
+                const el = document.getElementById(`cell-${n}`);
+                el.classList.add('is-cold', 'selected');
+                el.style.animation = 'pulse-cold 1.2s 3 alternate';
+            });
+        } else if (type === 'sleeping') {
+            btnSleep.classList.add('active-tool');
+            // Sleeping Giant: Берем тех, у кого наименьший показатель за месяц (или кастомный индекс)
+            sorted.sort((a, b) => a.val - b.val);
+            selected = sorted.slice(0, 6).map(i => i.num);
+            selected.forEach(n => {
+                const el = document.getElementById(`cell-${n}`);
+                el.classList.add('is-sleeping', 'selected');
+            });
         }
         
         superNum = Math.floor(Math.random() * 6) + 1;
@@ -380,9 +422,8 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        // Удаляем "дыхание" при ручном выборе
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
+        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
 
         if(selected.includes(i)) { selected = selected.filter(n => n !== i); }
         else if(selected.length < 6) { selected.push(i); }
@@ -404,7 +445,7 @@
     function randomFill() {
         selected = []; superNum = null;
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing', 'is-hot', 'is-cold'));
+        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing', 'is-hot', 'is-cold', 'is-sleeping'));
         sndShuffle.play();
         let i = 0;
         const interval = setInterval(() => {
@@ -465,7 +506,6 @@
             ru: '<span class="lang-btn" onclick="setLang(\'ru\')">🇷🇺</span>'
         };
 
-        // ДИНАМИЧЕСКАЯ РОКИРОВКА (ДВИЖОК VCHF)
         if (userLang === 'ru') {
             langContainer.innerHTML = buttons.ru + buttons.fr + buttons.de + buttons.en + buttons.ua;
             setLang('ru');
@@ -478,11 +518,7 @@
         }
 
         fetchOfficialStats();
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 3000); 
+        startIntroSequence(); // Запуск исправленного интро
     };
 </script>
 </body>
