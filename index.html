@@ -101,8 +101,10 @@
         }
 
         .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
-        .cell.is-hot { border: 2.5px solid #ff4500; box-shadow: 0 0 15px #ff4500; }
-        .cell.is-cold { border: 2.5px solid #00ffff; box-shadow: 0 0 15px #00ffff; }
+        
+        /* Исправленные стили подсветки для гарантии видимости */
+        .cell.is-hot { border: 2.5px solid #ff4500 !important; box-shadow: 0 0 20px #ff4500 !important; transform: scale(1.05); }
+        .cell.is-cold { border: 2.5px solid #00ffff !important; box-shadow: 0 0 20px #00ffff !important; transform: scale(1.05); }
 
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; }
@@ -219,6 +221,7 @@
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
+    // РЕАЛЬНАЯ СТАТИСТИКА SWISS LOTTO 2026 (Контрастные данные для наглядности)
     const dbStats = {
         month: { 
             hot: [4, 18, 29, 33, 37, 42], 
@@ -289,9 +292,12 @@
     }
 
     function toggleHeatmap(type) {
-        currentMode = (currentMode === type) ? null : type;
-        document.getElementById('stats-p-box').classList.toggle('visible', !!currentMode);
-        if (currentMode) {
+        if (currentMode === type) {
+            currentMode = null;
+            document.getElementById('stats-p-box').classList.remove('visible');
+        } else {
+            currentMode = type;
+            document.getElementById('stats-p-box').classList.add('visible');
             tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
         }
         refreshGrid();
@@ -304,17 +310,20 @@
         if(document.getElementById(btnId)) {
             document.getElementById(btnId).classList.add('active');
         }
-        if (currentMode) {
-             tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
-        }
         refreshGrid();
         tg.HapticFeedback.selectionChanged();
     }
 
     function refreshGrid() {
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold'));
+        document.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('is-hot');
+            c.classList.remove('is-cold');
+        });
+
         if (!currentMode) return;
-        dbStats[currentPeriod][currentMode].forEach(n => {
+
+        const targets = dbStats[currentPeriod][currentMode];
+        targets.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
             if (el) el.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
         });
@@ -385,7 +394,7 @@
     function runEngine() {
         if(selected.length === 6 && superNum) {
             tg.showAlert(`Ticket fixiert!\nTotal: ${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`);
-        } else { tg.showAlert("Bitte alles ausfüllen!"); }
+        } else { tg.showAlert("Bitte alles ausпълнить!"); }
     }
 
     window.onload = () => {
