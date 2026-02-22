@@ -42,8 +42,22 @@
         .intro-img.active { animation: shakePop 0.7s ease-out forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding: 15px 0 50px; }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
         
+        /* Стили страниц */
+        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
+        .page.active { display: block; }
+
+        /* Навигация */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000;
+        }
+        .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; }
+
         .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
 
@@ -105,6 +119,19 @@
         .cell.is-hot { border: 2.5px solid #ff4500 !important; box-shadow: 0 0 20px #ff4500 !important; transform: scale(1.05); }
         .cell.is-cold { border: 2.5px solid #00ffff !important; box-shadow: 0 0 20px #00ffff !important; transform: scale(1.05); }
 
+        /* Билеты */
+        .ticket-card {
+            background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px;
+            padding: 15px; margin: 0 15px 12px; text-align: left; position: relative;
+        }
+        .ticket-card.locked { border-color: #ff4500; background: rgba(255, 69, 0, 0.05); }
+        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .mini-ball { 
+            width: 30px; height: 30px; background: var(--main-gradient); border-radius: 50%;
+            color: #000; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800;
+        }
+        .super-ball-mini { background: #ff4500 !important; color: #fff !important; }
+
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; }
         .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
@@ -149,62 +176,79 @@
 </div>
 
 <div id="app-content">
-    <div class="lang-panel">
-        <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
-        <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
-        <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
-        <span class="lang-btn" onclick="setLang('en')">🇺🇸</span>
-        <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+    
+    <div id="page-play" class="page active">
+        <div class="lang-panel">
+            <span class="lang-btn" onclick="setLang('ru')">🇷🇺</span>
+            <span class="lang-btn" onclick="setLang('ua')">🇺🇦</span>
+            <span class="lang-btn" onclick="setLang('de')">🇩🇪</span>
+            <span class="lang-btn" onclick="setLang('en')">🇺🇸</span>
+            <span class="lang-btn" onclick="setLang('fr')">🇫🇷</span>
+        </div>
+
+        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+        <div class="theme-panel">
+            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        </div>
+
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:10px;">VIRTUAL VCHF</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
+            </div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:10px;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
+            </div>
+        </div>
+
+        <div class="ticket-controls">
+            <div class="smart-tools">
+                <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
+            </div>
+            <div class="stats-period" id="stats-p-box">
+                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            </div>
+            <div class="counter-box">
+                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
+                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+            </div>
+        </div>
+
+        <div class="grid" id="main-grid"></div>
+        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div class="super-grid" id="s-grid"></div>
+        <div class="total-display">
+            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
+        </div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
     </div>
 
-    <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
-    <div class="theme-panel">
-        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
-        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
-        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
-        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
-        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+    <div id="page-tickets" class="page">
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
+        <div id="active-list"></div>
     </div>
 
-    <div class="balance-container">
-        <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-            <div style="font-size:10px;">VIRTUAL VCHF</div>
-            <div class="bal-val" id="vchf-val">100.00</div>
-        </div>
-        <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-            <div style="font-size:10px;">REAL CHF</div>
-            <div class="bal-val" id="chf-val">0.00</div>
-        </div>
+    <div id="page-stats" class="page">
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
+        <p id="l-heatmap-desc" style="font-size: 12px; color: #888;">DEINE PERSÖNLICHE HIT-MAP</p>
+        <div class="grid" id="personal-heatmap" style="transform: scale(0.9); margin-top: -20px;"></div>
     </div>
 
-    <div class="ticket-controls">
-        <div class="smart-tools">
-            <button class="tool-btn" onclick="toggleHeatmap('hot')" id="btn-hot">🔥 HOT</button>
-            <button class="tool-btn" onclick="toggleHeatmap('cold')" id="btn-cold">❄️ COLD</button>
-            <button class="tool-btn" onclick="randomFill()">🎲 RANDOM PICK</button>
-        </div>
-        <div class="stats-period" id="stats-p-box">
-            <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
-            <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
-            <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
-        </div>
-        <div class="counter-box">
-            <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
-            <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
-            <button class="btn-round" onclick="updateTicketCount(1)">+</button>
-        </div>
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
     </div>
-
-    <div class="grid" id="main-grid"></div>
-
-    <div id="l-super" class="super-title">SUPERZAHL</div>
-    <div class="super-grid" id="s-grid"></div>
-
-    <div class="total-display">
-        <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
-    </div>
-
-    <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
 </div>
 
 <script>
@@ -216,8 +260,72 @@
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
 
     let realStatsDB = {};
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
+
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
+    };
+
+    // --- ЛОГИКА КОМНАТ ---
+    function showPage(pId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pId).classList.add('active');
+        el.classList.add('active');
+        if(pId === 'tickets') renderTickets();
+        if(pId === 'stats') renderPersonalStats();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function isLocked() {
+        const now = new Date(); const day = now.getDay(); const hr = now.getHours();
+        if ((day === 3 || day === 6) && hr >= 14 && hr < 20) return true;
+        return false;
+    }
+
+    function renderTickets() {
+        const container = document.getElementById('active-list');
+        container.innerHTML = ''; const locked = isLocked();
+        myTickets.forEach((t, idx) => {
+            const card = document.createElement('div');
+            card.className = `ticket-card ${locked ? 'locked' : ''}`;
+            card.innerHTML = `
+                <div style="font-size:11px; color:#888;">ID: ${t.timestamp} ${locked ? '<span style="color:#ff4500; float:right;">🔒 '+dict[currentLang].lock+'</span>' : ''}</div>
+                <div class="ticket-nums">
+                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
+                    <div class="mini-ball super-ball-mini">${t.super}</div>
+                </div>
+                ${!locked ? `<button onclick="deleteTicket(${idx})" style="background:none; border:1px solid #ff4500; color:#ff4500; border-radius:8px; padding:4px 10px; font-size:10px;">${dict[currentLang].del}</button>` : ''}
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function deleteTicket(idx) {
+        myTickets.splice(idx, 1);
+        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+        renderTickets();
+    }
+
+    function renderPersonalStats() {
+        const grid = document.getElementById('personal-heatmap'); grid.innerHTML = '';
+        let counts = {}; myTickets.forEach(t => t.nums.forEach(n => counts[n] = (counts[n] || 0) + 1));
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(counts[i]) {
+                const op = Math.min(counts[i] * 0.4, 1);
+                c.style.border = `2px solid var(--main-color)`;
+                c.style.boxShadow = `inset 0 0 15px rgba(212,175,55,${op})`;
+            }
+            grid.appendChild(c);
+        }
+    }
 
     // --- ЛОГИКА АВТОМАТИЗАЦИИ ---
     async function fetchOfficialStats() {
@@ -272,14 +380,6 @@
         refreshGrid();
     }
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "HOT/COLD статус обновлён!" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", status: "HOT/COLD статус оновлено!" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", status: "HOT/COLD Status aktualisiert!" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", status: "HOT/COLD status updated!" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut HOT/COLD mis à jour!" }
-    };
-
     function setLang(l) {
         currentLang = l;
         const d = dict[l];
@@ -289,6 +389,14 @@
         document.getElementById('p-year').innerText = d.year;
         document.getElementById('p-all').innerText = d.all;
         document.getElementById('l-total').innerText = d.total;
+        
+        document.getElementById('n-game').innerText = d.game;
+        document.getElementById('n-tickets').innerText = d.tickets;
+        document.getElementById('n-stats').innerText = d.stats;
+        document.getElementById('l-active-tickets-title').innerText = d.activeT;
+        document.getElementById('l-personal-stats-title').innerText = d.stats;
+        document.getElementById('l-heatmap-desc').innerText = d.hit;
+        
         tg.HapticFeedback.selectionChanged();
     }
 
@@ -402,7 +510,17 @@
 
     function runEngine() {
         if(selected.length === 6 && superNum) {
-            tg.showAlert(`Ticket fixiert!\nTotal: ${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`);
+            const ticket = {
+                nums: [...selected],
+                super: superNum,
+                timestamp: new Date().toLocaleString(),
+                currency: currentCurrency
+            };
+            myTickets.push(ticket);
+            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+            
+            tg.showAlert(dict[currentLang].status + "\nTotal: " + (ticketCount * realPrice).toFixed(2) + " " + currentCurrency);
+            selected = []; superNum = null; refreshGrid();
         } else { tg.showAlert("Bitte alles ausfüllen!"); }
     }
 
