@@ -249,27 +249,21 @@
             let data = {};
             for(let i=1; i<=42; i++) {
                 data[i] = {
-                    monthCount: Math.floor(Math.random() * 5),
-                    yearCount: Math.floor(Math.random() * 40),
-                    allTimeCount: 300 + Math.floor(Math.random() * 200)
+                    monthCount: Math.floor(Math.random() * 10),
+                    yearCount: Math.floor(Math.random() * 100),
+                    allTimeCount: 300 + Math.floor(Math.random() * 500)
                 };
             }
             resolve(data);
         });
     }
 
-    const dbStats = {
-        month: { hot: [4, 18, 29, 33, 37, 42], cold: [2, 7, 15, 21, 30, 39] },
-        year:  { hot: [12, 18, 26, 31, 38, 41], cold: [1, 5, 13, 22, 28, 40] },
-        all:   { hot: [18, 37, 42, 12, 1, 23], cold: [6, 10, 19, 24, 32, 35] }
-    };
-
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
 
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", pulled: "Официально выпадало", times: "раз" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Офіційно випадало", times: "разів" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Офіційно выпадало", times: "разів" },
         de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", pulled: "Offiziell gezogen", times: "Mal" },
         en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", pulled: "Officially drawn", times: "times" },
         fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", pulled: "Officiellement tiré", times: "fois" }
@@ -287,16 +281,39 @@
         tg.HapticFeedback.selectionChanged();
     }
 
+    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫБОРА ЧЕРЕЗ АЛЕРТ ---
+    function selectAndClose(num) {
+        // Удаляем алерт
+        const alert = document.querySelector('.vchf-alert');
+        if (alert) alert.remove();
+
+        // Сбрасываем режим подсказки (убираем рамки)
+        currentMode = null;
+        document.getElementById('stats-p-box').classList.remove('visible');
+
+        // Выбираем число (если еще не выбрано и лимит не превышен)
+        if(!selected.includes(num) && selected.length < 6) {
+            selected.push(num);
+        } else if(selected.includes(num)) {
+            selected = selected.filter(n => n !== num);
+        }
+        
+        // Обновляем всю сетку
+        refreshGrid();
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
     function showVCHFAlert(num, count) {
         const d = dict[currentLang];
         const alertBox = document.createElement('div');
         alertBox.className = 'vchf-alert';
+        // Изменила вызов функции на selectAndClose(num)
         alertBox.innerHTML = `
             <div style="color:var(--main-color); font-size:24px; font-weight:900;"># ${num}</div>
             <div style="margin:20px 0; font-size:16px; border-top:1px solid #333; padding-top:15px;">
                 ${d.pulled}:<br><b style="color:#fff; font-size:20px;">${count} ${d.times}</b>
             </div>
-            <button onclick="this.parentElement.remove()" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
+            <button onclick="selectAndClose(${num})" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
         `;
         document.body.appendChild(alertBox);
         tg.HapticFeedback.notificationOccurred('success');
@@ -342,25 +359,44 @@
         } else {
             if(selected.includes(i)) { 
                 selected = selected.filter(n => n !== i); 
-                document.getElementById(`cell-${i}`).classList.remove('selected'); 
             } else if(selected.length < 6) { 
                 selected.push(i); 
-                document.getElementById(`cell-${i}`).classList.add('selected'); 
                 tg.HapticFeedback.impactOccurred('light'); 
             }
+            refreshGrid(); // Перерисовываем для обновления классов
         }
     }
 
     function refreshGrid() {
         const grid = document.getElementById('main-grid');
         grid.innerHTML = '';
+        
+        let hotNums = [];
+        let coldNums = [];
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+
+        if (currentMode && Object.keys(realStatsDB).length > 0) {
+            let sorted = Object.keys(realStatsDB).map(n => ({
+                num: parseInt(n),
+                val: realStatsDB[n][pIdx]
+            }));
+
+            if (currentMode === 'hot') {
+                sorted.sort((a, b) => b.val - a.val);
+                hotNums = sorted.slice(0, 6).map(item => item.num);
+            } else if (currentMode === 'cold') {
+                sorted.sort((a, b) => a.val - b.val);
+                coldNums = sorted.slice(0, 6).map(item => item.num);
+            }
+        }
+
         for (let i = 1; i <= 42; i++) {
             const c = document.createElement('div'); 
             c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            if (currentMode) {
-                const targets = dbStats[currentPeriod][currentMode];
-                if (targets.includes(i)) c.classList.add(currentMode === 'hot' ? 'is-hot' : 'is-cold');
-            }
+            
+            if (currentMode === 'hot' && hotNums.includes(i)) c.classList.add('is-hot');
+            if (currentMode === 'cold' && coldNums.includes(i)) c.classList.add('is-cold');
+            
             if (selected.includes(i)) c.classList.add('selected');
             c.onclick = () => handleCellClick(i);
             grid.appendChild(c);
@@ -387,9 +423,10 @@
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing', 'selected'));
         while(selected.length < 6) {
             let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) { selected.push(r); document.getElementById(`cell-${r}`).classList.add('selected'); }
+            if(!selected.includes(r)) { selected.push(r); }
         }
         superNum = Math.floor(Math.random() * 6) + 1;
+        refreshGrid();
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
         sndWin.play();
         tg.HapticFeedback.notificationOccurred('success');
@@ -426,14 +463,4 @@
         steps.forEach(st => {
             const img = document.getElementById(st.id);
             setTimeout(() => img.classList.add('active'), st.s);
-            setTimeout(() => { img.style.opacity = '0'; setTimeout(() => img.style.display = 'none', 500); }, st.e);
-        });
-        setTimeout(() => {
-            document.getElementById('intro-container').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-        }, 6900);
-    };
-</script>
-</body>
-</html>
+            setTimeout(() => { img.style.opacity = '0'; setTimeout(() => img.style.display
