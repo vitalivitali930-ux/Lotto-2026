@@ -249,7 +249,7 @@
             let data = {};
             for(let i=1; i<=42; i++) {
                 data[i] = {
-                    monthCount: Math.floor(Math.random() * 10), // Увеличил разброс для наглядности
+                    monthCount: Math.floor(Math.random() * 10),
                     yearCount: Math.floor(Math.random() * 100),
                     allTimeCount: 300 + Math.floor(Math.random() * 500)
                 };
@@ -281,6 +281,23 @@
         tg.HapticFeedback.selectionChanged();
     }
 
+    // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ВЫБОРА ЧИСЛА ПОСЛЕ ОК ---
+    function confirmSelection(num) {
+        const alert = document.querySelector('.vchf-alert');
+        if (alert) alert.remove();
+        
+        if (!selected.includes(num)) {
+            if (selected.length < 6) {
+                selected.push(num);
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+        
+        currentMode = null; // Сбрасываем режим рамок
+        document.getElementById('stats-p-box').classList.remove('visible');
+        refreshGrid();
+    }
+
     function showVCHFAlert(num, count) {
         const d = dict[currentLang];
         const alertBox = document.createElement('div');
@@ -290,7 +307,7 @@
             <div style="margin:20px 0; font-size:16px; border-top:1px solid #333; padding-top:15px;">
                 ${d.pulled}:<br><b style="color:#fff; font-size:20px;">${count} ${d.times}</b>
             </div>
-            <button onclick="this.parentElement.remove()" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
+            <button onclick="confirmSelection(${num})" style="background:var(--main-color); border:none; padding:10px 30px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">OK</button>
         `;
         document.body.appendChild(alertBox);
         tg.HapticFeedback.notificationOccurred('success');
@@ -349,19 +366,16 @@
         const grid = document.getElementById('main-grid');
         grid.innerHTML = '';
         
-        // --- НОВАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ HOT/COLD ---
         let hotNums = [];
         let coldNums = [];
         const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
 
         if (currentMode && Object.keys(realStatsDB).length > 0) {
-            // Создаем массив объектов {номер, значение}
             let sorted = Object.keys(realStatsDB).map(n => ({
                 num: parseInt(n),
                 val: realStatsDB[n][pIdx]
             }));
 
-            // Сортируем: HOT (от большего к меньшему), COLD (от меньшего к большему)
             if (currentMode === 'hot') {
                 sorted.sort((a, b) => b.val - a.val);
                 hotNums = sorted.slice(0, 6).map(item => item.num);
