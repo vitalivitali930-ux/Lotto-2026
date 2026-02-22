@@ -65,6 +65,8 @@
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        
+        /* БАЗОВАЯ КЛЕТКА С ОПТИМИЗАЦИЕЙ */
         .cell { 
             aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
@@ -72,12 +74,36 @@
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; position: relative;
             box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
+            overflow: hidden; /* Чтобы пульсация не выходила за края */
+            transform: translateZ(0); /* Аппаратное ускорение */
         }
+
+        /* ПУЛЬСИРУЮЩИЙ СЛОЙ (ДЫХАНИЕ) */
+        .cell:not(.selected)::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--main-color);
+            opacity: 0;
+            animation: ball-breath 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            z-index: 1;
+        }
+
+        @keyframes ball-breath {
+            0%   { opacity: 0;   transform: scale(0.9); }
+            40%  { opacity: 0.25; transform: scale(1.05); }
+            100% { opacity: 0;   transform: scale(0.9); }
+        }
+
+        /* Выбранные шары перекрывают анимацию */
         .cell.selected { 
             background: var(--main-gradient); color: #fff;
             transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 20px var(--main-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color);
+            z-index: 10;
         }
+
         .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
         .cell.is-hot { border: 2.5px solid #ff4500; box-shadow: 0 0 15px #ff4500; }
         .cell.is-cold { border: 2.5px solid #00ffff; box-shadow: 0 0 15px #00ffff; }
@@ -109,6 +135,8 @@
             color: #333; font-weight: 900; font-size: 24px; cursor: pointer; 
             transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
             opacity: 0.8;
+            overflow: hidden;
+            position: relative;
         }
         .super-cell.selected { opacity: 1; transform: scale(1.2) translateY(-8px); background: var(--main-gradient); color: #fff; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
 
@@ -298,6 +326,8 @@
     for (let i = 1; i <= 42; i++) {
         const c = document.createElement('div'); 
         c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+        // Эффект мерцающих звезд (случайная задержка анимации)
+        c.style.animationDelay = `${Math.random() * 5}s`;
         c.onclick = () => {
             sndClick.currentTime = 0; sndClick.play();
             if(selected.includes(i)) { selected = selected.filter(n => n !== i); c.classList.remove('selected'); }
@@ -309,6 +339,8 @@
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+        // Для супер-боллов тоже добавим дыхание
+        sc.style.animationDelay = `${Math.random() * 5}s`;
         sc.onclick = () => {
             sndClick.currentTime = 0; sndClick.play();
             superNum = i;
