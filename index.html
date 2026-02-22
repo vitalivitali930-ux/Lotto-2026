@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF 1.6</title>
+    <title>Lotto Engine VCHF 1.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
@@ -17,30 +17,26 @@
 
         body { 
             background: #000 url('Hintergrund.png') no-repeat center center; 
-            background-size: cover; color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; margin: 0; overflow-x: hidden; 
+            background-size: cover; color: #fff; font-family: -apple-system, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; 
         }
 
         /* МОДАЛКА ЮМОРА */
         #humor-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 30000;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.85); z-index: 30000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
         .modal-content {
             background: #1a1a1a; border: 2px solid var(--main-color);
-            width: 80%; padding: 25px; border-radius: 20px;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            width: 80%; padding: 25px; border-radius: 20px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
             transform: scale(0.8); transition: 0.3s;
         }
         .modal-content.show { transform: scale(1); }
-        .modal-btn { background: var(--main-gradient); border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .modal-btn { background: var(--main-gradient); border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; margin-top: 15px; color: #000; }
 
         /* ИНТЕРФЕЙС */
         #intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; justify-content: center; align-items: center; }
-        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; }
+        .intro-img { position: absolute; width: 85%; opacity: 0; }
         .intro-img.active { animation: shakePop 0.7s forwards; }
         @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -53,9 +49,14 @@
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
+        /* БАЛАНС И СЧЕТЧИК */
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); border: 1.5px solid #333; transition: 0.4s; opacity: 0.3; filter: grayscale(1); cursor: pointer; }
+        .bal-card { 
+            flex: 1; border-radius: 12px; padding: 12px; background: rgba(15, 15, 15, 0.9); 
+            border: 1.5px solid #333; transition: 0.4s; opacity: 0.4; filter: grayscale(1); cursor: pointer; 
+        }
         .bal-card.active-wallet { opacity: 1; filter: grayscale(0); border-color: var(--main-color); background: rgba(212, 175, 55, 0.1); transform: scale(1.03); }
+        .bal-val { font-size: 18px; font-weight: bold; color: #32CD32; }
 
         .smart-tools { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
         .tool-btn { padding: 8px 12px; border-radius: 15px; border: 1px solid var(--main-color); background: #000; color: #fff; font-size: 11px; cursor: pointer; }
@@ -75,14 +76,18 @@
         }
         .cell::after, .super-cell::after { content: ''; position: absolute; top: 15%; left: 15%; width: 30%; height: 20%; background: rgba(255,255,255,0.8); border-radius: 50%; filter: blur(1.5px); }
 
-        .cell.selected, .super-cell.selected { transform: scale(1.2) translateY(-4px); box-shadow: 0 0 15px var(--main-color); z-index: 10; }
-        .cell.selected::before, .super-cell.selected::before { content: ''; position: absolute; bottom: -6px; width: 70%; height: 8px; background: radial-gradient(ellipse at center, var(--main-color) 0%, rgba(0,0,0,0) 70%); }
+        /* ВЫДЕЛЕНИЕ: Шар окрашивается в цвет темы */
+        .cell.selected, .super-cell.selected { 
+            transform: scale(1.2) translateY(-4px); 
+            background: var(--main-gradient) !important; color: #000 !important;
+            box-shadow: 0 0 15px var(--main-color); z-index: 10; 
+        }
 
         .cell.is-hot { box-shadow: 0 0 12px var(--hot-neon), inset 0 0 8px var(--hot-neon) !important; color: var(--hot-neon) !important; }
         .cell.is-cold { box-shadow: 0 0 12px var(--cold-neon), inset 0 0 8px var(--cold-neon) !important; color: var(--cold-neon) !important; }
         .cell.heat-node { background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(212, 175, 55, var(--heat-opacity)) 100%) !important; color: #000 !important; }
 
-        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin: 25px 0 50px; background: var(--main-gradient); font-weight: bold; border: none; cursor: pointer; }
+        .btn-main { width: 85%; padding: 20px; border-radius: 15px; font-size: 18px; margin: 20px 0 40px; background: var(--main-gradient); font-weight: 900; border: none; cursor: pointer; color: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .super-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
         .super-cell { width: 45px; height: 45px; }
         .shaking { animation: shake 0.1s infinite; }
@@ -117,11 +122,11 @@
     </div>
 
     <div class="balance-container">
-        <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+        <div class="bal-card active-wallet" id="card-vchf" onclick="switchCur('VCHF')">
             <div style="font-size:10px;">VIRTUAL VCHF</div>
             <div class="bal-val" id="v-val">100.00</div>
         </div>
-        <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+        <div class="bal-card" id="card-chf" onclick="switchCur('CHF')">
             <div style="font-size:10px;">REAL CHF</div>
             <div class="bal-val" id="r-val">0.00</div>
         </div>
@@ -145,7 +150,9 @@
     <div id="l-super" style="margin-top:20px; font-size:12px; color:var(--main-color); font-weight:bold;">SUPERZAHL</div>
     <div class="super-grid" id="s-grid"></div>
 
-    <div style="margin-top:20px; font-size:14px;">TOTAL: <span id="total-price">2.50</span> <span id="cur-label">VCHF</span></div>
+    <div style="margin-top:20px; font-size:16px; font-weight: bold;">
+        TOTAL: <span id="total-price">0.00</span> <span id="cur-label">VCHF</span>
+    </div>
     <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
 </div>
 
@@ -153,12 +160,11 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     
-    // ЗВУКИ: Клик и Лототрон
     const sndClick = new Audio('https://www.soundjay.com/buttons/button-16.mp3');
     const sndDrum = new Audio('https://www.soundjay.com/misc/sounds/bell-ring-01.mp3');
 
     let selected = []; let superNum = null; let currentMode = null; let currentPeriod = 'month'; let currentLang = 'de';
-    let balanceV = 100.00; let balanceR = 0.00; let activeCur = 'VCHF';
+    let activeCur = 'VCHF';
 
     const humorData = {
         ru: { hot:["Зайчик — чемпион!", "Железный Феликс.", "Золотой стандарт."], cold:["Мамонт — вымер.", "Призрак оперы.", "Спящий красавец."] },
@@ -171,11 +177,33 @@
         all: { hot:[42,1,19], cold:[2,10,21], freq:{42:500, 1:450} }
     };
 
-    function switchCurrency(type) {
+    function switchCur(type) {
         activeCur = type;
         document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
         document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
         document.getElementById('cur-label').innerText = type;
+        sndClick.play();
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const price = (selected.length === 6 && superNum) ? 2.50 : 0.00;
+        document.getElementById('total-price').innerText = price.toFixed(2);
+    }
+
+    function setTheme(t) {
+        const themes = {
+            gold: { main: '#d4af37', grad: 'linear-gradient(145deg, #f9e27d, #d4af37)' },
+            lime: { main: '#32CD32', grad: 'linear-gradient(145deg, #adff2f, #32CD32)' },
+            silver: { main: '#c0c0c0', grad: 'linear-gradient(145deg, #ffffff, #c0c0c0)' },
+            cyan: { main: '#00ffff', grad: 'linear-gradient(145deg, #e0ffff, #00ffff)' },
+            cherry: { main: '#C511A4', grad: 'linear-gradient(145deg, #ff69b4, #C511A4)' }
+        };
+        const st = themes[t];
+        document.documentElement.style.setProperty('--main-color', st.main);
+        document.documentElement.style.setProperty('--main-gradient', st.grad);
+        document.documentElement.style.setProperty('--cell-text', t === 'cherry' ? '#d4af37' : st.main);
+        document.querySelector('.theme-panel').classList.remove('open');
         sndClick.play();
     }
 
@@ -218,6 +246,7 @@
             sndClick.play();
             if(selected.includes(i)) { selected = selected.filter(x => x!==i); b.classList.remove('selected'); }
             else if(selected.length < 6) { selected.push(i); b.classList.add('selected'); tg.HapticFeedback.impactOccurred('light'); }
+            updateTotal();
         };
         g.appendChild(b);
     }
@@ -229,6 +258,7 @@
             sndClick.play();
             document.querySelectorAll('.super-cell').forEach(x => x.classList.remove('selected'));
             superNum = i; b.classList.add('selected');
+            updateTotal();
         };
         sg.appendChild(b);
     }
@@ -244,15 +274,8 @@
             }
             superNum = Math.floor(Math.random()*6)+1;
             document.querySelectorAll('.super-cell').forEach((s,i) => s.classList.toggle('selected', i+1 === superNum));
-        }, 1200);
-    }
-
-    function setTheme(t) {
-        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
-        document.documentElement.style.setProperty('--main-color', colors[t]);
-        // Специальное условие для Cherry: золотые цифры
-        document.documentElement.style.setProperty('--cell-text', t === 'cherry' ? '#d4af37' : colors[t]);
-        document.querySelector('.theme-panel').classList.remove('open');
+            updateTotal();
+        }, 1000);
     }
 
     function showHumor(n, type) {
@@ -274,7 +297,7 @@
         document.getElementById('l-super').innerText = l === 'ru' ? "БОНУС" : "SUPERZAHL";
     }
 
-    function runEngine() { tg.showAlert("FIXIERT!"); }
+    function runEngine() { if(selected.length === 6 && superNum) tg.showAlert("FIXIERT!"); else tg.showAlert("Select 6 + 1!"); }
 
     window.onload = () => { 
         setTimeout(() => { 
