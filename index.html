@@ -272,67 +272,54 @@
         },
         getJoke: (num, pos, type, lang) => {
             const isHot = type === 'hot';
-            const langKey = (lang === 'ru' || lang === 'ua') ? 'ru' : 'de';
-            
             const fates = {
                 ru: {
-                    hot: [
-                        `№${num}: Искрит! Совесть проекта на пике.`,
-                        `№${num}: Крылья Колибри! Машет быстрее света.`,
-                        `№${num}: Число в огне, движок VCHF разогрет!`,
-                        `№${num}: Энергия Wanderer! Ранг ${pos} в топе.`
-                    ],
-                    cold: [
-                        `№${num}: Спит как фотография костра — красиво, но не горит.`,
-                        `№${num}: Замёрзший мамонт. Ушёл в демо-версию смерти.`,
-                        `№${num}: Число в глубоком сне. Ранг ${pos} (холод).`,
-                        `№${num}: Ждёт искру бога, чтобы проснуться.`
-                    ]
+                    hot: [`№${num}: Искрит! Совесть проекта на пике.`, `№${num}: Крылья Колибри!`, `№${num}: В огне VCHF!`, `№${num}: Энергия Wanderer!`],
+                    cold: [`№${num}: Фотография костра — не горит.`, `№${num}: Демо-версия смерти (сон).`, `№${num}: Число спит.`, `№${num}: Ждёт искру бога.`]
+                },
+                ua: {
+                    hot: [`№${num}: Іскрить! Совість проекту.`, `№${num}: Крила Колібрі!`, `№${num}: У вогні VCHF!`, `№${num}: Енергія Wanderer!`],
+                    cold: [`№${num}: Фотографія багаття — не горить.`, `№${num}: Демо-версія смерті (сон).`, `№${num}: Число спить.`, `№${num}: Чекає на іскру божу.`]
                 },
                 de: {
-                    hot: [
-                        `Nr. ${num}: VCHF-Power! Das Gewissen ist rein.`,
-                        `Nr. ${num}: Kolibri-Flügel! Schneller als Licht.`,
-                        `Nr. ${num}: Heißes Eisen im System!`,
-                        `Nr. ${num}: Wanderer-Energie! Rang ${pos} ist aktiv.`
-                    ],
-                    cold: [
-                        `Nr. ${num}: Wie ein Foto vom Feuer — brennt nicht.`,
-                        `Nr. ${num}: Mammut-Modus. Schlaf ist die Demo-Version des Todes.`,
-                        `Nr. ${num}: Winterschlaf. Rang ${pos} (eiskalt).`,
-                        `Nr. ${num}: Wartet auf den göttlichen Funken.`
-                    ]
+                    hot: [`Nr. ${num}: VCHF-Power!`, `Nr. ${num}: Kolibri-Flügel!`, `Nr. ${num}: Heißes Eisen!`, `Nr. ${num}: Wanderer-Energie!`],
+                    cold: [`Nr. ${num}: Foto vom Feuer — brennt nicht.`, `Nr. ${num}: Schlaf (Demo-Tod).`, `Nr. ${num}: Winterschlaf.`, `Nr. ${num}: Wartet auf Gott.`]
+                },
+                en: {
+                    hot: [`No. ${num}: VCHF Sparking!`, `No. ${num}: Hummingbird Wings!`, `No. ${num}: On Fire!`, `No. ${num}: Wanderer Energy!`],
+                    cold: [`No. ${num}: Photo of a fire — cold.`, `No. ${num}: Death demo version (sleep).`, `No. ${num}: Sleeping now.`, `No. ${num}: Waiting for spark.`]
+                },
+                fr: {
+                    hot: [`N° ${num}: Étincelle VCHF!`, `N° ${num}: Ailes de Colibri!`, `N° ${num}: En feu!`, `N° ${num}: Énergie Wanderer!`],
+                    cold: [`N° ${num}: Photo d'un feu — froid.`, `N° ${num}: Démo de la mort (sommeil).`, `N° ${num}: En sommeil.`, `N° ${num}: Attend l'étincelle.`]
                 }
             };
-
-            const currentSet = fates[langKey] || fates['de'];
+            const currentSet = fates[lang] || fates['de'];
             const pool = isHot ? currentSet.hot : currentSet.cold;
-            
-            if (num === 7) return langKey === 'ru' ? `🍀 №7: Счастливая звезда Wanderer. Совесть чиста.` : `🍀 Nr. 7: Wanderers Glücksstern. Reines Gewissen.`;
-            if (num === 13) return langKey === 'ru' ? `🛸 №13: Космическая аномалия движка VCHF.` : `🛸 Nr. 13: Kosmische VCHF-Anomalie.`;
-            
+            if (num === 7) return lang === 'ru' ? `🍀 №7: Счастливая звезда.` : `🍀 No. 7: Lucky Star.`;
             return pool[num % pool.length];
         }
     };
 
     const dbStats = {
-        month: { hot: [4, 18, 29, 33, 37, 42], cold: [2, 7, 15, 21, 30, 39], humor: { hot: "🔥 Жаркий месяц!", cold: "❄️ Эти числа замерзли." } },
-        year:  { hot: [12, 18, 26, 31, 38, 41], cold: [1, 5, 13, 22, 28, 40], humor: { hot: "🏆 Чемпионы года!", cold: "🛌 Сонное царство." } },
-        all:   { hot: [18, 37, 42, 12, 1, 23], cold: [6, 10, 19, 24, 32, 35], humor: { hot: "👑 Вечные короли!", cold: "👻 Призраки..." } }
+        month: { hot: [4, 18, 29, 33, 37, 42], cold: [2, 7, 15, 21, 30, 39], humor: { hot: "🔥", cold: "❄️" } },
+        year:  { hot: [12, 18, 26, 31, 38, 41], cold: [1, 5, 13, 22, 28, 40], humor: { hot: "🏆", cold: "🛌" } },
+        all:   { hot: [18, 37, 42, 12, 1, 23], cold: [6, 10, 19, 24, 32, 35], humor: { hot: "👑", cold: "👻" } }
     };
 
     let selected = [], superNum = null, currentMode = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'de';
     const realPrice = 2.50;
 
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", pulled: "Вытянуто", times: "раз" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", pulled: "Витягнуто", times: "разів" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", pulled: "Gezogen", times: "Mal" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", pulled: "Drawn", times: "times" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", pulled: "Tiré", times: "fois" }
+    };
+
     function setLang(l) {
         currentLang = l;
-        const dict = {
-            ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ", total: "Итого" },
-            ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ВЕСЬ ЧАС", total: "Разом" },
-            de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt" },
-            en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total" },
-            fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT TEMPS", total: "Total" }
-        };
         const d = dict[l];
         document.getElementById('main-btn').innerText = d.btn;
         document.getElementById('l-super').innerText = d.super;
@@ -346,6 +333,7 @@
     function showVCHFAlert(num, pos, count) {
         const color = rankEngine.getColor(pos);
         const joke = rankEngine.getJoke(num, pos, currentMode, currentLang);
+        const d = dict[currentLang];
         const alertBox = document.createElement('div');
         alertBox.className = 'vchf-alert';
         alertBox.style.borderColor = color;
@@ -354,7 +342,7 @@
             <div style="color:${color}; font-size:24px; font-weight:900;"># ${num}</div>
             <p style="font-size:16px; margin:15px 0;">${joke}</p>
             <div style="border-top:1px solid #333; padding-top:10px; font-size:14px;">
-                Вытянуто: <b style="color:#fff">${count} раз</b>
+                ${d.pulled}: <b style="color:#fff">${count} ${d.times}</b>
             </div>
             <button onclick="this.parentElement.remove()" style="margin-top:15px; background:${color}; border:none; padding:10px 20px; border-radius:10px; color:#000; font-weight:bold;">OK</button>
         `;
@@ -389,7 +377,6 @@
         } else {
             currentMode = type;
             document.getElementById('stats-p-box').classList.add('visible');
-            tg.showAlert(dbStats[currentPeriod].humor[currentMode]);
         }
         refreshGrid();
     }
@@ -397,10 +384,7 @@
     function setPeriod(p) {
         currentPeriod = p;
         document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        const btnId = `p-${p}`;
-        if(document.getElementById(btnId)) {
-            document.getElementById(btnId).classList.add('active');
-        }
+        document.getElementById(`p-${p}`).classList.add('active');
         refreshGrid();
         tg.HapticFeedback.selectionChanged();
     }
@@ -409,10 +393,7 @@
         sndClick.currentTime = 0; sndClick.play();
         if (currentMode && realStatsDB[i]) {
             const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            const sorted = Object.keys(realStatsDB)
-                .filter(key => realStatsDB[key] !== undefined)
-                .map(n => ({ n: parseInt(n), val: realStatsDB[n][pIdx] }))
-                .sort((a, b) => currentMode === 'hot' ? b.val - a.val : a.val - b.val);
+            const sorted = Object.keys(realStatsDB).map(n => ({ n: parseInt(n), val: realStatsDB[n][pIdx] })).sort((a, b) => currentMode === 'hot' ? b.val - a.val : a.val - b.val);
             const rankPos = sorted.findIndex(item => item.n === i) + 1;
             showVCHFAlert(i, rankPos, realStatsDB[i][pIdx]);
         } else {
@@ -449,7 +430,6 @@
                 let cell = document.getElementById(`cell-${rnd}`);
                 if(cell) cell.classList.add('processing');
             }
-            tg.HapticFeedback.impactOccurred('light');
             if(i++ > 12) { clearInterval(interval); finalizeRandom(); }
         }, 60);
     }
