@@ -50,7 +50,6 @@
             filter: brightness(1.5);
         }
         
-        /* Стили для Тепловой Карты */
         .cell.heat-node {
             background: rgba(212, 175, 55, var(--heat-opacity)) !important;
             color: #fff !important;
@@ -131,7 +130,7 @@
 </div>
 
 <div id="intro-container">
-    <img src="Bild1.png" id="intro1" class="intro-img">
+    <img src="1771489965074(1).png" id="intro1" class="intro-img">
     <img src="Bild2.png" id="intro2" class="intro-img">
     <img src="Bild3.png" id="intro3" class="intro-img">
 </div>
@@ -211,47 +210,17 @@
     let prevStats = null;
 
     let dbStats = {
-        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {3: 5, 11: 4, 25: 4, 29: 3, 34: 3, 42: 3, 1: 0, 14: 0, 20: 0, 28: 0, 33: 0, 39: 0} },
-        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1, 5], superCold: [4, 3], freq: {7: 54, 18: 51, 22: 48, 31: 46, 35: 43, 41: 42, 4: 11, 9: 9, 15: 7, 26: 6, 30: 4, 38: 2} },
-        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3, 2], superCold: [6, 1], freq: {42: 492, 12: 478, 19: 465, 1: 459, 23: 451, 37: 447, 2: 112, 10: 105, 17: 98, 21: 92, 32: 85, 40: 71} }
+        month: { hot: [3, 11, 25, 29, 34, 42], cold: [1, 14, 20, 28, 33, 39], superHot: [5, 3], superCold: [2, 6], freq: {1:2,2:5,3:12,11:10,25:10,29:9,34:8,42:15,5:4,14:1,20:2,28:1,33:2,39:1} },
+        year:  { hot: [7, 18, 22, 31, 35, 41], cold: [4, 9, 15, 26, 30, 38], superHot: [1, 5], superCold: [4, 3], freq: {7:54,18:51,22:48,31:46,35:43,41:42,4:11,9:9,15:7,26:6,30:4,38:2,10:20,12:25,19:30} },
+        all:   { hot: [42, 12, 19, 1, 23, 37], cold: [2, 10, 17, 21, 32, 40], superHot: [3, 2], superCold: [6, 1], freq: {42:492,12:478,19:465,1:459,23:451,37:447,2:112,10:105,17:98,21:92,32:85,40:71,5:300,8:250,15:200} }
     };
 
     const humorDict = {
-        ru: { 
-            all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."], 
-            all_cold: ["Настоящий мамонт — вымер давно.", "Бермудский треугольник — пропал.", "Призрак оперы — никто не видел.", "Спящий красавец — спит век.", "Скромный отшельник из леса.", "Забытый багаж на складе."], 
-            new_hot: "🚀 У нас новый чемпион! Свежая кровь в зале славы!",
-            new_cold: "🧊 Еще один отмороженный! Добро пожаловать в холодильник!",
-            times: "раз(а)", title: "Число" 
-        },
-        ua: { 
-            all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотой стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановець — оре без вихідних."], 
-            all_cold: ["Справжній мамонт — вимер давно.", "Бермудський трикутник — зник.", "Привид опери — ніхто не бачив.", "Сплячий красень — спить вік.", "Скромний відшельник з лісу.", "Забутий багаж на складі."], 
-            new_hot: "🚀 У нас новий чемпіон! Свіжа кров у залі слави!",
-            new_cold: "🧊 Ще один відморожений! Ласкаво просимо до холодильника!",
-            times: "раз(ів)", title: "Число" 
-        },
-        de: { 
-            all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."], 
-            all_cold: ["Echtes Mammut — längst ausgestorben.", "Bermuda-Dreieck — verschwunden.", "Phantom der Oper — nie gesehen.", "Dornröschen — schläft ewig.", "Bescheidener Eremit aus dem Wald.", "Vergessenes Gepäck im Lager."], 
-            new_hot: "🚀 Ein neuer Champion! Frisches Blut in der Hall of Fame!",
-            new_cold: "🧊 Noch einer tiefgekühlt! Willkommen im Eisschrank!",
-            times: "Mal", title: "Zahl" 
-        },
-        fr: { 
-            all_hot: ["Lapin — champion du pièге !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."], 
-            all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."], 
-            new_hot: "🚀 Un nouveau champion ! Du sang neuf au Hall of Fame !",
-            new_cold: "🧊 Un altro givré ! Bienvenue au congélateur !",
-            times: "fois", title: "Nombre" 
-        },
-        it: { 
-            all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — работает всегда."], 
-            all_cold: ["Vero mammut — estinto da tempo.", "Triangolo delle Bermuda — sparito.", "Fantasma dell'opera — mai visto.", "Bella addormentata — dorme da un secolo.", "Eremita modesto del bosco.", "Bagaglio dimenticato in deposito."], 
-            new_hot: "🚀 Un nuovo campione! Sangue fresco nella Hall of Fame!",
-            new_cold: "🧊 Un altro congelato! Benvenuti nel freezer!",
-            times: "volte", title: "Numero" 
-        }
+        ru: { all_hot: ["Зайчик — чемпион по капканам!", "Железный Феликс — в строю всегда.", "Золотой стандарт Берна.", "Первый парень на деревне!", "Магнит для удачи — краска стерлась.", "Стахановец — пашет без выходных."], all_cold: ["Настоящий мамонт — вымер давно.", "Бермудский треугольник — пропал.", "Призрак оперы — никто не видел.", "Спящий красавец — спит век.", "Скромный отшельник из леса.", "Забытый багаж на складе."], new_hot: "🚀 У нас новый чемпион! Свежая кровь в зале славы!", new_cold: "🧊 Еще один отмороженный! Добро пожаловать в холодильник!", times: "раз(а)", title: "Число" },
+        ua: { all_hot: ["Зайчик — чемпіон по капканах!", "Залізний Фелікс — завжди в строю.", "Золотой стандарт Берна.", "Перший хлопець на селі!", "Магніт для удачі — фарба стерлася.", "Стахановец — оре без вихідних."], all_cold: ["Справжній мамонт — вимер давно.", "Бермудський трикутник — зник.", "Привид опери — ніхто не бачив.", "Сплячий красень — спить вік.", "Скромний відшельник з лісу.", "Забутий багаж на складі."], new_hot: "🚀 У нас новий чемпіон! Свіжа кров у залі слави!", new_cold: "🧊 Ще один відморожений! Ласкаво просимо до холодильника!", times: "раз(ів)", title: "Число" },
+        de: { all_hot: ["Hase — Champion in der Falle!", "Eiserner Felix — immer im Dienst.", "Berns Goldstandard.", "Der Dorfälteste!", "Glücksmagnet — Farbe ist ab.", "Stachanowez — arbeitet ohne Pause."], all_cold: ["Echtes Mammut — längst ausgestorben.", "Bermuda-Dreieck — verschwunden.", "Phantom der Oper — nie gesehen.", "Dornröschen — schläft ewig.", "Bescheidener Eremit aus dem Wald.", "Vergessenes Gepäck im Lager."], new_hot: "🚀 Ein neuer Champion! Frisches Blut in der Hall of Fame!", new_cold: "🧊 Noch einer tiefgekühlt! Willkommen im Eisschrank!", times: "Mal", title: "Zahl" },
+        fr: { all_hot: ["Lapin — champion du pièге !", "Félix de fer — toujours là.", "Standard d'or de Berne.", "Le beau gosse du village !", "Aimant à chance — peinture usée.", "Stakhanoviste — travaille sans arrêt."], all_cold: ["Vrai mammouth — disparu depuis peu.", "Triangle des Bermudes — perdu.", "Fantôme de l'opéra — jamais vu.", "Beau au bois dormant — dort encore.", "Ermite modeste de la forêt.", "Bagage oublié au dépôt."], new_hot: "🚀 Un nouveau champion ! Du sang neuf au Hall of Fame !", new_cold: "🧊 Un altro givré ! Bienvenue au congélateur !", times: "fois", title: "Nombre" },
+        it: { all_hot: ["Coniglietto — campione di trappole!", "Felix di ferro — sempre in linea.", "Standard d'oro di Berna.", "Il più bello del villaggio!", "Calamita per la fortuna.", "Stacanovista — работает всегда."], all_cold: ["Vero mammut — estinto da tempo.", "Triangolo delle Bermuda — sparito.", "Fantasma dell'opera — mai visto.", "Bella addormentata — dorme da un secolo.", "Eremita modesto del bosco.", "Bagaglio dimenticato in deposito."], new_hot: "🚀 Un nuovo чемпион! Sangue fresco nella Hall of Fame!", new_cold: "🧊 Un altro congelato! Benvenuti nel freezer!", times: "volte", title: "Numero" }
     };
 
     const dict = {
@@ -266,7 +235,6 @@
     async function syncSwissLotto() {
         try {
             prevStats = JSON.parse(JSON.stringify(dbStats)); 
-            console.log("Движок VCHF 1.1: Синхронизация со Swiss Lotto...");
             if(currentMode) refreshGrid();
         } catch(e) { console.error("Ошибка синхронизации"); }
     }
@@ -274,17 +242,14 @@
     function showCellInfo(n, isSuper = false) {
         const stats = dbStats[currentPeriod];
         const list = stats[currentMode];
-        if (!list) return; // Для heatmap инфо пока нет в словаре
-
+        if (!list) return;
         const index = list.indexOf(n);
         if (index !== -1) {
             const langData = humorDict[currentLang] || humorDict['de'];
             let text = "";
             if (prevStats) {
                 const wasInList = prevStats[currentPeriod][currentMode].includes(n);
-                if (!wasInList) {
-                    text = `<span style="color:var(--main-color); font-weight:bold;">${currentMode === 'hot' ? langData.new_hot : langData.new_cold}</span><br><br>`;
-                }
+                if (!wasInList) text = `<span style="color:var(--main-color); font-weight:bold;">${currentMode === 'hot' ? langData.new_hot : langData.new_cold}</span><br><br>`;
             }
             const humorKey = (currentMode === 'hot') ? 'all_hot' : 'all_cold';
             text += langData[humorKey][index % langData[humorKey].length];
@@ -314,16 +279,11 @@
 
     function toggleHeatmap(type) {
         const box = document.getElementById('stats-p-box');
-        if (currentMode === type) {
-            currentMode = null; box.classList.remove('visible');
-        } else {
-            currentMode = type; box.classList.add('visible');
-        }
-        
+        if (currentMode === type) { currentMode = null; box.classList.remove('visible'); } 
+        else { currentMode = type; box.classList.add('visible'); }
         document.getElementById('btn-hot').classList.toggle('active-hot', currentMode === 'hot');
         document.getElementById('btn-cold').classList.toggle('active-cold', currentMode === 'cold');
         document.getElementById('btn-heat').classList.toggle('active-heat', currentMode === 'heat');
-        
         refreshGrid();
     }
 
@@ -335,18 +295,19 @@
         tg.HapticFeedback.impactOccurred('light');
     }
 
+    // ИСПРАВЛЕННЫЙ БЛОК: Разделение HOT и HEAT
     function refreshGrid() {
         document.querySelectorAll('.cell, .super-cell').forEach(c => {
             c.classList.remove('is-hot', 'is-cold', 'heat-node');
-            c.style.setProperty('--heat-opacity', 0);
-            c.style.setProperty('--heat-shadow', 0);
+            c.style.removeProperty('--heat-opacity');
+            c.style.removeProperty('--heat-shadow');
         });
-
         if (!currentMode) return;
         const stats = dbStats[currentPeriod];
-
+        
         if (currentMode === 'heat') {
             const frequencies = Object.values(stats.freq);
+            if (frequencies.length === 0) return;
             const maxFreq = Math.max(...frequencies);
             for (let n = 1; n <= 42; n++) {
                 const f = stats.freq[n] || 0;
@@ -469,7 +430,8 @@
         }
         root.style.setProperty('--main-color', colors[t][0]);
         root.style.setProperty('--main-gradient', colors[t][1]);
-        root.style.setProperty('--cell-text', colors[t][0]);
+        if (t === 'cherry') { root.style.setProperty('--cell-text', '#d4af37'); } 
+        else { root.style.setProperty('--cell-text', colors[t][0]); }
         document.querySelector('.theme-panel').classList.remove('open');
     }
 
