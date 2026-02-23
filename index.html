@@ -35,7 +35,6 @@
         body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
         body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
 
-        /* Новые стили для флагов и закона */
         @keyframes candle-glow {
             0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
             50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
@@ -62,7 +61,6 @@
         .pos-en { transform: translate(50px, 70px); }
         .pos-ua { transform: translate(100px, 45px); } 
 
-        /* Стили из оригинала */
         #intro-container {
             position: fixed; inset: 0; background: #000 url('Hintergrund.png') no-repeat center center; 
             background-size: cover; z-index: 20000; display: flex; justify-content: center; align-items: center;
@@ -101,7 +99,6 @@
             box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow);
         }
         .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); border: 1.5px solid #fff; z-index: 10; }
-        .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
         
         .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
         .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
@@ -240,6 +237,7 @@
     let realStatsDB = {};
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
     let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en', bgsTimer = null;
+    let activeSmartTool = null; // Константа для отслеживания текущего фильтра
     const realPrice = 2.50; 
 
     const dict = {
@@ -260,7 +258,6 @@
 
     const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' }; 
 
-    // --- ФУНКЦИИ ЯЗЫКА И ВЕЕРА ---
     function renderLangPanel(isExpanded) {
         const container = document.getElementById('dynamic-langs');
         container.innerHTML = '';
@@ -308,7 +305,6 @@
         tg.HapticFeedback.notificationOccurred('success');
     } 
 
-    // --- ОРИГИНАЛЬНАЯ ЛОГИКА ДВИЖКА ---
     function startIntroSequence() {
         const i1 = document.getElementById('intro1'), i2 = document.getElementById('intro2'), i3 = document.getElementById('intro3'), container = document.getElementById('intro-container');
         setTimeout(() => i1.classList.add('active'), 100);
@@ -318,23 +314,33 @@
     } 
 
     function togglePick(type) {
+        activeSmartTool = type; // Запоминаем текущий фильтр
         const btns = { hot: 'btn-hot', cold: 'btn-cold', sleeping: 'btn-sleeping' };
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.getElementById(btns[type]).classList.add('active-tool');
+        if (btns[type]) document.getElementById(btns[type]).classList.add('active-tool');
+        
         selected = [];
-        document.querySelectorAll('.cell').forEach(c => { c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); c.style.animation = 'none'; });
+        document.querySelectorAll('.cell').forEach(c => { 
+            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); 
+            c.style.animation = 'none'; 
+        });
+
         const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
         let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        
         if (type === 'hot') sorted.sort((a, b) => b.val - a.val);
         else if (type === 'cold' || type === 'sleeping') sorted.sort((a, b) => a.val - b.val);
+        
         selected = sorted.slice(0, 6).map(i => i.num);
         selected.forEach(n => {
             const el = document.getElementById(`cell-${n}`);
-            el.classList.add('selected', `is-${type}`);
+            if (el) el.classList.add('selected', `is-${type}`);
         });
+
         superNum = Math.floor(Math.random() * 6) + 1;
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-        tg.HapticFeedback.notificationOccurred('success'); sndWin.play();
+        tg.HapticFeedback.notificationOccurred('success'); 
+        sndWin.play();
     } 
 
     function showPage(pId, el) {
@@ -380,6 +386,7 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
+        activeSmartTool = null; // Сбрасываем фильтр при ручном выборе
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
         if(selected.includes(i)) selected = selected.filter(n => n !== i);
@@ -397,11 +404,15 @@
     } 
 
     function randomFill() {
+        activeSmartTool = null; // Сбрасываем фильтры при рандоме
         selected = []; superNum = null; sndShuffle.play();
         let i = 0;
         const interval = setInterval(() => {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
-            for(let j=0; j<6; j++) document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`).classList.add('processing');
+            for(let j=0; j<6; j++) {
+                const rCell = document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`);
+                if (rCell) rCell.classList.add('processing');
+            }
             if(i++ > 12) { 
                 clearInterval(interval); 
                 while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) selected.push(r); }
@@ -416,7 +427,16 @@
     function switchCurrency(type) { currentCurrency = type; document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF'); updatePriceDisplay(); }
     function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
     function setTheme(t) { document.body.className = 'theme-' + t; const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; document.documentElement.style.setProperty('--main-color', colors[t]); }
-    function setPeriod(p) { currentPeriod = p; document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); refreshGrid(); } 
+    
+    function setPeriod(p) { 
+        currentPeriod = p; 
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); 
+        if (activeSmartTool) {
+            togglePick(activeSmartTool); // Автоматический пересчет при смене периода
+        } else {
+            refreshGrid();
+        }
+    } 
 
     function runEngine() {
         if(selected.length === 6 && superNum) {
@@ -427,49 +447,14 @@
         } else tg.showAlert("Select 6 numbers + Super!");
     } 
 
-    // === БЛОК АКТУАЛИЗАЦИИ И ШВЕЙЦАРСКОГО ВРЕМЕНИ (ДВИЖОК VCHF) ===
+    // === БЛОК АКТУАЛИЗАЦИИ И ШВЕЙЦАРСКОГО ВРЕМЕНИ ===
 
     const updateDict = {
-        ru: {
-            sync: "СИНХРОНИЗАЦИЯ: SWISS LOTTO",
-            noChange: "Изменений в слоях нет. Статистика актуальна.",
-            firstInit: "Первичная актуализация завершена. Все слои настроены.",
-            replaced: "в слое {layer} ({period}) число {new} заменило {old}",
-            hot: "ГОРЯЧИЕ", cold: "ХОЛОДНЫЕ", sleep: "СПЯЩИЕ",
-            m: "Месяц", y: "Год", a: "Все время"
-        },
-        ua: {
-            sync: "СИНХРОНІЗАЦІЯ: SWISS LOTTO",
-            noChange: "Змін у шарах немає. Статистика актуальна.",
-            firstInit: "Первинна актуалізація завершена. Всі шари налаштовані.",
-            replaced: "у шарі {layer} ({period}) число {new} замінило {old}",
-            hot: "ГАРЯЧІ", cold: "ХОЛОДНІ", sleep: "СПЛЯЧІ",
-            m: "Місяць", y: "Рік", a: "Весь час"
-        },
-        de: {
-            sync: "SYNCHRONISIERUNG: SWISS LOTTO",
-            noChange: "Keine Änderungen in den Ebenen. Statistik ist aktuell.",
-            firstInit: "Erst-Aktualisierung abgeschlossen. Alle Ebenen konfiguriert.",
-            replaced: "In der Ebene {layer} ({period}) hat {new} die Zahl {old} ersetzt",
-            hot: "HOT", cold: "COLD", sleep: "SLEEPING",
-            m: "Monat", y: "Jahr", a: "Alle"
-        },
-        en: {
-            sync: "SYNC: SWISS LOTTO",
-            noChange: "No changes in layers. Stats are up to date.",
-            firstInit: "First-time activation complete. All layers configured.",
-            replaced: "In layer {layer} ({period}) {new} replaced {old}",
-            hot: "HOT", cold: "COLD", sleep: "SLEEPING",
-            m: "Month", y: "Year", a: "All"
-        },
-        fr: {
-            sync: "SYNC: SWISS LOTTO",
-            noChange: "Aucun changement. Statistiques à jour.",
-            firstInit: "Activation initiale terminée. Couches configurées.",
-            replaced: "Dans {layer} ({period}) {new} a remplacé {old}",
-            hot: "CHAUD", cold: "FROID", sleep: "DORMANT",
-            m: "Mois", y: "An", a: "Tout"
-        }
+        ru: { sync: "СИНХРОНИЗАЦИЯ: SWISS LOTTO", noChange: "Изменений в слоях нет. Статистика актуальна.", firstInit: "Первичная актуализация завершена. Все слои настроены.", replaced: "в слое {layer} ({period}) число {new} заменило {old}", hot: "ГОРЯЧИЕ", cold: "ХОЛОДНЫЕ", sleep: "СПЯЩИЕ", m: "Месяц", y: "Год", a: "Все время" },
+        ua: { sync: "СИНХРОНІЗАЦІЯ: SWISS LOTTO", noChange: "Змін у шарах немає. Статистика актуальна.", firstInit: "Первинна актуалізація завершена. Всі шари налаштовані.", replaced: "у шарі {layer} ({period}) число {new} замінило {old}", hot: "ГАРЯЧІ", cold: "ХОЛОДНІ", sleep: "СПЛЯЧІ", m: "Місяць", y: "Рік", a: "Весь час" },
+        de: { sync: "SYNCHRONISIERUNG: SWISS LOTTO", noChange: "Keine Änderungen in den Ebenen. Statistik ist aktuell.", firstInit: "Erst-Aktualisierung abgeschlossen. Alle Ebenen konfiguriert.", replaced: "In der Ebene {layer} ({period}) hat {new} die Zahl {old} ersetzt", hot: "HOT", cold: "COLD", sleep: "SLEEPING", m: "Monat", y: "Jahr", a: "Alle" },
+        en: { sync: "SYNC: SWISS LOTTO", noChange: "No changes in layers. Stats are up to date.", firstInit: "First-time activation complete. All layers configured.", replaced: "In layer {layer} ({period}) {new} replaced {old}", hot: "HOT", cold: "COLD", sleep: "SLEEPING", m: "Month", y: "Year", a: "All" },
+        fr: { sync: "SYNC: SWISS LOTTO", noChange: "Aucun changement. Statistiques à jour.", firstInit: "Activation initiale terminée. Couches configurées.", replaced: "Dans {layer} ({period}) {new} a remplacé {old}", hot: "CHAUD", cold: "FROID", sleep: "DORMANT", m: "Mois", y: "An", a: "Tout" }
     };
 
     function getSwissTime() {
@@ -484,9 +469,7 @@
         let snapshot = {};
         periods.forEach(p => {
             snapshot[p] = {};
-            types.forEach(t => {
-                snapshot[p][t] = getTopNumbers(t, p);
-            });
+            types.forEach(t => { snapshot[p][t] = getTopNumbers(t, p); });
         });
         return snapshot;
     }
@@ -504,11 +487,7 @@
                     if (!oldList.includes(num)) {
                         const outNum = oldList.find(o => !newList.includes(o));
                         if (outNum) {
-                            let msg = d.replaced
-                                .replace('{layer}', d[t])
-                                .replace('{period}', d[p === 'month' ? 'm' : (p === 'year' ? 'y' : 'a')])
-                                .replace('{new}', `<b>${num}</b>`)
-                                .replace('{old}', `<b>${outNum}</b>`);
+                            let msg = d.replaced.replace('{layer}', d[t]).replace('{period}', d[p === 'month' ? 'm' : (p === 'year' ? 'y' : 'a')]).replace('{new}', `<b>${num}</b>`).replace('{old}', `<b>${outNum}</b>`);
                             changes.push(msg);
                         }
                     }
@@ -535,7 +514,6 @@
         const lastSync = localStorage.getItem('vchf_last_sync_date');
         const todayStr = swissNow.toDateString();
         if (!lastSync) {
-            const snapBefore = getStatsSnapshot();
             await fetchNewData();
             localStorage.setItem('vchf_last_sync_date', todayStr);
             showUpdateModal([updateDict[currentLang].firstInit]);
@@ -565,7 +543,7 @@
             setTimeout(() => {
                 for(let i=0; i<3; i++) {
                     let randomNum = Math.floor(Math.random() * 42) + 1;
-                    realStatsDB[randomNum][0] += 50;
+                    if(realStatsDB[randomNum]) realStatsDB[randomNum][0] += 50;
                 }
                 resolve();
             }, 1000);
@@ -586,7 +564,7 @@
         else { currentLang = 'en'; renderLangPanel(false); bgsTimer = setTimeout(() => { if(!localStorage.getItem('vchf_legal_accepted')) showLegal('en'); }, 10000); }
         for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
         refreshGrid(); updatePriceDisplay(); startIntroSequence();
-        runActualization(); // Запуск проверки актуальности
+        runActualization(); 
     };
 </script>
 </body>
