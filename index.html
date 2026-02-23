@@ -3,227 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto VCHF - Bi-Turbo Engine</title>
+    <title>LOTTO VCHF - Bi-Turbo Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --gold: #d4af37;
             --gold-glow: rgba(212, 175, 55, 0.4);
-            --bg: #000;
-            --glass: rgba(255, 255, 255, 0.05);
+            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
             background: var(--bg);
             color: #fff;
-            font-family: -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        .header {
-            padding: 30px 20px;
-            text-align: center;
+        /* Dashboard */
+        .vchf-header {
+            padding: 25px 20px;
             background: linear-gradient(180deg, #111, transparent);
+            border-bottom: 1px solid var(--glass-border);
+            text-align: center;
         }
+        .vchf-balance { font-size: 38px; font-weight: 200; text-shadow: 0 0 20px var(--gold-glow); }
+        .vchf-label { font-size: 10px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
 
-        .balance { font-size: 32px; font-weight: 200; text-shadow: 0 0 15px var(--gold-glow); }
-        .sub-info { font-size: 11px; color: #666; margin-top: 5px; letter-spacing: 1px; }
-
-        .modes {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
+        /* Periods */
+        .period-nav { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+        .p-item {
+            padding: 6px 16px; border-radius: 20px; font-size: 11px; color: #555;
+            background: var(--glass); border: 1px solid transparent; cursor: pointer; transition: 0.3s;
         }
+        .p-item.active { color: #fff; border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
 
-        .mode-btn {
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 12px;
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #666;
-            cursor: pointer;
-            transition: 0.3s;
+        /* 7 Tickets Carousel */
+        .ticket-row {
+            display: flex; padding: 0 15px 15px; gap: 10px;
+            overflow-x: auto; scrollbar-width: none;
         }
-
-        .mode-btn.active {
-            color: #fff;
-            border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.1);
+        .ticket-row::-webkit-scrollbar { display: none; }
+        .t-card {
+            min-width: 80px; padding: 12px 10px; background: var(--glass);
+            border: 1px solid var(--glass-border); border-radius: 16px; text-align: center; transition: 0.4s;
         }
+        .t-card.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); transform: scale(1.05); }
+        .t-card .t-num { font-size: 14px; font-weight: bold; display: block; margin-top: 4px; }
+        .t-card .t-label { font-size: 8px; color: #444; text-transform: uppercase; }
 
-        .grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            padding: 10px 20px;
-            overflow-y: auto;
-            align-content: start;
+        /* Grid */
+        .lotto-grid {
+            flex: 1; display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 12px; padding: 0 20px; overflow-y: auto; align-content: start;
         }
-
         .sphere {
-            aspect-ratio: 1;
-            border-radius: 50%;
+            aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #333, #000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative;
         }
-
         .sphere.selected {
             background: radial-gradient(circle at 35% 35%, #fff9d6, #d4af37);
-            color: #000;
-            font-weight: bold;
-            transform: scale(1.1);
-            box-shadow: 0 0 20px var(--gold);
+            color: #000; font-weight: bold; transform: scale(1.15); box-shadow: 0 0 25px var(--gold);
         }
+        .sphere.hot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid rgba(255, 69, 0, 0.3); }
+        .sphere.cold::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid rgba(30, 144, 255, 0.3); }
 
-        .sphere.hot { border: 1px solid rgba(255, 69, 0, 0.4); }
-        .sphere.cold { border: 1px solid rgba(30, 144, 255, 0.4); }
-
-        .footer {
-            padding: 20px;
-            background: linear-gradient(0deg, #000, transparent);
+        /* Footer Controls */
+        .controls { padding: 20px; background: linear-gradient(0deg, #000, transparent); }
+        .strike-container { width: 100%; height: 3px; background: #111; margin-bottom: 20px; border-radius: 2px; }
+        .strike-bar { height: 100%; width: 0%; background: var(--gold); box-shadow: 0 0 15px var(--gold); transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .buy-btn {
+            width: 100%; padding: 20px; border-radius: 40px; background: transparent;
+            border: 1px solid #222; color: #fff; letter-spacing: 4px;
+            text-transform: uppercase; font-size: 13px; transition: 0.4s; cursor: pointer;
         }
-
-        .btn-buy {
-            width: 100%;
-            padding: 20px;
-            border-radius: 40px;
-            background: transparent;
-            border: 1px solid #333;
-            color: #fff;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .btn-buy.active { border-color: var(--gold); color: var(--gold); }
-
-        .smart-tools {
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-        }
-
-        .s-tool { font-size: 10px; color: #444; text-transform: uppercase; cursor: pointer; }
-        .s-tool:hover { color: var(--gold); }
+        .buy-btn.ready { border-color: var(--gold); color: var(--gold); box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.1); }
+        .tools { display: flex; justify-content: space-between; margin-top: 15px; padding: 0 10px; }
+        .tool-btn { font-size: 10px; color: #444; text-transform: uppercase; cursor: pointer; }
+        .tool-btn:hover { color: var(--gold); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="balance" id="vchf-balance">100.00</div>
-        <div class="sub-info">VCHF DIGITAL ASSETS | FEE: 1%</div>
+    <div class="vchf-header">
+        <div class="vchf-balance" id="main-balance">100.00</div>
+        <div class="vchf-label">VCHF Digital Engine</div>
     </div>
-
-    <div class="modes">
-        <div class="mode-btn active" onclick="VCHF.setMode('monat', this)">Monat</div>
-        <div class="mode-btn" onclick="VCHF.setMode('jahr', this)">Jahr</div>
-        <div class="mode-btn" onclick="VCHF.setMode('alle', this)">Alle</div>
+    <div class="period-nav">
+        <div class="p-item active" id="m-monat" onclick="VCHF.setMode('monat')">Monat</div>
+        <div class="p-item" id="m-jahr" onclick="VCHF.setMode('jahr')">Jahr</div>
+        <div class="p-item" id="m-alle" onclick="VCHF.setMode('alle')">Alle</div>
     </div>
-
-    <div class="grid" id="grid"></div>
-
-    <div class="footer">
-        <button class="btn-buy" id="buy-btn" onclick="VCHF.purchase()">Engage Bi-Turbo (1.00)</button>
-        <div class="smart-tools">
-            <span class="s-tool" onclick="VCHF.smart('hot')">Hot Summer</span>
-            <span class="s-tool" onclick="VCHF.smart('sleeping')">Sleeping Giant</span>
-            <span class="s-tool" onclick="VCHF.smart('random')">Chaos Pick</span>
+    <div class="ticket-row" id="ticket-nav"></div>
+    <div class="lotto-grid" id="lotto-grid"></div>
+    <div class="controls">
+        <div class="strike-container"><div class="strike-bar" id="strike-bar"></div></div>
+        <button class="buy-btn" id="buy-btn" onclick="VCHF.purchase()">Engage Bi-Turbo (1.00)</button>
+        <div class="tools">
+            <span class="tool-btn" onclick="VCHF.smart('hot')">Hot Summer</span>
+            <span class="tool-btn" onclick="VCHF.smart('sleeping')">Sleeping Giant</span>
+            <span class="tool-btn" onclick="VCHF.smart('random')">Chaos Pick</span>
         </div>
     </div>
     <script>
     const VCHF = {
         state: {
             balance: 100.00,
-            selected: [],
+            activeIdx: 0,
             mode: 'monat',
-            stats: Array.from({length: 42}, () => Math.random())
+            matrix: Array.from({length: 42}, () => Math.random()),
+            tickets: Array.from({length: 7}, () => ({ nums: [], filter: null }))
         },
 
         init() {
+            this.renderNav();
             this.renderGrid();
-            console.log("Двигатель запущен. Системы в норме.");
+            this.updateUI();
+        },
+
+        renderNav() {
+            const nav = document.getElementById('ticket-nav');
+            nav.innerHTML = '';
+            this.state.tickets.forEach((t, i) => {
+                const card = document.createElement('div');
+                card.className = `t-card ${i === this.state.activeIdx ? 'active' : ''}`;
+                card.innerHTML = `
+                    <span class="t-label">Billet ${i+1}</span>
+                    <span class="t-num" style="color:${t.nums.length === 6 ? 'var(--gold)' : '#fff'}">${t.nums.length}/6</span>
+                `;
+                card.onclick = () => {
+                    this.state.activeIdx = i;
+                    this.renderNav(); this.renderGrid(); this.updateUI();
+                };
+                nav.appendChild(card);
+            });
         },
 
         renderGrid() {
-            const container = document.getElementById('grid');
-            container.innerHTML = '';
-            for(let i = 1; i <= 42; i++) {
+            const grid = document.getElementById('lotto-grid');
+            grid.innerHTML = '';
+            const currentNums = this.state.tickets[this.state.activeIdx].nums;
+            for(let i=1; i<=42; i++) {
                 const s = document.createElement('div');
+                const heat = this.state.matrix[i-1];
                 s.className = 'sphere';
-                const heat = this.state.stats[i-1];
                 if(heat > 0.8) s.classList.add('hot');
                 if(heat < 0.2) s.classList.add('cold');
-                
+                if(currentNums.includes(i)) s.classList.add('selected');
                 s.innerText = i;
                 s.onclick = () => this.toggle(i);
-                container.appendChild(s);
+                grid.appendChild(s);
             }
-            this.sync();
         },
 
         toggle(n) {
-            const idx = this.state.selected.indexOf(n);
-            if(idx > -1) {
-                this.state.selected.splice(idx, 1);
-            } else if(this.state.selected.length < 6) {
-                this.state.selected.push(n);
-            }
-            this.sync();
+            const t = this.state.tickets[this.state.activeIdx];
+            const pos = t.nums.indexOf(n);
+            if(pos > -1) t.nums.splice(pos, 1);
+            else if(t.nums.length < 6) { t.nums.push(n); t.filter = null; }
+            this.renderNav(); this.renderGrid(); this.updateUI();
         },
 
-        setMode(m, el) {
+        setMode(m) {
             this.state.mode = m;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            // Пересчет Heatmap
-            this.state.stats = this.state.stats.map(() => Math.random());
+            document.querySelectorAll('.p-item').forEach(el => el.classList.toggle('active', el.id === `m-${m}`));
+            this.state.matrix = this.state.matrix.map(() => Math.random());
             this.renderGrid();
+            const t = this.state.tickets[this.state.activeIdx];
+            if(t.filter) this.smart(t.filter);
         },
 
         smart(type) {
+            const t = this.state.tickets[this.state.activeIdx];
+            t.filter = type;
             let pool = Array.from({length: 42}, (_, i) => i + 1);
-            if(type === 'hot') pool.sort((a,b) => this.state.stats[b-1] - this.state.stats[a-1]);
-            else if(type === 'sleeping') pool.sort((a,b) => this.state.stats[a-1] - this.state.stats[b-1]);
+            if(type === 'hot') pool.sort((a,b) => this.state.matrix[b-1] - this.state.matrix[a-1]);
+            else if(type === 'sleeping') pool.sort((a,b) => this.state.matrix[a-1] - this.state.matrix[b-1]);
             else pool.sort(() => Math.random() - 0.5);
-            
-            this.state.selected = pool.slice(0, 6);
-            this.sync();
+            t.nums = pool.slice(0, 6);
+            this.renderNav(); this.renderGrid(); this.updateUI();
         },
 
-        sync() {
-            document.querySelectorAll('.sphere').forEach(s => {
-                const val = parseInt(s.innerText);
-                s.classList.toggle('selected', this.state.selected.includes(val));
-            });
+        updateUI() {
+            const totalFilled = this.state.tickets.reduce((sum, t) => sum + t.nums.length, 0);
+            const strikePower = (totalFilled / 42) * 100;
+            document.getElementById('strike-bar').style.width = `${strikePower}%`;
             const btn = document.getElementById('buy-btn');
-            btn.classList.toggle('active', this.state.selected.length === 6);
+            btn.classList.toggle('ready', this.state.tickets[this.state.activeIdx].nums.length === 6);
         },
 
         purchase() {
-            if(this.state.selected.length === 6 && this.state.balance >= 1) {
-                this.state.balance -= 1;
-                document.getElementById('vchf-balance').innerText = this.state.balance.toFixed(2);
-                this.state.selected = [];
-                this.sync();
+            const t = this.state.tickets[this.state.activeIdx];
+            if(t.nums.length === 6 && this.state.balance >= 1.0) {
+                this.state.balance -= 1.0;
+                document.getElementById('main-balance').innerText = this.state.balance.toFixed(2);
+                t.nums = [];
+                this.renderNav(); this.renderGrid(); this.updateUI();
                 if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
             }
         }
     };
-
     window.onload = () => VCHF.init();
     </script>
 </body>
