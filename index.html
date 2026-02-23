@@ -3,171 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Ultimate 3.0</title>
+    <title>Swiss Lotto - VCHF Engine 3.1</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --theme-glow: rgba(212, 175, 175, 0.35); 
+            --main-glow: rgba(212, 175, 55, 0.4);
             --neon-blue: #00f3ff; 
             --neon-orange: #ff8c00;
             --bg-deep: #000407;
-            --glass: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
         } 
 
         body, html { 
             background: var(--bg-deep); color: #fff; 
-            font-family: 'Orbitron', -apple-system, sans-serif; 
-            margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
+            font-family: 'Orbitron', sans-serif; margin: 0; padding: 0;
+            height: 100vh; width: 100vw; overflow: hidden;
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* ПОЛНАЯ ПАЛИТРА ТВОИХ ТЕМ */
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); }
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); }
-        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); }
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); }
-        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); }
+        /* ПАЛИТРА ИЗ ТВОЕГО ВИДЕО */
+        body.theme-cherry { --main-color: #C511A4; --main-glow: rgba(197, 17, 164, 0.4); }
+        body.theme-silver { --main-color: #c0c0c0; --main-glow: rgba(192, 192, 192, 0.4); }
+        body.theme-lime { --main-color: #32CD32; --main-glow: rgba(50, 205, 50, 0.4); }
+        body.theme-cyan { --main-color: #00ffff; --main-glow: rgba(0, 255, 255, 0.4); }
+        body.theme-gold { --main-color: #d4af37; --main-glow: rgba(212, 175, 55, 0.4); }
 
-        /* SPARK SINGULARITY INTRO */
+        /* INTRO: БАРАБАН ЛОТО */
         #monolith-intro {
             position: fixed; inset: 0; background: #000; z-index: 99999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .tron-horizon {
-            position: absolute; width: 200%; height: 100%; top: 50%; left: -50%;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px; transform: rotateX(60deg);
-            animation: grid-flow 3s linear infinite; opacity: 0; transition: 3s ease;
+        .drum-container {
+            width: 200px; height: 200px; border: 2px solid var(--main-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative; animation: drum-spin 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 0 30px var(--main-glow);
         }
-        @keyframes grid-flow { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+        @keyframes drum-spin { 0% { transform: rotate(0deg) scale(0); } 100% { transform: rotate(1080deg) scale(1); } }
         
         .spark-core {
-            width: 4px; height: 4px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 20px #fff, 0 0 60px var(--neon-blue);
-            animation: spark-birth 4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-        @keyframes spark-birth {
-            0% { transform: scale(0); opacity: 0; }
-            40% { transform: scale(80); opacity: 1; }
-            80% { transform: scale(1); box-shadow: 0 0 100px var(--neon-blue); }
-            100% { transform: scale(1.2); }
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-blue);
         }
         .auth-text {
-            margin-top: 40px; font-size: 10px; letter-spacing: 5px; color: var(--neon-blue);
+            margin-top: 30px; font-size: 10px; letter-spacing: 4px; color: var(--main-color);
             opacity: 0; animation: fade-in 1s 2.5s forwards; text-transform: uppercase;
         }
         @keyframes fade-in { to { opacity: 1; } }
 
-        /* ИНТЕРФЕЙС ГЛАССМОРФИЗМ */
-        #app-content { display: none; opacity: 0; transition: 1.5s ease; height: 100vh; flex-direction: column; }
+        /* ИНТЕРФЕЙС */
+        #app-content { display: none; opacity: 0; transition: 1s ease; height: 100vh; flex-direction: column; }
         .page { flex: 1; overflow-y: auto; padding-bottom: 90px; display: none; }
-        .page.active { display: block; animation: page-slide 0.4s ease-out; }
-        @keyframes page-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; }
 
-        .header-section { padding: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); }
+        .header-section { padding: 15px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--glass-border); }
+        
+        /* КОШЕЛЬКИ С ПОДСВЕТКОЙ ИЗ ВИДЕО */
         .balance-container { display: flex; gap: 10px; margin-top: 15px; }
         .bal-card { 
             flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px; padding: 10px; transition: 0.4s; position: relative; overflow: hidden;
-            filter: grayscale(0.8); opacity: 0.6;
+            border-radius: 12px; padding: 12px; transition: 0.4s; text-align: left;
         }
-        .bal-card.active-wallet { filter: grayscale(0); opacity: 1; border-color: var(--main-color); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
-        .bal-val { font-size: 18px; font-weight: 900; color: #fff; }
+        .bal-card.active-wallet { 
+            border-color: var(--main-color); 
+            background: rgba(212,175,55,0.1); 
+            box-shadow: inset 0 0 15px var(--main-glow);
+        }
+        .bal-val { font-size: 18px; font-weight: 900; }
 
         /* СФЕРЫ-АРТЕФАКТЫ */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 15px; max-width: 400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 15px; }
         .cell { 
-            aspect-ratio: 1; border-radius: 50%; position: relative;
-            background: var(--white-sphere);
+            aspect-ratio: 1; border-radius: 50%; 
+            background: radial-gradient(circle at 30% 30%, #444, #000);
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4);
-            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer; animation: sphere-breathe 4s infinite ease-in-out;
-        }
-        @keyframes sphere-breathe {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 5px rgba(0,0,0,0.5); }
-            50% { transform: scale(1.03); box-shadow: 0 0 15px rgba(255,255,255,0.05); }
+            font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
         }
         .cell.selected { 
-            background: var(--main-gradient); color: #000; transform: scale(1.1); 
-            box-shadow: 0 0 25px var(--main-color); border: 2px solid #fff; animation: none;
+            background: radial-gradient(circle at 30% 30%, var(--main-color), #000);
+            color: #fff; transform: scale(1.15); border: 2px solid #fff;
+            box-shadow: 0 0 20px var(--main-glow);
         }
-        .cell.is-hot { border: 2px solid var(--neon-orange) !important; box-shadow: 0 0 15px var(--neon-orange); }
-        .cell.is-cold { border: 2px solid #1e90ff !important; box-shadow: 0 0 15px #1e90ff; }
-        .cell.is-sleeping { border: 2px solid #00ffff !important; box-shadow: 0 0 15px #00ffff; }
+        /* Смарт-фильтры */
+        .cell.is-hot { border: 2px solid var(--neon-orange); box-shadow: 0 0 10px var(--neon-orange); }
+        .cell.is-cold { border: 2px solid #1e90ff; box-shadow: 0 0 10px #1e90ff; }
 
-        /* NAV BAR */
         .nav-bar {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid var(--glass-border); z-index: 1000;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid var(--glass-border);
         }
-        .nav-item { opacity: 0.4; transition: 0.3s; text-align: center; color: #fff; }
-        .nav-item.active { opacity: 1; color: var(--main-color); transform: translateY(-3px); }
-        .nav-item span { font-size: 22px; display: block; }
-        .nav-item label { font-size: 9px; text-transform: uppercase; font-weight: 900; }
+        .nav-item { opacity: 0.4; text-align: center; color: #fff; }
+        .nav-item.active { opacity: 1; color: var(--main-color); }
 
         .btn-main {
-            width: 90%; margin: 10px auto; padding: 20px; border-radius: 15px;
-            background: var(--main-gradient); color: #000; font-weight: 900;
-            font-family: 'Orbitron'; border: none; cursor: pointer;
-            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.3s;
-        }
-        
-        .legal-box {
-            background: #111; border: 1px solid var(--main-color); padding: 25px;
-            border-radius: 20px; max-width: 300px; text-align: center;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            width: 90%; margin: 10px auto; padding: 18px; border-radius: 12px;
+            background: var(--main-color); color: #000; font-weight: 900;
+            border: none; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
         }
     </style>
 </head>
 <body class="theme-gold">
 
 <div id="monolith-intro">
-    <div class="tron-horizon" id="horizon"></div>
-    <div class="spark-core"></div>
-    <div class="auth-text" id="auth-status">Guest Authenticated</div>
-</div>
-
-<div id="legal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px);">
-    <div class="legal-box">
-        <div id="legal-content" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px; color: #eee;"></div>
-        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin:0; padding:15px;"></button>
+    <div class="drum-container">
+        <div class="spark-core"></div>
     </div>
+    <div class="auth-text" id="auth-status">Guest Authenticated</div>
 </div>
 
 <div id="app-content">
     <div class="header-section">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="color: var(--main-color); font-weight: 900; font-size: 14px; letter-spacing: 2px;">VCHF ENGINE 3.0</div>
+            <div style="color: var(--main-color); font-weight: 900; letter-spacing: 2px; font-size: 14px;">VCHF ENGINE 3.1</div>
             <div onclick="document.querySelector('.theme-panel').classList.toggle('open')" style="cursor:pointer; font-size: 20px;">🎨</div>
         </div>
+        
         <div class="balance-container">
             <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
                 <div style="font-size:8px; opacity:0.6;">VIRTUAL</div>
                 <div class="bal-val" id="vchf-val">100.00</div>
+                <div style="font-size:10px; font-weight:700;">VCHF</div>
             </div>
             <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:8px; opacity:0.6;">REAL CHF</div>
+                <div style="font-size:8px; opacity:0.6;">REAL ACCOUNT</div>
                 <div class="bal-val" id="chf-val">0.00</div>
+                <div style="font-size:10px; font-weight:700;">CHF</div>
             </div>
         </div>
     </div>
 
     <style>
-        .theme-panel { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.9); border: 1px solid var(--glass-border); padding: 12px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; transform: translateX(120px); transition: 0.3s; z-index: 2000; }
+        .theme-panel { position: fixed; top: 80px; right: 15px; background: rgba(0,0,0,0.9); border: 1px solid var(--glass-border); padding: 12px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; transform: translateX(120px); transition: 0.3s; z-index: 2000; }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
-        .lang-btn { font-size: 28px; cursor: pointer; transition: 0.3s; }
     </style>
-
     <div class="theme-panel">
         <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
         <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
@@ -177,36 +151,29 @@
     </div>
 
     <div id="page-play" class="page active">
-        <div id="spark-voice-output" style="height: 30px; margin: 15px 0; color: var(--neon-blue); font-size: 11px; font-style: italic; text-align: center; text-shadow: 0 0 8px var(--neon-blue);">...</div>
+        <div id="spark-voice-output" style="height: 25px; margin: 10px 0; color: var(--neon-blue); font-size: 11px; font-style: italic; text-align: center; text-shadow: 0 0 5px var(--neon-blue);">...</div>
         
-        <div class="lang-panel" id="dynamic-langs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;"></div>
+        <div id="dynamic-langs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;"></div>
 
-        <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
-            <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot" style="background:none; border:1px solid var(--neon-orange); color:var(--neon-orange); padding:6px 12px; border-radius:15px; font-size:10px;">🔥 HOT</button>
-            <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold" style="background:none; border:1px solid #1e90ff; color:#1e90ff; padding:6px 12px; border-radius:15px; font-size:10px;">❄️ COLD</button>
-            <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping" style="background:none; border:1px solid #00ffff; color:#00ffff; padding:6px 12px; border-radius:15px; font-size:10px;">💤 SLEEP</button>
-            <button class="tool-btn" onclick="randomFill()" style="background:none; border:1px solid #fff; color:#fff; padding:6px 12px; border-radius:15px; font-size:10px;">🎲 RANDOM</button>
-        </div>
-
-        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
-            <button class="p-btn active" onclick="setPeriod('month')" id="p-month" style="font-size:9px; background:none; border:1px solid #444; color:#888; padding:5px 12px; border-radius:10px;">MONTH</button>
-            <button class="p-btn" onclick="setPeriod('year')" id="p-year" style="font-size:9px; background:none; border:1px solid #444; color:#888; padding:5px 12px; border-radius:10px;">YEAR</button>
-            <button class="p-btn" onclick="setPeriod('all')" id="p-all" style="font-size:9px; background:none; border:1px solid #444; color:#888; padding:5px 12px; border-radius:10px;">ALL TIME</button>
+        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">
+            <button onclick="togglePick('hot')" id="btn-hot" style="background:none; border:1px solid var(--neon-orange); color:var(--neon-orange); padding:6px 12px; border-radius:15px; font-size:10px;">🔥 HOT</button>
+            <button onclick="togglePick('cold')" id="btn-cold" style="background:none; border:1px solid #1e90ff; color:#1e90ff; padding:6px 12px; border-radius:15px; font-size:10px;">❄️ COLD</button>
+            <button onclick="randomFill()" style="background:none; border:1px solid #fff; color:#fff; padding:6px 12px; border-radius:15px; font-size:10px;">🎲 RANDOM</button>
         </div>
 
         <div class="grid" id="main-grid"></div>
-        <div id="l-super" style="text-align:center; font-size:11px; margin:20px 0 10px; color:var(--main-color); font-weight:900;">SUPERZAHL</div>
-        <div id="s-grid" style="display: flex; justify-content: center; gap: 10px; padding-bottom: 20px;"></div>
+        
+        <div id="l-super" style="text-align:center; font-size:11px; margin:15px 0 5px; color:var(--main-color); font-weight:900;">SUPERZAHL</div>
+        <div id="s-grid" style="display: flex; justify-content: center; gap: 8px; padding-bottom: 15px;"></div>
 
-        <div style="text-align: center; margin: 15px 0;">
-            <span id="l-total" style="font-size:12px; opacity:0.6;">Total:</span>
-            <span id="display-total" style="font-size:20px; font-weight:900; color:var(--neon-blue);">2.50 VCHF</span>
+        <div style="background: rgba(255,255,255,0.03); margin: 10px 15px; padding: 15px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center;">
+            <div style="margin-bottom: 10px;">
+                <span id="l-total" style="font-size:12px; opacity:0.6;">Total:</span>
+                <span id="display-total" style="font-size:22px; font-weight:900; color:var(--main-color);">2.50 VCHF</span>
+            </div>
+            <button class="btn-main" id="main-btn" onclick="runEngine()" style="width:100%; margin:0;">CONFIRM TICKET</button>
         </div>
-        <button class="btn-main" id="main-btn" onclick="runEngine()">CONFIRM TICKET</button>
     </div>
-
-    <div id="page-tickets" class="page"><div id="active-list" style="padding:20px;"></div></div>
-    <div id="page-stats" class="page"><div class="grid" id="personal-heatmap"></div></div>
 
     <div class="nav-bar">
         <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">Game</label></div>
@@ -218,179 +185,160 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // КОНСТАНТЫ И БАЗА (ТВОИ ДАННЫЕ)
-    let realStatsDB = {};
-    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en';
+    // СОСТОЯНИЕ ДВИЖКА
+    let selected = [], superNum = null, currentLang = 'ru', currentCurrency = 'VCHF';
     let activeSmartTool = null;
-    const realPrice = 2.50;
+    let isLangExpanded = false;
 
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", voice: "Система активирована. Удачи в игре, гость.", auth: "Гость Авторизован" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", voice: "Систему активовано. Успіху в грі, гость.", auth: "Гість Авторизований" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", game: "SPIEL", tickets: "TICKETS", stats: "STATS", voice: "System aktiv. Viel Glück beim Spiel.", auth: "Gast Authentifiziert" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", game: "GAME", tickets: "TICKETS", stats: "STATS", voice: "System active. Good luck, player.", auth: "Guest Authenticated" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", game: "JEU", tickets: "BILLETS", stats: "STATS", voice: "Système activé. Bonne chance, joueur.", auth: "Invité Authentifié" },
-        it: { btn: "CONFERMARE", super: "SUPER NUMERO", month: "MESE", year: "ANNO", all: "SEMPRE", total: "Totale", game: "GIOCO", tickets: "BIGLIETTI", stats: "STATS", voice: "Sistema attivo. Buona fortuna, giocatore.", auth: "Ospite Autenticato" }
-    };
-
-    const legalDict = {
-        ru: { title: "Закон Швейцарии (BGS)", text: "Участие разрешено только лицам старше <b>18 лет</b>.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
-        ua: { title: "Закон Швейцарії (BGS)", text: "Участь дозволена лише особам старше <b>18 років</b>.", btn: "МЕНІ Є 18 РОКІВ" },
-        de: { title: "Schweizer Gesetz (BGS)", text: "Teilnahme erst ab <b>18 Jahren</b> gestattet.", btn: "ICH BIN 18 JAHRE ALT" },
-        en: { title: "Swiss Law (BGS)", text: "Participation only for persons over <b>18 years</b>.", btn: "I AM 18 YEARS OLD" },
-        fr: { title: "Loi Suisse (BGS)", text: "Participation réservée aux personnes de plus de <b>18 ans</b>.", btn: "J'AI 18 ANS" },
-        it: { title: "Legge Svizzera (BGS)", text: "La partecipazione è riservata ai maggiori di <b>18 anni</b>.", btn: "HO 18 ANNI" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", voice: "Система активирована. Удачи, гость.", auth: "Guest Authenticated" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", voice: "Систему активовано. Успіху, гость.", auth: "Guest Authenticated" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", total: "Gesamt", game: "SPIEL", tickets: "TICKETS", stats: "STATS", voice: "System aktiv. Viel Glück, Gast.", auth: "Guest Authenticated" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", total: "Total", game: "GAME", tickets: "TICKETS", stats: "STATS", voice: "System active. Good luck, guest.", auth: "Guest Authenticated" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", total: "Total", game: "JEU", tickets: "BILLETS", stats: "STATS", voice: "Système activé. Bonne chance.", auth: "Guest Authenticated" },
+        it: { btn: "CONFERMARE", super: "SUPER NUMERO", total: "Totale", game: "GIOCO", tickets: "BIGLIETTI", stats: "STATS", voice: "Sistema attivo. Buona fortuna.", auth: "Guest Authenticated" }
     };
 
     const langIcons = { ru: '🇷🇺', en: '🇺🇸', de: '🇩🇪', fr: '🇫🇷', it: '🇮🇹', ua: '🇺🇦' };
 
-    // CORE FUNCTIONS
-    function sparkSpeak(l) {
-        const out = document.getElementById('spark-voice-output');
-        out.style.opacity = 0;
-        setTimeout(() => { out.innerText = dict[l].voice; out.style.opacity = 1; }, 500);
-    }
-
-    function setLang(l) {
-        currentLang = l; const d = dict[l];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('l-total').innerText = d.total;
-        document.getElementById('auth-status').innerText = d.auth;
-        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
-        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
-        renderLangPanel(false);
-        sparkSpeak(l);
-    }
-
-    function renderLangPanel(isExpanded) {
+    // УПРАВЛЕНИЕ ЯЗЫКАМИ (СВОРАЧИВАНИЕ)
+    function renderLangPanel() {
         const container = document.getElementById('dynamic-langs');
         container.innerHTML = '';
-        if (!isExpanded) {
-            const btn = document.createElement('span'); btn.className = 'lang-btn'; btn.innerHTML = langIcons[currentLang];
-            btn.onclick = () => renderLangPanel(true);
+        
+        if (!isLangExpanded) {
+            const btn = document.createElement('span');
+            btn.style.cssText = "font-size: 24px; cursor: pointer; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));";
+            btn.innerHTML = langIcons[currentLang];
+            btn.onclick = () => { isLangExpanded = true; renderLangPanel(); };
             container.appendChild(btn);
         } else {
             Object.keys(langIcons).forEach(l => {
-                const btn = document.createElement('span'); btn.className = 'lang-btn'; btn.innerHTML = langIcons[l];
-                btn.onclick = () => { pendingLang = l; showLegal(l); };
+                const btn = document.createElement('span');
+                btn.style.cssText = "font-size: 24px; cursor: pointer; transition: 0.2s;";
+                btn.innerHTML = langIcons[l];
+                btn.onclick = () => { 
+                    currentLang = l; 
+                    isLangExpanded = false; 
+                    updateInterface(); 
+                };
                 container.appendChild(btn);
             });
         }
     }
 
-    function showLegal(l) {
-        const overlay = document.getElementById('legal-overlay');
-        const content = document.getElementById('legal-content');
-        const btn = document.getElementById('legal-agree-btn');
-        content.innerHTML = `<h3 style="color:var(--main-color); margin-top:0;">${legalDict[l].title}</h3>${legalDict[l].text}`;
-        btn.innerText = legalDict[l].btn;
-        overlay.style.display = 'flex';
+    function updateInterface() {
+        const d = dict[currentLang];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('l-total').innerText = d.total;
+        document.getElementById('n-game').innerText = d.game;
+        document.getElementById('n-tickets').innerText = d.tickets;
+        document.getElementById('n-stats').innerText = d.stats;
+        document.getElementById('spark-voice-output').innerText = d.voice;
+        renderLangPanel();
     }
 
-    function acceptLegal() {
-        currentLang = pendingLang;
-        localStorage.setItem('vchf_lang', currentLang);
-        document.getElementById('legal-overlay').style.display = 'none';
-        setLang(currentLang);
+    // ЛОГИКА КОШЕЛЬКОВ
+    function switchCurrency(c) {
+        currentCurrency = c;
+        document.querySelectorAll('.bal-card').forEach(card => card.classList.remove('active-wallet'));
+        document.getElementById(`card-${c.toLowerCase()}`).classList.add('active-wallet');
+        document.getElementById('display-total').innerText = `2.50 ${c}`;
+        tg.HapticFeedback.impactOccurred('light');
     }
 
+    // СЕТКА И ШАРЫ
     function refreshGrid() {
-        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
-        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-        
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            const c = document.createElement('div');
+            c.className = 'cell';
+            c.innerText = i;
             if (selected.includes(i)) c.classList.add('selected');
             
-            if (activeSmartTool) {
-                let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-                if (activeSmartTool === 'hot') sorted.sort((a,b) => b.val - a.val);
-                else sorted.sort((a,b) => a.val - b.val);
-                if (sorted.slice(0, 6).some(x => x.num === i)) c.classList.add(`is-${activeSmartTool}`);
-            }
-            
+            // Имитация горячих чисел для теста дизайна
+            if (activeSmartTool === 'hot' && [5, 12, 28, 33, 41].includes(i)) c.classList.add('is-hot');
+            if (activeSmartTool === 'cold' && [1, 10, 19, 22].includes(i)) c.classList.add('is-cold');
+
             c.onclick = () => {
-                activeSmartTool = null;
-                if(selected.includes(i)) selected = selected.filter(n => n !== i);
-                else if(selected.length < 6) { selected.push(i); tg.HapticFeedback.impactOccurred('medium'); }
+                if (selected.includes(i)) selected = selected.filter(n => n !== i);
+                else if (selected.length < 6) {
+                    selected.push(i);
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
                 refreshGrid();
             };
             grid.appendChild(c);
         }
     }
 
-    function togglePick(type) { activeSmartTool = type; selected = []; refreshGrid(); tg.HapticFeedback.notificationOccurred('success'); }
-
-    function setPeriod(p) { 
-        currentPeriod = p; 
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); 
+    function togglePick(type) {
+        activeSmartTool = (activeSmartTool === type) ? null : type;
         refreshGrid();
     }
 
-    // SWISS TIME & ACTUALIZATION (ТВОЯ ЛОГИКА)
-    function getSwissTime() {
-        const now = new Date();
-        const swissStr = now.toLocaleString("en-US", {timeZone: "Europe/Zurich"});
-        return new Date(swissStr);
-    }
-
-    async function runActualization() {
-        const swissNow = getSwissTime();
-        const lastSync = localStorage.getItem('vchf_last_sync_date');
-        const todayStr = swissNow.toDateString();
-        
-        if (!lastSync || lastSync !== todayStr) {
-            // Здесь твоя логика сравнения Snapshots (упрощена для примера, но структура сохранена)
-            for(let i=1; i<=42; i++) {
-                if(!realStatsDB[i]) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
-            }
-            localStorage.setItem('vchf_last_sync_date', todayStr);
-            refreshGrid();
+    function randomFill() {
+        selected = [];
+        while(selected.length < 6) {
+            let r = Math.floor(Math.random() * 42) + 1;
+            if(!selected.includes(r)) selected.push(r);
         }
+        superNum = Math.floor(Math.random() * 6) + 1;
+        refreshGrid();
+        renderSuperGrid();
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
-    window.onload = () => {
-        const saved = localStorage.getItem('vchf_lang') || 'en';
-        setLang(saved);
-        runActualization();
-        
-        // Superzahl
+    function renderSuperGrid() {
         const sgrid = document.getElementById('s-grid');
-        for(let i=1; i<=6; i++) {
-            const sc = document.createElement('div'); sc.className = 'cell'; sc.style.width='45px'; sc.innerText = i;
-            sc.onclick = () => { superNum = i; document.querySelectorAll('#s-grid .cell').forEach(el => el.classList.toggle('selected', el.innerText == i)); };
+        sgrid.innerHTML = '';
+        for (let i = 1; i <= 6; i++) {
+            const sc = document.createElement('div');
+            sc.className = 'cell';
+            sc.style.width = '40px';
+            sc.innerText = i;
+            if (superNum === i) sc.classList.add('selected');
+            sc.onclick = () => { 
+                superNum = i; 
+                renderSuperGrid(); 
+                tg.HapticFeedback.impactOccurred('light');
+            };
             sgrid.appendChild(sc);
         }
+    }
 
-        // INTRO SEQUENCE
-        setTimeout(() => document.getElementById('horizon').style.opacity = '1', 500);
+    // ЗАПУСК СИСТЕМЫ
+    window.onload = () => {
+        updateInterface();
+        refreshGrid();
+        renderSuperGrid();
+
+        // Анимация Intro
         setTimeout(() => {
-            document.getElementById('monolith-intro').style.opacity = '0';
+            const intro = document.getElementById('monolith-intro');
+            intro.style.transition = "1s ease";
+            intro.style.opacity = "0";
             setTimeout(() => {
-                document.getElementById('monolith-intro').remove();
-                document.getElementById('app-content').style.display = 'flex';
-                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+                intro.remove();
+                const app = document.getElementById('app-content');
+                app.style.display = "flex";
+                setTimeout(() => app.style.opacity = "1", 50);
             }, 1000);
-        }, 4500);
+        }, 3500);
     };
 
     function setTheme(t) { document.body.className = 'theme-' + t; }
-    function switchCurrency(c) { currentCurrency = c; updatePriceDisplay(); }
-    function updatePriceDisplay() { document.getElementById('display-total').innerText = `2.50 ${currentCurrency}`; }
     function showPage(p, el) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.getElementById('page-'+p).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+        document.getElementById('page-' + p).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
         el.classList.add('active');
     }
-    function runEngine() { if(selected.length === 6 && superNum) tg.showAlert("TICKET CONFIRMED!"); else tg.showAlert("Select 6 + Super!"); }
-    function randomFill() {
-        selected = []; while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) selected.push(r); }
-        superNum = Math.floor(Math.random()*6)+1;
-        refreshGrid();
-        document.querySelectorAll('#s-grid .cell').forEach(el => el.classList.toggle('selected', el.innerText == superNum));
+    function runEngine() { 
+        if(selected.length === 6 && superNum) tg.showAlert("TICKET CONFIRMED!");
+        else tg.showAlert("Please select 6 numbers and 1 Superzahl");
     }
 </script>
 </body>
