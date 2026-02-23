@@ -1,228 +1,251 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Swiss Lotto - VCHF Bi-Turbo Ultimate</title>
+    <title>Swiss Lotto - VCHF Ultimate 3.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --neon-blue: #00f3ff; 
             --neon-orange: #ff8c00;
-            --bg-deep: #000000;
-            --grid-color: rgba(0, 243, 255, 0.1);
+            --main-gold: #d4af37;
+            --bg-deep: #000407;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(0, 243, 255, 0.2);
+            --main-color: var(--neon-blue);
         } 
 
         body, html { 
             background: var(--bg-deep); color: #fff; 
             font-family: 'Orbitron', sans-serif; margin: 0; padding: 0;
             height: 100vh; width: 100vw; overflow: hidden;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
+
+        /* ТЕМЫ */
+        body.theme-cherry { --main-color: #C511A4; }
+        body.theme-silver { --main-color: #c0c0c0; }
+        body.theme-lime { --main-color: #32CD32; }
+        body.theme-cyan { --main-color: #00ffff; }
+        body.theme-gold { --main-color: #d4af37; }
 
         /* SPARK SINGULARITY INTRO */
         #monolith-intro {
             position: fixed; inset: 0; background: #000; z-index: 99999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-
         .tron-horizon {
             position: absolute; width: 200%; height: 100%; top: 50%; left: -50%;
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
-                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
             background-size: 50px 50px; transform: rotateX(60deg);
-            animation: grid-flow 2s linear infinite; opacity: 0; transition: 2s;
+            animation: grid-flow 3s linear infinite; opacity: 0; transition: 3s ease;
         }
         @keyframes grid-flow { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
-
+        
         .spark-core {
-            width: 4px; height: 4px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-blue);
-            animation: spark-birth 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            width: 2px; height: 2px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px #fff, 0 0 60px var(--neon-blue);
+            animation: spark-birth 4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
         @keyframes spark-birth {
             0% { transform: scale(0); opacity: 0; }
-            30% { transform: scale(50); opacity: 1; }
-            70% { transform: scale(1); box-shadow: 0 0 100px var(--neon-blue); }
-            100% { transform: scale(1.5); box-shadow: 0 0 40px var(--neon-blue); }
+            40% { transform: scale(100); opacity: 1; }
+            80% { transform: scale(1); box-shadow: 0 0 100px var(--neon-blue); }
+            100% { transform: scale(1.2); }
         }
-
         .auth-text {
-            margin-top: 50px; font-size: 12px; letter-spacing: 8px;
-            color: var(--neon-blue); opacity: 0; text-transform: uppercase;
-            animation: text-fade 1s 2s forwards;
+            margin-top: 40px; font-size: 10px; letter-spacing: 5px; color: var(--neon-blue);
+            opacity: 0; animation: fade-in 1s 2.5s forwards; text-transform: uppercase;
         }
-        @keyframes text-fade { to { opacity: 1; } }
+        @keyframes fade-in { to { opacity: 1; } }
 
-        /* INTERFACE ROOT */
-        #app-root { opacity: 0; transform: scale(0.95); transition: 1.5s; display: none; }
-        #app-root.active { opacity: 1; transform: scale(1); display: block; overflow-y: auto; height: 100vh; }
+        /* INTERFACE */
+        #app-content { display: none; opacity: 0; transition: 1.5s ease; height: 100vh; flex-direction: column; }
+        .page { flex: 1; overflow-y: auto; padding-bottom: 90px; display: none; }
+        .page.active { display: block; }
 
-        .vchf-panel {
-            padding: 15px; border-bottom: 1px solid var(--grid-color);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0, 5, 10, 0.8); position: sticky; top: 0; z-index: 100;
+        .header-section { padding: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); }
+        .balance-container { display: flex; gap: 12px; margin-top: 15px; }
+        .bal-card { 
+            flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px; padding: 12px; transition: 0.4s; position: relative;
         }
+        .bal-card.active-wallet { border-color: var(--main-color); background: rgba(0, 243, 255, 0.05); }
+        .bal-val { font-size: 18px; font-weight: 900; color: #fff; }
 
-        /* DIGITAL ARTEFACT SPHERES (Visiom Spark) */
-        .lotto-grid {
-            display: grid; grid-template-columns: repeat(7, 1fr);
-            gap: 10px; padding: 15px; max-width: 420px; margin: 0 auto;
-        }
-        .sphere {
+        /* GRID & SPHERES */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 15px; max-width: 400px; margin: 0 auto; }
+        .cell { 
             aspect-ratio: 1; border-radius: 50%; 
-            background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.8));
-            border: 1px solid rgba(0, 243, 255, 0.2);
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1), rgba(0,0,0,0.8));
             display: flex; align-items: center; justify-content: center;
-            font-size: 17px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: rgba(0, 243, 255, 0.6); position: relative;
+            font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
         }
-        .sphere.selected { 
-            background: var(--neon-blue); color: #000; font-weight: 900;
-            box-shadow: 0 0 25px var(--neon-blue), inset 0 0 10px rgba(255,255,255,0.5);
-            transform: scale(1.1); border: none;
+        .cell.selected { background: var(--main-color); color: #000; transform: scale(1.1); box-shadow: 0 0 20px var(--main-color); border: none; }
+        .cell.is-hot { border-color: var(--neon-orange); }
+        .cell.is-cold { border-color: #1e90ff; }
+
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid var(--glass-border); z-index: 1000;
         }
-        .sphere.hot { 
-            border-color: var(--neon-orange); 
-            animation: hot-pulse 2s infinite ease-in-out;
-        }
-        @keyframes hot-pulse {
-            0%, 100% { box-shadow: inset 0 0 10px rgba(255, 140, 0, 0.3); }
-            50% { box-shadow: inset 0 0 20px rgba(255, 140, 0, 0.6), 0 0 10px var(--neon-orange); }
+        .nav-item { opacity: 0.4; text-align: center; color: #fff; text-decoration: none; }
+        .nav-item.active { opacity: 1; color: var(--main-color); }
+        .nav-item span { font-size: 20px; display: block; }
+
+        .btn-main {
+            width: 90%; margin: 15px auto; padding: 18px; border-radius: 12px;
+            background: var(--main-color); color: #000; font-weight: 900;
+            font-family: 'Orbitron'; border: none; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
         }
 
-        /* LANGUAGE VANE (6 LANGUAGES) */
-        .lang-wrapper { position: relative; height: 60px; margin: 20px 0; }
-        .lang-main { 
-            width: 45px; height: 45px; background: var(--neon-blue);
-            border-radius: 50%; line-height: 45px; margin: 0 auto; cursor: pointer;
-            box-shadow: 0 0 20px var(--neon-blue); position: relative; z-index: 10; font-size: 20px; text-align: center;
-        }
-        .lang-item {
-            position: absolute; width: 35px; height: 35px; line-height: 35px; text-align: center;
-            background: #000; border: 1px solid var(--neon-blue);
-            border-radius: 50%; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            opacity: 0; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); cursor: pointer;
-        }
-        .lang-wrapper.active .lang-item { opacity: 1; scale: 1; }
-        .lang-wrapper.active .pos-ru { transform: translate(-105px, -10px); }
-        .lang-wrapper.active .pos-ua { transform: translate(-65px, -70px); }
-        .lang-wrapper.active .pos-en { transform: translate(0px, -90px); }
-        .lang-wrapper.active .pos-de { transform: translate(65px, -70px); }
-        .lang-wrapper.active .pos-fr { transform: translate(105px, -10px); }
-        .lang-wrapper.active .pos-it { transform: translate(0px, 50px); }
+        .theme-panel { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.9); border: 1px solid var(--glass-border); padding: 10px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; transform: translateX(100px); transition: 0.3s; z-index: 2000; }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 1px solid #fff; }
     </style>
 </head>
-<body class="theme-tron">
+<body class="theme-gold">
 
 <div id="monolith-intro">
     <div class="tron-horizon" id="horizon"></div>
     <div class="spark-core"></div>
-    <div class="auth-text">Wanderer Authenticated</div>
+    <div class="auth-text" id="auth-status">Guest Authenticated</div>
 </div>
 
-<div id="app-root">
-    <div class="vchf-panel">
-        <div style="color: var(--neon-blue); font-weight: 900; letter-spacing: 2px;">SWISS LOTTO</div>
-        <div id="vchf-balance" style="font-size: 14px; color: var(--neon-blue);">150.00 VCHF</div>
-    </div>
-
-    <div id="spark-voice-output" style="height: 30px; margin-top: 15px; color: var(--neon-blue); font-size: 12px; font-style: italic; text-align: center; text-shadow: 0 0 5px var(--neon-blue);">...</div>
-
-    <div class="lang-wrapper" id="lang-box">
-        <div class="lang-main" onclick="this.parentElement.classList.toggle('active')">🌐</div>
-        <div class="lang-item pos-ru" onclick="Engine.setLang('ru')">🇷🇺</div>
-        <div class="lang-item pos-ua" onclick="Engine.setLang('ua')">🇺🇦</div>
-        <div class="lang-item pos-en" onclick="Engine.setLang('en')">🇺🇸</div>
-        <div class="lang-item pos-de" onclick="Engine.setLang('de')">🇩🇪</div>
-        <div class="lang-item pos-fr" onclick="Engine.setLang('fr')">🇫🇷</div>
-        <div class="lang-item pos-it" onclick="Engine.setLang('it')">🇮🇹</div>
-    </div>
-
-    <div class="lotto-grid" id="main-grid"></div>
-
-    <div style="padding: 0 20px 40px 20px;">
-        <button id="btn-submit" style="width: 100%; padding: 18px; background: transparent; border: 1px solid var(--neon-orange); color: var(--neon-orange); font-family: 'Orbitron'; font-weight: 900; cursor: pointer; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.3s;" onclick="Engine.submit()">
-            ENTER DRAW (2.50 CHF)
-        </button>
-        <div style="text-align: center; font-size: 9px; color: #444; margin-top: 10px; letter-spacing: 1px;">
-            FEE: 1% | WINS < 100 CHF TO TREASURY
+<div id="app-content">
+    <div class="header-section">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: var(--main-color); font-weight: 900; letter-spacing: 1px;">SWISS LOTTO VCHF</div>
+            <div onclick="document.querySelector('.theme-panel').classList.toggle('open')" style="cursor:pointer;">🎨</div>
         </div>
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:8px;">VIRTUAL</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
+            </div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:8px;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
+            </div>
+        </div>
+    </div>
+    <div class="theme-panel">
+        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+    </div>
+
+    <div id="page-play" class="page active">
+        <div id="spark-voice-output" style="height: 30px; margin: 15px 0; color: var(--neon-blue); font-size: 11px; font-style: italic; text-align: center;">...</div>
+        
+        <div id="dynamic-langs" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;"></div>
+
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
+            <button onclick="togglePick('hot')" id="btn-hot" style="background:none; border:1px solid var(--neon-orange); color:var(--neon-orange); border-radius:10px; padding:5px 10px; font-size:10px;">🔥 HOT</button>
+            <button onclick="togglePick('cold')" id="btn-cold" style="background:none; border:1px solid #1e90ff; color:#1e90ff; border-radius:10px; padding:5px 10px; font-size:10px;">❄️ COLD</button>
+            <button onclick="randomFill()" style="background:none; border:1px solid #fff; color:#fff; border-radius:10px; padding:5px 10px; font-size:10px;">🎲 RANDOM</button>
+        </div>
+
+        <div class="grid" id="main-grid"></div>
+        <div style="text-align: center; color: var(--main-gold); font-size: 10px; margin: 15px 0;">SUPERZAHL</div>
+        <div id="s-grid" style="display: flex; justify-content: center; gap: 8px;"></div>
+
+        <div style="text-align: center; margin: 15px;">
+            <span style="opacity:0.6; font-size:12px;">Total: </span>
+            <span id="display-total" style="color:var(--neon-blue); font-weight:900;">2.50 VCHF</span>
+        </div>
+        <button class="btn-main" onclick="runEngine()">CONFIRM TICKET</button>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label>Game</label></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label>Tickets</label></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label>Stats</label></div>
     </div>
 </div>
 
 <script>
-    const Engine = {
-        selected: new Set(),
-        vchfBalance: 150.00,
-        greetings: {
-            ru: "Добро пожаловать, Виталий. Движок готов.",
-            ua: "Вітаю, Віталій. Двигун активовано.",
-            en: "Welcome, Wanderer. Engine is live.",
-            de: "Willkommen, Vitaly. Der Motor läuft.",
-            fr: "Bienvenue, Voyageur. Le moteur est prêt.",
-            it: "Benvenuto, Wanderer. Motore avviato."
-        },
+    const tg = window.Telegram.WebApp;
+    let selected = [], superNum = null, currentLang = 'en', currentCurrency = 'VCHF', realStatsDB = {};
 
-        init() {
-            this.render();
-            setTimeout(() => { document.getElementById('horizon').style.opacity = '1'; }, 1000);
+    const dict = {
+        ru: { voice: "Система активирована. Удачи в игре, гость.", auth: "Гость Авторизован" },
+        ua: { voice: "Систему активовано. Успіху в грі, гость.", auth: "Гість Авторизований" },
+        en: { voice: "System active. Good luck, player.", auth: "Guest Authenticated" },
+        de: { voice: "System aktiv. Viel Glück beim Spiel.", auth: "Gast Authentifiziert" },
+        fr: { voice: "Système activé. Bonne chance, joueur.", auth: "Invité Authentifié" },
+        it: { voice: "Sistema attivo. Buona fortuna, giocatore.", auth: "Ospite Autenticato" }
+    };
+
+    function setLang(l) {
+        currentLang = l;
+        document.getElementById('spark-voice-output').innerText = dict[l].voice;
+        document.getElementById('auth-status').innerText = dict[l].auth;
+        renderLangs();
+    }
+
+    function renderLangs() {
+        const box = document.getElementById('dynamic-langs');
+        box.innerHTML = '';
+        ['ru','en','de','fr','it','ua'].forEach(l => {
+            const btn = document.createElement('span');
+            btn.innerText = {ru:'🇷🇺',en:'🇺🇸',de:'🇩🇪',fr:'🇫🇷',it:'🇮🇹',ua:'🇺🇦'}[l];
+            btn.style.cursor = 'pointer';
+            btn.onclick = () => setLang(l);
+            box.appendChild(btn);
+        });
+    }
+
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(selected.includes(i)) c.classList.add('selected');
+            c.onclick = () => {
+                if(selected.includes(i)) selected = selected.filter(n => n !== i);
+                else if(selected.length < 6) selected.push(i);
+                refreshGrid();
+            };
+            grid.appendChild(c);
+        }
+    }
+
+    function setTheme(t) { document.body.className = 'theme-' + t; }
+    function switchCurrency(c) { currentCurrency = c; document.getElementById('display-total').innerText = '2.50 ' + c; }
+
+    window.onload = () => {
+        setLang('ru');
+        refreshGrid();
+        const sgrid = document.getElementById('s-grid');
+        for(let i=1; i<=6; i++) {
+            const sc = document.createElement('div'); sc.className = 'cell'; sc.style.width='40px'; sc.innerText = i;
+            sc.onclick = () => { superNum = i; document.querySelectorAll('#s-grid .cell').forEach(e => e.classList.toggle('selected', e.innerText == i)); };
+            sgrid.appendChild(sc);
+        }
+        setTimeout(() => {
+            document.getElementById('horizon').style.opacity = '1';
             setTimeout(() => {
                 document.getElementById('monolith-intro').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('monolith-intro').remove();
-                    document.getElementById('app-root').classList.add('active');
-                    this.setLang('ru');
+                    document.getElementById('app-content').style.display = 'flex';
+                    setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
                 }, 1000);
-            }, 4000);
-        },
-
-        render() {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = '';
-            const hotNums = [3, 17, 21, 33, 42]; // Моделируем Hot
-            for(let i=1; i<=42; i++) {
-                const s = document.createElement('div');
-                s.className = 'sphere';
-                if(hotNums.includes(i)) s.classList.add('hot');
-                s.innerText = i;
-                if(this.selected.has(i)) s.classList.add('selected');
-                
-                s.onclick = () => {
-                    if(this.selected.has(i)) {
-                        this.selected.delete(i);
-                        s.classList.remove('selected');
-                    } else if(this.selected.size < 6) {
-                        this.selected.add(i);
-                        s.classList.add('selected');
-                        if (window.Telegram) Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                    }
-                };
-                grid.appendChild(s);
-            }
-        },
-
-        setLang(l) {
-            document.getElementById('lang-box').classList.remove('active');
-            const output = document.getElementById('spark-voice-output');
-            output.innerText = this.greetings[l] || this.greetings.en;
-            if (window.Telegram) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        },
-
-        submit() {
-            if(this.selected.size < 6) {
-                if (window.Telegram) Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-                alert("Please select 6 numbers"); 
-                return; 
-            }
-            // Логика списания и 1% комиссии
-            this.vchfBalance -= 2.50;
-            document.getElementById('vchf-balance').innerText = this.vchfBalance.toFixed(2) + " VCHF";
-            alert("Ticket entered! 1% fee will be applied to winnings.");
-        }
+            }, 3500);
+        }, 500);
     };
 
-    Engine.init();
+    function runEngine() { if(selected.length === 6 && superNum) alert("OK!"); else alert("Select 6 + Super"); }
+    function randomFill() { selected = []; while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) selected.push(r); } refreshGrid(); }
+    function showPage(p, el) { document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
 </script>
 </body>
 </html>
