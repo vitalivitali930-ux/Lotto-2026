@@ -54,48 +54,63 @@
         }
         @keyframes text-fade { to { opacity: 1; } }
 
-        /* INTERFACE */
+        /* INTERFACE ROOT */
         #app-root { opacity: 0; transform: scale(0.95); transition: 1.5s; display: none; }
-        #app-root.active { opacity: 1; transform: scale(1); display: block; }
+        #app-root.active { opacity: 1; transform: scale(1); display: block; overflow-y: auto; height: 100vh; }
 
         .vchf-panel {
             padding: 15px; border-bottom: 1px solid var(--grid-color);
             display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0, 5, 10, 0.8); position: sticky; top: 0; z-index: 100;
         }
 
-        /* LOTTO GRID */
+        /* DIGITAL ARTEFACT SPHERES (Visiom Spark) */
         .lotto-grid {
             display: grid; grid-template-columns: repeat(7, 1fr);
             gap: 10px; padding: 15px; max-width: 420px; margin: 0 auto;
         }
         .sphere {
-            aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(0, 243, 255, 0.2);
+            aspect-ratio: 1; border-radius: 50%; 
+            background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.8));
+            border: 1px solid rgba(0, 243, 255, 0.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 17px; cursor: pointer; transition: 0.3s;
+            font-size: 17px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: rgba(0, 243, 255, 0.6); position: relative;
         }
-        .sphere.selected { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
-        .sphere.hot { border-color: var(--neon-orange); box-shadow: inset 0 0 8px var(--neon-orange); }
+        .sphere.selected { 
+            background: var(--neon-blue); color: #000; font-weight: 900;
+            box-shadow: 0 0 25px var(--neon-blue), inset 0 0 10px rgba(255,255,255,0.5);
+            transform: scale(1.1); border: none;
+        }
+        .sphere.hot { 
+            border-color: var(--neon-orange); 
+            animation: hot-pulse 2s infinite ease-in-out;
+        }
+        @keyframes hot-pulse {
+            0%, 100% { box-shadow: inset 0 0 10px rgba(255, 140, 0, 0.3); }
+            50% { box-shadow: inset 0 0 20px rgba(255, 140, 0, 0.6), 0 0 10px var(--neon-orange); }
+        }
 
         /* LANGUAGE VANE (6 LANGUAGES) */
-        .lang-wrapper { position: relative; height: 60px; margin: 15px 0; }
+        .lang-wrapper { position: relative; height: 60px; margin: 20px 0; }
         .lang-main { 
             width: 45px; height: 45px; background: var(--neon-blue);
             border-radius: 50%; line-height: 45px; margin: 0 auto; cursor: pointer;
-            box-shadow: 0 0 20px var(--neon-blue); position: relative; z-index: 10;
+            box-shadow: 0 0 20px var(--neon-blue); position: relative; z-index: 10; font-size: 20px; text-align: center;
         }
         .lang-item {
-            position: absolute; width: 35px; height: 35px; line-height: 35px;
+            position: absolute; width: 35px; height: 35px; line-height: 35px; text-align: center;
             background: #000; border: 1px solid var(--neon-blue);
             border-radius: 50%; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            opacity: 0; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
+            opacity: 0; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); cursor: pointer;
         }
         .lang-wrapper.active .lang-item { opacity: 1; scale: 1; }
-        .lang-wrapper.active .pos-ru { transform: translate(-100px, -15px); }
-        .lang-wrapper.active .pos-ua { transform: translate(-65px, -75px); }
+        .lang-wrapper.active .pos-ru { transform: translate(-105px, -10px); }
+        .lang-wrapper.active .pos-ua { transform: translate(-65px, -70px); }
         .lang-wrapper.active .pos-en { transform: translate(0px, -90px); }
-        .lang-wrapper.active .pos-de { transform: translate(65px, -75px); }
-        .lang-wrapper.active .pos-fr { transform: translate(100px, -15px); }
-        .lang-wrapper.active .pos-it { transform: translate(0px, 55px); }
+        .lang-wrapper.active .pos-de { transform: translate(65px, -70px); }
+        .lang-wrapper.active .pos-fr { transform: translate(105px, -10px); }
+        .lang-wrapper.active .pos-it { transform: translate(0px, 50px); }
     </style>
 </head>
 <body class="theme-tron">
@@ -108,11 +123,11 @@
 
 <div id="app-root">
     <div class="vchf-panel">
-        <div style="color: var(--neon-blue); font-weight: 900;">SWISS LOTTO</div>
-        <div id="vchf-balance" style="font-size: 14px;">0.00 VCHF</div>
+        <div style="color: var(--neon-blue); font-weight: 900; letter-spacing: 2px;">SWISS LOTTO</div>
+        <div id="vchf-balance" style="font-size: 14px; color: var(--neon-blue);">150.00 VCHF</div>
     </div>
 
-    <div id="spark-voice-output" style="height: 30px; margin: 10px; color: var(--neon-blue); font-size: 12px; font-style: italic; text-align: center;">...</div>
+    <div id="spark-voice-output" style="height: 30px; margin-top: 15px; color: var(--neon-blue); font-size: 12px; font-style: italic; text-align: center; text-shadow: 0 0 5px var(--neon-blue);">...</div>
 
     <div class="lang-wrapper" id="lang-box">
         <div class="lang-main" onclick="this.parentElement.classList.toggle('active')">🌐</div>
@@ -126,16 +141,20 @@
 
     <div class="lotto-grid" id="main-grid"></div>
 
-    <div style="padding: 20px;">
-        <button id="btn-submit" style="width: 100%; padding: 15px; background: transparent; border: 1px solid var(--neon-orange); color: var(--neon-orange); font-family: 'Orbitron'; cursor: pointer;" onclick="Engine.submit()">
+    <div style="padding: 0 20px 40px 20px;">
+        <button id="btn-submit" style="width: 100%; padding: 18px; background: transparent; border: 1px solid var(--neon-orange); color: var(--neon-orange); font-family: 'Orbitron'; font-weight: 900; cursor: pointer; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.3s;" onclick="Engine.submit()">
             ENTER DRAW (2.50 CHF)
         </button>
+        <div style="text-align: center; font-size: 9px; color: #444; margin-top: 10px; letter-spacing: 1px;">
+            FEE: 1% | WINS < 100 CHF TO TREASURY
+        </div>
     </div>
 </div>
 
 <script>
     const Engine = {
         selected: new Set(),
+        vchfBalance: 150.00,
         greetings: {
             ru: "Добро пожаловать, Виталий. Движок готов.",
             ua: "Вітаю, Віталій. Двигун активовано.",
@@ -161,13 +180,23 @@
         render() {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = '';
+            const hotNums = [3, 17, 21, 33, 42]; // Моделируем Hot
             for(let i=1; i<=42; i++) {
                 const s = document.createElement('div');
-                s.className = 'sphere' + ([3, 17, 21].includes(i) ? ' hot' : '');
+                s.className = 'sphere';
+                if(hotNums.includes(i)) s.classList.add('hot');
                 s.innerText = i;
+                if(this.selected.has(i)) s.classList.add('selected');
+                
                 s.onclick = () => {
-                    if(this.selected.has(i)) { this.selected.delete(i); s.classList.remove('selected'); }
-                    else if(this.selected.size < 6) { this.selected.add(i); s.classList.add('selected'); }
+                    if(this.selected.has(i)) {
+                        this.selected.delete(i);
+                        s.classList.remove('selected');
+                    } else if(this.selected.size < 6) {
+                        this.selected.add(i);
+                        s.classList.add('selected');
+                        if (window.Telegram) Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                    }
                 };
                 grid.appendChild(s);
             }
@@ -177,12 +206,19 @@
             document.getElementById('lang-box').classList.remove('active');
             const output = document.getElementById('spark-voice-output');
             output.innerText = this.greetings[l] || this.greetings.en;
-            if (window.Telegram && Telegram.WebApp.HapticFeedback) Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            if (window.Telegram) Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         },
 
         submit() {
-            if(this.selected.size < 6) { alert("Select 6 numbers"); return; }
-            alert("Ticket processing...");
+            if(this.selected.size < 6) {
+                if (window.Telegram) Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                alert("Please select 6 numbers"); 
+                return; 
+            }
+            // Логика списания и 1% комиссии
+            this.vchfBalance -= 2.50;
+            document.getElementById('vchf-balance').innerText = this.vchfBalance.toFixed(2) + " VCHF";
+            alert("Ticket entered! 1% fee will be applied to winnings.");
         }
     };
 
