@@ -49,6 +49,13 @@
             }
         }
 
+        /* Магия: вспышка при рандомном переборе */
+        @keyframes processing-flash {
+            0% { background: var(--process-color); box-shadow: 0 0 20px var(--process-color); transform: scale(1.1); }
+            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
+        }
+        .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
+
         @keyframes candle-glow {
             0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
             50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
@@ -421,7 +428,6 @@
             c.className = 'cell'; 
             c.id = `cell-${i}`; 
             c.innerText = i;
-            // Уникальная задержка для каждого "дышащего" шарика
             c.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
             if (selected.includes(i)) {
                 c.classList.add('selected');
@@ -434,25 +440,51 @@
 
     function randomFill() {
         activeSmartTool = null; 
-        selected = []; superNum = null; sndShuffle.play();
-        let i = 0;
+        selected = []; superNum = null; 
+        sndShuffle.play();
+        
+        let iterations = 0;
+        const maxIterations = 18; 
+
         const interval = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
-            for(let j=0; j<6; j++) {
-                const rCell = document.getElementById(`cell-${Math.floor(Math.random()*42)+1}`);
-                if (rCell) rCell.classList.add('processing');
+            // Очищаем предыдущие вспышки
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
+            
+            // Генерируем "мерцание" выбора (оптический эффект)
+            for(let j=0; j<4; j++) {
+                const randId = Math.floor(Math.random() * 42) + 1;
+                const cell = document.getElementById(`cell-${randId}`);
+                if (cell && !cell.classList.contains('selected')) {
+                    cell.classList.add('processing-flash');
+                }
             }
-            if(i++ > 12) { 
-                clearInterval(interval); 
-                while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) selected.push(r); }
-                superNum = Math.floor(Math.random()*6)+1;
-                refreshGrid(); document.querySelectorAll('.super-cell').forEach((sc, idx) => {
+            
+            iterations++;
+            
+            // Каждые несколько итераций "фиксируем" один реальный шар
+            if (iterations % 3 === 0 && selected.length < 6) {
+                let r;
+                do { r = Math.floor(Math.random() * 42) + 1; } while (selected.includes(r));
+                selected.push(r);
+                const fixedCell = document.getElementById(`cell-${r}`);
+                fixedCell.classList.add('selected');
+                fixedCell.style.animation = 'none';
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (iterations >= maxIterations) {
+                clearInterval(interval);
+                // Фиксируем Superzahl
+                superNum = Math.floor(Math.random() * 6) + 1;
+                refreshGrid(); 
+                document.querySelectorAll('.super-cell').forEach((sc, idx) => {
                     sc.classList.toggle('selected', idx + 1 === superNum);
                     if(idx + 1 === superNum) sc.style.animation = 'none';
                 });
                 sndWin.play();
+                tg.HapticFeedback.notificationOccurred('success');
             }
-        }, 60);
+        }, 80);
     } 
 
     function updateTicketCount(val) { ticketCount = Math.max(1, ticketCount + val); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
