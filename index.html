@@ -46,7 +46,7 @@
 
         /* Юридическое модальное окно */
         #legal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
             backdrop-filter: blur(15px); z-index: 30000;
             display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px;
         }
@@ -84,102 +84,32 @@
 
         .lang-panel { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 10px; min-height: 40px; }
         .lang-btn { font-size: 24px; cursor: pointer; transition: transform 0.2s; position: relative; }
-        .active-lang { filter: drop-shadow(0 0 8px var(--main-color)); transform: scale(1.2); }
+        .active-lang { filter: drop-shadow(0 0 10px var(--main-color)); transform: scale(1.3); }
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; 
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
-            border: 1.5px solid #444; 
-            transition: all 0.4s ease; cursor: pointer;
-            opacity: 0.5; filter: grayscale(0.7) brightness(0.8);
-        }
-        .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0) brightness(1.2);
-            border-color: var(--main-color); 
-            background: rgba(255, 255, 255, 0.07); 
-            box-shadow: 0 0 15px var(--main-color);
-            transform: scale(1.05);
-        }
-
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1.5px solid #444; transition: all 0.4s ease; cursor: pointer; opacity: 0.5; filter: grayscale(0.7) brightness(0.8); }
+        .bal-card.active-wallet { opacity: 1; filter: grayscale(0) brightness(1.2); border-color: var(--main-color); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 15px var(--main-color); transform: scale(1.05); }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
-        
-        .cell { 
-            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: var(--cell-text); font-size: 19px; 
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            cursor: pointer; position: relative;
-            border: 1px solid var(--theme-glow);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow);
-            overflow: hidden;
-            transform: translateZ(0);
-        }
-
-        .cell.selected { 
-            background: var(--main-gradient); color: #000;
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color);
-            border: 1.5px solid #fff;
-            z-index: 10;
-        }
-
+        .cell { aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; border: 1px solid var(--theme-glow); box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow); }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); border: 1.5px solid #fff; z-index: 10; }
         .cell.processing { background: var(--process-color); color: #000; transform: scale(1.1); box-shadow: 0 0 15px var(--process-color); }
-        
-        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 20px #ff4500 !important; animation: pulse-hot 1.2s 3 alternate; z-index: 5; }
-        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 20px #1e90ff !important; animation: pulse-cold 1.2s 3 alternate; z-index: 5; }
-        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 20px var(--process-color) !important; animation: pulse-hot 1.2s 3 alternate; }
-
-        @keyframes pulse-hot { from { box-shadow: 0 0 10px #ff4500; transform: scale(1.02); } to { box-shadow: 0 0 25px #ff4500; transform: scale(1.1); } }
-        @keyframes pulse-cold { from { box-shadow: 0 0 10px #1e90ff; transform: scale(1.02); } to { box-shadow: 0 0 25px #1e90ff; transform: scale(1.1); } }
-
-        .ticket-card {
-            background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px;
-            padding: 15px; margin: 0 15px 12px; text-align: left; position: relative;
-        }
-        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-        .mini-ball { 
-            width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%;
-            color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800;
-        }
-        .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; }
-
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
-        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
-        
-        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
-        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
-        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); }
-
-        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
-        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; }
-
-        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
-        #display-total { color: var(--neon-blue); font-weight: 900; }
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
         .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
-        
-        .super-cell { 
-            width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; 
-            transition: 0.4s; 
-            border: 1px solid var(--theme-glow);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.6), 0 0 12px var(--theme-glow);
-        }
+        .super-cell { width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; border: 1px solid var(--theme-glow); box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.6), 0 0 12px var(--theme-glow); }
         .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
 
+        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
         .theme-panel.open { transform: translateX(0); }
         .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
+        .mini-ball { width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .super-ball-mini { background: #ff4500 !important; border: none; }
     </style>
 </head>
 <body>
@@ -200,7 +130,6 @@
 <div id="app-content">
     <div id="page-play" class="page active">
         <div class="lang-panel" id="dynamic-langs"></div>
-
         <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
         <div class="theme-panel">
             <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
@@ -246,7 +175,7 @@
         <div class="total-display">
             <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
         </div>
-        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄТIGEN</button>
     </div>
 
     <div id="page-tickets" class="page">
@@ -276,10 +205,8 @@
 
     let realStatsDB = {};
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en';
+    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en';
     const realPrice = 2.50;
-
-    let pendingLang = 'en'; // Для юридической проверки
 
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
@@ -297,51 +224,39 @@
         fr: { title: "Loi Suisse (BGS)", text: "Selon la Loi fédérale sur les jeux d'argent (BGS), la participation est réservée aux personnes de plus de <b>18 ans</b>. Veuillez confirmer votre accord.", btn: "J'AI 18 ANS" }
     };
 
-    function startIntroSequence() {
-        const i1 = document.getElementById('intro1');
-        const i2 = document.getElementById('intro2');
-        const i3 = document.getElementById('intro3');
-        const container = document.getElementById('intro-container');
-
-        setTimeout(() => { i1.classList.add('active'); }, 100);
-        setTimeout(() => { i1.classList.remove('active'); i2.classList.add('active'); }, 1200);
-        setTimeout(() => { i2.classList.remove('active'); i3.classList.add('active'); }, 2400);
-        setTimeout(() => { 
-            container.style.opacity = '0';
-            setTimeout(() => {
-                container.style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
-            }, 1000);
-        }, 3600);
+    // --- ЛОГИКА ВЫБОРА ЯЗЫКОВ ---
+    function renderLangButtons(mode) {
+        const container = document.getElementById('dynamic-langs');
+        const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' };
+        if (mode === 'candle') {
+            container.innerHTML = `<span class="lang-btn candle" onclick="expandLangs()">🇺🇸</span>`;
+        } else if (mode === 'expand') {
+            container.innerHTML = `<span class="lang-btn no-flicker" onclick="setLang('ru')">🇷🇺</span><span class="lang-btn no-flicker" onclick="setLang('fr')">🇫🇷</span><span class="lang-btn no-flicker" onclick="setLang('de')">🇩🇪</span><span class="lang-btn no-flicker" onclick="setLang('en')">🇺🇸</span><span class="lang-btn no-flicker" onclick="setLang('ua')">🇺🇦</span>`;
+        } else if (mode === 'fixed') {
+            container.innerHTML = `<span class="lang-btn no-flicker active-lang" onclick="renderLangButtons('expand')">${langIcons[currentLang]}</span>`;
+        }
     }
 
-    // НОВАЯ ФУНКЦИЯ: Показ юридического окна
-    function showLegalWindow(l) {
+    function expandLangs() { renderLangButtons('expand'); tg.HapticFeedback.impactOccurred('light'); }
+
+    function setLang(l) {
         pendingLang = l;
         const overlay = document.getElementById('legal-overlay');
         const content = document.getElementById('legal-content');
         const btn = document.getElementById('legal-agree-btn');
-        
         content.innerHTML = `<b>${legalDict[l].title}</b><br><br>${legalDict[l].text}`;
         btn.innerText = legalDict[l].btn;
         overlay.style.display = 'flex';
         tg.HapticFeedback.impactOccurred('medium');
     }
 
-    // НОВАЯ ФУНКЦИЯ: Подтверждение возраста
     function acceptLegal() {
         localStorage.setItem('vchf_legal_accepted', 'true');
         currentLang = pendingLang;
         localStorage.setItem('vchf_lang', currentLang);
-        
         document.getElementById('legal-overlay').style.display = 'none';
-        
-        // Обновляем тексты
         applyTexts();
-        // Перерисовываем панель в полный режим (мерцание прекращается)
-        renderLangButtons(true);
-        
+        renderLangButtons('fixed'); 
         tg.HapticFeedback.notificationOccurred('success');
     }
 
@@ -360,225 +275,89 @@
         document.getElementById('l-personal-stats-title').innerText = d.stats;
     }
 
-    // Модифицированная функция установки языка (теперь всегда через закон)
-    function setLang(l) {
-        showLegalWindow(l);
-    }
-
-    // НОВАЯ ФУНКЦИЯ: Отрисовка кнопок (Свеча или Полная панель)
-    function renderLangButtons(isFull) {
-        const container = document.getElementById('dynamic-langs');
-        if (!isFull) {
-            container.innerHTML = `<span class="lang-btn candle" onclick="renderLangButtons(true)">🇺🇸</span>`;
-        } else {
-            container.innerHTML = `
-                <span class="lang-btn no-flicker ${currentLang==='ru'?'active-lang':''}" onclick="setLang('ru')">🇷🇺</span>
-                <span class="lang-btn no-flicker ${currentLang==='fr'?'active-lang':''}" onclick="setLang('fr')">🇫🇷</span>
-                <span class="lang-btn no-flicker ${currentLang==='de'?'active-lang':''}" onclick="setLang('de')">🇩🇪</span>
-                <span class="lang-btn no-flicker ${currentLang==='en'?'active-lang':''}" onclick="setLang('en')">🇺🇸</span>
-                <span class="lang-btn no-flicker ${currentLang==='ua'?'active-lang':''}" onclick="setLang('ua')">🇺🇦</span>
-            `;
-        }
+    // --- ОСТАЛЬНАЯ ЛОГИКА ДВИЖКА VCHF ---
+    function startIntroSequence() {
+        const i1 = document.getElementById('intro1'), i2 = document.getElementById('intro2'), i3 = document.getElementById('intro3'), container = document.getElementById('intro-container');
+        setTimeout(() => { i1.classList.add('active'); }, 100);
+        setTimeout(() => { i1.classList.remove('active'); i2.classList.add('active'); }, 1200);
+        setTimeout(() => { i2.classList.remove('active'); i3.classList.add('active'); }, 2400);
+        setTimeout(() => { container.style.opacity = '0'; setTimeout(() => { container.style.display = 'none'; document.getElementById('app-content').style.display = 'block'; setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50); }, 1000); }, 3600);
     }
 
     function togglePick(type) {
-        const btnHot = document.getElementById('btn-hot');
-        const btnCold = document.getElementById('btn-cold');
-        const btnSleep = document.getElementById('btn-sleeping');
         selected = []; 
-        document.querySelectorAll('.cell').forEach(c => {
-            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected');
-            c.style.animation = 'none';
-        });
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-
-        if (type === 'hot') {
-            btnHot.classList.add('active-tool');
-            const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-            sorted.sort((a, b) => b.val - a.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-hot', 'selected');
-                el.style.animation = 'pulse-hot 1.2s 3 alternate';
-            });
-        } else if (type === 'cold') {
-            btnCold.classList.add('active-tool');
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][2] }));
-            sorted.sort((a, b) => a.val - b.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-cold', 'selected');
-                el.style.animation = 'pulse-cold 1.2s 3 alternate';
-            });
-        } else if (type === 'sleeping') {
-            btnSleep.classList.add('active-tool');
-            let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][0] }));
-            sorted.sort((a, b) => a.val - b.val);
-            selected = sorted.slice(0, 6).map(i => i.num);
-            selected.forEach(n => {
-                const el = document.getElementById(`cell-${n}`);
-                el.classList.add('is-sleeping', 'selected');
-                el.style.animation = 'pulse-hot 1.2s 3 alternate';
-            });
-        }
+        document.querySelectorAll('.cell').forEach(c => { c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); c.style.animation = 'none'; });
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val);
+        else sorted.sort((a, b) => a.val - b.val);
+        selected = sorted.slice(0, 6).map(i => i.num);
+        selected.forEach(n => { const el = document.getElementById(`cell-${n}`); el.classList.add('selected'); });
         superNum = Math.floor(Math.random() * 6) + 1;
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-        tg.HapticFeedback.notificationOccurred('success');
-        sndWin.play();
-    }
-
-    function showPage(pId, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pId).classList.add('active');
-        el.classList.add('active');
-        if(pId === 'tickets') renderTickets();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function renderTickets() {
-        const container = document.getElementById('active-list');
-        container.innerHTML = '';
-        myTickets.forEach((t, idx) => {
-            const card = document.createElement('div');
-            card.className = 'ticket-card';
-            card.innerHTML = `
-                <div style="font-size:11px; color:#888;">ID: ${t.timestamp}</div>
-                <div class="ticket-nums">
-                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
-                    <div class="mini-ball super-ball-mini">${t.super}</div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    async function fetchOfficialStats() { loadLocalStats(); }
-
-    function loadLocalStats() {
-        const saved = localStorage.getItem('vchf_db');
-        if (saved) { realStatsDB = JSON.parse(saved); } 
-        else { for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)]; }
-        refreshGrid();
-    }
-
-    function updateTicketCount(val) {
-        ticketCount = Math.max(1, ticketCount + val);
-        document.getElementById('ticket-count').innerText = ticketCount;
-        updatePriceDisplay();
-    }
-
-    function switchCurrency(type) {
-        currentCurrency = type;
-        document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF');
-        document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF');
-        updatePriceDisplay();
-    }
-
-    function updatePriceDisplay() {
-        const total = (ticketCount * realPrice).toFixed(2);
-        document.getElementById('display-total').innerText = `${total} ${currentCurrency}`;
-    }
-
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        refreshGrid();
+        refreshGrid(); sndWin.play();
     }
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
-        if(selected.includes(i)) { selected = selected.filter(n => n !== i); }
-        else if(selected.length < 6) { selected.push(i); }
+        if(selected.includes(i)) selected = selected.filter(n => n !== i);
+        else if(selected.length < 6) selected.push(i);
         refreshGrid();
     }
 
     function refreshGrid() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); 
-            c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
             if (selected.includes(i)) c.classList.add('selected');
-            c.onclick = () => handleCellClick(i);
-            grid.appendChild(c);
+            c.onclick = () => handleCellClick(i); grid.appendChild(c);
         }
     }
 
     function randomFill() {
-        selected = []; superNum = null;
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell, .super-cell').forEach(c => c.classList.remove('selected', 'processing', 'is-hot', 'is-cold', 'is-sleeping'));
-        sndShuffle.play();
-        let i = 0;
-        const interval = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing'));
-            for(let j=0; j<6; j++) {
-                let rnd = Math.floor(Math.random()*42)+1;
-                document.getElementById(`cell-${rnd}`).classList.add('processing');
-            }
-            if(i++ > 10) { clearInterval(interval); finalizeRandom(); }
-        }, 70);
+        selected = []; sndShuffle.play();
+        while(selected.length < 6) { let r = Math.floor(Math.random() * 42) + 1; if(!selected.includes(r)) selected.push(r); }
+        superNum = Math.floor(Math.random() * 6) + 1; refreshGrid();
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
     }
 
-    function finalizeRandom() {
-        while(selected.length < 6) {
-            let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) selected.push(r);
-        }
-        superNum = Math.floor(Math.random() * 6) + 1;
+    function setTheme(t) { document.body.className = 'theme-' + t; }
+    function showPage(pId, el) { 
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function switchCurrency(type) { currentCurrency = type; updatePriceDisplay(); }
+    function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
+    function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
+
+    async function fetchOfficialStats() {
+        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*500)];
         refreshGrid();
-        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
-        sndWin.play();
+    }
+
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+            tg.showAlert(dict[currentLang].status);
+        } else tg.showAlert("Select 6 numbers + Super!");
     }
 
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
-        sc.onclick = () => {
-            superNum = i;
-            document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i));
-        };
+        sc.onclick = () => { superNum = i; document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i)); };
         sgrid.appendChild(sc);
-    }
-
-    function setTheme(t) {
-        document.body.className = 'theme-' + t;
-        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' };
-        document.documentElement.style.setProperty('--main-color', colors[t]);
-    }
-
-    function runEngine() {
-        if(selected.length === 6 && superNum) {
-            const ticket = { nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() };
-            myTickets.push(ticket);
-            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-            tg.showAlert(dict[currentLang].status);
-            selected = []; superNum = null; refreshGrid();
-        } else { tg.showAlert("Select 6 numbers + Superzahl!"); }
     }
 
     window.onload = () => {
         const isAccepted = localStorage.getItem('vchf_legal_accepted');
         const savedLang = localStorage.getItem('vchf_lang') || 'en';
-        
-        if (!isAccepted) {
-            // Режим "Свечи": только один флаг
-            renderLangButtons(false);
-            currentLang = 'en';
-        } else {
-            // Полная панель
-            currentLang = savedLang;
-            renderLangButtons(true);
-            applyTexts();
-        }
-        
+        if (!isAccepted) { renderLangButtons('candle'); currentLang = 'en'; }
+        else { currentLang = savedLang; renderLangButtons('fixed'); applyTexts(); }
         fetchOfficialStats();
         startIntroSequence();
     };
