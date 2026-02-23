@@ -35,23 +35,27 @@
         body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
         body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
 
-        /* Анимация "Дыхания" для шариков в ожидании */
+        /* Оптимизированное ЦВЕТНОЕ Дыхание */
         @keyframes sphere-breathe {
             0%, 100% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--theme-glow);
-                border-color: rgba(212, 175, 55, 0.2);
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 
+                            0 5px 12px rgba(0,0,0,0.6), 
+                            0 0 5px var(--main-color);
+                border-color: rgba(255, 255, 255, 0.1);
                 transform: scale(1);
             }
             50% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.4), 0 0 15px var(--theme-glow);
-                border-color: rgba(212, 175, 55, 0.6);
-                transform: scale(1.02);
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 
+                            0 5px 22px rgba(0,0,0,0.4), 
+                            0 0 20px var(--main-color); /* Ярче и шире */
+                border-color: var(--main-color);
+                transform: scale(1.04); /* Чуть больше размах */
             }
         }
 
         /* Магия: вспышка при рандомном переборе */
         @keyframes processing-flash {
-            0% { background: var(--process-color); box-shadow: 0 0 20px var(--process-color); transform: scale(1.1); }
+            0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
             100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
         }
         .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
@@ -115,12 +119,11 @@
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
         .cell { 
             aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            cursor: pointer; position: relative; border: 1px solid var(--theme-glow);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow);
+            font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; position: relative; border: 1px solid rgba(255,255,255,0.1);
             animation: sphere-breathe 4s infinite ease-in-out;
         }
-        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); border: 1.5px solid #fff; z-index: 10; animation: none; }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
         
         .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
         .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
@@ -146,11 +149,10 @@
         .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
         .super-cell { 
             width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid var(--theme-glow);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.6), 0 0 12px var(--theme-glow);
+            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1);
             animation: sphere-breathe 4s infinite ease-in-out;
         }
-        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); animation: none; } 
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--main-color); animation: none; } 
 
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
@@ -159,11 +161,11 @@
 
         .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
         
-        @keyframes pulse-hot { from { box-shadow: 0 0 10px #ff4500; transform: scale(1.02); } to { box-shadow: 0 0 25px #ff4500; transform: scale(1.1); } }
-        @keyframes pulse-cold { from { box-shadow: 0 0 10px #1e90ff; transform: scale(1.02); } to { box-shadow: 0 0 25px #1e90ff; transform: scale(1.1); } }
-        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 20px #ff4500 !important; animation: pulse-hot 1.2s 3 alternate; z-index: 5; }
-        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 20px #1e90ff !important; animation: pulse-cold 1.2s 3 alternate; z-index: 5; }
-        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 20px var(--process-color) !important; animation: pulse-hot 1.2s 3 alternate; }
+        @keyframes pulse-hot { from { box-shadow: 0 0 15px #ff4500; transform: scale(1.02); } to { box-shadow: 0 0 30px #ff4500; transform: scale(1.1); } }
+        @keyframes pulse-cold { from { box-shadow: 0 0 15px #1e90ff; transform: scale(1.02); } to { box-shadow: 0 0 30px #1e90ff; transform: scale(1.1); } }
+        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 25px #ff4500 !important; animation: pulse-hot 1.2s 3 alternate; z-index: 5; }
+        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 25px #1e90ff !important; animation: pulse-cold 1.2s 3 alternate; z-index: 5; }
+        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 25px var(--process-color) !important; animation: pulse-hot 1.2s 3 alternate; }
     </style>
 </head>
 <body> 
@@ -260,7 +262,7 @@
     let realStatsDB = {};
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
     let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en', bgsTimer = null;
-    let activeSmartTool = null; // Константа для отслеживания текущего фильтра
+    let activeSmartTool = null; 
     const realPrice = 2.50; 
 
     const dict = {
@@ -391,7 +393,7 @@
         for(let i=1; i<=42; i++) {
             const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
             const freq = realStatsDB[i][2];
-            if(freq > 450) c.style.boxShadow = 'inset 0 0 15px #ff4500';
+            if(freq > 450) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
             grid.appendChild(c);
         }
     } 
@@ -444,13 +446,11 @@
         sndShuffle.play();
         
         let iterations = 0;
-        const maxIterations = 18; 
+        const maxIterations = 20; 
 
         const interval = setInterval(() => {
-            // Очищаем предыдущие вспышки
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
             
-            // Генерируем "мерцание" выбора (оптический эффект)
             for(let j=0; j<4; j++) {
                 const randId = Math.floor(Math.random() * 42) + 1;
                 const cell = document.getElementById(`cell-${randId}`);
@@ -461,7 +461,6 @@
             
             iterations++;
             
-            // Каждые несколько итераций "фиксируем" один реальный шар
             if (iterations % 3 === 0 && selected.length < 6) {
                 let r;
                 do { r = Math.floor(Math.random() * 42) + 1; } while (selected.includes(r));
@@ -474,7 +473,6 @@
 
             if (iterations >= maxIterations) {
                 clearInterval(interval);
-                // Фиксируем Superzahl
                 superNum = Math.floor(Math.random() * 6) + 1;
                 refreshGrid(); 
                 document.querySelectorAll('.super-cell').forEach((sc, idx) => {
@@ -484,13 +482,28 @@
                 sndWin.play();
                 tg.HapticFeedback.notificationOccurred('success');
             }
-        }, 80);
+        }, 85);
     } 
 
     function updateTicketCount(val) { ticketCount = Math.max(1, ticketCount + val); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
     function switchCurrency(type) { currentCurrency = type; document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF'); updatePriceDisplay(); }
     function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
-    function setTheme(t) { document.body.className = 'theme-' + t; const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; document.documentElement.style.setProperty('--main-color', colors[t]); }
+    
+    function setTheme(t) { 
+        document.body.className = 'theme-' + t; 
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; 
+        const colorVal = colors[t];
+        document.documentElement.style.setProperty('--main-color', colorVal);
+        // Принудительное обновление "дыхания" при смене темы
+        document.querySelectorAll('.cell, .super-cell').forEach(el => {
+            if(!el.classList.contains('selected')) {
+                el.style.animation = 'none';
+                void el.offsetWidth; // Trigger reflow
+                el.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+                el.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+            }
+        });
+    }
     
     function setPeriod(p) { 
         currentPeriod = p; 
@@ -563,7 +576,7 @@
         const d = updateDict[currentLang] || updateDict['en'];
         const modal = document.createElement('div');
         modal.style = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 50000; backdrop-filter: blur(10px); padding: 20px;`;
-        let contentHtml = changes.length > 0 ? `<div style="text-align:left; color:#fff;">${changes.join('<br><br>')}</div>` : `<div style="color:#d4af37;">${d.noChange}</div>`;
+        let contentHtml = changes.length > 0 ? `<div style="text-align:left; color:#fff;">${changes.join('<br><br>')}</div>` : `<div style="color:var(--main-color);">${d.noChange}</div>`;
         modal.innerHTML = `<div class="legal-box" style="border-color: var(--main-color); max-width: 90%;"><h3 style="color:var(--main-color); margin-top:0;">${d.sync}</h3><div style="max-height: 300px; overflow-y: auto; margin: 20px 0; font-size: 14px;">${contentHtml}</div><button class="btn-main" onclick="this.parentElement.parentElement.remove()" style="width:100%; padding:12px;">OK</button></div>`;
         document.body.appendChild(modal);
     }
