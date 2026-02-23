@@ -47,9 +47,9 @@
             50% { 
                 box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 
                             0 5px 22px rgba(0,0,0,0.4), 
-                            0 0 20px var(--main-color); /* Ярче и шире */
+                            0 0 20px var(--main-color); 
                 border-color: var(--main-color);
-                transform: scale(1.04); /* Чуть больше размах */
+                transform: scale(1.04); 
             }
         }
 
@@ -265,12 +265,13 @@
     let activeSmartTool = null; 
     const realPrice = 2.50; 
 
+    // ОБНОВЛЕННЫЙ СЛОВАРЬ (ТОЛЬКО КЛЮЧ 'all')
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
     }; 
 
     const legalDict = {
@@ -494,11 +495,10 @@
         const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; 
         const colorVal = colors[t];
         document.documentElement.style.setProperty('--main-color', colorVal);
-        // Принудительное обновление "дыхания" при смене темы
         document.querySelectorAll('.cell, .super-cell').forEach(el => {
             if(!el.classList.contains('selected')) {
                 el.style.animation = 'none';
-                void el.offsetWidth; // Trigger reflow
+                void el.offsetWidth; 
                 el.style.animation = 'sphere-breathe 4s infinite ease-in-out';
                 el.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
             }
