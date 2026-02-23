@@ -35,6 +35,20 @@
         body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
         body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
 
+        /* Анимация "Дыхания" для шариков в ожидании */
+        @keyframes sphere-breathe {
+            0%, 100% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--theme-glow);
+                border-color: rgba(212, 175, 55, 0.2);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.4), 0 0 15px var(--theme-glow);
+                border-color: rgba(212, 175, 55, 0.6);
+                transform: scale(1.02);
+            }
+        }
+
         @keyframes candle-glow {
             0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
             50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
@@ -97,8 +111,9 @@
             font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; position: relative; border: 1px solid var(--theme-glow);
             box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow);
+            animation: sphere-breathe 4s infinite ease-in-out;
         }
-        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); border: 1.5px solid #fff; z-index: 10; }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color); border: 1.5px solid #fff; z-index: 10; animation: none; }
         
         .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
         .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
@@ -126,8 +141,9 @@
             width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid var(--theme-glow);
             box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.6), 0 0 12px var(--theme-glow);
+            animation: sphere-breathe 4s infinite ease-in-out;
         }
-        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); } 
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); animation: none; } 
 
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
@@ -250,7 +266,7 @@
 
     const legalDict = {
         ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
-        ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участь дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
+        ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
         de: { title: "Schweizer Gesetz (BGS)", text: "Gemäss dem Bundesgesetz über Geldspiele (BGS) ist die Teilnahme erst ab <b>18 Jahren</b> gestattet. Bestätigen Sie Ihr Einverständnis.", btn: "ICH BIN 18 JAHRE ALT" },
         en: { title: "Swiss Law (BGS)", text: "According to the Swiss Federal Act on Gambling (BGS), participation is only allowed for persons over <b>18 years</b> old. Please confirm your agreement.", btn: "I AM 18 YEARS OLD" },
         fr: { title: "Loi Suisse (BGS)", text: "Selon la Loi fédérale sur les jeux d'argent (BGS), la participation est réservée aux personnes de plus de <b>18 ans</b>. Veuillez confirmer votre accord.", btn: "J'AI 18 ANS" }
@@ -314,7 +330,7 @@
     } 
 
     function togglePick(type) {
-        activeSmartTool = type; // Запоминаем текущий фильтр
+        activeSmartTool = type; 
         const btns = { hot: 'btn-hot', cold: 'btn-cold', sleeping: 'btn-sleeping' };
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         if (btns[type]) document.getElementById(btns[type]).classList.add('active-tool');
@@ -386,9 +402,13 @@
 
     function handleCellClick(i) {
         sndClick.currentTime = 0; sndClick.play();
-        activeSmartTool = null; // Сбрасываем фильтр при ручном выборе
+        activeSmartTool = null; 
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('is-hot', 'is-cold', 'is-sleeping'));
+        document.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('is-hot', 'is-cold', 'is-sleeping');
+            c.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+            c.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+        });
         if(selected.includes(i)) selected = selected.filter(n => n !== i);
         else if(selected.length < 6) selected.push(i);
         refreshGrid();
@@ -397,14 +417,23 @@
     function refreshGrid() {
         const grid = document.getElementById('main-grid'); grid.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            if (selected.includes(i)) c.classList.add('selected');
-            c.onclick = () => handleCellClick(i); grid.appendChild(c);
+            const c = document.createElement('div'); 
+            c.className = 'cell'; 
+            c.id = `cell-${i}`; 
+            c.innerText = i;
+            // Уникальная задержка для каждого "дышащего" шарика
+            c.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+            if (selected.includes(i)) {
+                c.classList.add('selected');
+                c.style.animation = 'none';
+            }
+            c.onclick = () => handleCellClick(i); 
+            grid.appendChild(c);
         }
     } 
 
     function randomFill() {
-        activeSmartTool = null; // Сбрасываем фильтры при рандоме
+        activeSmartTool = null; 
         selected = []; superNum = null; sndShuffle.play();
         let i = 0;
         const interval = setInterval(() => {
@@ -417,7 +446,10 @@
                 clearInterval(interval); 
                 while(selected.length < 6) { let r = Math.floor(Math.random()*42)+1; if(!selected.includes(r)) selected.push(r); }
                 superNum = Math.floor(Math.random()*6)+1;
-                refreshGrid(); document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
+                refreshGrid(); document.querySelectorAll('.super-cell').forEach((sc, idx) => {
+                    sc.classList.toggle('selected', idx + 1 === superNum);
+                    if(idx + 1 === superNum) sc.style.animation = 'none';
+                });
                 sndWin.play();
             }
         }, 60);
@@ -432,7 +464,7 @@
         currentPeriod = p; 
         document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); 
         if (activeSmartTool) {
-            togglePick(activeSmartTool); // Автоматический пересчет при смене периода
+            togglePick(activeSmartTool); 
         } else {
             refreshGrid();
         }
@@ -446,8 +478,6 @@
             selected = []; superNum = null; refreshGrid();
         } else tg.showAlert("Select 6 numbers + Super!");
     } 
-
-    // === БЛОК АКТУАЛИЗАЦИИ И ШВЕЙЦАРСКОГО ВРЕМЕНИ ===
 
     const updateDict = {
         ru: { sync: "СИНХРОНИЗАЦИЯ: SWISS LOTTO", noChange: "Изменений в слоях нет. Статистика актуальна.", firstInit: "Первичная актуализация завершена. Все слои настроены.", replaced: "в слое {layer} ({period}) число {new} заменило {old}", hot: "ГОРЯЧИЕ", cold: "ХОЛОДНЫЕ", sleep: "СПЯЩИЕ", m: "Месяц", y: "Год", a: "Все время" },
@@ -550,11 +580,18 @@
         });
     }
 
-    // Инициализация Superzahl
     const sgrid = document.getElementById('s-grid');
     for (let i = 1; i <= 6; i++) {
         const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
-        sc.onclick = () => { superNum = i; document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == i)); };
+        sc.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+        sc.onclick = () => { 
+            superNum = i; 
+            document.querySelectorAll('.super-cell').forEach(el => {
+                el.classList.toggle('selected', el.innerText == i);
+                if(el.innerText == i) el.style.animation = 'none';
+                else el.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+            }); 
+        };
         sgrid.appendChild(sc);
     } 
 
