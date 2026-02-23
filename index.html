@@ -3,235 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - VCHF Engine Ultimate 3.0</title>
+    <title>Swiss Lotto - VCHF Bi-Turbo Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --main-color: #00f3ff; 
-            --main-glow: rgba(0, 243, 255, 0.4);
-            --bg-deep: #00050a;
-            --sphere-bg: radial-gradient(circle at 35% 35%, #222 0%, #000 100%);
-            --text-color: #ffffff;
-            --neon-hot: #ff4500;
-            --neon-cold: #1e90ff;
+            --neon-blue: #00f3ff; 
+            --neon-orange: #ff8c00;
+            --bg-deep: #000000;
+            --grid-color: rgba(0, 243, 255, 0.1);
         } 
 
-        /* ТЕМЫ */
-        body.theme-gold { --main-color: #d4af37; --main-glow: rgba(212, 175, 55, 0.4); }
-        body.theme-lime { --main-color: #32CD32; --main-glow: rgba(50, 205, 50, 0.4); }
-        body.theme-cherry { --main-color: #C511A4; --main-glow: rgba(197, 17, 164, 0.4); }
-        body.theme-tron { --main-color: #00f3ff; --main-glow: rgba(0, 243, 255, 0.6); }
-
-        body { 
-            background: var(--bg-deep); color: var(--text-color); 
-            font-family: 'Segoe UI', Roboto, sans-serif; text-align: center; 
-            margin: 0; overflow: hidden; transition: 0.5s;
+        body, html { 
+            background: var(--bg-deep); color: #fff; 
+            font-family: 'Orbitron', sans-serif; margin: 0; padding: 0;
+            height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* ИНТРО-СКАНЕР */
-        #intro-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 9999;
+        /* SPARK SINGULARITY INTRO */
+        #monolith-intro {
+            position: fixed; inset: 0; background: #000; z-index: 99999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .scanner-line {
-            width: 100%; height: 2px; background: var(--main-color);
-            box-shadow: 0 0 15px var(--main-color);
-            position: absolute; top: 0; animation: scan 2s linear forwards;
-        }
-        @keyframes scan { to { top: 100%; } }
 
-        /* ВЕЕР ЯЗЫКОВ (УЛУЧШЕННЫЙ) */
-        .lang-wrapper { position: relative; height: 60px; margin-top: 10px; z-index: 1001; }
+        .tron-horizon {
+            position: absolute; width: 200%; height: 100%; top: 50%; left: -50%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px; transform: rotateX(60deg);
+            animation: grid-flow 2s linear infinite; opacity: 0; transition: 2s;
+        }
+        @keyframes grid-flow { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        .spark-core {
+            width: 4px; height: 4px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-blue);
+            animation: spark-birth 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+        @keyframes spark-birth {
+            0% { transform: scale(0); opacity: 0; }
+            30% { transform: scale(50); opacity: 1; }
+            70% { transform: scale(1); box-shadow: 0 0 100px var(--neon-blue); }
+            100% { transform: scale(1.5); box-shadow: 0 0 40px var(--neon-blue); }
+        }
+
+        .auth-text {
+            margin-top: 50px; font-size: 12px; letter-spacing: 8px;
+            color: var(--neon-blue); opacity: 0; text-transform: uppercase;
+            animation: text-fade 1s 2s forwards;
+        }
+        @keyframes text-fade { to { opacity: 1; } }
+
+        /* INTERFACE */
+        #app-root { opacity: 0; transform: scale(0.95); transition: 1.5s; display: none; }
+        #app-root.active { opacity: 1; transform: scale(1); display: block; }
+
+        .vchf-panel {
+            padding: 15px; border-bottom: 1px solid var(--grid-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* LOTTO GRID */
+        .lotto-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 10px; padding: 15px; max-width: 420px; margin: 0 auto;
+        }
+        .sphere {
+            aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(0, 243, 255, 0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; cursor: pointer; transition: 0.3s;
+        }
+        .sphere.selected { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .sphere.hot { border-color: var(--neon-orange); box-shadow: inset 0 0 8px var(--neon-orange); }
+
+        /* LANGUAGE VANE (6 LANGUAGES) */
+        .lang-wrapper { position: relative; height: 60px; margin: 15px 0; }
         .lang-main { 
-            width: 45px; height: 45px; line-height: 45px; border-radius: 50%;
-            background: var(--main-color); color: #000; font-size: 20px;
-            margin: 0 auto; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 0 15px var(--main-glow);
+            width: 45px; height: 45px; background: var(--neon-blue);
+            border-radius: 50%; line-height: 45px; margin: 0 auto; cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-blue); position: relative; z-index: 10;
         }
         .lang-item {
-            position: absolute; width: 40px; height: 40px; line-height: 40px;
-            background: rgba(0,0,0,0.8); border: 1px solid var(--main-color);
-            border-radius: 50%; font-size: 18px; cursor: pointer;
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0; transform: translate(-50%, -50%) scale(0);
-            left: 50%; top: 50%;
+            position: absolute; width: 35px; height: 35px; line-height: 35px;
+            background: #000; border: 1px solid var(--neon-blue);
+            border-radius: 50%; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
         }
-        .lang-wrapper.active .lang-item { opacity: 1; transform: scale(1); }
-        /* Разлет UA и RU */
-        .lang-wrapper.active .pos-ru { left: calc(50% - 110px); top: 20px; }
-        .lang-wrapper.active .pos-ua { left: calc(50% + 110px); top: 20px; }
-        .lang-wrapper.active .pos-en { left: 50%; top: 70px; }
-
-        /* 3D СФЕРЫ */
-        .grid-container {
-            display: grid; grid-template-columns: repeat(7, 1fr);
-            gap: 10px; padding: 10px 15px; max-width: 400px; margin: 0 auto;
-        }
-        .sphere { 
-            aspect-ratio: 1; background: var(--sphere-bg); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; cursor: pointer;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8), inset 5px 5px 10px rgba(255,255,255,0.05);
-        }
-        .sphere.selected {
-            background: radial-gradient(circle at 30% 30%, #fff 0%, var(--main-color) 100%);
-            color: #000; transform: scale(1.1) translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 20px var(--main-glow);
-        }
-        .sphere.heat-hot { border-color: var(--neon-hot); box-shadow: 0 0 15px var(--neon-hot); }
-        .sphere.heat-cold { border-color: var(--neon-cold); box-shadow: 0 0 15px var(--neon-cold); }
-
-        /* ПАНЕЛЬ ПЕРИОДОВ */
-        .period-box { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
-        .p-btn { 
-            padding: 5px 12px; font-size: 10px; border: 1px solid var(--main-color);
-            background: transparent; color: var(--main-color); border-radius: 15px;
-            cursor: pointer; opacity: 0.6;
-        }
-        .p-btn.active { background: var(--main-color); color: #000; opacity: 1; }
+        .lang-wrapper.active .lang-item { opacity: 1; scale: 1; }
+        .lang-wrapper.active .pos-ru { transform: translate(-100px, -15px); }
+        .lang-wrapper.active .pos-ua { transform: translate(-65px, -75px); }
+        .lang-wrapper.active .pos-en { transform: translate(0px, -90px); }
+        .lang-wrapper.active .pos-de { transform: translate(65px, -75px); }
+        .lang-wrapper.active .pos-fr { transform: translate(100px, -15px); }
+        .lang-wrapper.active .pos-it { transform: translate(0px, 55px); }
     </style>
 </head>
 <body class="theme-tron">
-    <div id="intro-overlay">
-        <div class="scanner-line"></div>
-        <div style="color:var(--main-color); font-family: monospace; letter-spacing: 5px;">SPARK VISION ANALYSIS...</div>
+
+<div id="monolith-intro">
+    <div class="tron-horizon" id="horizon"></div>
+    <div class="spark-core"></div>
+    <div class="auth-text">Wanderer Authenticated</div>
+</div>
+
+<div id="app-root">
+    <div class="vchf-panel">
+        <div style="color: var(--neon-blue); font-weight: 900;">SWISS LOTTO</div>
+        <div id="vchf-balance" style="font-size: 14px;">0.00 VCHF</div>
     </div>
-/* Spark Vision Engine | Directed by Wanderer */
+
+    <div id="spark-voice-output" style="height: 30px; margin: 10px; color: var(--neon-blue); font-size: 12px; font-style: italic; text-align: center;">...</div>
+
+    <div class="lang-wrapper" id="lang-box">
+        <div class="lang-main" onclick="this.parentElement.classList.toggle('active')">🌐</div>
+        <div class="lang-item pos-ru" onclick="Engine.setLang('ru')">🇷🇺</div>
+        <div class="lang-item pos-ua" onclick="Engine.setLang('ua')">🇺🇦</div>
+        <div class="lang-item pos-en" onclick="Engine.setLang('en')">🇺🇸</div>
+        <div class="lang-item pos-de" onclick="Engine.setLang('de')">🇩🇪</div>
+        <div class="lang-item pos-fr" onclick="Engine.setLang('fr')">🇫🇷</div>
+        <div class="lang-item pos-it" onclick="Engine.setLang('it')">🇮🇹</div>
+    </div>
+
+    <div class="lotto-grid" id="main-grid"></div>
+
+    <div style="padding: 20px;">
+        <button id="btn-submit" style="width: 100%; padding: 15px; background: transparent; border: 1px solid var(--neon-orange); color: var(--neon-orange); font-family: 'Orbitron'; cursor: pointer;" onclick="Engine.submit()">
+            ENTER DRAW (2.50 CHF)
+        </button>
+    </div>
+</div>
+
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const Engine = {
+        selected: new Set(),
+        greetings: {
+            ru: "Добро пожаловать, Виталий. Движок готов.",
+            ua: "Вітаю, Віталій. Двигун активовано.",
+            en: "Welcome, Wanderer. Engine is live.",
+            de: "Willkommen, Vitaly. Der Motor läuft.",
+            fr: "Bienvenue, Voyageur. Le moteur est prêt.",
+            it: "Benvenuto, Wanderer. Motore avviato."
+        },
 
-    // СОСТОЯНИЕ ДВИЖКА
-    let state = {
-        selected: [],
-        superNum: null,
-        currency: 'VCHF',
-        lang: 'en',
-        theme: 'tron',
-        period: 'Alle',
-        activeFilter: null,
-        // Имитация базы данных Swiss Lotto (в будущем - fetch)
-        stats: {
-            Monat: {},
-            Jahr: {},
-            Alle: {}
-        }
-    };
+        init() {
+            this.render();
+            setTimeout(() => { document.getElementById('horizon').style.opacity = '1'; }, 1000);
+            setTimeout(() => {
+                document.getElementById('monolith-intro').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('monolith-intro').remove();
+                    document.getElementById('app-root').classList.add('active');
+                    this.setLang('ru');
+                }, 1000);
+            }, 4000);
+        },
 
-    const dict = {
-        en: { btn: "ENGAGE BI-TURBO", super: "SUPERZAHL", alert: "Select 6 + Super!", hot: "HOT", cold: "COLD", sleep: "SLEEPING", rand: "RANDOM" },
-        ru: { btn: "ЗАПУСТИТЬ BI-TURBO", super: "БОНУС-ШАР", alert: "Выбери 6 + Бонус!", hot: "ЖАРКИЕ", cold: "ЛЕДЯНЫЕ", sleep: "СПЯЩИЕ", rand: "РАНДОМ" },
-        ua: { btn: "ЗАПУСТИТИ BI-TURBO", super: "БОНУС-ШАР", alert: "Обери 6 + Бонус!", hot: "ГАРЯЧІ", cold: "КРИЖАНІ", sleep: "СПЛЯЧІ", rand: "РАНДОМ" },
-        de: { btn: "BI-TURBO STARTEN", super: "SUPERZAHL", alert: "Wähle 6 + Super!", hot: "HEISS", cold: "KALT", sleep: "SCHLAFEND", rand: "ZUFALL" }
-    };
-
-    function init() {
-        generateMockData(); // Авто-синхронизация (имитация)
-        renderGrid();
-        renderSuperGrid();
-        
-        // Убираем интро через 2.5 секунды
-        setTimeout(() => {
-            document.getElementById('intro-overlay').style.opacity = '0';
-            setTimeout(() => document.getElementById('intro-overlay').remove(), 500);
-        }, 2500);
-    }
-
-    // АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ (Имитация Swiss Lotto)
-    function generateMockData() {
-        ['Monat', 'Jahr', 'Alle'].forEach(p => {
+        render() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
             for(let i=1; i<=42; i++) {
-                state.stats[p][i] = Math.floor(Math.random() * 100);
+                const s = document.createElement('div');
+                s.className = 'sphere' + ([3, 17, 21].includes(i) ? ' hot' : '');
+                s.innerText = i;
+                s.onclick = () => {
+                    if(this.selected.has(i)) { this.selected.delete(i); s.classList.remove('selected'); }
+                    else if(this.selected.size < 6) { this.selected.add(i); s.classList.add('selected'); }
+                };
+                grid.appendChild(s);
             }
-        });
-    }
+        },
 
-    function renderGrid() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
-        
-        // Получаем данные для текущего периода
-        const currentStats = state.stats[state.period];
-        
-        for (let i = 1; i <= 42; i++) {
-            const s = document.createElement('div');
-            s.className = 'sphere';
-            s.innerText = i;
-            
-            // МГНОВЕННЫЙ HEATMAP (Hot/Cold)
-            const val = currentStats[i];
-            if (val > 80) s.classList.add('heat-hot');
-            else if (val < 20) s.classList.add('heat-cold');
+        setLang(l) {
+            document.getElementById('lang-box').classList.remove('active');
+            const output = document.getElementById('spark-voice-output');
+            output.innerText = this.greetings[l] || this.greetings.en;
+            if (window.Telegram && Telegram.WebApp.HapticFeedback) Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        },
 
-            if (state.selected.includes(i)) s.classList.add('selected');
-            
-            s.onclick = () => toggleNumber(i);
-            grid.appendChild(s);
+        submit() {
+            if(this.selected.size < 6) { alert("Select 6 numbers"); return; }
+            alert("Ticket processing...");
         }
-    }
+    };
 
-    // ПЕРЕКЛЮЧЕНИЕ ПЕРИОДА (Мгновенно)
-    function setPeriod(p) {
-        state.period = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        renderGrid(); // Пересчет без перезагрузки
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function toggleNumber(n) {
-        const idx = state.selected.indexOf(n);
-        if (idx > -1) {
-            state.selected.splice(idx, 1);
-        } else if (state.selected.length < 6) {
-            state.selected.push(n);
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-        renderGrid();
-    }
-
-    function renderSuperGrid() {
-        const grid = document.getElementById('super-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= 6; i++) {
-            const s = document.createElement('div');
-            s.className = 'sphere';
-            s.innerText = i;
-            if (state.superNum === i) s.classList.add('selected');
-            s.onclick = () => {
-                state.superNum = i;
-                tg.HapticFeedback.impactOccurred('light');
-                renderSuperGrid();
-            };
-            grid.appendChild(s);
-        }
-    }
-
-    function setLang(l) {
-        state.lang = l;
-        document.getElementById('main-btn').innerText = dict[l].btn;
-        document.getElementById('lang-box').classList.remove('active');
-        renderGrid();
-    }
-
-    function setTheme(t) {
-        document.body.className = 'theme-' + t;
-        state.theme = t;
-        // Панель закрывается после выбора
-        tg.HapticFeedback.impactOccurred('heavy');
-    }
-
-    function runEngine() {
-        if (state.selected.length === 6 && state.superNum) {
-            tg.showConfirm("VCHF BI-TURBO: Ready to Analyze?");
-        } else {
-            tg.showAlert(dict[state.lang].alert);
-        }
-    }
-
-    window.onload = init;
+    Engine.init();
 </script>
 </body>
 </html>
