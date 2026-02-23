@@ -125,14 +125,10 @@
         }
         .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
         
-        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; position: relative; overflow: hidden; }
+        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
         .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
         .mini-ball { width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
         .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; } 
-        /* Метка сектора для билетов */
-        .sector-tag { position: absolute; top: 10px; right: 10px; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .tag-vchf { background: #333; color: #aaa; }
-        .tag-chf { background: var(--main-gradient); color: #000; box-shadow: 0 0 10px var(--theme-glow); }
 
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -388,18 +384,7 @@
         container.innerHTML = '';
         myTickets.forEach(t => {
             const card = document.createElement('div'); card.className = 'ticket-card';
-            // Визуальное разделение по секторам в списке билетов
-            const sectorTag = t.mode === 'CHF' ? '<span class="sector-tag tag-chf">REAL CHF</span>' : '<span class="sector-tag tag-vchf">VIRTUAL</span>';
-            const refLine = t.ref_nr ? `<div style="font-size:10px;color:var(--main-color);margin-top:5px;">REF: ${t.ref_nr}</div>` : '';
-            
-            card.innerHTML = `
-                ${sectorTag}
-                <div style="font-size:11px;color:#888;">${t.timestamp}</div>
-                ${refLine}
-                <div class="ticket-nums">
-                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
-                    <div class="mini-ball super-ball-mini">${t.super}</div>
-                </div>`;
+            card.innerHTML = `<div style="font-size:11px;color:#888;">ID: ${t.timestamp}</div><div class="ticket-nums">${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}<div class="mini-ball super-ball-mini">${t.super}</div></div>`;
             container.appendChild(card);
         });
     } 
@@ -530,48 +515,11 @@
         }
     } 
 
-    /* === ПОЛОЧКА №1: СЕКТОРА И ЮРИДИЧЕСКАЯ БАЗА === */
-    const VCHF_CONSTANTS = {
-        MY_FEE: 0.01,      // 1% тебе (Wanderer)
-        AD_FEE: 0.05,      // 5% реклама
-        TAX_LIMIT: 1071000, 
-        TAX_RATE: 0.35     // 35% налог Берна
-    };
-
-    function generateOfficialRef() {
-        const r = (n) => Math.floor(Math.random() * n).toString().padStart(4, '0');
-        return `210.${r(9999)}.${r(99)}.100.${Math.floor(Math.random() * 90000 + 10000)}`;
-    }
-
-    function processTicketPurchase(nums, sNum, mode) {
-        const ref = generateOfficialRef();
-        return {
-            ref_nr: ref,
-            nums: nums,
-            super: sNum,
-            timestamp: new Date().toLocaleString('de-CH'),
-            mode: mode,
-            legal: {
-                provider: "vchf_engine",
-                owner: "Vitaly_Wanderer",
-                status: mode === 'CHF' ? "LEGAL_PURCHASED" : "VIRTUAL_ONLY"
-            }
-        };
-    }
-    /* === КОНЕЦ ПОЛОЧКИ === */
-
     function runEngine() {
         if(selected.length === 6 && superNum) {
-            // Используем новую полочку
-            const ticket = processTicketPurchase(selected, superNum, currentCurrency);
-            myTickets.push(ticket);
-            
+            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
             localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-            
-            // Текст алерта с учетом юридического номера
-            const alertMsg = `${dict[currentLang].status}\nRef: ${ticket.ref_nr}\nSector: ${ticket.mode}`;
-            tg.showAlert(alertMsg);
-            
+            tg.showAlert(dict[currentLang].status);
             selected = []; superNum = null; refreshGrid();
         } else tg.showAlert("Select 6 numbers + Super!");
     } 
@@ -703,3 +651,4 @@
 </script>
 </body>
 </html>
+
