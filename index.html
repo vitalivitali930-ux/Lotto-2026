@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Swiss Lotto - VCHF Engine 3.1</title>
+    <title>Swiss Lotto - VCHF Engine 3.2</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --main-color: #d4af37; 
-            --main-glow: rgba(212, 175, 55, 0.4);
+            --main-glow: rgba(212, 175, 55, 0.5);
+            --profit-green: #00ff41; /* Тот самый сочный зеленый для баланса */
             --neon-blue: #00f3ff; 
             --neon-orange: #ff8c00;
             --bg-deep: #000407;
@@ -24,322 +25,332 @@
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* ПАЛИТРА ИЗ ТВОЕГО ВИДЕО */
-        body.theme-cherry { --main-color: #C511A4; --main-glow: rgba(197, 17, 164, 0.4); }
-        body.theme-silver { --main-color: #c0c0c0; --main-glow: rgba(192, 192, 192, 0.4); }
-        body.theme-lime { --main-color: #32CD32; --main-glow: rgba(50, 205, 50, 0.4); }
-        body.theme-cyan { --main-color: #00ffff; --main-glow: rgba(0, 255, 255, 0.4); }
-        body.theme-gold { --main-color: #d4af37; --main-glow: rgba(212, 175, 55, 0.4); }
+        /* ПАЛИТРА ИЗ ТВОЕГО ВИДЕО (АДАПТАЦИЯ ШАРОВ) */
+        body.theme-cherry { --main-color: #C511A4; --main-glow: rgba(197, 17, 164, 0.5); }
+        body.theme-silver { --main-color: #c0c0c0; --main-glow: rgba(192, 192, 192, 0.5); }
+        body.theme-lime { --main-color: #32CD32; --main-glow: rgba(50, 205, 50, 0.5); }
+        body.theme-cyan { --main-color: #00ffff; --main-glow: rgba(0, 255, 255, 0.5); }
+        body.theme-gold { --main-color: #d4af37; --main-glow: rgba(212, 175, 55, 0.5); }
 
-        /* INTRO: БАРАБАН ЛОТО */
+        /* INTRO: ВЗРЫВ СФЕР (БАРАБАН) */
         #monolith-intro {
             position: fixed; inset: 0; background: #000; z-index: 99999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .drum-container {
-            width: 200px; height: 200px; border: 2px solid var(--main-color);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            position: relative; animation: drum-spin 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            box-shadow: 0 0 30px var(--main-glow);
+        .drum-animation {
+            width: 150px; height: 150px; border: 3px solid var(--main-color);
+            border-radius: 50%; position: relative;
+            animation: drum-rotate 2s infinite linear;
+            box-shadow: 0 0 40px var(--main-glow);
         }
-        @keyframes drum-spin { 0% { transform: rotate(0deg) scale(0); } 100% { transform: rotate(1080deg) scale(1); } }
-        
-        .spark-core {
-            width: 10px; height: 10px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-blue);
+        .drum-animation::before {
+            content: ''; position: absolute; inset: -10px;
+            border: 2px dashed var(--neon-blue); border-radius: 50%;
+            animation: drum-rotate-rev 4s infinite linear;
         }
-        .auth-text {
-            margin-top: 30px; font-size: 10px; letter-spacing: 4px; color: var(--main-color);
-            opacity: 0; animation: fade-in 1s 2.5s forwards; text-transform: uppercase;
-        }
-        @keyframes fade-in { to { opacity: 1; } }
+        @keyframes drum-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes drum-rotate-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
 
         /* ИНТЕРФЕЙС */
-        #app-content { display: none; opacity: 0; transition: 1s ease; height: 100vh; flex-direction: column; }
-        .page { flex: 1; overflow-y: auto; padding-bottom: 90px; display: none; }
-        .page.active { display: block; }
-
-        .header-section { padding: 15px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--glass-border); }
+        #app-content { display: none; opacity: 0; transition: 1.5s ease; height: 100vh; flex-direction: column; }
         
-        /* КОШЕЛЬКИ С ПОДСВЕТКОЙ ИЗ ВИДЕО */
-        .balance-container { display: flex; gap: 10px; margin-top: 15px; }
+        /* КОШЕЛЬКИ С ЗЕЛЕНЫМИ ЦИФРАМИ */
+        .balance-container { display: flex; gap: 12px; padding: 15px; margin-top: 5px; }
         .bal-card { 
-            flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px; padding: 12px; transition: 0.4s; text-align: left;
+            flex: 1; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 15px; padding: 15px; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
         }
         .bal-card.active-wallet { 
             border-color: var(--main-color); 
-            background: rgba(212,175,55,0.1); 
-            box-shadow: inset 0 0 15px var(--main-glow);
+            background: rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 0 20px var(--main-glow), inset 0 0 10px var(--main-glow);
+            transform: translateY(-2px);
         }
-        .bal-val { font-size: 18px; font-weight: 900; }
+        .bal-val { 
+            font-size: 22px; font-weight: 900; 
+            color: var(--profit-green); /* ЗЕЛЕНЫЙ ЦВЕТ ИЗ ВИДЕО */
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        .bal-label { font-size: 10px; color: var(--main-color); font-weight: 700; margin-top: 5px; }
 
-        /* СФЕРЫ-АРТЕФАКТЫ */
+        /* ВЕЕР ЯЗЫКОВ */
+        .lang-fan {
+            display: flex; justify-content: center; gap: 15px; margin: 10px 0;
+            perspective: 1000px;
+        }
+        .lang-item {
+            font-size: 24px; cursor: pointer; transition: 0.4s;
+            filter: grayscale(0.5); transform: rotateY(20deg);
+        }
+        .lang-item.active { filter: grayscale(0); transform: scale(1.3) rotateY(0deg); text-shadow: 0 0 15px #fff; }
+
+        /* СЕТКА С ШАРАМИ ПОД ПАЛИТРУ */
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 15px; }
         .cell { 
             aspect-ratio: 1; border-radius: 50%; 
-            background: radial-gradient(circle at 30% 30%, #444, #000);
+            background: radial-gradient(circle at 30% 30%, #333, #000);
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.3);
-            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
+            font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .cell.selected { 
-            background: radial-gradient(circle at 30% 30%, var(--main-color), #000);
-            color: #fff; transform: scale(1.15); border: 2px solid #fff;
-            box-shadow: 0 0 20px var(--main-glow);
+            background: radial-gradient(circle at 35% 35%, var(--main-color) 0%, #1a1a1a 70%, #000 100%);
+            color: #fff; transform: scale(1.2); border: 2px solid #fff;
+            box-shadow: 0 0 25px var(--main-glow), inset 0 0 10px var(--main-glow);
+            z-index: 10;
         }
-        /* Смарт-фильтры */
-        .cell.is-hot { border: 2px solid var(--neon-orange); box-shadow: 0 0 10px var(--neon-orange); }
-        .cell.is-cold { border: 2px solid #1e90ff; box-shadow: 0 0 10px #1e90ff; }
+
+        /* МОНОЛИТНЫЙ БЛОК КНОПКИ И СУММЫ */
+        .control-panel {
+            background: rgba(0,0,0,0.8); margin: 15px; padding: 0;
+            border-radius: 20px; border: 1px solid var(--main-color);
+            overflow: hidden; box-shadow: 0 0 30px var(--main-glow);
+        }
+        .total-info { padding: 15px; border-bottom: 1px solid var(--glass-border); text-align: center; }
+        .btn-confirm {
+            width: 100%; padding: 20px; border: none;
+            background: var(--main-color); color: #000;
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 16px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-confirm:active { filter: brightness(1.3); }
 
         .nav-bar {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
-            background: rgba(0,0,0,0.9); display: flex; justify-content: space-around;
-            align-items: center; border-top: 1px solid var(--glass-border);
-        }
-        .nav-item { opacity: 0.4; text-align: center; color: #fff; }
-        .nav-item.active { opacity: 1; color: var(--main-color); }
-
-        .btn-main {
-            width: 90%; margin: 10px auto; padding: 18px; border-radius: 12px;
-            background: var(--main-color); color: #000; font-weight: 900;
-            border: none; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 80px;
+            background: rgba(0,0,0,0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid var(--main-color);
         }
     </style>
 </head>
 <body class="theme-gold">
 
 <div id="monolith-intro">
-    <div class="drum-container">
-        <div class="spark-core"></div>
+    <div class="drum-animation" id="drum-logo">
+        </div>
+    <div class="auth-text" id="auth-status" style="margin-top:40px; color:var(--main-color); letter-spacing:5px;">
+        VCHF ENGINE ACTIVATING...
     </div>
-    <div class="auth-text" id="auth-status">Guest Authenticated</div>
 </div>
 
 <div id="app-content">
-    <div class="header-section">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="color: var(--main-color); font-weight: 900; letter-spacing: 2px; font-size: 14px;">VCHF ENGINE 3.1</div>
-            <div onclick="document.querySelector('.theme-panel').classList.toggle('open')" style="cursor:pointer; font-size: 20px;">🎨</div>
+    <div class="header-section" style="padding: 10px 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="color: var(--main-color); font-weight: 900; font-size: 14px;">SPARK V3.2</div>
+            <div onclick="document.querySelector('.theme-panel').classList.toggle('open')" style="cursor:pointer; font-size: 22px;">🎨</div>
         </div>
         
         <div class="balance-container">
             <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-                <div style="font-size:8px; opacity:0.6;">VIRTUAL</div>
                 <div class="bal-val" id="vchf-val">100.00</div>
-                <div style="font-size:10px; font-weight:700;">VCHF</div>
+                <div class="bal-label">VIRTUAL VCHF</div>
             </div>
             <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:8px; opacity:0.6;">REAL ACCOUNT</div>
                 <div class="bal-val" id="chf-val">0.00</div>
-                <div style="font-size:10px; font-weight:700;">CHF</div>
+                <div class="bal-label">REAL ACCOUNT</div>
             </div>
         </div>
     </div>
 
-    <style>
-        .theme-panel { position: fixed; top: 80px; right: 15px; background: rgba(0,0,0,0.9); border: 1px solid var(--glass-border); padding: 12px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; transform: translateX(120px); transition: 0.3s; z-index: 2000; }
-        .theme-panel.open { transform: translateX(0); }
-        .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
-    </style>
-    <div class="theme-panel">
-        <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
-        <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
-        <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
-        <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
-        <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
-    </div>
+    <div class="lang-fan" id="lang-fan-container">
+        </div>
 
     <div id="page-play" class="page active">
-        <div id="spark-voice-output" style="height: 25px; margin: 10px 0; color: var(--neon-blue); font-size: 11px; font-style: italic; text-align: center; text-shadow: 0 0 5px var(--neon-blue);">...</div>
+        <div id="spark-voice" style="height: 20px; text-align: center; color: var(--neon-blue); font-size: 10px; margin-bottom: 10px; font-style: italic;"></div>
         
-        <div id="dynamic-langs" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;"></div>
-
-        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">
-            <button onclick="togglePick('hot')" id="btn-hot" style="background:none; border:1px solid var(--neon-orange); color:var(--neon-orange); padding:6px 12px; border-radius:15px; font-size:10px;">🔥 HOT</button>
-            <button onclick="togglePick('cold')" id="btn-cold" style="background:none; border:1px solid #1e90ff; color:#1e90ff; padding:6px 12px; border-radius:15px; font-size:10px;">❄️ COLD</button>
-            <button onclick="randomFill()" style="background:none; border:1px solid #fff; color:#fff; padding:6px 12px; border-radius:15px; font-size:10px;">🎲 RANDOM</button>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <button onclick="toggleSmartTool('hot')" id="btn-hot" style="background:none; border:1px solid var(--neon-orange); color:var(--neon-orange); padding:8px 15px; border-radius:20px; font-size:11px; font-weight:700;">🔥 HOT</button>
+            <button onclick="toggleSmartTool('cold')" id="btn-cold" style="background:none; border:1px solid #1e90ff; color:#1e90ff; padding:8px 15px; border-radius:20px; font-size:11px; font-weight:700;">❄️ COLD</button>
+            <button onclick="fullRandomFill()" style="background:none; border:1px solid #fff; color:#fff; padding:8px 15px; border-radius:20px; font-size:11px; font-weight:700;">🎲 RANDOM</button>
         </div>
 
         <div class="grid" id="main-grid"></div>
         
-        <div id="l-super" style="text-align:center; font-size:11px; margin:15px 0 5px; color:var(--main-color); font-weight:900;">SUPERZAHL</div>
-        <div id="s-grid" style="display: flex; justify-content: center; gap: 8px; padding-bottom: 15px;"></div>
+        <div id="l-super-title" style="text-align:center; font-size:12px; margin:10px 0; color:var(--main-color); font-weight:900; text-transform:uppercase;">Superzahl</div>
+        <div id="super-grid" style="display: flex; justify-content: center; gap: 10px; padding-bottom: 20px;"></div>
 
-        <div style="background: rgba(255,255,255,0.03); margin: 10px 15px; padding: 15px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center;">
-            <div style="margin-bottom: 10px;">
-                <span id="l-total" style="font-size:12px; opacity:0.6;">Total:</span>
-                <span id="display-total" style="font-size:22px; font-weight:900; color:var(--main-color);">2.50 VCHF</span>
+        <div class="control-panel">
+            <div class="total-info">
+                <span id="l-total-text" style="font-size:12px; opacity:0.7; text-transform:uppercase;">Total:</span>
+                <span id="display-sum" style="font-size:24px; font-weight:900; color:var(--main-color); margin-left:10px;">2.50 VCHF</span>
             </div>
-            <button class="btn-main" id="main-btn" onclick="runEngine()" style="width:100%; margin:0;">CONFIRM TICKET</button>
+            <button class="btn-confirm" id="confirm-action" onclick="processTicket()">CONFIRM TICKET</button>
+        </div>
+    </div>
+
+    <div id="page-stats" class="page" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+            <button onclick="loadStats('month')" class="btn-confirm" style="padding:10px; font-size:10px; width:45%;">MONTH</button>
+            <button onclick="loadStats('year')" class="btn-confirm" style="padding:10px; font-size:10px; width:45%;">YEAR</button>
+        </div>
+        <div id="stats-content" style="background:var(--glass); border-radius:15px; padding:20px; border:1px solid var(--glass-border);">
+            <p style="color:var(--main-color); text-align:center;">Analyzing Swiss Lotto Data...</p>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">Game</label></div>
-        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">Tickets</label></div>
-        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">Stats</label></div>
+        <div class="nav-item active" onclick="switchTab('play', this)"><span>🎲</span><label id="n-game">Game</label></div>
+        <div class="nav-item" onclick="switchTab('stats', this)"><span>📊</span><label id="n-stats">Stats</label></div>
     </div>
+</div>
+
+<div class="theme-panel">
+    <div class="dot" style="background: #d4af37;" onclick="applyTheme('gold')"></div>
+    <div class="dot" style="background: #32CD32;" onclick="applyTheme('lime')"></div>
+    <div class="dot" style="background: #00ffff;" onclick="applyTheme('cyan')"></div>
+    <div class="dot" style="background: #C511A4;" onclick="applyTheme('cherry')"></div>
+    <div class="dot" style="background: #c0c0c0;" onclick="applyTheme('silver')"></div>
 </div>
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // СОСТОЯНИЕ ДВИЖКА
     let selected = [], superNum = null, currentLang = 'ru', currentCurrency = 'VCHF';
-    let activeSmartTool = null;
-    let isLangExpanded = false;
+    let activeTool = null;
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", voice: "Система активирована. Удачи, гость.", auth: "Guest Authenticated" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", voice: "Систему активовано. Успіху, гость.", auth: "Guest Authenticated" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", total: "Gesamt", game: "SPIEL", tickets: "TICKETS", stats: "STATS", voice: "System aktiv. Viel Glück, Gast.", auth: "Guest Authenticated" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", total: "Total", game: "GAME", tickets: "TICKETS", stats: "STATS", voice: "System active. Good luck, guest.", auth: "Guest Authenticated" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", total: "Total", game: "JEU", tickets: "BILLETS", stats: "STATS", voice: "Système activé. Bonne chance.", auth: "Guest Authenticated" },
-        it: { btn: "CONFERMARE", super: "SUPER NUMERO", total: "Totale", game: "GIOCO", tickets: "BIGLIETTI", stats: "STATS", voice: "Sistema attivo. Buona fortuna.", auth: "Guest Authenticated" }
+    const languages = {
+        ru: { btn: "ПОДТВЕРДИТЬ", total: "Итого", game: "ИГРА", stats: "СТАТС", voice: "Система Spark v3.2 готова, Wanderer.", welcome: "ДОБРО ПОЖАЛОВАТЬ" },
+        ua: { btn: "ПІДТВЕРДИТИ", total: "Разом", game: "ГРА", stats: "СТАТС", voice: "Систему Spark v3.2 активовано.", welcome: "ВІТАЄМО" },
+        de: { btn: "BESTÄTIGEN", total: "Gesamt", game: "SPIEL", stats: "STATS", voice: "Spark v3.2 ist bereit.", welcome: "WILLKOMMEN" },
+        fr: { btn: "CONFIRMER", total: "Total", game: "JEU", stats: "STATS", voice: "Système Spark v3.2 activé.", welcome: "BIENVENUE" },
+        en: { btn: "CONFIRM", total: "Total", game: "GAME", stats: "STATS", voice: "Spark v3.2 ready, Wanderer.", welcome: "WELCOME" }
     };
 
-    const langIcons = { ru: '🇷🇺', en: '🇺🇸', de: '🇩🇪', fr: '🇫🇷', it: '🇮🇹', ua: '🇺🇦' };
+    const flags = { ru: '🇷🇺', ua: '🇺🇦', de: '🇩🇪', fr: '🇫🇷', en: '🇺🇸' };
 
-    // УПРАВЛЕНИЕ ЯЗЫКАМИ (СВОРАЧИВАНИЕ)
-    function renderLangPanel() {
-        const container = document.getElementById('dynamic-langs');
-        container.innerHTML = '';
+    // ИНИЦИАЛИЗАЦИЯ ИНТРО (ВЗРЫВ БАРАБАНА)
+    function initIntro() {
+        const drum = document.getElementById('drum-logo');
+        for(let i=0; i<12; i++) {
+            let p = document.createElement('div');
+            p.style.cssText = `position:absolute; width:8px; height:8px; background:var(--main-color); border-radius:50%; top:50%; left:50%;`;
+            drum.appendChild(p);
+        }
         
-        if (!isLangExpanded) {
-            const btn = document.createElement('span');
-            btn.style.cssText = "font-size: 24px; cursor: pointer; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));";
-            btn.innerHTML = langIcons[currentLang];
-            btn.onclick = () => { isLangExpanded = true; renderLangPanel(); };
-            container.appendChild(btn);
-        } else {
-            Object.keys(langIcons).forEach(l => {
-                const btn = document.createElement('span');
-                btn.style.cssText = "font-size: 24px; cursor: pointer; transition: 0.2s;";
-                btn.innerHTML = langIcons[l];
-                btn.onclick = () => { 
-                    currentLang = l; 
-                    isLangExpanded = false; 
-                    updateInterface(); 
-                };
-                container.appendChild(btn);
-            });
+        setTimeout(() => {
+            drum.style.transition = "1s cubic-bezier(0.6, -0.28, 0.735, 0.045)";
+            drum.style.transform = "scale(0)";
+            document.getElementById('monolith-intro').style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById('monolith-intro').remove();
+                const app = document.getElementById('app-content');
+                app.style.display = "flex";
+                setTimeout(() => app.style.opacity = "1", 50);
+            }, 800);
+        }, 3200);
+    }
+
+    // ЛОГИКА ВЕЕРА ЯЗЫКОВ
+    function renderLangFan() {
+        const container = document.getElementById('lang-fan-container');
+        container.innerHTML = '';
+        Object.keys(flags).forEach((lang, index) => {
+            const span = document.createElement('span');
+            span.className = `lang-item ${lang === currentLang ? 'active' : ''}`;
+            span.innerHTML = flags[lang];
+            span.style.transitionDelay = `${index * 0.1}s`;
+            span.onclick = () => {
+                currentLang = lang;
+                updateUI();
+                tg.HapticFeedback.impactOccurred('light');
+            };
+            container.appendChild(span);
+        });
+    }
+
+    function updateUI() {
+        const l = languages[currentLang];
+        document.getElementById('confirm-action').innerText = l.btn;
+        document.getElementById('l-total-text').innerText = l.total;
+        document.getElementById('n-game').innerText = l.game;
+        document.getElementById('n-stats').innerText = l.stats;
+        document.getElementById('spark-voice').innerText = l.voice;
+        document.getElementById('auth-status').innerText = l.welcome;
+        renderLangFan();
+    }
+
+    // ИСПРАВЛЕННЫЙ RANDOM (ОЧИСТКА ПЕРЕД ЗАПОЛНЕНИЕМ)
+    function fullRandomFill() {
+        // 1. Полная очистка
+        selected = [];
+        superNum = null;
+        refreshGrids();
+        
+        // 2. Небольшая задержка для визуального эффекта очистки
+        setTimeout(() => {
+            while(selected.length < 6) {
+                let r = Math.floor(Math.random() * 42) + 1;
+                if(!selected.includes(r)) selected.push(r);
+            }
+            superNum = Math.floor(Math.random() * 6) + 1;
+            refreshGrids();
+            tg.HapticFeedback.notificationOccurred('success');
+        }, 100);
+    }
+
+    function refreshGrids() {
+        const mainGrid = document.getElementById('main-grid');
+        mainGrid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const c = document.createElement('div');
+            c.className = `cell ${selected.includes(i) ? 'selected' : ''}`;
+            if(activeTool === 'hot' && [7, 14, 23, 33, 40].includes(i)) c.style.borderColor = 'var(--neon-orange)';
+            if(activeTool === 'cold' && [2, 11, 19, 28].includes(i)) c.style.borderColor = '#1e90ff';
+            c.innerText = i;
+            c.onclick = () => toggleNumber(i);
+            mainGrid.appendChild(c);
+        }
+
+        const sGrid = document.getElementById('super-grid');
+        sGrid.innerHTML = '';
+        for (let i = 1; i <= 6; i++) {
+            const sc = document.createElement('div');
+            sc.className = `cell ${superNum === i ? 'selected' : ''}`;
+            sc.style.width = '45px';
+            sc.innerText = i;
+            sc.onclick = () => { superNum = i; refreshGrids(); tg.HapticFeedback.impactOccurred('light'); };
+            sGrid.appendChild(sc);
         }
     }
 
-    function updateInterface() {
-        const d = dict[currentLang];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('l-total').innerText = d.total;
-        document.getElementById('n-game').innerText = d.game;
-        document.getElementById('n-tickets').innerText = d.tickets;
-        document.getElementById('n-stats').innerText = d.stats;
-        document.getElementById('spark-voice-output').innerText = d.voice;
-        renderLangPanel();
+    function toggleNumber(n) {
+        if (selected.includes(n)) selected = selected.filter(x => x !== n);
+        else if (selected.length < 6) {
+            selected.push(n);
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        refreshGrids();
     }
 
-    // ЛОГИКА КОШЕЛЬКОВ
     function switchCurrency(c) {
         currentCurrency = c;
         document.querySelectorAll('.bal-card').forEach(card => card.classList.remove('active-wallet'));
         document.getElementById(`card-${c.toLowerCase()}`).classList.add('active-wallet');
-        document.getElementById('display-total').innerText = `2.50 ${c}`;
-        tg.HapticFeedback.impactOccurred('light');
+        document.getElementById('display-sum').innerText = `2.50 ${c}`;
     }
 
-    // СЕТКА И ШАРЫ
-    function refreshGrid() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.innerText = i;
-            if (selected.includes(i)) c.classList.add('selected');
-            
-            // Имитация горячих чисел для теста дизайна
-            if (activeSmartTool === 'hot' && [5, 12, 28, 33, 41].includes(i)) c.classList.add('is-hot');
-            if (activeSmartTool === 'cold' && [1, 10, 19, 22].includes(i)) c.classList.add('is-cold');
-
-            c.onclick = () => {
-                if (selected.includes(i)) selected = selected.filter(n => n !== i);
-                else if (selected.length < 6) {
-                    selected.push(i);
-                    tg.HapticFeedback.impactOccurred('medium');
-                }
-                refreshGrid();
-            };
-            grid.appendChild(c);
-        }
+    function applyTheme(t) {
+        document.body.className = 'theme-' + t;
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function togglePick(type) {
-        activeSmartTool = (activeSmartTool === type) ? null : type;
-        refreshGrid();
-    }
-
-    function randomFill() {
-        selected = [];
-        while(selected.length < 6) {
-            let r = Math.floor(Math.random() * 42) + 1;
-            if(!selected.includes(r)) selected.push(r);
-        }
-        superNum = Math.floor(Math.random() * 6) + 1;
-        refreshGrid();
-        renderSuperGrid();
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    function renderSuperGrid() {
-        const sgrid = document.getElementById('s-grid');
-        sgrid.innerHTML = '';
-        for (let i = 1; i <= 6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'cell';
-            sc.style.width = '40px';
-            sc.innerText = i;
-            if (superNum === i) sc.classList.add('selected');
-            sc.onclick = () => { 
-                superNum = i; 
-                renderSuperGrid(); 
-                tg.HapticFeedback.impactOccurred('light');
-            };
-            sgrid.appendChild(sc);
-        }
-    }
-
-    // ЗАПУСК СИСТЕМЫ
-    window.onload = () => {
-        updateInterface();
-        refreshGrid();
-        renderSuperGrid();
-
-        // Анимация Intro
-        setTimeout(() => {
-            const intro = document.getElementById('monolith-intro');
-            intro.style.transition = "1s ease";
-            intro.style.opacity = "0";
-            setTimeout(() => {
-                intro.remove();
-                const app = document.getElementById('app-content');
-                app.style.display = "flex";
-                setTimeout(() => app.style.opacity = "1", 50);
-            }, 1000);
-        }, 3500);
-    };
-
-    function setTheme(t) { document.body.className = 'theme-' + t; }
-    function showPage(p, el) {
-        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
-        document.getElementById('page-' + p).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
+    function switchTab(tab, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + tab).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
     }
-    function runEngine() { 
-        if(selected.length === 6 && superNum) tg.showAlert("TICKET CONFIRMED!");
-        else tg.showAlert("Please select 6 numbers and 1 Superzahl");
+
+    function toggleSmartTool(type) {
+        activeTool = (activeTool === type) ? null : type;
+        refreshGrids();
     }
+
+    window.onload = () => {
+        initIntro();
+        updateUI();
+        refreshGrids();
+    };
 </script>
 </body>
 </html>
