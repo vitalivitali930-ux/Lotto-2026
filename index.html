@@ -1,415 +1,300 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Ultimate 3.0 (Spark Vision)</title>
+    <title>Lotto - VCHF Engine Ultimate 3.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { 
-            --gold: #d4af37; 
-            --gold-bright: #f9e27d;
-            --gold-glow: rgba(212, 175, 55, 0.45);
-            --bg-deep: #050505;
-            --glass-bg: rgba(20, 20, 20, 0.7);
-            --glass-border: rgba(212, 175, 55, 0.2);
-            --neon-cyan: #00ffff;
+            --main-color: #d4af37; 
+            --main-glow: rgba(212, 175, 55, 0.4);
+            --bg-deep: #000000;
+            --sphere-bg: radial-gradient(circle at 35% 35%, #444 0%, #111 100%);
+            --text-color: #ffffff;
+            --neon-blue: #00f3ff;
             --neon-hot: #ff4500;
             --neon-cold: #1e90ff;
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
         } 
 
+        /* ТЕМЫ ОФОРМЛЕНИЯ */
+        body.theme-gold { --main-color: #d4af37; --main-glow: rgba(212, 175, 55, 0.4); }
+        body.theme-lime { --main-color: #32CD32; --main-glow: rgba(50, 205, 50, 0.4); }
+        body.theme-cyan { --main-color: #00ffff; --main-glow: rgba(0, 255, 255, 0.4); }
+        body.theme-cherry { --main-color: #C511A4; --main-glow: rgba(197, 17, 164, 0.4); }
+        body.theme-silver { --main-color: #c0c0c0; --main-glow: rgba(192, 192, 192, 0.4); }
+        
+        /* ТЕМА ТРОН (TRON LEGACY) */
+        body.theme-tron { 
+            --main-color: var(--neon-blue); 
+            --main-glow: rgba(0, 243, 255, 0.6);
+            --bg-deep: #00050a;
+            --sphere-bg: radial-gradient(circle at 50% 50%, #001a24 0%, #000 100%);
+        }
+        body.theme-tron::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px; z-index: -1;
+        }
+
         body { 
-            background: var(--bg-deep); 
-            color: #fff; 
-            font-family: var(--font-main);
-            margin: 0; padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            background: var(--bg-deep); color: var(--text-color); 
+            font-family: -apple-system, sans-serif; text-align: center; 
+            margin: 0; overflow: hidden; transition: all 0.5s ease;
+        } 
+
+        /* ВЕЕРНЫЙ ЯЗЫКОВОЙ СЕЛЕКТОР */
+        .lang-wrapper { position: relative; height: 80px; margin-top: 15px; z-index: 1001; }
+        .lang-main { 
+            width: 50px; height: 50px; line-height: 50px; border-radius: 50%;
+            background: var(--main-color); color: #000; font-size: 24px;
+            margin: 0 auto; cursor: pointer; position: relative; z-index: 10;
+            box-shadow: 0 0 15px var(--main-glow); transition: 0.3s;
         }
-
-        /* Фоновый эффект - Живая тьма */
-        body::before {
-            content: '';
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
-            z-index: -1;
+        .lang-item {
+            position: absolute; width: 40px; height: 40px; line-height: 40px;
+            background: #111; border: 1px solid var(--main-color);
+            border-radius: 50%; font-size: 20px; cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: translate(-50%, -50%) scale(0);
+            left: 50%; top: 50%;
         }
+        .lang-wrapper.active .lang-item { opacity: 1; transform: scale(1); }
+        /* RU и UA разнесены в разные стороны */
+        .lang-wrapper.active .pos-ru { left: calc(50% - 110px); top: 30px; }
+        .lang-wrapper.active .pos-ua { left: calc(50% + 110px); top: 30px; }
+        .lang-wrapper.active .pos-en { left: 50%; top: 70px; }
+        .lang-wrapper.active .pos-de { left: calc(50% - 60px); top: 65px; }
+        .lang-wrapper.active .pos-it { left: calc(50% + 60px); top: 65px; }
+        .lang-wrapper.active .pos-fr { left: 50%; top: -10px; }
 
-        /* Кастомный Скролл */
-        ::-webkit-scrollbar { width: 0px; }
-
-        /* ИИ-Дизайн Заголовка */
-        .vchf-dashboard {
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-            padding: 30px 20px 20px;
-            border-bottom: 1px solid var(--glass-border);
-            backdrop-filter: blur(15px);
-            position: relative; z-index: 100;
-        }
-
-        .vchf-title-glow {
-            font-size: 10px; color: var(--gold);
-            letter-spacing: 5px; text-transform: uppercase;
-            margin-bottom: 10px; opacity: 0.8;
-        }
-
-        /* Баланс - как в банковских приложениях будущего */
+        /* ИНТЕРФЕЙС БАЛАНСА */
         .balance-master {
-            display: flex; justify-content: space-between; gap: 15px;
-            margin-top: 10px;
+            display: flex; gap: 10px; padding: 15px; justify-content: center;
         }
-
-        .wallet-card {
-            flex: 1; padding: 15px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            position: relative; overflow: hidden;
-        }
-
-        .wallet-card.active {
-            border-color: var(--gold);
-            box-shadow: 0 0 25px var(--gold-glow);
-            transform: scale(1.03);
-            background: rgba(212, 175, 55, 0.05);
-        }
-
-        .wallet-card::after {
-            content: ''; position: absolute; top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
-            opacity: 0; transition: 0.5s;
-        }
-        .wallet-card.active::after { opacity: 0.3; }
-
-        .wallet-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        .wallet-value { font-size: 24px; font-weight: 200; margin-top: 5px; }
-        .wallet-value span { color: var(--gold); font-weight: bold; }
-
-        /* Навигация по периодам */
-        .period-selector {
-            display: flex; justify-content: center; gap: 10px;
-            margin: 20px 0;
-        }
-
-        .period-chip {
-            padding: 8px 18px; border-radius: 30px;
-            font-size: 11px; color: #666;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
+        .bal-card { 
+            flex: 1; border-radius: 15px; padding: 12px; 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
             transition: 0.4s; cursor: pointer;
         }
-
-        .period-chip.active {
-            color: #fff; background: rgba(212, 175, 55, 0.1);
-            border-color: var(--gold);
-            box-shadow: 0 0 15px var(--gold-glow);
+        .bal-card.active { 
+            border-color: var(--main-color); background: rgba(255,255,255,0.07);
+            box-shadow: 0 0 20px var(--main-glow); transform: translateY(-3px);
         }
+        .bal-val { font-size: 22px; font-weight: bold; color: #32CD32; }
 
-        /* СЕТКА СФЕР - Spark Heatmap Edition */
-        .lotto-grid-container {
-            flex: 1; overflow-y: auto; padding: 10px 20px;
+        /* СЕТКА СФЕР - Spark Vision */
+        .grid-container {
             display: grid; grid-template-columns: repeat(7, 1fr);
-            gap: 12px; align-content: start;
+            gap: 12px; padding: 10px 20px; max-width: 450px; margin: 0 auto;
         }
-
-        .vchf-sphere {
-            aspect-ratio: 1; border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #333 0%, #050505 100%);
+        .sphere { 
+            aspect-ratio: 1; background: var(--sphere-bg); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 600; color: #fff;
-            position: relative; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 20px; font-weight: 800; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            animation: sphere-float 4s infinite ease-in-out;
+            position: relative;
+        }
+        .sphere.selected {
+            background: linear-gradient(135deg, #fff, var(--main-color));
+            color: #000; transform: scale(1.15) translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 30px var(--main-color);
+            border: 2px solid #fff; z-index: 10;
         }
 
-        @keyframes sphere-float {
-            0%, 100% { transform: translateY(0); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-            50% { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.4); }
+        /* HEATMAP - Глубокие тени */
+        .sphere.heat-hot { box-shadow: 0 0 25px var(--neon-hot); border-color: var(--neon-hot); }
+        .sphere.heat-cold { box-shadow: 0 0 25px var(--neon-cold); border-color: var(--neon-cold); }
+        
+        /* ТЕМА ТРОН - ОСОБЫЙ СТИЛЬ СФЕР */
+        body.theme-tron .sphere.selected {
+            background: #000; color: var(--neon-blue);
+            box-shadow: 0 0 40px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+            border-color: var(--neon-blue);
         }
 
-        .vchf-sphere.selected {
-            background: var(--gold);
-            background: radial-gradient(circle at 35% 35%, var(--gold-bright) 0%, var(--gold) 100%);
-            color: #000; transform: scale(1.2) !important;
-            box-shadow: 0 0 30px var(--gold);
-            border-color: #fff; z-index: 10;
+        .btn-main {
+            width: 85%; padding: 20px; border-radius: 20px;
+            background: var(--main-color); color: #000;
+            border: none; font-size: 18px; font-weight: 900;
+            margin: 20px 0; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 2px;
         }
+        .btn-main:active { transform: scale(0.95); }
 
-        /* Индикаторы Heatmap */
-        .vchf-sphere.is-hot::before {
-            content: ''; position: absolute; inset: -3px; border-radius: 50%;
-            border: 2px solid var(--neon-hot); opacity: 0.6; animation: neon-pulse 1.5s infinite;
+        .theme-panel {
+            position: fixed; top: 80px; right: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            z-index: 1000;
         }
-        .vchf-sphere.is-cold::before {
-            content: ''; position: absolute; inset: -3px; border-radius: 50%;
-            border: 2px solid var(--neon-cold); opacity: 0.6; animation: neon-pulse 2s infinite;
-        }
+        .dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
 
-        @keyframes neon-pulse {
-            0% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.1); opacity: 0.2; }
-            100% { transform: scale(1); opacity: 0.6; }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
         }
-
-        /* Футер и Кнопка Bi-Turbo */
-        .vchf-footer {
-            padding: 20px 25px 40px;
-            background: linear-gradient(0deg, #000 50%, transparent 100%);
-            backdrop-filter: blur(5px);
-        }
-
-        .power-bar-container {
-            width: 100%; height: 4px; background: #111;
-            border-radius: 10px; margin-bottom: 25px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .power-bar-fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, var(--gold), var(--gold-bright));
-            box-shadow: 0 0 15px var(--gold);
-            transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-biturbo {
-            width: 100%; padding: 22px; border-radius: 40px;
-            background: transparent; border: 1px solid #222;
-            color: #fff; font-size: 14px; font-weight: bold;
-            letter-spacing: 4px; text-transform: uppercase;
-            transition: 0.4s; position: relative; overflow: hidden;
-        }
-
-        .btn-biturbo.active {
-            border-color: var(--gold); color: var(--gold);
-            box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1);
-        }
-
-        .btn-biturbo.active::after {
-            content: ''; position: absolute; top: -100%; left: -100%;
-            width: 300%; height: 300%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: sweep 3s infinite;
-        }
-
-        @keyframes sweep {
-            0% { transform: translate(-100%, -100%); }
-            100% { transform: translate(100%, 100%); }
-        }
-
-        /* Инструменты Smart Pick */
-        .smart-row {
-            display: flex; justify-content: space-between; margin-top: 20px;
-        }
-        .smart-item {
-            font-size: 10px; color: #444; text-transform: uppercase;
-            letter-spacing: 1px; transition: 0.3s; cursor: pointer;
-        }
-        .smart-item:hover, .smart-item.active { color: var(--gold); }
-
     </style>
 </head>
-<body>
+<body class="theme-tron">
+
+<div class="theme-panel">
+    <div class="dot" style="background: #00f3ff;" onclick="setTheme('tron')"></div>
+    <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+    <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+    <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+    <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+    <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+</div>
 
 <div id="app-content">
-    <div class="vchf-dashboard">
-        <div class="vchf-title-glow">Bi-Turbo Engine v3.0</div>
-        <div class="balance-master">
-            <div class="wallet-card active" id="w-vchf" onclick="VCHF.switchWallet('VCHF')">
-                <div class="wallet-label">Virtual VCHF</div>
-                <div class="wallet-value"><span id="val-vchf">100.00</span></div>
-            </div>
-            <div class="wallet-card" id="w-chf" onclick="VCHF.switchWallet('CHF')">
-                <div class="wallet-label">Real CHF</div>
-                <div class="wallet-value"><span id="val-chf">0.00</span></div>
-            </div>
+    <div class="lang-wrapper" id="lang-box">
+        <div class="lang-main" onclick="document.getElementById('lang-box').classList.toggle('active')">🌐</div>
+        <div class="lang-item pos-ru" onclick="setLang('ru')">🇷🇺</div>
+        <div class="lang-item pos-ua" onclick="setLang('ua')">🇺🇦</div>
+        <div class="lang-item pos-en" onclick="setLang('en')">🇺🇸</div>
+        <div class="lang-item pos-de" onclick="setLang('de')">🇩🇪</div>
+        <div class="lang-item pos-it" onclick="setLang('it')">🇮🇹</div>
+        <div class="lang-item pos-fr" onclick="setLang('fr')">🇫🇷</div>
+    </div>
+
+    <div class="balance-master">
+        <div class="bal-card active" id="w-vchf" onclick="switchCurrency('VCHF')">
+            <div style="font-size:10px;">VIRTUAL</div>
+            <div class="bal-val" id="vchf-val">100.00</div>
+        </div>
+        <div class="bal-card" id="w-chf" onclick="switchCurrency('CHF')">
+            <div style="font-size:10px;">REAL</div>
+            <div class="bal-val" id="chf-val">0.00</div>
         </div>
     </div>
 
-    <div class="period-selector">
-        <div class="period-chip active" id="p-month" onclick="VCHF.setPeriod('month')">MONAT</div>
-        <div class="period-chip" id="p-year" onclick="VCHF.setPeriod('year')">JAHR</div>
-        <div class="period-chip" id="p-all" onclick="VCHF.setPeriod('all')">ALLE</div>
-    </div>
+    <div class="grid-container" id="main-grid"></div>
+    
+    <div style="margin-top:20px; color:var(--main-color); font-weight:bold; letter-spacing:3px;">SUPERZAHL</div>
+    <div class="grid-container" id="super-grid" style="grid-template-columns: repeat(6, 1fr); padding-bottom:100px;"></div>
 
-    <div class="lotto-grid-container" id="main-grid">
-        </div>
-
-    <div class="vchf-footer">
-        <div class="power-bar-container">
-            <div class="power-bar-fill" id="strike-power"></div>
-        </div>
-        <button class="btn-biturbo" id="main-action" onclick="VCHF.engage()">
-            Engage Bi-Turbo
-        </button>
-        <div class="smart-row">
-            <div class="smart-item" onclick="VCHF.smart('hot')">🔥 Hot Summer</div>
-            <div class="smart-item" onclick="VCHF.smart('sleeping')">💤 Sleeping Giant</div>
-            <div class="smart-item" onclick="VCHF.smart('random')">🎲 Chaos Pick</div>
-        </div>
+    <div style="position:fixed; bottom:0; left:0; right:0; background: rgba(0,0,0,0.9); backdrop-filter:blur(10px); border-top:1px solid var(--main-color);">
+        <button class="btn-main" id="main-btn" onclick="runEngine()">CONFIRM TICKET</button>
     </div>
 </div>
 <script>
-const VCHF = {
-    state: {
-        balanceVCHF: 100.00,
-        balanceCHF: 0.00,
-        currency: 'VCHF',
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let state = {
         selected: [],
-        period: 'month',
-        activeTool: null,
-        matrix: {}, // Хранилище весов для Heatmap
-        tickets: []
-    },
+        superNum: null,
+        currency: 'VCHF',
+        lang: 'en',
+        theme: 'tron',
+        matrix: {} // Статистика для Heatmap
+    };
 
-    init() {
-        this.tg = window.Telegram.WebApp;
-        this.tg.expand();
-        this.generateMatrix();
-        this.renderGrid();
-        this.updateUI();
-        console.log("Spark Vision Engine Active. DNA check: 1771489965074(1).png logic ready.");
-    },
+    const dict = {
+        en: { btn: "CONFIRM TICKET", super: "SUPERZAHL", alert: "Select 6 + Super!" },
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУС-ШАР", alert: "Выбери 6 + Бонус!" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУС-ШАР", alert: "Обери 6 + Бонус!" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", alert: "Wähle 6 + Super!" },
+        it: { btn: "CONFERMA", super: "NUMERO SUPER", alert: "Scegli 6 + Super!" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", alert: "Choisis 6 + Super!" }
+    };
 
-    // Генерация весов для "дышащего" Heatmap
-    generateMatrix() {
+    function init() {
+        // Генерация случайной "статистики" для демонстрации Heatmap
         for(let i=1; i<=42; i++) {
-            this.state.matrix[i] = {
-                month: Math.random(),
-                year: Math.random(),
-                all: Math.random()
-            };
+            state.matrix[i] = Math.random();
         }
-    },
-
-    renderGrid() {
-        const grid = document.getElementById('main-grid');
-        if(!grid) return;
-        grid.innerHTML = '';
-
-        for(let i=1; i<=42; i++) {
-            const sphere = document.createElement('div');
-            sphere.className = 'vchf-sphere';
-            sphere.innerText = i;
-            sphere.id = `ball-${i}`;
-            
-            // Применяем веса текущего периода
-            const weight = this.state.matrix[i][this.state.period];
-            if(weight > 0.85) sphere.classList.add('is-hot');
-            if(weight < 0.15) sphere.classList.add('is-cold');
-            
-            if(this.state.selected.includes(i)) sphere.classList.add('selected');
-            
-            // Индивидуальная задержка анимации для "живого" эффекта
-            sphere.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
-            
-            sphere.onclick = () => this.toggleNumber(i);
-            grid.appendChild(sphere);
-        }
-    },
-
-    toggleNumber(n) {
-        const idx = this.state.selected.indexOf(n);
-        if(idx > -1) {
-            this.state.selected.splice(idx, 1);
-        } else if(this.state.selected.length < 6) {
-            this.state.selected.push(n);
-            this.haptic('light');
-        }
-        this.state.activeTool = null;
-        this.updateUI();
-        this.renderGrid();
-    },
-
-    setPeriod(p) {
-        this.state.period = p;
-        document.querySelectorAll('.period-chip').forEach(c => {
-            c.classList.toggle('active', c.id === `p-${p}`);
-        });
-        this.haptic('medium');
-        
-        // Если был активен смарт-фильтр, пересчитываем его мгновенно
-        if(this.state.activeTool) {
-            this.smart(this.state.activeTool);
-        } else {
-            this.renderGrid();
-        }
-    },
-
-    smart(type) {
-        this.state.activeTool = type;
-        const p = this.state.period;
-        let pool = Object.keys(this.state.matrix).map(Number);
-        
-        if(type === 'hot') {
-            pool.sort((a, b) => this.state.matrix[b][p] - this.state.matrix[a][p]);
-        } else if(type === 'sleeping') {
-            pool.sort((a, b) => this.state.matrix[a][p] - this.state.matrix[b][p]);
-        } else {
-            pool.sort(() => Math.random() - 0.5);
-        }
-
-        this.state.selected = pool.slice(0, 6);
-        this.renderGrid();
-        this.updateUI();
-        this.haptic('success');
-    },
-
-    updateUI() {
-        const count = this.state.selected.length;
-        const power = (count / 6) * 100;
-        document.getElementById('strike-power').style.width = `${power}%`;
-        
-        const btn = document.getElementById('main-action');
-        btn.classList.toggle('active', count === 6);
-        btn.innerText = count === 6 ? `Bestätigen (2.50 ${this.state.currency})` : `Pick ${6 - count} more`;
-
-        document.getElementById('val-vchf').innerText = this.state.balanceVCHF.toFixed(2);
-        document.getElementById('val-chf').innerText = this.state.balanceCHF.toFixed(2);
-    },
-
-    switchWallet(w) {
-        this.state.currency = w;
-        document.getElementById('w-vchf').classList.toggle('active', w === 'VCHF');
-        document.getElementById('w-chf').classList.toggle('active', w === 'CHF');
-        this.updateUI();
-        this.haptic('light');
-    },
-
-    engage() {
-        if(this.state.selected.length !== 6) return;
-        
-        const price = 2.50;
-        const balKey = this.state.currency === 'VCHF' ? 'balanceVCHF' : 'balanceCHF';
-        
-        if(this.state.balanceVCHF >= price) { // Упрощенно для теста
-            this.state[balKey] -= price;
-            this.state.tickets.push([...this.state.selected]);
-            this.state.selected = [];
-            this.haptic('notification-success');
-            this.updateUI();
-            this.renderGrid();
-            this.tg.showAlert("Ticket Bio-Turbo Engaged! 🚀");
-        } else {
-            this.tg.showAlert("Insufficient Funds");
-        }
-    },
-
-    haptic(type) {
-        try {
-            if(type === 'light') this.tg.HapticFeedback.impactOccurred('light');
-            if(type === 'medium') this.tg.HapticFeedback.impactOccurred('medium');
-            if(type === 'success') this.tg.HapticFeedback.notificationOccurred('success');
-        } catch(e) {}
+        renderGrid();
+        renderSuperGrid();
+        setLang('en');
+        console.log("VCHF Engine 3.0 Started. Mode: Tron Legacy.");
     }
-};
 
-window.onload = () => VCHF.init();
+    function renderGrid() {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const s = document.createElement('div');
+            s.className = 'sphere';
+            s.innerText = i;
+            
+            // Применяем визуальный Heatmap
+            const weight = state.matrix[i];
+            if(weight > 0.8) s.classList.add('heat-hot');
+            if(weight < 0.2) s.classList.add('heat-cold');
+
+            if (state.selected.includes(i)) s.classList.add('selected');
+            
+            s.onclick = () => toggleNumber(i);
+            grid.appendChild(s);
+        }
+    }
+
+    function renderSuperGrid() {
+        const grid = document.getElementById('super-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 6; i++) {
+            const s = document.createElement('div');
+            s.className = 'sphere';
+            s.innerText = i;
+            if (state.superNum === i) s.classList.add('selected');
+            s.onclick = () => {
+                state.superNum = i;
+                tg.HapticFeedback.impactOccurred('light');
+                renderSuperGrid();
+            };
+            grid.appendChild(s);
+        }
+    }
+
+    function toggleNumber(n) {
+        const idx = state.selected.indexOf(n);
+        if (idx > -1) {
+            state.selected.splice(idx, 1);
+        } else if (state.selected.length < 6) {
+            state.selected.push(n);
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        renderGrid();
+    }
+
+    function setLang(l) {
+        state.lang = l;
+        document.getElementById('main-btn').innerText = dict[l].btn;
+        document.getElementById('lang-box').classList.remove('active');
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function setTheme(t) {
+        document.body.className = 'theme-' + t;
+        state.theme = t;
+        tg.HapticFeedback.impactOccurred('heavy');
+    }
+
+    function switchCurrency(c) {
+        state.currency = c;
+        document.getElementById('w-vchf').classList.toggle('active', c === 'VCHF');
+        document.getElementById('w-chf').classList.toggle('active', c === 'CHF');
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function runEngine() {
+        if (state.selected.length === 6 && state.superNum) {
+            tg.showAlert("VCHF ENGINE: Ticket Confirmed!");
+            state.selected = [];
+            state.superNum = null;
+            renderGrid();
+            renderSuperGrid();
+        } else {
+            tg.showAlert(dict[state.lang].alert);
+        }
+    }
+
+    window.onload = init;
 </script>
 </body>
 </html>
