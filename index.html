@@ -9,10 +9,13 @@
         :root { 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --sphere-base: rgba(255, 255, 255, 0.95);
-            --white-sphere: radial-gradient(circle at 35% 35%, var(--sphere-base) 0%, #f0f0f0 40%, #d9d9d9 70%, #bcbcbc 100%);
+            /* Рефлекс темы 35%: подмешиваем основной цвет в тень и блик */
+            --theme-glow: rgba(212, 175, 55, 0.35); 
+            /* Элегантный черный шар: основной фон */
+            --sphere-base: #1a1a1a;
+            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
             --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
-            --cell-text: #2c2105; 
+            --cell-text: #ffffff; /* Белые цифры для идеального контраста */
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
             --process-color: #00ffff;
@@ -27,10 +30,12 @@
             transition: background 0.5s ease;
         }
 
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --sphere-base: rgba(255, 220, 240, 0.95); }
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --sphere-base: rgba(240, 240, 240, 0.95); }
-        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --sphere-base: rgba(230, 255, 230, 0.95); }
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --sphere-base: rgba(220, 255, 255, 0.95); }
+        /* Настройка рефлексов для всех 5 палитр (35% присутствия цвета) */
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); }
 
         #intro-container {
             position: fixed; inset: 0;
@@ -79,21 +84,25 @@
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        
+        /* ОБНОВЛЕННЫЙ ЧЕРНЫЙ ШАР */
         .cell { 
             aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #333; font-size: 19px; 
+            font-weight: 800; color: var(--cell-text); font-size: 19px; 
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; position: relative;
-            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.5);
+            border: 1px solid var(--theme-glow);
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 10px var(--theme-glow);
             overflow: hidden;
             transform: translateZ(0);
         }
 
         .cell.selected { 
-            background: var(--main-gradient); color: #fff;
+            background: var(--main-gradient); color: #000;
             transform: scale(1.1) translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.4), 0 0 25px var(--main-color);
+            border: 1.5px solid #fff;
             z-index: 10;
         }
 
@@ -132,11 +141,13 @@
             padding: 15px; margin: 0 15px 12px; text-align: left; position: relative;
         }
         .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        
+        /* Мини-шарики в билетах тоже черные */
         .mini-ball { 
-            width: 30px; height: 30px; background: var(--main-gradient); border-radius: 50%;
-            color: #000; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800;
+            width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%;
+            color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800;
         }
-        .super-ball-mini { background: #ff4500 !important; color: #fff !important; }
+        .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; }
 
         .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -155,13 +166,17 @@
 
         .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
         .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
+        
+        /* БОЛЬШОЙ ЧЕРНЫЙ SUPER ШАР */
         .super-cell { 
             width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            color: #333; font-weight: 900; font-size: 24px; cursor: pointer; 
-            transition: 0.4s; box-shadow: inset -3px -3px 8px rgba(0,0,0,0.5), 0 8px 15px rgba(0,0,0,0.6);
+            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; 
+            transition: 0.4s; 
+            border: 1px solid var(--theme-glow);
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.6), 0 0 12px var(--theme-glow);
         }
-        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #fff; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px var(--main-color); }
 
         .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
         .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
@@ -269,7 +284,6 @@
         fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
     };
 
-    // --- АКСИОМА: ПОЛНОЕ ИНТРО (Bild1 -> Bild2 -> Bild3 на фоне Hintergrund) ---
     function startIntroSequence() {
         const i1 = document.getElementById('intro1');
         const i2 = document.getElementById('intro2');
