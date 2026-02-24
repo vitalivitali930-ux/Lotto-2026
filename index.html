@@ -8,20 +8,28 @@
         :root { 
             --gold: #d4af37; --bg: #000; --cyan: #00ffff; --super: #ff4500;
             --sphere-gold: radial-gradient(circle at 35% 35%, #fff9d6 0%, #d4af37 60%, #8a6d1c 100%);
+            --sphere-blur: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.2), rgba(212,175,55,0.1));
             --font-serif: 'Times New Roman', serif;
         }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: white; overflow: hidden; height: 100vh; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: white; overflow: hidden; height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; }
         
         #intro-wrapper { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: #000; }
         #canvas { position: absolute; inset: 0; }
         
+        /* Сферы из видео */
         .ball {
             position: absolute; width: 55px; height: 55px; border-radius: 50%;
             background: var(--sphere-gold); box-shadow: 0 0 30px var(--gold);
             display: flex; justify-content: center; align-items: center;
             color: #000; font-weight: 900; opacity: 0; z-index: 10;
             transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 1.4rem;
+            font-size: 1.4rem; transform: scale(1);
+        }
+        
+        .bg-ball {
+            position: absolute; width: 30px; height: 30px; border-radius: 50%;
+            background: var(--sphere-blur); filter: blur(2px); opacity: 0.3;
+            z-index: 5; pointer-events: none;
         }
         
         #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
@@ -34,26 +42,31 @@
             color: #fff; font-weight: 900; font-size: 56px; z-index: 2001;
         }
 
+        /* Тот самый исправленный логотип */
         #circular-text-container {
             position: absolute; width: 440px; height: 440px;
             display: none; z-index: 2002; pointer-events: none;
-            animation: fadeInRotate 2s ease-out forwards;
+            animation: fadeInRotate 2.2s ease-out forwards;
         }
 
         #circular-text-container svg { width: 100%; height: 100%; overflow: visible; }
         #circular-text-container text {
             fill: var(--gold); font-family: var(--font-serif);
             font-weight: bold; text-transform: uppercase;
-            letter-spacing: 8px; font-size: 20px;
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.95));
+            letter-spacing: 7px; font-size: 19px;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.9));
+        }
+
+        #footer-logo { 
+            position: absolute; bottom: 30px; color: var(--gold); 
+            opacity: 0.4; letter-spacing: 5px; font-size: 11px; 
+            text-transform: uppercase;
         }
 
         @keyframes fadeInRotate {
             0% { opacity: 0; transform: scale(0.6) rotate(-25deg); }
             100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
-        
-        #footer-logo { position: absolute; bottom: 30px; color: var(--gold); opacity: 0.4; letter-spacing: 5px; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -74,7 +87,9 @@
 </div>
 
 <script>
-    /* [VCHF ULTIMATE CORE LOGIC] */
+    /* [SYSTEM MEMORY: RESTORING FULL LOGIC] 
+       Vitaly, I am now cross-referencing all blocks.
+    */
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const flash = document.getElementById('flash');
@@ -82,57 +97,93 @@
     const circContainer = document.getElementById('circular-text-container');
     const wrapper = document.getElementById('intro-wrapper');
 
+    // Твои данные
     const data = { main: [6, 20, 22, 24, 31, 32], sz: 3 };
+    let particles = [];
+    let bgBalls = [];
 
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
     window.addEventListener('resize', resize);
     resize();
 
+    // Восстанавливаем фоновые сферы
+    function createBackground() {
+        for(let i=0; i<15; i++) {
+            const b = document.createElement('div');
+            b.className = 'bg-ball';
+            wrapper.appendChild(b);
+            resetBgBall(b);
+            bgBalls.push(b);
+        }
+    }
+
+    function resetBgBall(b) {
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        b.style.left = x + 'px';
+        b.style.top = y + 'px';
+        b.style.opacity = Math.random() * 0.3;
+    }
+
+    // Тот самый DrawLightning
     function drawLightning(x1, y1, x2, y2) {
         ctx.strokeStyle = 'rgba(0, 255, 255, 0.9)';
-        ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 40; ctx.lineWidth = 4;
+        ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 45; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.moveTo(x1, y1);
-        let segs = 10;
+        let segs = 12;
         for(let i=0; i<segs; i++) {
-            ctx.lineTo(x1 + (x2-x1)*(i/segs) + (Math.random()-0.5)*150, y1 + (y2-y1)*(i/segs) + (Math.random()-0.5)*150);
+            ctx.lineTo(
+                x1 + (x2-x1)*(i/segs) + (Math.random()-0.5)*160, 
+                y1 + (y2-y1)*(i/segs) + (Math.random()-0.5)*160
+            );
         }
         ctx.lineTo(x2, y2); ctx.stroke();
     }
 
+    // Полный цикл Ignite
     async function ignite() {
-        // 1. МОЛНИИ (Начало из видео)
-        for(let i=0; i<20; i++) {
+        createBackground();
+        
+        // 1. Агрессивные молнии
+        for(let i=0; i<25; i++) {
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            drawLightning(canvas.width/2 + (Math.random()-0.5)*500, 0, canvas.width/2, canvas.height/2);
-            await new Promise(r => setTimeout(r, 50));
+            drawLightning(canvas.width/2 + (Math.random()-0.5)*600, 0, canvas.width/2, canvas.height/2);
+            await new Promise(r => setTimeout(r, 45));
         }
         ctx.clearRect(0,0,canvas.width, canvas.height);
 
-        // 2. ВЫЛЕТ ШЕСТИ ШАРОВ
+        // 2. Сбор шаров (как в первом видео)
         for(let i=0; i<6; i++) {
             const b = document.createElement('div');
-            b.className = 'ball'; b.innerText = data.main[i];
+            b.className = 'ball';
+            b.innerText = data.main[i];
             wrapper.appendChild(b);
             const angle = (i/6) * Math.PI * 2;
-            b.style.left = (window.innerWidth/2 + Math.cos(angle)*180 - 27) + 'px';
-            b.style.top = (window.innerHeight/2 + Math.sin(angle)*180 - 27) + 'px';
+            const dist = 180;
+            b.style.left = (window.innerWidth/2 + Math.cos(angle)*dist - 27) + 'px';
+            b.style.top = (window.innerHeight/2 + Math.sin(angle)*dist - 27) + 'px';
             setTimeout(() => b.style.opacity = '1', 50);
-            await new Promise(r => setTimeout(r, 350));
+            await new Promise(r => setTimeout(r, 400));
         }
 
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 1800));
 
-        // 3. ИМПЛОЗИЯ (Стягивание в центр)
-        document.querySelectorAll('.ball').forEach(b => {
-            b.style.transition = 'all 0.5s cubic-bezier(0.6, -0.4, 0.7, 0.05)';
+        // 3. Имплозия (ничего не стираем!)
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach(b => {
+            b.style.transition = 'all 0.6s cubic-bezier(0.6, -0.4, 0.7, 0.05)';
             b.style.left = (window.innerWidth/2 - 27) + 'px';
             b.style.top = (window.innerHeight/2 - 27) + 'px';
-            b.style.transform = 'scale(0.1)'; b.style.opacity = '0';
+            b.style.transform = 'scale(0.05)';
+            b.style.opacity = '0';
         });
 
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 600));
 
-        // 4. ВЗРЫВ СУПЕРНОВЫ И ПОЯВЛЕНИЕ ЛОГО
+        // 4. Супернова и Лого
         flash.style.opacity = '1';
         szElement.innerText = data.sz;
         szElement.style.display = 'flex';
@@ -144,9 +195,10 @@
         circContainer.style.top = (window.innerHeight/2 - 220) + 'px';
 
         setTimeout(() => {
-            flash.style.transition = 'opacity 3s ease-out';
+            flash.style.transition = 'opacity 3.5s ease-out';
             flash.style.opacity = '0';
-        }, 200);
+            console.log("VCHF Ultimate: Full Restoration Complete.");
+        }, 250);
     }
 
     window.onload = ignite;
