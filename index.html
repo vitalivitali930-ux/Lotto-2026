@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silver & Black VCHF Test</title>
+    <title>VCHF Cherry Chrome Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Вишневая палитра: 70% черного, 30% вишневого */
+            --cherry-dark: #1a0205; 
+            --cherry-bright: #4a040d;
             --main-color: #00fbff; 
-            --theme-glow: rgba(0, 251, 255, 0.5);
-            /* Серебряный градиент для цифр */
-            --silver-text: linear-gradient(180deg, #ffffff 0%, #a8a8a8 50%, #7d7d7d 100%);
+            --silver-text: linear-gradient(180deg, #fff 0%, #a8a8a8 50%, #7d7d7d 100%);
         }
 
         body {
-            background-color: #000;
+            /* Фон "Скатерть": глубокий градиент */
+            background: radial-gradient(circle at center, var(--cherry-bright) 0%, var(--cherry-dark) 70%, #000 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,10 +29,11 @@
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
             gap: 15px; 
-            padding: 30px; 
-            background: #0a0a0a;
-            border-radius: 40px;
-            border: 1px solid rgba(255,255,255,0.05);
+            padding: 35px; 
+            background: rgba(0,0,0,0.4);
+            border-radius: 50px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            border: 1px solid rgba(139, 0, 0, 0.2); /* Вишневая кайма */
         }
 
         .cell { 
@@ -42,59 +45,51 @@
             justify-content: center; 
             position: relative; 
             cursor: pointer;
+            
+            /* Сложный градиент: черный лак + вишневый отблеск снизу */
             background: 
-                radial-gradient(circle at 35% 35%, rgba(255,255,255,0.2) 0%, transparent 45%),
-                radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+                radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, transparent 40%), /* Блик сверху */
+                radial-gradient(circle at 50% 120%, rgba(139, 0, 0, 0.4) 0%, transparent 60%), /* Рефлекс от вишневого пола */
+                radial-gradient(circle at center, #1a1a1a 0%, #000 100%); /* Тело шара */
             
-            /* Контурный свет */
-            border: 1px solid rgba(0, 251, 255, 0.4);
             box-shadow: 
-                0 0 12px rgba(0, 251, 255, 0.2),
-                inset -8px -8px 15px rgba(0,0,0,0.9), 
-                inset 4px 4px 10px rgba(255,255,255,0.1);
+                inset -10px -10px 20px rgba(0,0,0,1), 
+                inset 5px 5px 12px rgba(255,255,255,0.05),
+                0 15px 30px rgba(0,0,0,0.7);
             
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.05); /* Тончайший край для отделения */
+            transition: all 0.4s ease;
+            animation: float 5s infinite ease-in-out;
         }
 
-        /* Эффект СЕРЕБРЯНЫХ цифр */
         .cell span {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             background: var(--silver-text);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8));
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
         }
 
-        /* Выбранный шар - Серебро становится ярче, а контур горит */
         .cell.selected { 
-            background: radial-gradient(circle at 35% 35%, #444 0%, #000 100%);
-            transform: scale(1.15) translateY(-8px);
-            box-shadow: 0 15px 35px var(--main-color);
-            border: 2px solid #fff;
+            background: radial-gradient(circle at 35% 35%, #333 0%, #000 100%);
+            border: 2px solid var(--main-color);
+            box-shadow: 0 0 30px var(--main-color);
+            transform: scale(1.1) translateY(-10px);
         }
 
-        .cell.selected span {
-            background: linear-gradient(180deg, #fff 0%, #00fbff 100%); /* Серебро с оттенком темы при выборе */
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Анимация "Дыхания" */
-        .cell { animation: float 4s infinite ease-in-out; }
         @keyframes float {
-            0%, 100% { transform: translateY(0); border-color: rgba(0, 251, 255, 0.3); }
-            50% { transform: translateY(-6px); border-color: rgba(0, 251, 255, 0.7); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
         }
     </style>
 </head>
 <body>
 
-    <div class="grid" id="silver-test"></div>
+    <div class="grid" id="cherry-test"></div>
 
     <script>
-        /* Crafted by Spark & Wanderer */
-        const grid = document.getElementById('silver-test');
+        const grid = document.getElementById('cherry-test');
         for(let i=1; i<=42; i++) {
             const c = document.createElement('div');
             c.className = 'cell';
