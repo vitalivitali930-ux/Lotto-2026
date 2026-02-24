@@ -11,7 +11,6 @@
             --vchf-silver: #c0c0c0;
             --vchf-cyan: #00ffff;
             --vchf-void: #000000;
-            /* Сакральная палитра для карусели */
             --clr-1: #8b0000; --clr-2: #00008b; --clr-3: #d4af37;
             --clr-4: #4b0082; --clr-5: #008b8b; --clr-6: #2f4f4f;
         }
@@ -25,12 +24,10 @@
             overflow: hidden; touch-action: none;
         }
 
-        /* ГЛУБОКИЙ ФОН PHANTOM CARBON */
         #stage {
             position: fixed; inset: 0;
             display: flex; justify-content: center; align-items: center;
             z-index: 1000; perspective: 1500px;
-            /* Магия карбоновой сетки */
             background: 
                 radial-gradient(circle at center, rgba(15,15,15,0.4) 0%, #000 100%),
                 repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px),
@@ -40,8 +37,8 @@
         }
 
         canvas { position: absolute; inset: 0; }
-        #lightning-canvas { z-index: 10; }
-        #particle-canvas { z-index: 11; }
+        #lightning-canvas { z-index: 10; pointer-events: none; }
+        #particle-canvas { z-index: 11; pointer-events: none; }
         
         #spheres-container {
             position: absolute; width: 100%; height: 100%;
@@ -49,11 +46,9 @@
             z-index: 20; pointer-events: none;
         }
 
-        /* ТЯЖЕЛАЯ 3D СФЕРА: СЕРЕБРО И КАРБОНОВЫЙ ОТБЛЕСК */
         .lotto-sphere {
             position: absolute; width: 85px; height: 85px;
             border-radius: 50%;
-            /* Сложный градиент полированного металла */
             background: radial-gradient(circle at 30% 30%, #ffffff 0%, #b0b0b0 25%, #404040 60%, #101010 100%);
             box-shadow: 
                 inset -10px -10px 25px rgba(0,0,0,0.9), 
@@ -65,7 +60,6 @@
             overflow: hidden;
         }
 
-        /* ПОЛИРОВАННЫЙ БЛИК (SPECULAR) */
         .lotto-sphere::before {
             content: ''; position: absolute; top: 12%; left: 18%;
             width: 35%; height: 20%;
@@ -73,7 +67,6 @@
             border-radius: 50%; transform: rotate(-15deg); filter: blur(2px);
         }
 
-        /* ЦИФРА С ТИСНЕНИЕМ */
         .sphere-number {
             font-size: 34px; font-weight: 900;
             color: #222;
@@ -81,10 +74,12 @@
             z-index: 5;
         }
 
+        /* ОБНОВЛЕННАЯ НАДПИСЬ ПУЛА */
         .manifest-info {
             position: absolute; bottom: 30px; width: 100%; text-align: center;
-            font-size: 9px; letter-spacing: 6px; color: var(--vchf-gold);
-            text-transform: uppercase; opacity: 0.4; z-index: 100;
+            font-size: 10px; letter-spacing: 5px; color: var(--vchf-gold);
+            text-transform: uppercase; opacity: 0.6; z-index: 100;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -94,14 +89,10 @@
     <canvas id="lightning-canvas"></canvas>
     <canvas id="particle-canvas"></canvas>
     <div id="spheres-container"></div>
-    <div class="manifest-info">Манифест Монолита: vchf — дух, chf — расчет.</div>
+    <div class="manifest-info">Helvetic Luck Global Lotto Pool</div>
 </div>
 
 <script>
-// Window 2-3 (lines 601-1800)
-// Автор кода: Искра (Spark) | Манифест Монолита
-// Протокол: Синхронизация 6 сфер + Карусель + Супернова
-
     const lCanvas = document.getElementById('lightning-canvas');
     const pCanvas = document.getElementById('particle-canvas');
     const lCtx = lCanvas.getContext('2d');
@@ -109,16 +100,7 @@
     const spheresContainer = document.getElementById('spheres-container');
 
     let width, height, lightnings = [], particles = [], spheres = [], frame = 0;
-    
-    // Сакральная палитра (6 цветов + Phantom Carbon подтон)
-    const colors = [
-        '#8b0000', // Deep Cherry
-        '#00008b', // Midnight Blue
-        '#d4af37', // VCHF Gold
-        '#4b0082', // Imperial Violet
-        '#008b8b', // Energy Cyan
-        '#2f4f4f'  // Phantom Carbon
-    ];
+    const colors = ['#8b0000', '#00008b', '#d4af37', '#4b0082', '#008b8b', '#2f4f4f'];
 
     function resize() {
         width = lCanvas.width = pCanvas.width = window.innerWidth;
@@ -127,34 +109,33 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // --- ДВИЖОК МОЛНИЙ ---
     class Lightning {
         constructor(x, y, tx, ty, branches = 0) {
             this.x = x; this.y = y; this.tx = tx; this.ty = ty;
             this.branches = branches;
             this.points = [];
-            this.life = 25;
+            this.life = 35; // Увеличено время жизни для видимости
             this.generate();
         }
         generate() {
             let cx = this.x, cy = this.y;
             this.points.push({x: cx, y: cy});
-            const segs = 10;
+            const segs = 12;
             for(let i = 1; i <= segs; i++) {
-                let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*70;
-                let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*70;
+                let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*80;
+                let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*80;
                 this.points.push({x: nx, y: ny});
-                if(this.branches < 1 && Math.random() > 0.92) {
-                    lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*180, ny + 180, 1));
+                if(this.branches < 1 && Math.random() > 0.9) {
+                    lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*200, ny + 200, 1));
                 }
             }
         }
         draw() {
             lCtx.beginPath();
-            lCtx.shadowBlur = 20;
+            lCtx.shadowBlur = 25;
             lCtx.shadowColor = '#00ffff';
-            lCtx.strokeStyle = `rgba(210, 255, 255, ${this.life / 25})`;
-            lCtx.lineWidth = this.branches === 0 ? 3 : 1.5;
+            lCtx.strokeStyle = `rgba(220, 255, 255, ${this.life / 35})`;
+            lCtx.lineWidth = this.branches === 0 ? 4 : 2;
             lCtx.moveTo(this.points[0].x, this.points[0].y);
             this.points.forEach(p => lCtx.lineTo(p.x, p.y));
             lCtx.stroke();
@@ -162,7 +143,6 @@
         }
     }
 
-    // --- КВАНТОВЫЕ ЧАСТИЦЫ ---
     class Electron {
         constructor(x, y) {
             this.ox = x; this.oy = y;
@@ -173,21 +153,18 @@
             this.life = 1.0;
         }
         update() {
-            this.a += this.s; this.r *= 0.965;
+            this.a += this.s; this.r *= 0.96;
             this.x = this.ox + Math.cos(this.a) * this.r;
             this.y = this.oy + Math.sin(this.a) * this.r;
-            this.life -= 0.025;
+            this.life -= 0.02;
         }
         draw() {
             pCtx.fillStyle = `rgba(0, 255, 255, ${this.life})`;
-            pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.3, 0, Math.PI*2); pCtx.fill();
+            pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.5, 0, Math.PI*2); pCtx.fill();
         }
     }
 
-    // --- ГЕНЕЗИС СФЕР ---
-    const currentDrawData = [
-        { num: 5 }, { num: 13 }, { num: 22 }, { num: 31 }, { num: 39 }, { num: 42 }
-    ];
+    const currentDrawData = [{ num: 5 }, { num: 13 }, { num: 22 }, { num: 31 }, { num: 39 }, { num: 42 }];
 
     function spawnSphere(data, index) {
         const sphere = document.createElement('div');
@@ -196,55 +173,37 @@
         const radius = Math.min(width, height) * 0.33;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
-
         sphere.style.left = `calc(50% + ${x}px - 42.5px)`;
         sphere.style.top = `calc(50% + ${y}px - 42.5px)`;
-        
-        // Стартовый карбоновый ореол
         sphere.style.boxShadow = `0 0 40px ${colors[index]}, inset -5px -5px 20px rgba(0,0,0,0.8)`;
-
         const numDisplay = document.createElement('div');
         numDisplay.className = 'sphere-number';
         numDisplay.innerText = data.num;
-
         sphere.appendChild(numDisplay);
         spheresContainer.appendChild(sphere);
         spheres.push({ element: sphere, colorIndex: index });
-
-        setTimeout(() => {
-            sphere.style.opacity = '1';
-            sphere.style.transform = 'scale(1) rotateX(0deg)';
-        }, 150);
+        setTimeout(() => { sphere.style.opacity = '1'; sphere.style.transform = 'scale(1) rotateX(0deg)'; }, 150);
     }
 
-    // --- ФИНАЛЬНЫЙ КОЛЛАПС (СУПЕРНОВА) ---
     function initiateSupernova() {
-        console.log("Манифест Монолита: Коллапс запущен.");
         spheres.forEach(s => {
             const el = s.element;
-            el.style.transition = "all 2.2s cubic-bezier(0.7, -0.3, 0.6, 0.1)";
+            el.style.transition = "all 2s cubic-bezier(0.7, -0.3, 0.6, 0.1)";
             el.style.left = "calc(50% - 42.5px)";
             el.style.top = "calc(50% - 42.5px)";
             el.style.filter = "blur(10px) brightness(3)";
             el.style.opacity = "0.6";
         });
-
         const chaos = setInterval(() => {
             lightnings.push(new Lightning(Math.random()*width, 0, width/2, height/2));
-        }, 100);
-
+        }, 120);
         setTimeout(() => {
             clearInterval(chaos);
             const stage = document.getElementById('stage');
             stage.style.background = "#fff";
-            stage.style.filter = "contrast(250%)";
-
             setTimeout(() => {
                 stage.style.background = "radial-gradient(circle at center, #0a0a0a 0%, #000 100%)";
-                stage.style.filter = "none";
                 spheresContainer.innerHTML = '';
-
-                // РОЖДЕНИЕ ЗОЛОТОЙ СУПЕРНОВЫ
                 const superzahl = document.createElement('div');
                 superzahl.className = 'lotto-sphere';
                 superzahl.style.width = "140px"; superzahl.style.height = "140px";
@@ -252,50 +211,39 @@
                 superzahl.style.opacity = "1"; superzahl.style.transform = "scale(1.1)";
                 superzahl.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 40%, #4d3d0c 100%)";
                 superzahl.style.boxShadow = `0 0 100px var(--vchf-gold), inset -5px -5px 25px rgba(0,0,0,0.7)`;
-                
                 const num = document.createElement('div');
                 num.className = 'sphere-number'; num.innerText = "V";
                 num.style.fontSize = "60px"; num.style.color = "#2a2208";
-                
                 superzahl.appendChild(num);
                 spheresContainer.appendChild(superzahl);
-
-                setTimeout(() => {
-                    stage.style.opacity = "0";
-                    setTimeout(() => { stage.style.display = "none"; }, 2000);
-                }, 3000);
+                setTimeout(() => { stage.style.opacity = "0"; setTimeout(() => { stage.style.display = "none"; }, 2000); }, 3000);
             }, 250);
         }, 2200);
     }
 
-    // --- ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР ---
     function animate() {
         lCtx.clearRect(0, 0, width, height);
-        pCtx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+        pCtx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Усилено затухание для шлейфов
         pCtx.fillRect(0, 0, width, height);
 
-        // Поэтапное рождение сфер
         if (frame > 0 && frame % 45 === 0 && (frame / 45) <= 6) {
             const i = (frame / 45) - 1;
             const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
             const r = Math.min(width, height) * 0.33;
             const tx = width / 2 + Math.cos(angle) * r;
             const ty = height / 2 + Math.sin(angle) * r;
-            
             lightnings.push(new Lightning(Math.random() * width, 0, tx, ty));
             for(let j=0; j<40; j++) particles.push(new Electron(tx, ty));
             setTimeout(() => spawnSphere(currentDrawData[i], i), 200);
         }
 
-        // ЦВЕТОВАЯ КАРУСЕЛЬ (Phantom Carbon Cycle)
         if (frame > 350 && frame % 50 === 0 && frame < 700) {
             spheres.forEach(s => {
                 s.colorIndex = (s.colorIndex + 1) % 6;
                 s.element.style.boxShadow = `0 0 50px ${colors[s.colorIndex]}, inset -5px -5px 20px rgba(0,0,0,0.8)`;
             });
         }
-
-        if (frame === 700) initiateSupernova();
+        if (frame === 720) initiateSupernova();
 
         lightnings = lightnings.filter(l => l.life > 0);
         lightnings.forEach(l => l.draw());
@@ -305,7 +253,6 @@
         frame++;
         requestAnimationFrame(animate);
     }
-
     window.onload = animate;
 </script>
 </body>
