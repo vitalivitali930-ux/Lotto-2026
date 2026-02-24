@@ -3,101 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCHF High Contrast Test</title>
+    <title>Silver & Black VCHF Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --main-color: #00fbff; 
             --theme-glow: rgba(0, 251, 255, 0.5);
-            --bg-dark: #000000;
+            /* Серебряный градиент для цифр */
+            --silver-text: linear-gradient(180deg, #ffffff 0%, #a8a8a8 50%, #7d7d7d 100%);
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             margin: 0;
+            font-family: 'Orbitron', sans-serif;
         }
 
-        /* Сетка с небольшим свечением краев для ориентации */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
             gap: 15px; 
             padding: 30px; 
-            background: #080808;
+            background: #0a0a0a;
             border-radius: 40px;
-            border: 1px solid rgba(255,255,255,0.03);
-            box-shadow: 0 0 50px rgba(0,0,0,1);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .cell { 
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-weight: 900; 
-            color: var(--main-color); 
-            font-size: 20px; 
             position: relative; 
             cursor: pointer;
-            
-            /* ГИПЕР-КОНТРАСТ: Добавляем четкую границу, чтобы не сливалось */
             background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 40%),
+                radial-gradient(circle at 35% 35%, rgba(255,255,255,0.2) 0%, transparent 45%),
                 radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
             
-            /* Контурный свет (Rim Light) под цвет темы */
-            border: 1px solid rgba(0, 251, 255, 0.3);
-            
+            /* Контурный свет */
+            border: 1px solid rgba(0, 251, 255, 0.4);
             box-shadow: 
-                0 0 10px rgba(0, 251, 255, 0.15), /* Мягкое внешнее разделение */
+                0 0 12px rgba(0, 251, 255, 0.2),
                 inset -8px -8px 15px rgba(0,0,0,0.9), 
                 inset 4px 4px 10px rgba(255,255,255,0.1);
             
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: sphere-pulse 4s infinite ease-in-out;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Выбранный шар - Полный неон */
+        /* Эффект СЕРЕБРЯНЫХ цифр */
+        .cell span {
+            font-size: 22px;
+            font-weight: 900;
+            background: var(--silver-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8));
+        }
+
+        /* Выбранный шар - Серебро становится ярче, а контур горит */
         .cell.selected { 
-            background: var(--main-color);
-            color: #000;
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 0 30px var(--main-color);
+            background: radial-gradient(circle at 35% 35%, #444 0%, #000 100%);
+            transform: scale(1.15) translateY(-8px);
+            box-shadow: 0 15px 35px var(--main-color);
             border: 2px solid #fff;
-            animation: none;
         }
 
-        @keyframes sphere-pulse {
-            0%, 100% { transform: scale(1); border-color: rgba(0, 251, 255, 0.2); }
-            50% { transform: scale(1.04); border-color: rgba(0, 251, 255, 0.6); box-shadow: 0 0 15px rgba(0, 251, 255, 0.3); }
+        .cell.selected span {
+            background: linear-gradient(180deg, #fff 0%, #00fbff 100%); /* Серебро с оттенком темы при выборе */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .footer { margin-top: 20px; color: var(--main-color); font-size: 10px; letter-spacing: 2px; }
+        /* Анимация "Дыхания" */
+        .cell { animation: float 4s infinite ease-in-out; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); border-color: rgba(0, 251, 255, 0.3); }
+            50% { transform: translateY(-6px); border-color: rgba(0, 251, 255, 0.7); }
+        }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--main-color); letter-spacing:3px;">VCHF 3D SPHERES</h2>
-    
-    <div class="grid" id="test-vchf"></div>
-
-    <div class="footer">МАНИФЕСТ МОНОЛИТА | ДВИЖОК VCHF</div>
+    <div class="grid" id="silver-test"></div>
 
     <script>
-        const grid = document.getElementById('test-vchf');
+        /* Crafted by Spark & Wanderer */
+        const grid = document.getElementById('silver-test');
         for(let i=1; i<=42; i++) {
             const c = document.createElement('div');
             c.className = 'cell';
-            c.innerText = i;
+            c.innerHTML = `<span>${i}</span>`;
             c.onclick = () => c.classList.toggle('selected');
             grid.appendChild(c);
         }
