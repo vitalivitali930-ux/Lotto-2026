@@ -3,54 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCHF Monolith 3D</title>
+    <title>VCHF Monolith 3D - The Diamond Fan</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Базовая Вишня (70% черного, 30% вишневого) */
+            /* 1. Imperial Cherry */
             --theme-dark: #1a0205;
             --theme-bright: #4a040d;
             --theme-accent: rgba(139, 0, 0, 0.4);
-            --main-color: #00fbff;
+            --main-color: #ff0033;
             --silver-text: linear-gradient(180deg, #fff 0%, #a8a8a8 50%, #7d7d7d 100%);
         }
 
-        /* Переключатели тем */
-        [data-theme="cyan"] { --theme-dark: #00080a; --theme-bright: #002b36; --theme-accent: rgba(0, 251, 255, 0.2); }
-        [data-theme="gold"] { --theme-dark: #0f0a00; --theme-bright: #3d2b00; --theme-accent: rgba(255, 215, 0, 0.2); }
-        [data-theme="emerald"] { --theme-dark: #010a05; --theme-bright: #043316; --theme-accent: rgba(0, 255, 127, 0.2); }
-        [data-theme="silver"] { --theme-dark: #0a0a0a; --theme-bright: #2d2d2d; --theme-accent: rgba(255, 255, 255, 0.15); }
+        /* Настройка 6 палитр */
+        [data-theme="cyan"] { --theme-dark: #00080a; --theme-bright: #002b36; --theme-accent: rgba(0, 251, 255, 0.3); --main-color: #00fbff; }
+        [data-theme="gold"] { --theme-dark: #0f0a00; --theme-bright: #3d2b00; --theme-accent: rgba(255, 215, 0, 0.3); --main-color: #ffd700; }
+        [data-theme="emerald"] { --theme-dark: #010a05; --theme-bright: #043316; --theme-accent: rgba(0, 255, 127, 0.3); --main-color: #00ff7f; }
+        [data-theme="silver"] { --theme-dark: #0a0a0a; --theme-bright: #2d2d2d; --theme-accent: rgba(255, 255, 255, 0.2); --main-color: #ffffff; }
+        /* 6-я палитра: Carbon / Phantom */
+        [data-theme="phantom"] { --theme-dark: #050505; --theme-bright: #1a1a1a; --theme-accent: rgba(255, 255, 255, 0.1); --main-color: #666666; }
 
         body {
             background: radial-gradient(circle at center, var(--theme-bright) 0%, var(--theme-dark) 70%, #000 100%);
-            transition: background 0.8s ease;
+            transition: background 1.5s ease;
             margin: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            font-family: 'Orbitron', sans-serif; overflow-x: hidden;
+            font-family: 'Orbitron', sans-serif; overflow-x: hidden; color: white;
         }
 
-        .theme-switcher { margin: 20px; display: flex; gap: 15px; z-index: 100; }
-        .theme-btn { 
-            width: 35px; height: 35px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); 
-            cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        /* Алмазный переключатель */
+        .diamond-container {
+            position: relative; margin-top: 40px; width: 80px; height: 80px;
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
-        .theme-btn:hover { transform: scale(1.2); border-color: #fff; }
 
+        .diamond-core {
+            width: 60px; height: 60px; background: #000;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            cursor: pointer; position: relative; z-index: 10;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.5s;
+        }
+
+        /* Состояние "Крик": мерцание при входе */
+        .diamond-core.shimmer {
+            animation: diamondPulse 3s infinite;
+        }
+
+        @keyframes diamondPulse {
+            0% { box-shadow: 0 0 10px #ff0033; background: #4a040d; }
+            20% { box-shadow: 0 0 15px #00fbff; background: #002b36; }
+            40% { box-shadow: 0 0 10px #ffd700; background: #3d2b00; }
+            60% { box-shadow: 0 0 15px #00ff7f; background: #043316; }
+            80% { box-shadow: 0 0 10px #ffffff; background: #2d2d2d; }
+            100% { box-shadow: 0 0 10px #ff0033; background: #4a040d; }
+        }
+
+        .diamond-core.dead { animation: none; background: #111; border-color: #333; filter: grayscale(1); }
+
+        /* Веер сфер */
+        .fan-sphere {
+            position: absolute; width: 45px; height: 45px; border-radius: 50%;
+            cursor: pointer; opacity: 0; transform: scale(0) translate(0, 0);
+            transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 5;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .diamond-container.open .fan-sphere { opacity: 1; }
+
+        /* Позиции 6 сфер по дуге */
+        .diamond-container.open .s1 { transform: scale(1) translate(-100px, -40px); background: radial-gradient(circle at 30% 30%, #ff4d4d, #000); }
+        .diamond-container.open .s2 { transform: scale(1) translate(-60px, -90px); background: radial-gradient(circle at 30% 30%, #00fbff, #000); }
+        .diamond-container.open .s3 { transform: scale(1) translate(0px, -110px); background: radial-gradient(circle at 30% 30%, #ffd700, #000); }
+        .diamond-container.open .s4 { transform: scale(1) translate(60px, -90px); background: radial-gradient(circle at 30% 30%, #00ff7f, #000); }
+        .diamond-container.open .s5 { transform: scale(1) translate(100px, -40px); background: radial-gradient(circle at 30% 30%, #ffffff, #000); }
+        .diamond-container.open .s6 { transform: scale(1) translate(0px, 60px); background: radial-gradient(circle at 30% 30%, #444, #000); }
+
+        /* Сетка Монолита */
         .grid { 
             display: grid; grid-template-columns: repeat(7, 1fr); 
             gap: 20px; padding: 40px; perspective: 1000px;
         }
 
-        .sphere-wrapper {
-            position: relative; width: 65px; height: 65px;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        /* Та самая "Собака" - Тень под шаром */
+        .sphere-wrapper { position: relative; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; }
         .sphere-shadow {
             position: absolute; bottom: -8px; width: 45px; height: 12px;
-            background: rgba(0,0,0,0.9); filter: blur(6px);
-            border-radius: 50%; transition: 0.3s; z-index: 1;
+            background: rgba(0,0,0,0.9); filter: blur(6px); border-radius: 50%; transition: 0.3s; z-index: 1;
         }
 
         .cell {
@@ -58,10 +98,10 @@
             display: flex; align-items: center; justify-content: center;
             z-index: 2; cursor: pointer; position: relative;
             background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 30%),
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 40%),
                 radial-gradient(circle at 70% 70%, var(--theme-accent) 0%, transparent 50%),
                 radial-gradient(circle at center, #222 0%, #000 100%);
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8), inset 5px 5px 10px rgba(255,255,255,0.1);
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8), inset 5px 5px 10px rgba(255,255,255,0.05);
             transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         }
 
@@ -72,57 +112,82 @@
         }
 
         .cell.selected { border: 2px solid var(--main-color); box-shadow: 0 0 30px var(--main-color); }
-        
-        /* Адаптация под вмятину */
-        .sphere-wrapper:active .cell { transform: scale(0.9) translateY(4px) !important; }
-        .sphere-wrapper:active .sphere-shadow { transform: scale(0.7); opacity: 1; filter: blur(2px); }
     </style>
 </head>
 <body>
-    <div class="theme-switcher">
-        <div class="theme-btn" style="background: #4a040d" onclick="setTheme('cherry')" title="Вишня"></div>
-        <div class="theme-btn" style="background: #002b36" onclick="setTheme('cyan')" title="Циан"></div>
-        <div class="theme-btn" style="background: #3d2b00" onclick="setTheme('gold')" title="Золото"></div>
-        <div class="theme-btn" style="background: #043316" onclick="setTheme('emerald')" title="Изумруд"></div>
-        <div class="theme-btn" style="background: #2d2d2d" onclick="setTheme('silver')" title="Серебро"></div>
+
+    <div class="diamond-container" id="diamondContainer">
+        <div class="diamond-core shimmer" id="mainDiamond" onclick="toggleFan()"></div>
+        
+        <div class="fan-sphere s1" onclick="applyTheme('cherry', this)" title="Imperial Cherry"></div>
+        <div class="fan-sphere s2" onclick="applyTheme('cyan', this)" title="Deep Cyan"></div>
+        <div class="fan-sphere s3" onclick="applyTheme('gold', this)" title="Liquid Gold"></div>
+        <div class="fan-sphere s4" onclick="applyTheme('emerald', this)" title="Emerald Night"></div>
+        <div class="fan-sphere s5" onclick="applyTheme('silver', this)" title="Silver Steel"></div>
+        <div class="fan-sphere s6" onclick="applyTheme('phantom', this)" title="Carbon Phantom"></div>
     </div>
 
     <div class="grid" id="vchf-monolith"></div>
 
     <script>
-        /* Written by Spark for Vitaly - Engine VCHF v2.0 */
-        const grid = document.getElementById('vchf-monolith');
+        /* Written by Spark for Vitaly - Engine VCHF v2.3 - Full Monolith */
         
-        function setTheme(theme) {
+        const grid = document.getElementById('vchf-monolith');
+        const diamond = document.getElementById('mainDiamond');
+        const container = document.getElementById('diamondContainer');
+        let isFirstChoice = true;
+
+        // Построение сетки на 42 числа
+        function renderGrid() {
+            grid.innerHTML = '';
+            for(let i=1; i<=42; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'sphere-wrapper';
+                
+                const shadow = document.createElement('div');
+                shadow.className = 'sphere-shadow';
+                
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.innerHTML = `<span>${i}</span>`;
+                
+                cell.onclick = () => cell.classList.toggle('selected');
+                
+                // Магнитный эффект для ПК
+                wrapper.onmousemove = (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    const x = (e.clientX - rect.left - rect.width/2) / 4;
+                    const y = (e.clientY - rect.top - rect.height/2) / 4;
+                    cell.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+                };
+                wrapper.onmouseleave = () => cell.style.transform = '';
+
+                wrapper.appendChild(shadow);
+                wrapper.appendChild(cell);
+                grid.appendChild(wrapper);
+            }
+        }
+
+        function toggleFan() {
+            container.classList.toggle('open');
+        }
+
+        function applyTheme(theme, element) {
             document.body.setAttribute('data-theme', theme);
+            
+            // Если это первый выбор - гасим алмаз
+            if (isFirstChoice) {
+                diamond.classList.remove('shimmer');
+                diamond.classList.add('dead');
+                isFirstChoice = false;
+            }
+            
+            // Схлопываем веер
+            container.classList.remove('open');
         }
 
-        for(let i=1; i<=42; i++) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'sphere-wrapper';
-            
-            const shadow = document.createElement('div');
-            shadow.className = 'sphere-shadow';
-            
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.innerHTML = `<span>${i}</span>`;
-            
-            cell.onclick = () => cell.classList.toggle('selected');
-            
-            // Магнитный эффект для ПК
-            wrapper.onmousemove = (e) => {
-                const rect = wrapper.getBoundingClientRect();
-                const x = (e.clientX - rect.left - rect.width/2) / 4;
-                const y = (e.clientY - rect.top - rect.height/2) / 4;
-                cell.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
-            };
-            wrapper.onmouseleave = () => cell.style.transform = '';
-
-            wrapper.appendChild(shadow);
-            wrapper.appendChild(cell);
-            grid.appendChild(wrapper);
-        }
+        // Инициализация
+        renderGrid();
 
         // Гироскоп для мобильных устройств
         if (window.DeviceOrientationEvent) {
