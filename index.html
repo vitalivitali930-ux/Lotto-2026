@@ -3,168 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCHF Ultimate 3D</title>
+    <title>VCHF Monolith 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cherry-bg: radial-gradient(circle at center, #4a040d 0%, #1a0205 70%, #000 100%);
+            /* Базовая Вишня (70% черного, 30% вишневого) */
+            --theme-dark: #1a0205;
+            --theme-bright: #4a040d;
+            --theme-accent: rgba(139, 0, 0, 0.4);
             --main-color: #00fbff;
             --silver-text: linear-gradient(180deg, #fff 0%, #a8a8a8 50%, #7d7d7d 100%);
         }
 
+        /* Переключатели тем */
+        [data-theme="cyan"] { --theme-dark: #00080a; --theme-bright: #002b36; --theme-accent: rgba(0, 251, 255, 0.2); }
+        [data-theme="gold"] { --theme-dark: #0f0a00; --theme-bright: #3d2b00; --theme-accent: rgba(255, 215, 0, 0.2); }
+        [data-theme="emerald"] { --theme-dark: #010a05; --theme-bright: #043316; --theme-accent: rgba(0, 255, 127, 0.2); }
+        [data-theme="silver"] { --theme-dark: #0a0a0a; --theme-bright: #2d2d2d; --theme-accent: rgba(255, 255, 255, 0.15); }
+
         body {
-            background: var(--cherry-bg);
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(circle at center, var(--theme-bright) 0%, var(--theme-dark) 70%, #000 100%);
+            transition: background 0.8s ease;
+            margin: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            font-family: 'Orbitron', sans-serif; overflow-x: hidden;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 20px;
-            padding: 40px;
-            perspective: 1000px; /* Глубина для всей сетки */
+        .theme-switcher { margin: 20px; display: flex; gap: 15px; z-index: 100; }
+        .theme-btn { 
+            width: 35px; height: 35px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); 
+            cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .theme-btn:hover { transform: scale(1.2); border-color: #fff; }
+
+        .grid { 
+            display: grid; grid-template-columns: repeat(7, 1fr); 
+            gap: 20px; padding: 40px; perspective: 1000px;
         }
 
-        /* Контейнер для шара и его тени */
         .sphere-wrapper {
-            position: relative;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative; width: 65px; height: 65px;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* ТЕНЬ ПОД ШАРОМ (Contact Shadow) - Тот самый ключ! */
+        /* Та самая "Собака" - Тень под шаром */
         .sphere-shadow {
-            position: absolute;
-            bottom: -5px;
-            width: 40px;
-            height: 10px;
-            background: rgba(0,0,0,0.9);
-            filter: blur(5px);
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            z-index: 1;
+            position: absolute; bottom: -8px; width: 45px; height: 12px;
+            background: rgba(0,0,0,0.9); filter: blur(6px);
+            border-radius: 50%; transition: 0.3s; z-index: 1;
         }
 
         .cell {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            cursor: pointer;
-            position: relative;
-            
-            /* СЛОЖНЫЙ ГРАДИЕНТ: Лак + Рефлекс + Каустика */
+            width: 65px; height: 65px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2; cursor: pointer; position: relative;
             background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 30%), /* Острый блик */
-                radial-gradient(circle at 70% 70%, rgba(139, 0, 0, 0.3) 0%, transparent 50%), /* Вишневая каустика внутри */
-                radial-gradient(circle at center, #222 0%, #000 100%); /* Тело шара */
-            
-            box-shadow: 
-                inset -5px -5px 15px rgba(0,0,0,0.8),
-                inset 5px 5px 10px rgba(255,255,255,0.1),
-                0 0 0 1px rgba(255,255,255,0.05); /* Тонкий край */
-            
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 30%),
+                radial-gradient(circle at 70% 70%, var(--theme-accent) 0%, transparent 50%),
+                radial-gradient(circle at center, #222 0%, #000 100%);
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8), inset 5px 5px 10px rgba(255,255,255,0.1);
             transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         }
 
         .cell span {
-            font-size: 22px;
-            font-weight: 900;
-            background: var(--silver-text);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,1));
-            pointer-events: none;
+            font-size: 24px; font-weight: 900; background: var(--silver-text);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,1)); pointer-events: none;
         }
 
-        /* Эффект МАГНИТА и ВМЯТИНЫ */
-        .sphere-wrapper:hover .cell {
-            transform: scale(1.1) translateY(-5px);
-        }
-        .sphere-wrapper:hover .sphere-shadow {
-            transform: scale(1.3);
-            opacity: 0.4;
-            filter: blur(8px);
-        }
-
-        .sphere-wrapper:active .cell {
-            transform: scale(0.95) translateY(2px); /* Шар "вминается" */
-        }
-        .sphere-wrapper:active .sphere-shadow {
-            transform: scale(0.8);
-            opacity: 1;
-            filter: blur(2px);
-        }
-
-        /* Выбранный шар */
-        .cell.selected {
-            border: 2px solid var(--main-color);
-            box-shadow: 0 0 30px var(--main-color), inset 0 0 20px var(--main-color);
-        }
+        .cell.selected { border: 2px solid var(--main-color); box-shadow: 0 0 30px var(--main-color); }
+        
+        /* Адаптация под вмятину */
+        .sphere-wrapper:active .cell { transform: scale(0.9) translateY(4px) !important; }
+        .sphere-wrapper:active .sphere-shadow { transform: scale(0.7); opacity: 1; filter: blur(2px); }
     </style>
 </head>
 <body>
+    <div class="theme-switcher">
+        <div class="theme-btn" style="background: #4a040d" onclick="setTheme('cherry')" title="Вишня"></div>
+        <div class="theme-btn" style="background: #002b36" onclick="setTheme('cyan')" title="Циан"></div>
+        <div class="theme-btn" style="background: #3d2b00" onclick="setTheme('gold')" title="Золото"></div>
+        <div class="theme-btn" style="background: #043316" onclick="setTheme('emerald')" title="Изумруд"></div>
+        <div class="theme-btn" style="background: #2d2d2d" onclick="setTheme('silver')" title="Серебро"></div>
+    </div>
 
-<div class="grid" id="vchf-monolith"></div>
+    <div class="grid" id="vchf-monolith"></div>
 
-<script>
-    const grid = document.getElementById('vchf-monolith');
-    
-    // Создаем сетку
-    for(let i=1; i<=42; i++) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'sphere-wrapper';
+    <script>
+        /* Written by Spark for Vitaly - Engine VCHF v2.0 */
+        const grid = document.getElementById('vchf-monolith');
         
-        const shadow = document.createElement('div');
-        shadow.className = 'sphere-shadow';
-        
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.innerHTML = `<span>${i}</span>`;
-        
-        cell.onclick = () => cell.classList.toggle('selected');
-        
-        // ЛОГИКА МАГНИТА (для ПК)
-        wrapper.onmousemove = (e) => {
-            const rect = wrapper.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width/2;
-            const y = e.clientY - rect.top - rect.height/2;
-            cell.style.transform = `translate(${x/4}px, ${y/4}px) scale(1.1)`;
-        };
-        wrapper.onmouseleave = () => {
-            cell.style.transform = '';
-        };
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+        }
 
-        wrapper.appendChild(shadow);
-        wrapper.appendChild(cell);
-        grid.appendChild(wrapper);
-    }
-
-    // ГИРОСКОП (для телефонов)
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', (event) => {
-            const cells = document.querySelectorAll('.cell');
-            const rotX = event.beta / 4;  // наклон вперед/назад
-            const rotY = event.gamma / 4; // наклон влево/вправо
+        for(let i=1; i<=42; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'sphere-wrapper';
             
-            cells.forEach(c => {
-                // Двигаем блики градиентом (имитация)
-                c.style.backgroundPosition = `${50 + rotY}% ${50 + rotX}%`;
+            const shadow = document.createElement('div');
+            shadow.className = 'sphere-shadow';
+            
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerHTML = `<span>${i}</span>`;
+            
+            cell.onclick = () => cell.classList.toggle('selected');
+            
+            // Магнитный эффект для ПК
+            wrapper.onmousemove = (e) => {
+                const rect = wrapper.getBoundingClientRect();
+                const x = (e.clientX - rect.left - rect.width/2) / 4;
+                const y = (e.clientY - rect.top - rect.height/2) / 4;
+                cell.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+            };
+            wrapper.onmouseleave = () => cell.style.transform = '';
+
+            wrapper.appendChild(shadow);
+            wrapper.appendChild(cell);
+            grid.appendChild(wrapper);
+        }
+
+        // Гироскоп для мобильных устройств
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                const cells = document.querySelectorAll('.cell');
+                const x = e.beta / 10; 
+                const y = e.gamma / 10;
+                cells.forEach(c => {
+                    c.style.backgroundPosition = `${50 + y}% ${50 + x}%`;
+                });
             });
-        });
-    }
-</script>
+        }
+    </script>
 </body>
 </html>
