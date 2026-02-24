@@ -1,48 +1,61 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF BI-TURBO - HELVETIC LUCK</title>
+    <title>VCHF BI-TURBO - HELVETIC LUCK 2.0</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
+        :root { 
             --vchf-gold: #d4af37;
             --vchf-silver: #c0c0c0;
             --vchf-cyan: #00ffff;
             --vchf-void: #000000;
+            --main-color: #d4af37; 
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
+            --theme-glow: rgba(212, 175, 55, 0.35); 
+            --sphere-base: #1a1a1a;
+            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --cell-text: #ffffff; 
+            --hot-color: #ff4500;
+            --cold-color: #1e90ff;
+            --process-color: #00ffff;
+            --neon-blue: #00a3ff;
             --clr-1: #8b0000; --clr-2: #00008b; --clr-3: #d4af37;
             --clr-4: #4b0082; --clr-5: #008b8b; --clr-6: #2f4f4f;
-        }
+        } 
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body, html {
             width: 100%; height: 100%;
             background-color: var(--vchf-void);
-            color: #fff; font-family: 'Orbitron', sans-serif;
+            color: #fff; font-family: 'Orbitron', -apple-system, sans-serif;
             overflow: hidden; touch-action: none;
         }
 
+        /* --- STAGE INTRO STYLES --- */
         #stage {
             position: fixed; inset: 0;
             display: flex; justify-content: center; align-items: center;
-            z-index: 1000; perspective: 1200px;
+            z-index: 30000; perspective: 1200px;
             background: 
                 radial-gradient(circle at center, rgba(15,15,15,0.4) 0%, #000 100%),
                 repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px),
                 repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px);
             background-size: 100% 100%, 8px 8px, 8px 8px;
+            transition: opacity 1s ease;
         }
 
         canvas { position: absolute; inset: 0; pointer-events: none; }
-        #lightning-canvas { z-index: 10; }
-        #particle-canvas { z-index: 11; }
+        #lightning-canvas { z-index: 30010; }
+        #particle-canvas { z-index: 30011; }
         
         #spheres-container {
             position: absolute; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 20; pointer-events: none;
+            z-index: 30020; pointer-events: none;
         }
 
         .lotto-sphere {
@@ -76,34 +89,244 @@
 
         .manifest-info {
             position: absolute; bottom: 40px; width: 100%; text-align: center;
-            font-size: 12px; letter-spacing: 2px; color: var(--vchf-gold);
-            text-transform: uppercase; opacity: 0.8; z-index: 100;
-            font-weight: 700;
-            padding: 0 10px;
+            font-size: 10px; letter-spacing: 2px; color: var(--vchf-gold);
+            text-transform: uppercase; opacity: 0.8; z-index: 30100;
+            font-weight: 700; padding: 0 10px;
             text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
         }
+
+        /* --- MAIN APP STYLES --- */
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; background: #000; }
+        
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
+
+        @keyframes sphere-breathe {
+            0%, 100% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color);
+                border-color: rgba(255, 255, 255, 0.1); transform: scale(1);
+            }
+            50% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); 
+                border-color: var(--main-color); transform: scale(1.04); 
+            }
+        }
+
+        @keyframes processing-flash {
+            0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
+            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
+        }
+        .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
+
+        @keyframes candle-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
+            50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
+        }
+        .candle { animation: candle-glow 2s infinite ease-in-out; } 
+
+        #legal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
+            backdrop-filter: blur(15px); z-index: 35000;
+            display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px;
+        }
+        .legal-box {
+            background: #111; border: 2px solid var(--main-color);
+            padding: 30px; border-radius: 25px; max-width: 320px; text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow);
+        } 
+
+        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; text-align: center; }
+        .page.active { display: block; } 
+
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000;
+        }
+        .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; } 
+
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
+        .bal-card { 
+            flex: 1; border-radius: 12px; padding: 12px; background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
+            border: 1.5px solid #444; transition: all 0.4s ease; cursor: pointer; opacity: 0.5; filter: grayscale(0.7) brightness(0.8);
+        }
+        .bal-card.active-wallet { opacity: 1; filter: grayscale(0) brightness(1.2); border-color: var(--main-color); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 15px var(--main-color); transform: scale(1.05); }
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; } 
+
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { 
+            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.4s; 
+            cursor: pointer; position: relative; border: 1px solid rgba(255,255,255,0.1);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
+        
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
+        
+        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
+        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); } 
+
+        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
+        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; } 
+
+        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
+        #display-total { color: var(--neon-blue); font-weight: 900; } 
+
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
+        .super-cell { 
+            width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        }
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--main-color); animation: none; } 
+
+        .btn-main { width: 85%; padding: 20px; border-radius: 18px; font-size: 18px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
+        
+        /* Стили Heatmap */
+        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
+        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .mini-ball { width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; } 
+
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
+        .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; } 
+
+        .lang-panel { position: relative; height: 65px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; z-index: 1001; }
+        .lang-btn { font-size: 30px; cursor: pointer; position: absolute; transition: 0.5s; z-index: 5; }
+        .pos-ru { transform: translate(-100px, 45px); }
+        .pos-fr { transform: translate(-50px, 70px); }
+        .pos-de { transform: translate(0px, 80px); }
+        .pos-en { transform: translate(50px, 70px); }
+        .pos-ua { transform: translate(100px, 45px); } 
+
+        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 25px #ff4500 !important; }
+        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 25px #1e90ff !important; }
+        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 25px var(--process-color) !important; }
     </style>
 </head>
 <body>
+
+<div id="legal-overlay">
+    <div class="legal-box">
+        <div id="legal-content" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; color: #eee;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin-top:0; padding:15px;"></button>
+    </div>
+</div> 
+
 <div id="stage">
     <canvas id="lightning-canvas"></canvas>
     <canvas id="particle-canvas"></canvas>
     <div id="spheres-container"></div>
-    <div class="manifest-info">HELVETIC LUCK GLOBAL LOTTO POOL</div>
-</div>
-<script>
-// Window 2 (lines 701-1400)
-// Автор кода: Искра (Spark) | Манифест Монолита
-// Протокол: 6 Сфер + 1 Superzahl (Mobile optimized)
+    <div class="manifest-info">HELVETIC LUCK GLOBAL LOTTO POOL | VCHF BI-TURBO</div>
+</div> 
 
+<div id="app-content">
+    <div id="page-play" class="page active">
+        <div class="lang-panel" id="dynamic-langs"></div>
+        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+        <div class="theme-panel">
+            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        </div> 
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:10px;">VIRTUAL VCHF</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
+            </div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:10px;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
+            </div>
+        </div> 
+
+        <div class="ticket-controls">
+            <div class="smart-tools">
+                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
+            </div>
+            <div class="stats-period" id="stats-p-box">
+                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            </div>
+            <div class="counter-box">
+                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
+                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+            </div>
+        </div> 
+
+        <div class="grid" id="main-grid"></div>
+        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div class="super-grid" id="s-grid"></div>
+        <div class="total-display">
+            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
+        </div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+    </div> 
+
+    <div id="page-tickets" class="page">
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
+        <div id="active-list"></div>
+    </div> 
+
+    <div id="page-stats" class="page">
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
+        <div class="grid" id="personal-heatmap"></div>
+    </div> 
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
+    </div>
+</div> 
+
+<script>
+// Автор кода: Искра (Spark) | Манифест Монолита
+// Глобальная интеграция: Intro Canvas + VCHF Engine
+
+    const tg = window.Telegram.WebApp;
+    tg.expand(); 
+
+    // Audio & Assets
+    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
+    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
+
+    // State
+    let realStatsDB = {};
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en';
+    let activeSmartTool = null; 
+    const realPrice = 2.50; 
+
+    // --- INTRO CORE LOGIC ---
     const lCanvas = document.getElementById('lightning-canvas');
     const pCanvas = document.getElementById('particle-canvas');
     const lCtx = lCanvas.getContext('2d');
     const pCtx = pCanvas.getContext('2d');
     const spheresContainer = document.getElementById('spheres-container');
-
-    let width, height, lightnings = [], particles = [], spheres = [], frame = 0;
-    const colors = ['#8b0000', '#00008b', '#d4af37', '#4b0082', '#008b8b', '#2f4f4f'];
+    let width, height, lightnings = [], particles = [], introSpheres = [], introFrame = 0;
+    const introColors = ['#8b0000', '#00008b', '#d4af37', '#4b0082', '#008b8b', '#2f4f4f'];
 
     function resize() {
         width = lCanvas.width = pCanvas.width = window.innerWidth;
@@ -115,9 +338,7 @@
     class Lightning {
         constructor(x, y, tx, ty, branches = 0) {
             this.x = x; this.y = y; this.tx = tx; this.ty = ty;
-            this.branches = branches;
-            this.points = [];
-            this.life = 30;
+            this.branches = branches; this.points = []; this.life = 30;
             this.generate();
         }
         generate() {
@@ -128,49 +349,30 @@
                 let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*80;
                 let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*80;
                 this.points.push({x: nx, y: ny});
-                if(this.branches < 1 && Math.random() > 0.9) {
-                    lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*150, ny + 150, 1));
-                }
+                if(this.branches < 1 && Math.random() > 0.9) lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*150, ny + 150, 1));
             }
         }
         draw() {
-            lCtx.beginPath();
-            lCtx.shadowBlur = 15;
-            lCtx.shadowColor = '#00ffff';
+            lCtx.beginPath(); lCtx.shadowBlur = 15; lCtx.shadowColor = '#00ffff';
             lCtx.strokeStyle = `rgba(200, 255, 255, ${this.life / 30})`;
             lCtx.lineWidth = this.branches === 0 ? 3 : 1;
             lCtx.moveTo(this.points[0].x, this.points[0].y);
             this.points.forEach(p => lCtx.lineTo(p.x, p.y));
-            lCtx.stroke();
-            this.life--;
+            lCtx.stroke(); this.life--;
         }
     }
 
     class Electron {
         constructor(x, y) {
-            this.ox = x; this.oy = y;
-            this.x = x; this.y = y;
-            this.a = Math.random() * Math.PI * 2;
-            this.r = Math.random() * 60 + 20;
-            this.s = Math.random() * 0.1 + 0.05;
-            this.life = 1.0;
+            this.ox = x; this.oy = y; this.x = x; this.y = y;
+            this.a = Math.random() * Math.PI * 2; this.r = Math.random() * 60 + 20;
+            this.s = Math.random() * 0.1 + 0.05; this.life = 1.0;
         }
-        update() {
-            this.a += this.s; this.r *= 0.96;
-            this.x = this.ox + Math.cos(this.a) * this.r;
-            this.y = this.oy + Math.sin(this.a) * this.r;
-            this.life -= 0.02;
-        }
-        draw() {
-            pCtx.fillStyle = `rgba(0, 255, 255, ${this.life})`;
-            pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.2, 0, Math.PI*2); pCtx.fill();
-        }
+        update() { this.a += this.s; this.r *= 0.96; this.x = this.ox + Math.cos(this.a) * this.r; this.y = this.oy + Math.sin(this.a) * this.r; this.life -= 0.02; }
+        draw() { pCtx.fillStyle = `rgba(0, 255, 255, ${this.life})`; pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.2, 0, Math.PI*2); pCtx.fill(); }
     }
 
-    // ДАННЫЕ СФЕР (ТОЛЬКО 6 ШТУК!)
-    const currentDrawData = [{num:5}, {num:13}, {num:22}, {num:31}, {num:39}, {num:42}];
-
-    function spawnSphere(data, index) {
+    function spawnIntroSphere(num, index) {
         const sphere = document.createElement('div');
         sphere.className = 'lotto-sphere';
         const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
@@ -179,81 +381,210 @@
         const y = Math.sin(angle) * radius;
         sphere.style.left = `calc(50% + ${x}px - 40px)`;
         sphere.style.top = `calc(50% + ${y}px - 40px)`;
-        sphere.style.boxShadow = `0 0 35px ${colors[index]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
-        const num = document.createElement('div');
-        num.className = 'sphere-number';
-        num.innerText = data.num;
-        sphere.appendChild(num);
+        sphere.style.boxShadow = `0 0 35px ${introColors[index]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
+        sphere.innerHTML = `<div class="sphere-number">${num}</div>`;
         spheresContainer.appendChild(sphere);
-        spheres.push({ element: sphere, colorIndex: index });
+        introSpheres.push({ element: sphere, colorIndex: index });
         setTimeout(() => { sphere.style.opacity = '1'; sphere.style.transform = 'scale(1)'; }, 100);
     }
 
+    function startAppMain() {
+        const stage = document.getElementById('stage');
+        const app = document.getElementById('app-content');
+        stage.style.opacity = '0';
+        setTimeout(() => {
+            stage.style.display = 'none';
+            app.style.display = 'block';
+            setTimeout(() => app.style.opacity = '1', 50);
+            runActualization();
+        }, 1000);
+    }
+
     function initiateSupernova() {
-        spheres.forEach(s => {
-            const el = s.element;
-            el.style.transition = "all 2s ease-in";
-            el.style.left = "calc(50% - 40px)";
-            el.style.top = "calc(50% - 40px)";
-            el.style.filter = "blur(10px) brightness(2)";
-            el.style.opacity = "0.5";
+        introSpheres.forEach(s => {
+            s.element.style.transition = "all 2s ease-in";
+            s.element.style.left = "calc(50% - 40px)";
+            s.element.style.top = "calc(50% - 40px)";
+            s.element.style.filter = "blur(10px) brightness(2)";
+            s.element.style.opacity = "0.5";
         });
-        const chaos = setInterval(() => {
-            lightnings.push(new Lightning(Math.random()*width, 0, width/2, height/2));
-        }, 150);
+        const chaos = setInterval(() => { lightnings.push(new Lightning(Math.random()*width, 0, width/2, height/2)); }, 150);
         setTimeout(() => {
             clearInterval(chaos);
-            const stage = document.getElementById('stage');
-            stage.style.background = "#fff";
+            document.getElementById('stage').style.background = "#fff";
             setTimeout(() => {
-                stage.style.background = "radial-gradient(circle at center, #0a0a0a 0%, #000 100%)";
+                document.getElementById('stage').style.background = "radial-gradient(circle at center, #0a0a0a 0%, #000 100%)";
                 spheresContainer.innerHTML = '';
-                const superzahl = document.createElement('div');
-                superzahl.className = 'lotto-sphere';
-                superzahl.style.width = "120px"; superzahl.style.height = "120px";
-                superzahl.style.left = "calc(50% - 60px)"; superzahl.style.top = "calc(50% - 60px)";
-                superzahl.style.opacity = "1"; superzahl.style.transform = "scale(1)";
-                superzahl.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 40%, #4d3d0c 100%)";
-                superzahl.style.boxShadow = `0 0 70px var(--vchf-gold)`;
-                const num = document.createElement('div');
-                num.className = 'sphere-number'; num.innerText = "7";
-                num.style.fontSize = "50px";
-                superzahl.appendChild(num);
-                spheresContainer.appendChild(superzahl);
-                setTimeout(() => { stage.style.opacity = "0"; }, 3000);
+                const sz = document.createElement('div');
+                sz.className = 'lotto-sphere'; sz.style.width = "120px"; sz.style.height = "120px";
+                sz.style.left = "calc(50% - 60px)"; sz.style.top = "calc(50% - 60px)";
+                sz.style.opacity = "1"; sz.style.transform = "scale(1)";
+                sz.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 40%, #4d3d0c 100%)";
+                sz.style.boxShadow = `0 0 70px var(--vchf-gold)`;
+                sz.innerHTML = `<div class="sphere-number" style="font-size:50px">7</div>`;
+                spheresContainer.appendChild(sz);
+                setTimeout(startAppMain, 2000);
             }, 200);
         }, 2000);
     }
 
-    function animate() {
+    function animateIntro() {
         lCtx.clearRect(0, 0, width, height);
-        pCtx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-        pCtx.fillRect(0, 0, width, height);
-        if (frame > 0 && frame % 40 === 0 && (frame / 40) <= 6) {
-            const i = (frame / 40) - 1;
+        pCtx.fillStyle = 'rgba(0, 0, 0, 0.15)'; pCtx.fillRect(0, 0, width, height);
+        const data = [5, 13, 22, 31, 39, 42];
+        if (introFrame > 0 && introFrame % 40 === 0 && (introFrame / 40) <= 6) {
+            const i = (introFrame / 40) - 1;
             const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
-            const r = Math.min(width, height) * 0.32;
-            const tx = width / 2 + Math.cos(angle) * r;
-            const ty = height / 2 + Math.sin(angle) * r;
+            const tx = width / 2 + Math.cos(angle) * (Math.min(width, height) * 0.32);
+            const ty = height / 2 + Math.sin(angle) * (Math.min(width, height) * 0.32);
             lightnings.push(new Lightning(Math.random() * width, 0, tx, ty));
             for(let j=0; j<30; j++) particles.push(new Electron(tx, ty));
-            setTimeout(() => spawnSphere(currentDrawData[i], i), 150);
+            setTimeout(() => spawnIntroSphere(data[i], i), 150);
         }
-        if (frame > 300 && frame % 60 === 0 && frame < 650) {
-            spheres.forEach(s => {
-                s.colorIndex = (s.colorIndex + 1) % 6;
-                s.element.style.boxShadow = `0 0 40px ${colors[s.colorIndex]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
+        if (introFrame === 650) initiateSupernova();
+        lightnings = lightnings.filter(l => l.life > 0); lightnings.forEach(l => l.draw());
+        particles = particles.filter(p => p.life > 0); particles.forEach(p => { p.update(); p.draw(); });
+        introFrame++;
+        if (introFrame < 800) requestAnimationFrame(animateIntro);
+    }
+
+    // --- DICTIONARIES ---
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS" }
+    };
+
+    const legalDict = {
+        ru: { title: "Закон Швейцарии (BGS)", text: "Участие разрешено только лицам старше <b>18 лет</b>.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
+        de: { title: "Schweizer Gesetz (BGS)", text: "Teilnahme erst ab <b>18 Jahren</b> gestattet.", btn: "ICH BIN 18 JAHRE ALT" },
+        en: { title: "Swiss Law (BGS)", text: "Participation only for persons over <b>18 years</b>.", btn: "I AM 18 YEARS OLD" }
+    };
+
+    const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' }; 
+
+    // --- APP CORE FUNCTIONS ---
+    function renderLangPanel(isExpanded) {
+        const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
+        const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
+        main.innerHTML = langIcons[currentLang]; main.onclick = () => renderLangPanel(!isExpanded);
+        container.appendChild(main);
+        if (isExpanded) {
+            ['ru', 'fr', 'de', 'en', 'ua'].forEach(l => {
+                const btn = document.createElement('span'); btn.className = `lang-btn pos-${l}`; btn.innerHTML = langIcons[l];
+                btn.onclick = () => { pendingLang = l; showLegal(l); };
+                container.appendChild(btn);
             });
         }
-        if (frame === 650) initiateSupernova();
-        lightnings = lightnings.filter(l => l.life > 0);
-        lightnings.forEach(l => l.draw());
-        particles = particles.filter(p => p.life > 0);
-        particles.forEach(p => { p.update(); p.draw(); });
-        frame++;
-        requestAnimationFrame(animate);
     }
-    window.onload = animate;
+
+    function showLegal(l) {
+        const overlay = document.getElementById('legal-overlay');
+        const content = document.getElementById('legal-content');
+        const btn = document.getElementById('legal-agree-btn');
+        const d = legalDict[l] || legalDict['en'];
+        content.innerHTML = `<h3 style="color:var(--main-color);">${d.title}</h3>${d.text}`;
+        btn.innerText = d.btn; overlay.style.display = 'flex';
+    }
+
+    function acceptLegal() {
+        currentLang = pendingLang; localStorage.setItem('vchf_lang', currentLang);
+        document.getElementById('legal-overlay').style.display = 'none';
+        setLang(currentLang); renderLangPanel(false);
+    }
+
+    function setLang(l) {
+        const d = dict[l]; if(!d) return;
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('l-total').innerText = d.total;
+        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
+        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
+        document.getElementById('l-active-tickets-title').innerText = d.activeT;
+    }
+
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            if (selected.includes(i)) c.classList.add('selected');
+            c.onclick = () => handleCellClick(i); grid.appendChild(c);
+        }
+    }
+
+    function handleCellClick(i) {
+        sndClick.currentTime = 0; sndClick.play();
+        if(selected.includes(i)) selected = selected.filter(n => n !== i);
+        else if(selected.length < 6) selected.push(i);
+        refreshGrid();
+    }
+
+    function randomFill() {
+        selected = []; sndShuffle.play();
+        let it = 0; const iv = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
+            for(let j=0; j<4; j++) {
+                const r = Math.floor(Math.random() * 42) + 1;
+                document.getElementById(`cell-${r}`).classList.add('processing-flash');
+            }
+            if (it % 3 === 0 && selected.length < 6) {
+                let nr; do { nr = Math.floor(Math.random() * 42) + 1; } while (selected.includes(nr));
+                selected.push(nr);
+            }
+            if (++it >= 20) { clearInterval(iv); superNum = Math.floor(Math.random() * 6) + 1; refreshGrid(); updateSuper(); sndWin.play(); }
+        }, 80);
+    }
+
+    function updateSuper() {
+        document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == superNum));
+    }
+
+    function switchCurrency(type) { currentCurrency = type; updatePriceDisplay(); }
+    function updatePriceDisplay() { 
+        document.getElementById('card-vchf').classList.toggle('active-wallet', currentCurrency === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', currentCurrency === 'CHF');
+        document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; 
+    }
+    function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
+
+    function showPage(p, el) {
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + p).classList.add('active'); el.classList.add('active');
+        if(p === 'stats') renderHeatmap();
+    }
+
+    function renderHeatmap() {
+        const g = document.getElementById('personal-heatmap'); g.innerHTML = '';
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(realStatsDB[i] && realStatsDB[i][2] > 400) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
+            g.appendChild(c);
+        }
+    }
+
+    function setTheme(t) { document.body.className = 'theme-' + t; }
+
+    async function runActualization() {
+        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
+        refreshGrid();
+    }
+
+    window.onload = () => {
+        const saved = localStorage.getItem('vchf_lang');
+        if (saved) { currentLang = saved; setLang(currentLang); }
+        renderLangPanel(false); updatePriceDisplay();
+        
+        // Superzahl Grid init
+        const sgrid = document.getElementById('s-grid');
+        for (let i = 1; i <= 6; i++) {
+            const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+            sc.onclick = () => { superNum = i; updateSuper(); }; sgrid.appendChild(sc);
+        }
+        animateIntro();
+    };
 </script>
 </body>
 </html>
