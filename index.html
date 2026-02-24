@@ -302,18 +302,17 @@
 
 <script>
 // Автор кода: Искра (Spark) | Манифест Монолита
-// Глобальная интеграция: Intro Canvas + VCHF Engine
-
+// Движок vchf v2.1: Полная интеграция и восстановление Hot/Cold
     const tg = window.Telegram.WebApp;
     tg.expand(); 
 
-    // Audio & Assets
+    // Assets
     const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
 
     // State
-    let realStatsDB = {};
+    let realStatsDB = {}; // 1: Month, 2: Year, 3: All
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
     let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en';
     let activeSmartTool = null; 
@@ -384,7 +383,7 @@
         sphere.style.boxShadow = `0 0 35px ${introColors[index]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
         sphere.innerHTML = `<div class="sphere-number">${num}</div>`;
         spheresContainer.appendChild(sphere);
-        introSpheres.push({ element: sphere, colorIndex: index });
+        introSpheres.push({ element: sphere, colorIndex: index, num: num });
         setTimeout(() => { sphere.style.opacity = '1'; sphere.style.transform = 'scale(1)'; }, 100);
     }
 
@@ -396,7 +395,7 @@
             stage.style.display = 'none';
             app.style.display = 'block';
             setTimeout(() => app.style.opacity = '1', 50);
-            runActualization();
+            runActualization(introSpheres.map(s => s.num)); // Передаем числа из интро в движок
         }, 1000);
     }
 
@@ -448,7 +447,55 @@
         if (introFrame < 800) requestAnimationFrame(animateIntro);
     }
 
-    // --- DICTIONARIES ---
+    // --- ДВИЖОК АКТУАЛИЗАЦИИ И SMART-ФИЛЬТРЫ ---
+    function setPeriod(p) {
+        currentPeriod = p;
+        document.querySelectorAll('.p-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`p-${p}`).classList.add('active');
+        applySmartFilters();
+    }
+
+    function togglePick(type) {
+        if (activeSmartTool === type) activeSmartTool = null;
+        else activeSmartTool = type;
+        
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        if (activeSmartTool) document.getElementById(`btn-${type}`).classList.add('active-tool');
+        applySmartFilters();
+    }
+
+    function applySmartFilters() {
+        const idx = (currentPeriod === 'month') ? 0 : (currentPeriod === 'year' ? 1 : 2);
+        document.querySelectorAll('.cell').forEach(cell => {
+            const num = parseInt(cell.innerText);
+            cell.classList.remove('is-hot', 'is-cold', 'is-sleeping');
+            if (!activeSmartTool) return;
+            
+            const val = realStatsDB[num][idx];
+            // Логика порогов: Hot > 3, Cold < 1, Sleeping - долго не было
+            if (activeSmartTool === 'hot' && val >= 3) cell.classList.add('is-hot');
+            if (activeSmartTool === 'cold' && val <= 1) cell.classList.add('is-cold');
+            if (activeSmartTool === 'sleeping' && val === 0) cell.classList.add('is-sleeping');
+        });
+    }
+
+    async function runActualization(introNums = []) {
+        // Здесь имитация 6 часов розыгрышей Swiss Lotto (синхронизация)
+        for(let i=1; i<=42; i++) {
+            // Генерируем базу: [Месяц, Год, Всего]
+            realStatsDB[i] = [
+                Math.floor(Math.random()*5), 
+                Math.floor(Math.random()*20), 
+                300 + Math.floor(Math.random()*200)
+            ];
+            // Синхронизация с интро: если число было в интро, оно "горячее" в этом месяце
+            if (introNums.includes(i)) realStatsDB[i][0] += 5; 
+        }
+        refreshGrid();
+        applySmartFilters();
+    }
+
+    // --- DICTIONARIES & UI ---
     const dict = {
         ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ" },
         ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ" },
@@ -465,7 +512,6 @@
 
     const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' }; 
 
-    // --- APP CORE FUNCTIONS ---
     function renderLangPanel(isExpanded) {
         const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
         const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
@@ -512,6 +558,7 @@
             if (selected.includes(i)) c.classList.add('selected');
             c.onclick = () => handleCellClick(i); grid.appendChild(c);
         }
+        applySmartFilters();
     }
 
     function handleCellClick(i) {
@@ -558,18 +605,25 @@
 
     function renderHeatmap() {
         const g = document.getElementById('personal-heatmap'); g.innerHTML = '';
+        const idx = (currentPeriod === 'month') ? 0 : (currentPeriod === 'year' ? 1 : 2);
         for(let i=1; i<=42; i++) {
             const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
-            if(realStatsDB[i] && realStatsDB[i][2] > 400) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
+            const val = realStatsDB[i][idx];
+            if(val > 4) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
+            if(val > 10) c.style.background = 'var(--main-gradient)';
             g.appendChild(c);
         }
     }
 
     function setTheme(t) { document.body.className = 'theme-' + t; }
 
-    async function runActualization() {
-        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
-        refreshGrid();
+    function runEngine() {
+        if (selected.length < 6 || !superNum) { tg.showAlert("Please select 6 numbers and Superzahl"); return; }
+        const ticket = { nums: [...selected], super: superNum, id: Date.now() };
+        myTickets.push(ticket);
+        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+        tg.showConfirm("Ticket saved! Good luck, Wanderer.");
+        selected = []; superNum = null; refreshGrid(); updateSuper();
     }
 
     window.onload = () => {
@@ -577,7 +631,6 @@
         if (saved) { currentLang = saved; setLang(currentLang); }
         renderLangPanel(false); updatePriceDisplay();
         
-        // Superzahl Grid init
         const sgrid = document.getElementById('s-grid');
         for (let i = 1; i <= 6; i++) {
             const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
