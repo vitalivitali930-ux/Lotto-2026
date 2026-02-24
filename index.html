@@ -16,7 +16,6 @@
         #intro-wrapper { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: #000; }
         #canvas { position: absolute; inset: 0; }
         
-        /* Сферы из видео */
         .ball {
             position: absolute; width: 55px; height: 55px; border-radius: 50%;
             background: var(--sphere-gold); box-shadow: 0 0 30px var(--gold);
@@ -34,37 +33,38 @@
         
         #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
         
-        #superzahl {
-            position: absolute; width: 120px; height: 120px; border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, #ff6347, var(--super));
-            box-shadow: 0 0 80px var(--super); display: none;
-            justify-content: center; align-items: center;
-            color: #fff; font-weight: 900; font-size: 56px; z-index: 2001;
+        /* Твоя картинка Bild1.png - ЦЕНТР */
+        #main-logo-img {
+            position: absolute; width: 100px; height: 100px; border-radius: 50%;
+            display: none; z-index: 2001;
+            box-shadow: 0 0 50px var(--super);
+            object-fit: cover;
         }
 
-        /* Тот самый исправленный логотип */
+        /* Уменьшенный текст вокруг логотипа */
         #circular-text-container {
-            position: absolute; width: 440px; height: 440px;
+            position: absolute; width: 320px; height: 320px;
             display: none; z-index: 2002; pointer-events: none;
-            animation: fadeInRotate 2.2s ease-out forwards;
+            animation: fadeInRotate 2.5s ease-out forwards;
         }
 
         #circular-text-container svg { width: 100%; height: 100%; overflow: visible; }
         #circular-text-container text {
             fill: var(--gold); font-family: var(--font-serif);
             font-weight: bold; text-transform: uppercase;
-            letter-spacing: 7px; font-size: 19px;
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.9));
+            letter-spacing: 5px; font-size: 15px;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.9));
         }
 
-        #footer-logo { 
-            position: absolute; bottom: 30px; color: var(--gold); 
-            opacity: 0.4; letter-spacing: 5px; font-size: 11px; 
-            text-transform: uppercase;
+        .particle {
+            position: absolute; background: #fff; border-radius: 50%; 
+            pointer-events: none; z-index: 2005;
         }
+
+        #footer-logo { position: absolute; bottom: 30px; color: var(--gold); opacity: 0.5; letter-spacing: 4px; font-size: 10px; }
 
         @keyframes fadeInRotate {
-            0% { opacity: 0; transform: scale(0.6) rotate(-25deg); }
+            0% { opacity: 0; transform: scale(0.7) rotate(-20deg); }
             100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
     </style>
@@ -75,31 +75,27 @@
     <canvas id="canvas"></canvas>
     <div id="circular-text-container">
         <svg viewBox="0 0 200 200">
-            <path id="topPath" d="M 15, 100 a 85,85 0 1,1 170,0" fill="none" />
-            <path id="bottomPath" d="M 15, 100 a 85,85 0 1,0 170,0" fill="none" />
+            <path id="topPath" d="M 25, 100 a 75,75 0 1,1 150,0" fill="none" />
+            <path id="bottomPath" d="M 25, 100 a 75,75 0 1,0 150,0" fill="none" />
             <text><textPath xlink:href="#topPath" startOffset="50%" text-anchor="middle">HELVETIC.LUCK</textPath></text>
             <text><textPath xlink:href="#bottomPath" startOffset="50%" text-anchor="middle">GLOBAL LOTTO POOL</textPath></text>
         </svg>
     </div>
     <div id="flash"></div>
-    <div id="superzahl"></div>
+    <img src="Bild1.png" id="main-logo-img" alt="Superzahl 3">
     <div id="footer-logo">ДВИЖОК VCHF</div>
 </div>
 
 <script>
-    /* [SYSTEM MEMORY: RESTORING FULL LOGIC] 
-       Vitaly, I am now cross-referencing all blocks.
-    */
+    /* [VCHF ULTIMATE CORE - FULL RESTORED] */
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const flash = document.getElementById('flash');
-    const szElement = document.getElementById('superzahl');
+    const logoImg = document.getElementById('main-logo-img');
     const circContainer = document.getElementById('circular-text-container');
     const wrapper = document.getElementById('intro-wrapper');
 
-    // Твои данные
     const data = { main: [6, 20, 22, 24, 31, 32], sz: 3 };
-    let particles = [];
     let bgBalls = [];
 
     function resize() {
@@ -109,96 +105,102 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Восстанавливаем фоновые сферы
     function createBackground() {
-        for(let i=0; i<15; i++) {
+        for(let i=0; i<20; i++) {
             const b = document.createElement('div');
             b.className = 'bg-ball';
             wrapper.appendChild(b);
-            resetBgBall(b);
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            b.style.left = x + 'px';
+            b.style.top = y + 'px';
             bgBalls.push(b);
         }
     }
 
-    function resetBgBall(b) {
-        const x = Math.random() * window.innerWidth;
-        const y = Math.random() * window.innerHeight;
-        b.style.left = x + 'px';
-        b.style.top = y + 'px';
-        b.style.opacity = Math.random() * 0.3;
-    }
-
-    // Тот самый DrawLightning
     function drawLightning(x1, y1, x2, y2) {
         ctx.strokeStyle = 'rgba(0, 255, 255, 0.9)';
-        ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 45; ctx.lineWidth = 4;
+        ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 40; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.moveTo(x1, y1);
-        let segs = 12;
+        let segs = 10;
         for(let i=0; i<segs; i++) {
-            ctx.lineTo(
-                x1 + (x2-x1)*(i/segs) + (Math.random()-0.5)*160, 
-                y1 + (y2-y1)*(i/segs) + (Math.random()-0.5)*160
-            );
+            ctx.lineTo(x1 + (x2-x1)*(i/segs) + (Math.random()-0.5)*150, y1 + (y2-y1)*(i/segs) + (Math.random()-0.5)*150);
         }
         ctx.lineTo(x2, y2); ctx.stroke();
     }
 
-    // Полный цикл Ignite
+    function createSandEffect() {
+        for(let i = 0; i < 200; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 4;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = (window.innerWidth/2) + 'px';
+            p.style.top = (window.innerHeight/2) + 'px';
+            wrapper.appendChild(p);
+            
+            p.animate([
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(${(Math.random()-0.3)*900}px, ${(Math.random()-0.5)*500}px) rotate(${Math.random()*360}deg) scale(0)`, opacity: 0 }
+            ], { duration: 1500 + Math.random()*1500, easing: 'ease-out' });
+            
+            setTimeout(() => p.remove(), 3000);
+        }
+    }
+
     async function ignite() {
         createBackground();
         
-        // 1. Агрессивные молнии
+        // 1. МОЛНИИ (Полный цикл)
         for(let i=0; i<25; i++) {
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            drawLightning(canvas.width/2 + (Math.random()-0.5)*600, 0, canvas.width/2, canvas.height/2);
-            await new Promise(r => setTimeout(r, 45));
+            drawLightning(canvas.width/2 + (Math.random()-0.5)*500, 0, canvas.width/2, canvas.height/2);
+            await new Promise(r => setTimeout(r, 50));
         }
         ctx.clearRect(0,0,canvas.width, canvas.height);
 
-        // 2. Сбор шаров (как в первом видео)
+        // 2. ВЫЛЕТ СФЕР (Полный цикл)
         for(let i=0; i<6; i++) {
             const b = document.createElement('div');
             b.className = 'ball';
             b.innerText = data.main[i];
             wrapper.appendChild(b);
             const angle = (i/6) * Math.PI * 2;
-            const dist = 180;
-            b.style.left = (window.innerWidth/2 + Math.cos(angle)*dist - 27) + 'px';
-            b.style.top = (window.innerHeight/2 + Math.sin(angle)*dist - 27) + 'px';
+            b.style.left = (window.innerWidth/2 + Math.cos(angle)*180 - 27) + 'px';
+            b.style.top = (window.innerHeight/2 + Math.sin(angle)*180 - 27) + 'px';
             setTimeout(() => b.style.opacity = '1', 50);
             await new Promise(r => setTimeout(r, 400));
         }
 
-        await new Promise(r => setTimeout(r, 1800));
+        await new Promise(r => setTimeout(r, 1500));
 
-        // 3. Имплозия (ничего не стираем!)
-        const balls = document.querySelectorAll('.ball');
-        balls.forEach(b => {
+        // 3. ИМПЛОЗИЯ
+        document.querySelectorAll('.ball').forEach(b => {
             b.style.transition = 'all 0.6s cubic-bezier(0.6, -0.4, 0.7, 0.05)';
             b.style.left = (window.innerWidth/2 - 27) + 'px';
             b.style.top = (window.innerHeight/2 - 27) + 'px';
-            b.style.transform = 'scale(0.05)';
-            b.style.opacity = '0';
+            b.style.transform = 'scale(0.1)'; b.style.opacity = '0';
         });
 
         await new Promise(r => setTimeout(r, 600));
 
-        // 4. Супернова и Лого
+        // 4. СУПЕРНОВА С ЭФФЕКТОМ ПЕСКА
+        createSandEffect();
         flash.style.opacity = '1';
-        szElement.innerText = data.sz;
-        szElement.style.display = 'flex';
-        szElement.style.left = (window.innerWidth/2 - 60) + 'px';
-        szElement.style.top = (window.innerHeight/2 - 60) + 'px';
+        
+        logoImg.style.display = 'block';
+        logoImg.style.left = (window.innerWidth/2 - 50) + 'px';
+        logoImg.style.top = (window.innerHeight/2 - 50) + 'px';
 
         circContainer.style.display = 'block';
-        circContainer.style.left = (window.innerWidth/2 - 220) + 'px';
-        circContainer.style.top = (window.innerHeight/2 - 220) + 'px';
+        circContainer.style.left = (window.innerWidth/2 - 160) + 'px';
+        circContainer.style.top = (window.innerHeight/2 - 160) + 'px';
 
         setTimeout(() => {
-            flash.style.transition = 'opacity 3.5s ease-out';
+            flash.style.transition = 'opacity 3s ease-out';
             flash.style.opacity = '0';
-            console.log("VCHF Ultimate: Full Restoration Complete.");
-        }, 250);
+        }, 200);
     }
 
     window.onload = ignite;
