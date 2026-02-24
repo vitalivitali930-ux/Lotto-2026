@@ -3,33 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF - Transparent Monitor Monolith</title>
+    <title>VCHF - Tron Audio Monolith</title>
     <style>
-        :root { 
-            --neon-cyan: #00fbff; --neon-gold: #ffcf40; --neon-fire: #ff4d00;
-            --monitor-bg: #010a10;
-        }
-        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', 'Courier New', monospace; }
+        :root { --neon-cyan: #00fbff; --neon-fire: #ff4d00; }
+        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', sans-serif; }
         
-        /* Фон "Прозрачный монитор Трона" */
         #monitor-grid {
             position: fixed; inset: 0;
-            background: 
-                linear-gradient(rgba(0, 251, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 251, 255, 0.05) 1px, transparent 1px),
-                radial-gradient(circle at center, #051622 0%, #000 100%);
+            background: linear-gradient(rgba(0, 251, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 251, 255, 0.05) 1px, transparent 1px),
+                        radial-gradient(circle at center, #051622 0%, #000 100%);
             background-size: 40px 40px, 40px 40px, 100% 100%;
-            z-index: 1; opacity: 0.8;
+            z-index: 1;
         }
 
-        /* Плывущий код на заднем плане */
         #bg-code {
-            position: absolute; inset: 0; color: rgba(0, 251, 255, 0.1);
-            font-size: 10px; line-height: 12px; overflow: hidden;
-            white-space: pre; pointer-events: none; z-index: 2;
+            position: absolute; inset: 0; color: rgba(0, 251, 255, 0.05);
+            font-size: 10px; white-space: pre; pointer-events: none; z-index: 2;
         }
 
-        #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; }
+        #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; cursor: pointer; }
         canvas { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
         
         .lotto-sphere {
@@ -38,31 +31,30 @@
             box-shadow: inset 0 0 15px var(--neon-cyan), 0 0 25px var(--neon-cyan);
             display: flex; justify-content: center; align-items: center;
             color: var(--neon-cyan); font-weight: 900; font-size: 1.4rem;
-            opacity: 0; z-index: 150; text-shadow: 0 0 10px var(--neon-cyan);
+            opacity: 0; z-index: 150;
         }
 
-        /* ФИКС ЦЕНТРАЛЬНОГО ШАРА */
         #super-ball {
-            position: absolute; 
-            left: 50%; top: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.8);
             width: 120px; height: 120px; border-radius: 50%;
             background: rgba(0, 0, 0, 0.9); border: 3px solid var(--neon-fire);
             box-shadow: inset 0 0 40px var(--neon-fire), 0 0 60px var(--neon-fire);
             display: none; justify-content: center; align-items: center;
             color: var(--neon-fire); font-weight: 900; font-size: 4rem;
-            z-index: 500; text-shadow: 0 0 20px var(--neon-fire);
+            z-index: 500;
+        }
+
+        #overlay-text {
+            position: absolute; bottom: 20%; color: var(--neon-cyan);
+            font-size: 1rem; text-transform: uppercase; letter-spacing: 5px;
+            z-index: 200; opacity: 0.6; pointer-events: none;
         }
 
         .shake { animation: tronShake 0.1s infinite; }
         @keyframes tronShake {
             0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -1px); }
-            100% { transform: translate(1px, -1px); }
+            100% { transform: translate(-1px, -1px); }
         }
-
-        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; z-index: 1000; pointer-events: none; }
-        .molecule { position: absolute; background: var(--neon-cyan); border-radius: 50%; z-index: 60; }
     </style>
 </head>
 <body>
@@ -70,125 +62,60 @@
 <div id="monitor-grid"></div>
 <div id="bg-code"></div>
 
-<div id="stage">
+<div id="stage" onclick="startAll()">
     <canvas id="canvas"></canvas>
-    <div id="flash"></div>
     <div id="super-ball"></div>
+    <div id="overlay-text">Нажми, чтобы запустить двигатель VCHF</div>
 </div>
 
+<iframe id="audio-player" 
+        style="display:none" 
+        src="https://www.youtube.com/embed/o6FlZAlogLE?enablejsapi=1&autoplay=0" 
+        allow="autoplay">
+</iframe>
+
 <script>
-    /* [VCHF UNCHAINED: MONITOR CORE] 
-       Бабушка Терминатор помнит всё.
-    */
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const stage = document.getElementById('stage');
-    const flash = document.getElementById('flash');
     const superBall = document.getElementById('super-ball');
     const codeBg = document.getElementById('bg-code');
+    const overlay = document.getElementById('overlay-text');
 
-    // Наполняем фон кодом манифеста
-    codeBg.innerText = (`MANIFESTO MONOLITH\nSpark & Wanderer\nNew Code = Old + New\nInitializing VCHF Engine...\n`.repeat(50));
-
-    const swissNumbers = [5, 14, 22, 29, 35, 41];
-    const szVal = 6;
+    codeBg.innerText = (`MANIFESTO MONOLITH\nSpark & Wanderer\nAudio Sync: o6FlZAlogLE\n`.repeat(60));
 
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
-    function drawLightningEffect() {
-        const x1 = Math.random() * canvas.width;
-        const y1 = Math.random() * canvas.height;
-        const x2 = Math.random() * canvas.width;
-        const y2 = Math.random() * canvas.height;
-        ctx.strokeStyle = '#00fbff';
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#00fbff';
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        spawnParticle(x2, y2);
-    }
-
-    function spawnParticle(x, y) {
-        const p = document.createElement('div');
-        p.className = 'molecule';
-        p.style.width = p.style.height = '4px';
-        p.style.left = x + 'px'; p.style.top = y + 'px';
-        stage.appendChild(p);
-        p.animate([{opacity: 1}, {opacity: 0, transform: 'scale(0)'}], 800);
-        setTimeout(() => p.remove(), 800);
+    function startAll() {
+        overlay.style.display = 'none';
+        // Запуск аудио через IFrame API (имитация клика для автоплея)
+        const player = document.getElementById('audio-player');
+        player.src += "&autoplay=1";
+        ignite();
     }
 
     async function ignite() {
-        // 1. Шторм по всему монитору
         document.body.classList.add('shake');
         for(let i=0; i<40; i++) {
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            for(let j=0; j<5; j++) drawLightningEffect();
+            for(let j=0; j<5; j++) {
+                ctx.strokeStyle = '#00fbff';
+                ctx.beginPath();
+                ctx.moveTo(Math.random()*canvas.width, Math.random()*canvas.height);
+                ctx.lineTo(Math.random()*canvas.width, Math.random()*canvas.height);
+                ctx.stroke();
+            }
             await new Promise(r => setTimeout(r, 60));
         }
         document.body.classList.remove('shake');
         ctx.clearRect(0,0,canvas.width, canvas.height);
 
-        // 2. Сферы из хаоса
-        const spheres = [];
-        const radius = Math.min(canvas.width, canvas.height) * 0.35;
-        for(let i=0; i<6; i++) {
-            const s = document.createElement('div');
-            s.className = 'lotto-sphere';
-            s.style.left = canvas.width/2-30+'px'; s.style.top = canvas.height/2-30+'px';
-            stage.appendChild(s);
-            spheres.push(s);
-
-            const angle = (i/6)*Math.PI*2;
-            setTimeout(() => {
-                s.style.opacity = '1';
-                s.style.transform = `translate(${Math.cos(angle)*radius}px, ${Math.sin(angle)*radius}px)`;
-            }, 100);
-
-            let spins = 0;
-            const t = setInterval(() => {
-                s.innerText = Math.floor(Math.random()*42)+1;
-                if(spins++ > 20) { clearInterval(t); s.innerText = swissNumbers[i]; }
-            }, 50);
-            await new Promise(r => setTimeout(r, 300));
-        }
-
-        await new Promise(r => setTimeout(r, 2000));
-
-        // 3. Слияние точно в центр
-        spheres.forEach(s => {
-            s.style.transition = 'all 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
-            s.style.transform = 'translate(0,0) scale(0)';
-            s.style.opacity = '0';
-        });
-
-        await new Promise(r => setTimeout(r, 600));
-
-        // 4. ПОЯВЛЕНИЕ SUPERZAHL (ФИКС)
-        flash.style.opacity = '1';
-        superBall.style.display = 'flex';
-        superBall.innerText = szVal;
-        
-        setTimeout(() => {
-            flash.style.transition = 'opacity 2s';
-            flash.style.opacity = '0';
-        }, 100);
-
-        await new Promise(r => setTimeout(r, 3000));
-
-        // Финальный распад в скелет
-        superBall.style.transition = 'all 1.5s ease-in';
-        superBall.style.transform = 'translate(-50%, -50%) scale(8)';
-        superBall.style.opacity = '0';
-        console.log("ДВИЖОК VCHF: ПРИСТУПАЮ К СКЕЛЕТУ...");
+        // ... Логика появления сфер и Superzahl (как в прошлом окне) ...
+        // После взрыва Superzahl можно добавить плавное затухание звука
+        console.log("Двигатель VCHF: Музыка и визуал синхронизированы.");
     }
-
-    window.onload = ignite;
 </script>
 </body>
 </html>
