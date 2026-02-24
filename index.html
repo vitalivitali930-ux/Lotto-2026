@@ -1,561 +1,655 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Ultimate 2.5</title>
-    
+    <title>Lotto - Движок VCHF Ultimate 2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --main-color: #d4af37;
+        :root { 
+            --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --theme-glow: rgba(212, 175, 55, 0.45);
+            --theme-glow: rgba(212, 175, 55, 0.35); 
             --sphere-base: #1a1a1a;
-            --white-sphere: radial-gradient(circle at 35% 35%, #555 0%, #1a1a1a 45%, #000 100%);
-            --cell-text: #ffffff;
-            --neon-blue: #00a3ff;
-            --bg-dark: #000000;
-            --shadow-color: rgba(0, 0, 0, 0.9);
-            --process-color: #00ffff;
+            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
+            --cell-text: #ffffff; 
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
-            --success-green: #32CD32;
-        }
+            --process-color: #00ffff;
+            --neon-blue: #00a3ff;
+        } 
 
-        /* ТЕМАТИЧЕСКИЕ МОДИФИКАТОРЫ (ПОЛНЫЙ СПИСОК) */
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.45); }
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #f0f0f0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.45); }
-        body.theme-emerald { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.45); }
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.45); }
-        body.theme-phantom { --main-color: #444; --main-gradient: linear-gradient(145deg, #333, #111); --theme-glow: rgba(255, 255, 255, 0.1); }
-        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.45); }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            background: var(--bg-dark);
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: -apple-system, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; 
             transition: background 0.5s ease;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+        } 
 
-        /* АНИМАЦИИ МОНОЛИТА */
+        /* Темы */
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
+
+        /* Оптимизированное ЦВЕТНОЕ Дыхание */
         @keyframes sphere-breathe {
-            0%, 100% { box-shadow: inset -5px -5px 15px var(--shadow-color), 0 8px 15px var(--shadow-color), 0 0 10px var(--theme-glow); transform: scale(1); }
-            50% { box-shadow: inset -5px -5px 15px var(--shadow-color), 0 15px 30px var(--shadow-color), 0 0 25px var(--main-color); transform: scale(1.05); }
+            0%, 100% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 
+                            0 5px 12px rgba(0,0,0,0.6), 
+                            0 0 5px var(--main-color);
+                border-color: rgba(255, 255, 255, 0.1);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 
+                            0 5px 22px rgba(0,0,0,0.4), 
+                            0 0 20px var(--main-color); 
+                border-color: var(--main-color);
+                transform: scale(1.04); 
+            }
         }
 
+        /* Магия: вспышка при рандомном переборе */
         @keyframes processing-flash {
-            0% { background: var(--process-color); box-shadow: 0 0 35px var(--process-color); transform: scale(1.2); z-index: 100; }
-            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); z-index: 1; }
+            0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
+            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
         }
+        .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
 
-        @keyframes pulse-hot { 0% { box-shadow: 0 0 10px #ff4500; } 100% { box-shadow: 0 0 25px #ff4500, 0 0 5px #fff; transform: scale(1.08); } }
-        @keyframes pulse-cold { 0% { box-shadow: 0 0 10px #1e90ff; } 100% { box-shadow: 0 0 25px #1e90ff, 0 0 5px #fff; transform: scale(1.08); } }
+        @keyframes candle-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
+            50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
+        }
+        .candle { animation: candle-glow 2s infinite ease-in-out; } 
+
+        #legal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
+            backdrop-filter: blur(15px); z-index: 30000;
+            display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px;
+        }
+        .legal-box {
+            background: #111; border: 2px solid var(--main-color);
+            padding: 30px; border-radius: 25px; max-width: 320px; text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow);
+        } 
+
+        .lang-panel { position: relative; height: 65px; margin-bottom: 25px; display: flex; justify-content: center; align-items: center; z-index: 1001; }
+        .lang-btn { font-size: 30px; cursor: pointer; position: absolute; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5; }
         
-        @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .pos-ru { transform: translate(-100px, 45px); }
+        .pos-fr { transform: translate(-50px, 70px); }
+        .pos-de { transform: translate(0px, 80px); }
+        .pos-en { transform: translate(50px, 70px); }
+        .pos-ua { transform: translate(100px, 45px); } 
 
-        /* СКЕЛЕТ ИНТЕРФЕЙСА */
-        #intro-container { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; justify-content: center; align-items: center; overflow: hidden; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .intro-sphere { position: absolute; width: 70px; height: 70px; background: var(--white-sphere); border-radius: 50%; opacity: 0; box-shadow: 0 0 30px var(--main-color); border: 1px solid rgba(255,255,255,0.2); }
+        #intro-container {
+            position: fixed; inset: 0; background: #000 url('Hintergrund.png') no-repeat center center; 
+            background-size: cover; z-index: 20000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 1s ease;
+        }
+        .intro-img { position: absolute; width: 85%; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .intro-img.active { animation: shakePop 0.7s ease-out forwards; opacity: 1; }
+        @keyframes shakePop { 0% { transform: scale(0.1); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } } 
 
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; flex-direction: column; position: relative; z-index: 1; }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
+        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
+        .page.active { display: block; } 
+
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000;
+        }
+        .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; } 
+
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
+        .bal-card { 
+            flex: 1; border-radius: 12px; padding: 12px; background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
+            border: 1.5px solid #444; transition: all 0.4s ease; cursor: pointer; opacity: 0.5; filter: grayscale(0.7) brightness(0.8);
+        }
+        .bal-card.active-wallet { opacity: 1; filter: grayscale(0) brightness(1.2); border-color: var(--main-color); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 15px var(--main-color); transform: scale(1.05); }
+        .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; } 
+
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { 
+            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; position: relative; border: 1px solid rgba(255,255,255,0.1);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
         
-        .page { flex: 1; overflow-y: auto; padding: 20px 0 120px; display: none; scroll-behavior: smooth; }
-        .page.active { display: block; animation: fade-in 0.6s ease; }
+        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
+        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .mini-ball { width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; } 
 
-        /* НАВИГАЦИЯ */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: rgba(5,5,5,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid var(--main-color); z-index: 10000; backdrop-filter: blur(15px); box-shadow: 0 -15px 35px rgba(0,0,0,0.9); }
-        .nav-item { color: #444; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .nav-item span { font-size: 28px; margin-bottom: 5px; transition: 0.3s; }
-        .nav-item.active { color: var(--main-color); transform: translateY(-8px); }
-        .nav-item.active span { text-shadow: 0 0 15px var(--theme-glow); transform: scale(1.2); }
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
+        
+        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
+        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); } 
 
-        /* ГЛАВНАЯ СЕТКА */
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; padding: 0 25px; max-width: 500px; margin: 25px auto; perspective: 1000px; }
-        
-        .cell-wrapper { position: relative; width: 100%; aspect-ratio: 1/1; }
-        
-        .cell { width: 100%; height: 100%; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--cell-text); font-size: 22px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; border: 1px solid rgba(255,255,255,0.08); animation: sphere-breathe 4s infinite ease-in-out; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        
-        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.18) translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 50; animation: none; }
-        
-        .cell.processing-flash { animation: processing-flash 0.2s ease-out forwards; }
-        .cell.is-hot { border: 2.5px solid #ff4500 !important; animation: pulse-hot 1s infinite alternate !important; }
-        .cell.is-cold { border: 2.5px solid #1e90ff !important; animation: pulse-cold 1s infinite alternate !important; }
+        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
+        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; } 
 
-        .sphere-shadow { position: absolute; bottom: -12px; width: 80%; height: 12px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 75%); left: 10%; filter: blur(6px); z-index: -1; transition: 0.5s; }
-        .cell.selected + .sphere-shadow { transform: scale(1.3); opacity: 0.6; filter: blur(10px); }
+        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
+        #display-total { color: var(--neon-blue); font-weight: 900; } 
 
-        /* АЛМАЗНЫЙ ВЕЕР */
-        .diamond-fan-container { position: relative; height: 130px; margin-top: 25px; z-index: 1000; }
-        #main-diamond { width: 55px; height: 55px; background: radial-gradient(circle at 35% 35%, #fff, var(--main-color) 75%); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); margin: 0 auto; cursor: pointer; position: relative; z-index: 1001; box-shadow: 0 0 25px var(--main-color); transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
-        #main-diamond.dimmed { filter: grayscale(0.8) brightness(0.4); transform: rotate(45deg) scale(0.85); }
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
+        .super-cell { 
+            width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        }
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--main-color); animation: none; } 
+
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
+        .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; } 
+
+        .btn-main { width: 85%; padding: 22px; border-radius: 18px; font-size: 20px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
         
-        .fan-sphere { position: absolute; width: 40px; height: 40px; border-radius: 50%; left: calc(50% - 20px); top: 10px; transition: 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55); opacity: 0; transform: scale(0); cursor: pointer; border: 2.5px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000; }
+        @keyframes pulse-hot { from { box-shadow: 0 0 15px #ff4500; transform: scale(1.02); } to { box-shadow: 0 0 30px #ff4500; transform: scale(1.1); } }
+        @keyframes pulse-cold { from { box-shadow: 0 0 15px #1e90ff; transform: scale(1.02); } to { box-shadow: 0 0 30px #1e90ff; transform: scale(1.1); } }
+        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 25px #ff4500 !important; animation: pulse-hot 1.2s 3 alternate; z-index: 5; }
+        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 25px #1e90ff !important; animation: pulse-cold 1.2s 3 alternate; z-index: 5; }
+        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 25px var(--process-color) !important; animation: pulse-hot 1.2s 3 alternate; }
+    </style>
+</head>
+<body> 
 
-        /* КОШЕЛЕК И ИНФО */
-        .balance-section { display: flex; gap: 18px; padding: 0 25px; margin-bottom: 25px; }
-        .wallet-card { flex: 1; background: linear-gradient(145deg, #151515, #050505); border: 2px solid #252525; border-radius: 20px; padding: 12px; transition: 0.5s; cursor: pointer; position: relative; overflow: hidden; }
-        .wallet-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent); transform: rotate(45deg); transition: 0.5s; }
-        .wallet-card:hover::after { left: 100%; }
-        .wallet-card.active { border-color: var(--main-color); box-shadow: 0 0 20px var(--theme-glow); transform: translateY(-5px); }
-
-        .currency-label { font-size: 10px; color: #777; letter-spacing: 2px; font-weight: 700; margin-bottom: 5px; }
-        .currency-value { font-size: 20px; font-weight: 900; color: var(--main-color); text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        
-        /* КНОПКИ И ТУЛЗЫ */
-        .smart-tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; padding: 0 15px; }
-        .tool-btn { padding: 10px 18px; border-radius: 25px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-family: 'Orbitron'; font-weight: 700; cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
-        .tool-btn.active-tool { background: var(--main-color); color: #000; box-shadow: 0 0 15px var(--main-color); }
-<div id="legal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 100000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px;">
-    <div class="legal-box" style="background: #111; border: 3px solid var(--main-color); padding: 35px; border-radius: 30px; max-width: 350px; text-align: center; box-shadow: 0 0 60px rgba(0,0,0,1);">
-        <h2 id="legal-title" style="color: var(--main-color); font-size: 22px; margin-bottom: 20px;"></h2>
-        <p id="legal-text" style="font-size: 14px; line-height: 1.7; color: #ccc; margin-bottom: 30px; font-family: sans-serif;"></p>
-        <button class="btn-confirm" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin:0;"></button>
+<div id="legal-overlay">
+    <div class="legal-box">
+        <div id="legal-content" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; color: #eee;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin-top:0; padding:15px;"></button>
     </div>
-</div>
+</div> 
 
 <div id="intro-container">
-    <div class="intro-sphere" id="is1"></div><div class="intro-sphere" id="is2"></div>
-    <div class="intro-sphere" id="is3"></div><div class="intro-sphere" id="is4"></div>
-    <div class="intro-sphere" id="is5"></div><div class="intro-sphere" id="is6"></div>
-</div>
+    <img src="Bild1.png" id="intro1" class="intro-img">
+    <img src="Bild2.png" id="intro2" class="intro-img">
+    <img src="Bild3.png" id="intro3" class="intro-img">
+</div> 
 
 <div id="app-content">
     <div id="page-play" class="page active">
-        <div id="lang-trigger" style="position:absolute; top:20px; left:20px; font-size:28px; cursor:pointer; z-index:1001; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));" onclick="cycleLanguage()">🌐</div>
-        
-        <div class="diamond-fan-container">
-            <div id="main-diamond" onclick="toggleFan()"></div>
-            <div class="fan-sphere" onclick="setTheme('cherry')" style="background:#C511A4" title="Cherry"></div>
-            <div class="fan-sphere" onclick="setTheme('cyan')" style="background:#00ffff" title="Cyan"></div>
-            <div class="fan-sphere" onclick="setTheme('emerald')" style="background:#32CD32" title="Emerald"></div>
-            <div class="fan-sphere" onclick="setTheme('silver')" style="background:#c0c0c0" title="Silver"></div>
-            <div class="fan-sphere" onclick="setTheme('gold')" style="background:#d4af37" title="Gold"></div>
-            <div class="fan-sphere" onclick="setTheme('phantom')" style="background:#222" title="Phantom"></div>
-        </div>
+        <div class="lang-panel" id="dynamic-langs"></div>
+        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+        <div class="theme-panel">
+            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        </div> 
 
-        <div class="balance-section">
-            <div class="wallet-card active" id="w-vchf" onclick="switchCurrency('VCHF')">
-                <div class="currency-label">VIRTUAL ENGINE</div>
-                <div class="currency-value" id="val-vchf">100.00</div>
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:10px;">VIRTUAL VCHF</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
             </div>
-            <div class="wallet-card" id="w-chf" onclick="switchCurrency('CHF')">
-                <div class="currency-label">REAL SWISS CHF</div>
-                <div class="currency-value" id="val-chf">0.00</div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:10px;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
             </div>
-        </div>
+        </div> 
 
-        <div class="smart-tools">
-            <button class="tool-btn" onclick="applySmartPick('hot')" id="btn-hot">🔥 HOT</button>
-            <button class="tool-btn" onclick="applySmartPick('cold')" id="btn-cold">❄️ COLD</button>
-            <button class="tool-btn" onclick="applySmartPick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
-            <button class="tool-btn" onclick="triggerRandom()">🎲 RANDOM</button>
-        </div>
-
-        <div class="stats-period" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
-            <button class="p-btn active" onclick="setStatsPeriod('month')" id="p-month" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">MONTH</button>
-            <button class="p-btn" onclick="setStatsPeriod('year')" id="p-year" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">YEAR</button>
-            <button class="p-btn" onclick="setStatsPeriod('all')" id="p-all" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">ALL TIME</button>
-        </div>
+        <div class="ticket-controls">
+            <div class="smart-tools">
+                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
+            </div>
+            <div class="stats-period" id="stats-p-box">
+                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            </div>
+            <div class="counter-box">
+                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
+                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+            </div>
+        </div> 
 
         <div class="grid" id="main-grid"></div>
-        
-        <div id="super-label" style="color:var(--main-color); font-size:14px; margin: 30px 0 15px; font-weight:900; letter-spacing:3px;">SUPERZAHL</div>
-        <div class="grid" id="super-grid" style="grid-template-columns: repeat(6, 1fr); max-width: 350px; margin-bottom: 30px;"></div>
-
-        <div style="margin: 25px 0; font-size: 18px; font-weight: 700;">
-            <span id="label-total">TOTAL</span>: <span id="display-amount" style="color:var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">2.50 VCHF</span>
+        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div class="super-grid" id="s-grid"></div>
+        <div class="total-display">
+            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
         </div>
-        
-        <button class="btn-confirm" id="btn-main-action" onclick="runEngine()" style="width: 85%; height: 70px; background: var(--main-gradient); color: #000; border: none; border-radius: 20px; font-family: 'Orbitron'; font-weight: 900; font-size: 20px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: 0.3s;"></button>
-    </div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+    </div> 
 
     <div id="page-tickets" class="page">
-        <h2 id="tickets-title" style="color:var(--main-color); font-size: 24px; letter-spacing: 5px;">MY TICKETS</h2>
-        <div id="tickets-list" style="padding: 10px 20px;"></div>
-    </div>
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
+        <div id="active-list"></div>
+    </div> 
 
     <div id="page-stats" class="page">
-        <h2 id="stats-title" style="color:var(--main-color); font-size: 24px; letter-spacing: 5px;">ANALYTICS</h2>
-        <div id="stats-heatmap-container" style="padding: 0 10px;">
-            <div class="grid" id="stats-heatmap"></div>
-        </div>
-    </div>
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
+        <div class="grid" id="personal-heatmap"></div>
+    </div> 
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('play', this)">
-            <span>🎲</span><div id="n-game">PLAY</div>
-        </div>
-        <div class="nav-item" onclick="showPage('tickets', this)">
-            <span>🎟️</span><div id="n-tickets">TICKETS</div>
-        </div>
-        <div class="nav-item" onclick="showPage('stats', this)">
-            <span>📊</span><div id="n-stats">STATS</div>
-        </div>
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
     </div>
-</div>
+</div> 
 
 <script>
-    /* [VCHF ENGINE v2.5: MONOLITH LOGIC] */
     const tg = window.Telegram.WebApp;
-    tg.expand();
+    tg.expand(); 
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "СУПЕРЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ", total: "ИТОГО", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", bgs_t: "Закон Швейцарии (BGS)", bgs_p: "Согласно Федеральному закону, участие разрешено только лицам старше 18 лет.", bgs_b: "МНЕ ЕСТЬ 18" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "СУПЕРЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "РАЗОМ", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", bgs_t: "Закон Швейцарії (BGS)", bgs_p: "Згідно з законом, участь дозволена лише особам старше 18 років.", bgs_b: "МЕНІ Є 18" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "GESAMT", game: "SPIEL", tickets: "TICKETS", stats: "STATS", bgs_t: "Schweizer Gesetz (BGS)", bgs_p: "Gemäss Bundesgesetz ist die Teilnahme erst ab 18 Jahren gestattet.", bgs_b: "ICH BIN 18" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "TOTAL", game: "PLAY", tickets: "TICKETS", stats: "STATS", bgs_t: "Swiss Law (BGS)", bgs_p: "According to Federal Act, participation is only for 18+.", bgs_b: "I AM 18" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "TOTAL", game: "JEU", tickets: "BILLETS", stats: "STATS", bgs_t: "Loi Suisse (BGS)", bgs_p: "Selon la loi fédérale, la participation est réservée aux 18+.", bgs_b: "J'AI 18 ANS" }
-    };
-    // Window 3: Core Mathematical Engine & Swiss Synchronization
-    let selected = [], superNum = null, currentLang = 'de', currentCurrency = 'VCHF', currentPeriod = 'month';
-    let balances = { VCHF: 100.00, CHF: 0.00 };
+    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
+    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
+
+    let realStatsDB = {};
     let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let realStatsDB = {}; 
+    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en', bgsTimer = null;
+    let activeSmartTool = null; 
+    const realPrice = 2.50; 
 
-    // Инициализация глубокой базы статистики
-    function initStats() {
-        for(let i=1; i<=42; i++) {
-            // Структура: [0]=Месяц, [1]=Год, [2]=Все время
-            realStatsDB[i] = [
-                Math.floor(Math.random() * 12), 
-                Math.floor(Math.random() * 60), 
-                400 + Math.floor(Math.random() * 250)
-            ];
+    // ОБНОВЛЕННЫЙ СЛОВАРЬ (ТОЛЬКО КЛЮЧ 'all')
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
+    }; 
+
+    const legalDict = {
+        ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
+        ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
+        de: { title: "Schweizer Gesetz (BGS)", text: "Gemäss dem Bundesgesetz über Geldspiele (BGS) ist die Teilnahme erst ab <b>18 Jahren</b> gestattet. Bestätigen Sie Ihr Einverständnis.", btn: "ICH BIN 18 JAHRE ALT" },
+        en: { title: "Swiss Law (BGS)", text: "According to the Swiss Federal Act on Gambling (BGS), participation is only allowed for persons over <b>18 years</b> old. Please confirm your agreement.", btn: "I AM 18 YEARS OLD" },
+        fr: { title: "Loi Suisse (BGS)", text: "Selon la Loi fédérale sur les jeux d'argent (BGS), la participation est réservée aux personnes de plus de <b>18 ans</b>. Veuillez confirmer votre accord.", btn: "J'AI 18 ANS" }
+    }; 
+
+    const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' }; 
+
+    function renderLangPanel(isExpanded) {
+        const container = document.getElementById('dynamic-langs');
+        container.innerHTML = '';
+        const main = document.createElement('span');
+        main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
+        main.innerHTML = langIcons[currentLang];
+        main.onclick = () => { renderLangPanel(!isExpanded); tg.HapticFeedback.impactOccurred('light'); };
+        container.appendChild(main);
+        if (isExpanded) {
+            const order = ['ru', 'fr', 'de', 'en', 'ua'];
+            order.forEach(l => {
+                const btn = document.createElement('span');
+                btn.className = `lang-btn pos-${l}`;
+                btn.innerHTML = langIcons[l];
+                btn.onclick = () => selectLang(l);
+                container.appendChild(btn);
+            });
         }
-    }
+    } 
 
-    // Синхронизация по времени Швейцарии
-    function getSwissTime() {
-        return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Zurich"}));
-    }
+    function selectLang(l) {
+        if (bgsTimer) clearTimeout(bgsTimer);
+        pendingLang = l;
+        showLegal(l);
+    } 
 
-    async function runActualization() {
-        const now = getSwissTime();
-        const lastSync = localStorage.getItem('vchf_last_sync_full');
-        // Логика обновления: имитируем подгрузку данных реального тиража (Среда/Суббота)
-        if (lastSync !== now.toDateString()) {
-            console.log("vchf Engine: Starting Actualization...");
-            for(let i=0; i<5; i++) {
-                let r = Math.floor(Math.random()*42)+1;
-                realStatsDB[r][0] += 1;
-                realStatsDB[r][1] += 1;
-                realStatsDB[r][2] += 1;
-            }
-            localStorage.setItem('vchf_last_sync_full', now.toDateString());
-            console.log("vchf Engine: Sync Complete.");
-        }
-    }
+    function showLegal(l) {
+        const overlay = document.getElementById('legal-overlay');
+        const content = document.getElementById('legal-content');
+        const btn = document.getElementById('legal-agree-btn');
+        content.innerHTML = `<h3 style="color:var(--main-color);margin-top:0;">${legalDict[l].title}</h3>${legalDict[l].text}`;
+        btn.innerText = legalDict[l].btn;
+        overlay.style.display = 'flex';
+        document.getElementById('app-content').style.filter = 'blur(10px)';
+    } 
 
-    function createGrids() {
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= 42; i++) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'cell-wrapper';
-            const c = document.createElement('div');
-            c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            c.onclick = () => handleCellClick(i);
-            const shadow = document.createElement('div'); shadow.className = 'sphere-shadow';
-            wrapper.appendChild(c); wrapper.appendChild(shadow);
-            grid.appendChild(wrapper);
-        }
-        const sgrid = document.getElementById('super-grid');
-        sgrid.innerHTML = '';
-        for (let i = 1; i <= 6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'cell'; sc.id = `super-${i}`; sc.innerText = i;
-            sc.onclick = () => selectSuper(i);
-            sgrid.appendChild(sc);
-        }
-    }
-
-    function handleCellClick(num) {
-        if(selected.includes(num)) {
-            selected = selected.filter(n => n !== num);
-        } else if(selected.length < 6) {
-            selected.push(num);
-            tg.HapticFeedback.impactOccurred('light');
-        }
-        refreshView();
-    }
-
-    function selectSuper(num) {
-        superNum = num;
-        tg.HapticFeedback.impactOccurred('medium');
-        refreshView();
-    }
-
-    function applySmartPick(type) {
-        // Сброс предыдущего выбора
-        selected = [];
-        const pIdx = currentPeriod === 'month' ? 0 : (currentPeriod === 'year' ? 1 : 2);
-        
-        // Сортировка по весам из базы
-        let data = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-        
-        if (type === 'hot') {
-            data.sort((a, b) => b.val - a.val);
-        } else {
-            // Cold и Sleeping (самые редкие)
-            data.sort((a, b) => a.val - b.val);
-        }
-        
-        selected = data.slice(0, 6).map(x => x.num);
+    function acceptLegal() {
+        currentLang = pendingLang;
+        localStorage.setItem('vchf_lang', currentLang);
+        localStorage.setItem('vchf_legal_accepted', 'true');
+        document.getElementById('legal-overlay').style.display = 'none';
+        document.getElementById('app-content').style.filter = 'none';
+        setLang(currentLang);
+        renderLangPanel(false);
         tg.HapticFeedback.notificationOccurred('success');
-        
-        // Подсвечиваем кнопки инструментов
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        document.getElementById(`btn-${type}`).classList.add('active-tool');
-        
-        refreshView(type);
-    }
+    } 
 
-    function setStatsPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
+    function startIntroSequence() {
+        const i1 = document.getElementById('intro1'), i2 = document.getElementById('intro2'), i3 = document.getElementById('intro3'), container = document.getElementById('intro-container');
+        setTimeout(() => i1.classList.add('active'), 100);
+        setTimeout(() => { i1.classList.remove('active'); i2.classList.add('active'); }, 1200);
+        setTimeout(() => { i2.classList.remove('active'); i3.classList.add('active'); }, 2400);
+        setTimeout(() => { container.style.opacity = '0'; setTimeout(() => { container.style.display = 'none'; document.getElementById('app-content').style.display = 'block'; setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50); }, 1000); }, 3600);
+    } 
+
+    function togglePick(type) {
+        activeSmartTool = type; 
+        const btns = { hot: 'btn-hot', cold: 'btn-cold', sleeping: 'btn-sleeping' };
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        if (btns[type]) document.getElementById(btns[type]).classList.add('active-tool');
         
-        // ПРАВИЛО: Мгновенный пересчет активного фильтра при смене периода
-        const activeBtn = document.querySelector('.tool-btn.active-tool');
-        if(activeBtn) {
-            const currentType = activeBtn.id.replace('btn-', '');
-            applySmartPick(currentType);
+        selected = [];
+        document.querySelectorAll('.cell').forEach(c => { 
+            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); 
+            c.style.animation = 'none'; 
+        });
+
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val);
+        else if (type === 'cold' || type === 'sleeping') sorted.sort((a, b) => a.val - b.val);
+        
+        selected = sorted.slice(0, 6).map(i => i.num);
+        selected.forEach(n => {
+            const el = document.getElementById(`cell-${n}`);
+            if (el) el.classList.add('selected', `is-${type}`);
+        });
+
+        superNum = Math.floor(Math.random() * 6) + 1;
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
+        tg.HapticFeedback.notificationOccurred('success'); 
+        sndWin.play();
+    } 
+
+    function showPage(pId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pId).classList.add('active');
+        el.classList.add('active');
+        if(pId === 'tickets') renderTickets();
+        if(pId === 'stats') renderHeatmap();
+        tg.HapticFeedback.impactOccurred('light');
+    } 
+
+    function renderTickets() {
+        const container = document.getElementById('active-list');
+        container.innerHTML = '';
+        myTickets.forEach(t => {
+            const card = document.createElement('div'); card.className = 'ticket-card';
+            card.innerHTML = `<div style="font-size:11px;color:#888;">ID: ${t.timestamp}</div><div class="ticket-nums">${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}<div class="mini-ball super-ball-mini">${t.super}</div></div>`;
+            container.appendChild(card);
+        });
+    } 
+
+    function renderHeatmap() {
+        const grid = document.getElementById('personal-heatmap'); grid.innerHTML = '';
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            const freq = realStatsDB[i][2];
+            if(freq > 450) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
+            grid.appendChild(c);
         }
-        refreshView();
-    }
+    } 
 
-    function refreshView(activeType = null) {
-        document.querySelectorAll('.cell').forEach(c => {
-            const id = parseInt(c.innerText);
-            c.classList.remove('selected', 'is-hot', 'is-cold');
-            
-            if(c.id.startsWith('cell-')) {
-                if(selected.includes(id)) {
-                    c.classList.add('selected');
-                    if(activeType === 'hot') c.classList.add('is-hot');
-                    if(activeType === 'cold' || activeType === 'sleeping') c.classList.add('is-cold');
-                }
-            } else if(c.id.startsWith('super-')) {
-                if(superNum === id) c.classList.add('selected');
-            }
-        });
-        updatePriceDisplay();
-    }
-    // Window 4: Transaction Processing, UI Effects & Launch Initialization
-    function triggerRandom() {
-        selected = []; superNum = null;
+    function setLang(l) {
+        currentLang = l; const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('l-total').innerText = d.total;
+        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
+        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
+        document.getElementById('l-active-tickets-title').innerText = d.activeT;
+        document.getElementById('l-personal-stats-title').innerText = d.stats;
+    } 
+
+    function handleCellClick(i) {
+        sndClick.currentTime = 0; sndClick.play();
+        activeSmartTool = null; 
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        let iterations = 0;
-        const interval = setInterval(() => {
-            const r = Math.floor(Math.random() * 42) + 1;
-            const el = document.getElementById(`cell-${r}`);
-            el.classList.add('processing-flash');
-            setTimeout(() => el.classList.remove('processing-flash'), 150);
-            iterations++;
-            if(iterations > 25) {
-                clearInterval(interval);
-                while(selected.length < 6) {
-                    let nr = Math.floor(Math.random() * 42) + 1;
-                    if(!selected.includes(nr)) selected.push(nr);
-                }
-                superNum = Math.floor(Math.random() * 6) + 1;
-                tg.HapticFeedback.notificationOccurred('success');
-                refreshView();
-            }
-        }, 70);
-    }
+        document.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('is-hot', 'is-cold', 'is-sleeping');
+            c.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+            c.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+        });
+        if(selected.includes(i)) selected = selected.filter(n => n !== i);
+        else if(selected.length < 6) selected.push(i);
+        refreshGrid();
+    } 
 
-    let fanOpen = false;
-    function toggleFan() {
-        fanOpen = !fanOpen;
-        const diamond = document.getElementById('main-diamond');
-        const spheres = document.querySelectorAll('.fan-sphere');
-        diamond.classList.toggle('dimmed', fanOpen);
-        spheres.forEach((s, i) => {
-            if(fanOpen) {
-                const angle = (i * (180 / (spheres.length - 1))) * (Math.PI / 180);
-                const dist = 95;
-                const x = Math.cos(angle) * dist;
-                const y = -Math.sin(angle) * dist;
-                s.style.transform = `translate(${x}px, ${y}px) scale(1)`;
-                s.style.opacity = '1';
-            } else {
-                s.style.transform = 'translate(0,0) scale(0)';
-                s.style.opacity = '0';
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const c = document.createElement('div'); 
+            c.className = 'cell'; 
+            c.id = `cell-${i}`; 
+            c.innerText = i;
+            c.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+            if (selected.includes(i)) {
+                c.classList.add('selected');
+                c.style.animation = 'none';
+            }
+            c.onclick = () => handleCellClick(i); 
+            grid.appendChild(c);
+        }
+    } 
+
+    function randomFill() {
+        activeSmartTool = null; 
+        selected = []; superNum = null; 
+        sndShuffle.play();
+        
+        let iterations = 0;
+        const maxIterations = 20; 
+
+        const interval = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
+            
+            for(let j=0; j<4; j++) {
+                const randId = Math.floor(Math.random() * 42) + 1;
+                const cell = document.getElementById(`cell-${randId}`);
+                if (cell && !cell.classList.contains('selected')) {
+                    cell.classList.add('processing-flash');
+                }
+            }
+            
+            iterations++;
+            
+            if (iterations % 3 === 0 && selected.length < 6) {
+                let r;
+                do { r = Math.floor(Math.random() * 42) + 1; } while (selected.includes(r));
+                selected.push(r);
+                const fixedCell = document.getElementById(`cell-${r}`);
+                fixedCell.classList.add('selected');
+                fixedCell.style.animation = 'none';
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (iterations >= maxIterations) {
+                clearInterval(interval);
+                superNum = Math.floor(Math.random() * 6) + 1;
+                refreshGrid(); 
+                document.querySelectorAll('.super-cell').forEach((sc, idx) => {
+                    sc.classList.toggle('selected', idx + 1 === superNum);
+                    if(idx + 1 === superNum) sc.style.animation = 'none';
+                });
+                sndWin.play();
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }, 85);
+    } 
+
+    function updateTicketCount(val) { ticketCount = Math.max(1, ticketCount + val); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
+    function switchCurrency(type) { currentCurrency = type; document.getElementById('card-vchf').classList.toggle('active-wallet', type === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', type === 'CHF'); updatePriceDisplay(); }
+    function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
+    
+    function setTheme(t) { 
+        document.body.className = 'theme-' + t; 
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; 
+        const colorVal = colors[t];
+        document.documentElement.style.setProperty('--main-color', colorVal);
+        document.querySelectorAll('.cell, .super-cell').forEach(el => {
+            if(!el.classList.contains('selected')) {
+                el.style.animation = 'none';
+                void el.offsetWidth; 
+                el.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+                el.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
             }
         });
     }
-
-    function setTheme(t) {
-        document.body.className = 'theme-' + t;
-        if(fanOpen) toggleFan();
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function switchCurrency(c) {
-        currentCurrency = c;
-        document.getElementById('w-vchf').classList.toggle('active', c === 'VCHF');
-        document.getElementById('w-chf').classList.toggle('active', c === 'CHF');
-        updatePriceDisplay();
-    }
+    
+    function setPeriod(p) { 
+        currentPeriod = p; 
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); 
+        if (activeSmartTool) {
+            togglePick(activeSmartTool); 
+        } else {
+            refreshGrid();
+        }
+    } 
 
     function runEngine() {
         if(selected.length === 6 && superNum) {
-            if(balances[currentCurrency] >= 2.5) {
-                tg.showConfirm(dict[currentLang].btn + "?", (ok) => {
-                    if(ok) {
-                        balances[currentCurrency] -= 2.5;
-                        const ticket = {
-                            id: Date.now(),
-                            nums: [...selected].sort((a,b)=>a-b),
-                            sn: superNum,
-                            time: new Date().toLocaleString(),
-                            currency: currentCurrency
-                        };
-                        myTickets.unshift(ticket);
-                        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-                        tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert("VCHF ENGINE: TRANSACTION SECURE");
-                        selected = []; superNum = null; 
-                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-                        refreshView();
+            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+            tg.showAlert(dict[currentLang].status);
+            selected = []; superNum = null; refreshGrid();
+        } else tg.showAlert("Select 6 numbers + Super!");
+    } 
+
+    const updateDict = {
+        ru: { sync: "СИНХРОНИЗАЦИЯ: SWISS LOTTO", noChange: "Изменений в слоях нет. Статистика актуальна.", firstInit: "Первичная актуализация завершена. Все слои настроены.", replaced: "в слое {layer} ({period}) число {new} заменило {old}", hot: "ГОРЯЧИЕ", cold: "ХОЛОДНЫЕ", sleep: "СПЯЩИЕ", m: "Месяц", y: "Год", a: "Все время" },
+        ua: { sync: "СИНХРОНІЗАЦІЯ: SWISS LOTTO", noChange: "Змін у шарах немає. Статистика актуальна.", firstInit: "Первинна актуалізація завершена. Всі шари налаштовані.", replaced: "у шарі {layer} ({period}) число {new} замінило {old}", hot: "ГАРЯЧІ", cold: "ХОЛОДНІ", sleep: "СПЛЯЧІ", m: "Місяць", y: "Рік", a: "Весь час" },
+        de: { sync: "SYNCHRONISIERUNG: SWISS LOTTO", noChange: "Keine Änderungen in den Ebenen. Statistik ist aktuell.", firstInit: "Erst-Aktualisierung abgeschlossen. Alle Ebenen konfiguriert.", replaced: "In der Ebene {layer} ({period}) hat {new} die Zahl {old} ersetzt", hot: "HOT", cold: "COLD", sleep: "SLEEPING", m: "Monat", y: "Jahr", a: "Alle" },
+        en: { sync: "SYNC: SWISS LOTTO", noChange: "No changes in layers. Stats are up to date.", firstInit: "First-time activation complete. All layers configured.", replaced: "In layer {layer} ({period}) {new} replaced {old}", hot: "HOT", cold: "COLD", sleep: "SLEEPING", m: "Month", y: "Year", a: "All" },
+        fr: { sync: "SYNC: SWISS LOTTO", noChange: "Aucun changement. Statistiques à jour.", firstInit: "Activation initiale terminée. Couches configurées.", replaced: "Dans {layer} ({period}) {new} a remplacé {old}", hot: "CHAUD", cold: "FROID", sleep: "DORMANT", m: "Mois", y: "An", a: "Tout" }
+    };
+
+    function getSwissTime() {
+        const now = new Date();
+        const swissStr = now.toLocaleString("en-US", {timeZone: "Europe/Zurich"});
+        return new Date(swissStr);
+    }
+
+    function getStatsSnapshot() {
+        const periods = ['month', 'year', 'all'];
+        const types = ['hot', 'cold', 'sleeping'];
+        let snapshot = {};
+        periods.forEach(p => {
+            snapshot[p] = {};
+            types.forEach(t => { snapshot[p][t] = getTopNumbers(t, p); });
+        });
+        return snapshot;
+    }
+
+    function compareAndReport(oldSnap, newSnap) {
+        let changes = [];
+        const periods = ['month', 'year', 'all'];
+        const types = ['hot', 'cold', 'sleeping'];
+        const d = updateDict[currentLang] || updateDict['en'];
+        periods.forEach(p => {
+            types.forEach(t => {
+                const oldList = oldSnap[p][t];
+                const newList = newSnap[p][t];
+                newList.forEach(num => {
+                    if (!oldList.includes(num)) {
+                        const outNum = oldList.find(o => !newList.includes(o));
+                        if (outNum) {
+                            let msg = d.replaced.replace('{layer}', d[t]).replace('{period}', d[p === 'month' ? 'm' : (p === 'year' ? 'y' : 'a')]).replace('{new}', `<b>${num}</b>`).replace('{old}', `<b>${outNum}</b>`);
+                            changes.push(msg);
+                        }
                     }
                 });
-            } else { tg.showAlert("Low Balance!"); }
-        } else { tg.showAlert("Select 6 + 1 Superzahl"); }
+            });
+        });
+        showUpdateModal(changes);
     }
 
-    function showPage(pageId, navEl) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pageId).classList.add('active');
-        navEl.classList.add('active');
-        if(pageId === 'tickets') renderTickets();
-        if(pageId === 'stats') renderHeatmap();
+    function showUpdateModal(changes) {
+        const d = updateDict[currentLang] || updateDict['en'];
+        const modal = document.createElement('div');
+        modal.style = `position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 50000; backdrop-filter: blur(10px); padding: 20px;`;
+        let contentHtml = changes.length > 0 ? `<div style="text-align:left; color:#fff;">${changes.join('<br><br>')}</div>` : `<div style="color:var(--main-color);">${d.noChange}</div>`;
+        modal.innerHTML = `<div class="legal-box" style="border-color: var(--main-color); max-width: 90%;"><h3 style="color:var(--main-color); margin-top:0;">${d.sync}</h3><div style="max-height: 300px; overflow-y: auto; margin: 20px 0; font-size: 14px;">${contentHtml}</div><button class="btn-main" onclick="this.parentElement.parentElement.remove()" style="width:100%; padding:12px;">OK</button></div>`;
+        document.body.appendChild(modal);
     }
 
-    function renderTickets() {
-        const container = document.getElementById('tickets-list');
-        if(myTickets.length === 0) {
-            container.innerHTML = `<p style="color:#555; margin-top:50px;">NO TICKETS FOUND</p>`;
+    async function runActualization() {
+        const swissNow = getSwissTime();
+        const day = swissNow.getDay();
+        const hours = swissNow.getHours();
+        let isDrawTime = (day === 3 && hours >= 19 + 6) || (day === 6 && hours >= 17 + 6);
+        const lastSync = localStorage.getItem('vchf_last_sync_date');
+        const todayStr = swissNow.toDateString();
+        if (!lastSync) {
+            await fetchNewData();
+            localStorage.setItem('vchf_last_sync_date', todayStr);
+            showUpdateModal([updateDict[currentLang].firstInit]);
+            refreshGrid();
             return;
         }
-        container.innerHTML = myTickets.map(t => `
-            <div class="ticket-card" style="background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: left;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span style="font-size:10px; color:var(--main-color); font-weight:900;">ID: ${t.id}</span>
-                    <span style="font-size:10px; color:#666;">${t.time}</span>
-                </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    ${t.nums.map(n => `<div style="width:35px; height:35px; background:#000; border:1px solid var(--main-color); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900;">${n}</div>`).join('')}
-                    <div style="width:35px; height:35px; background:#000; border:2px solid #ff4500; color:#ff4500; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900;">${t.sn}</div>
-                </div>
-                <div style="margin-top:10px; font-size:10px; text-align:right; color:#444;">PRICE: 2.50 ${t.currency}</div>
-            </div>
-        `).join('');
-    }
-
-    function renderHeatmap() {
-        const g = document.getElementById('stats-heatmap');
-        g.innerHTML = '';
-        const pIdx = currentPeriod === 'month' ? 0 : (currentPeriod === 'year' ? 1 : 2);
-        for(let i=1; i<=42; i++) {
-            const div = document.createElement('div');
-            div.className = 'cell';
-            div.innerText = i;
-            const val = realStatsDB[i][pIdx];
-            // Визуальный градиент частоты
-            if(val > 450 || (pIdx === 0 && val > 10)) {
-                div.style.boxShadow = "inset 0 0 20px var(--main-color), 0 0 10px var(--main-color)";
-                div.style.borderColor = "var(--main-color)";
-            }
-            g.appendChild(div);
+        if (isDrawTime && lastSync !== todayStr) {
+            const snapBefore = getStatsSnapshot();
+            await fetchNewData();
+            const snapAfter = getStatsSnapshot();
+            localStorage.setItem('vchf_last_sync_date', todayStr);
+            compareAndReport(snapBefore, snapAfter);
+            refreshGrid();
         }
     }
 
-    function updatePriceDisplay() {
-        const d = dict[currentLang];
-        document.getElementById('val-vchf').innerText = balances.VCHF.toFixed(2);
-        document.getElementById('val-chf').innerText = balances.CHF.toFixed(2);
-        document.getElementById('display-amount').innerText = `2.50 ${currentCurrency}`;
-        document.getElementById('btn-main-action').innerText = d.btn;
-        document.getElementById('super-label').innerText = d.super;
-        document.getElementById('label-total').innerText = d.total;
-        document.getElementById('n-game').innerText = d.game;
-        document.getElementById('n-tickets').innerText = d.tickets;
-        document.getElementById('n-stats').innerText = d.stats;
-        document.getElementById('p-month').innerText = d.month;
-        document.getElementById('p-year').innerText = d.year;
-        document.getElementById('p-all').innerText = d.all;
-        document.getElementById('tickets-title').innerText = d.tickets;
-        document.getElementById('stats-title').innerText = d.stats;
+    function getTopNumbers(type, period) {
+        const pIdx = period === 'month' ? 0 : (period === 'year' ? 1 : 2);
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val);
+        else if (type === 'cold' || type === 'sleeping') sorted.sort((a, b) => a.val - b.val);
+        return sorted.slice(0, 6).map(i => i.num);
     }
 
-    function cycleLanguage() {
-        const codes = ['de', 'en', 'ru', 'fr', 'ua'];
-        currentLang = codes[(codes.indexOf(currentLang) + 1) % codes.length];
-        updatePriceDisplay();
-        if(document.getElementById('legal-overlay').style.display === 'flex') {
-            const d = dict[currentLang];
-            document.getElementById('legal-title').innerText = d.bgs_t;
-            document.getElementById('legal-text').innerText = d.bgs_p;
-            document.getElementById('legal-agree-btn').innerText = d.bgs_b;
-        }
+    async function fetchNewData() {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                for(let i=0; i<3; i++) {
+                    let randomNum = Math.floor(Math.random() * 42) + 1;
+                    if(realStatsDB[randomNum]) realStatsDB[randomNum][0] += 50;
+                }
+                resolve();
+            }, 1000);
+        });
     }
 
-    function acceptLegal() {
-        localStorage.setItem('vchf_bgs_confirmed', 'true');
-        document.getElementById('legal-overlay').style.display = 'none';
-        tg.HapticFeedback.notificationOccurred('success');
-    }
+    const sgrid = document.getElementById('s-grid');
+    for (let i = 1; i <= 6; i++) {
+        const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
+        sc.style.animationDelay = `${(Math.random() * 2).toFixed(2)}s`;
+        sc.onclick = () => { 
+            superNum = i; 
+            document.querySelectorAll('.super-cell').forEach(el => {
+                el.classList.toggle('selected', el.innerText == i);
+                if(el.innerText == i) el.style.animation = 'none';
+                else el.style.animation = 'sphere-breathe 4s infinite ease-in-out';
+            }); 
+        };
+        sgrid.appendChild(sc);
+    } 
 
     window.onload = () => {
-        initStats();
-        createGrids();
-        updatePriceDisplay();
-        
-        if(!localStorage.getItem('vchf_bgs_confirmed')) {
-            const d = dict[currentLang];
-            document.getElementById('legal-title').innerText = d.bgs_t;
-            document.getElementById('legal-text').innerText = d.bgs_p;
-            document.getElementById('legal-agree-btn').innerText = d.bgs_b;
-            document.getElementById('legal-overlay').style.display = 'flex';
-        }
-
-        const spheres = document.querySelectorAll('.intro-sphere');
-        spheres.forEach((s, i) => {
-            setTimeout(() => {
-                s.style.opacity = '1';
-                s.style.left = Math.random() * 80 + '%';
-                s.style.top = Math.random() * 80 + '%';
-                s.style.transition = 'all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            }, i * 150);
-        });
-
-        setTimeout(() => {
-            document.getElementById('intro-container').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('intro-container').style.display = 'none';
-                document.getElementById('app-content').style.display = 'flex';
-                document.getElementById('app-content').style.opacity = '1';
-            }, 1000);
-        }, 3000);
-
-        runActualization();
+        const saved = localStorage.getItem('vchf_lang');
+        if (saved) { currentLang = saved; setLang(currentLang); renderLangPanel(false); } 
+        else { currentLang = 'en'; renderLangPanel(false); bgsTimer = setTimeout(() => { if(!localStorage.getItem('vchf_legal_accepted')) showLegal('en'); }, 10000); }
+        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
+        refreshGrid(); updatePriceDisplay(); startIntroSequence();
+        runActualization(); 
     };
 </script>
 </body>
 </html>
+
