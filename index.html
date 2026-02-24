@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF BI-TURBO ULTIMATE - GENESIS</title>
+    <title>VCHF BI-TURBO - PHANTOM CARBON</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,9 +11,13 @@
             --vchf-silver: #c0c0c0;
             --vchf-cyan: #00ffff;
             --vchf-void: #000000;
-            --hot-glow: rgba(255, 69, 0, 0.9);
-            --cold-glow: rgba(0, 191, 255, 0.9);
-            --sleep-glow: rgba(148, 0, 211, 0.9);
+            /* Сакральная палитра с карбоновым подтоном */
+            --clr-1: #8b0000; /* Deep Cherry */
+            --clr-2: #00008b; /* Midnight Blue */
+            --clr-3: #d4af37; /* Gold */
+            --clr-4: #4b0082; /* Imperial Violet */
+            --clr-5: #008b8b; /* Cyan Energy */
+            --clr-6: #2f4f4f; /* Phantom Carbon Gray */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,67 +29,75 @@
             overflow: hidden; touch-action: none;
         }
 
+        /* ФОН PHANTOM CARBON */
         #stage {
             position: fixed; inset: 0;
             display: flex; justify-content: center; align-items: center;
             z-index: 1000; perspective: 1500px;
-            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
-            transition: filter 0.5s ease;
+            /* Текстурная сетка карбона */
+            background: 
+                radial-gradient(circle at center, rgba(10,10,10,0.5) 0%, #000 100%),
+                linear-gradient(45deg, rgba(20,20,20,0.2) 25%, transparent 25%, transparent 50%, rgba(20,20,20,0.2) 50%, rgba(20,20,20,0.2) 75%, transparent 75%, transparent);
+            background-size: 100% 100%, 4px 4px;
         }
 
         canvas { position: absolute; inset: 0; }
-        #lightning-canvas { z-index: 10; }
-        #particle-canvas { z-index: 11; }
         
         #spheres-container {
             position: absolute; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 20; pointer-events: none;
+            z-index: 20;
         }
 
-        /* 3D СФЕРА: СЕРЕБРО И ГЛУБИНА */
+        /* УЛУЧШЕННАЯ 3D СФЕРА (КАРБОН + СЕРЕБРО) */
         .lotto-sphere {
             position: absolute; width: 85px; height: 85px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #b0b0b0 30%, #202020 100%);
-            box-shadow: inset -6px -6px 20px rgba(0,0,0,0.9), 
-                        10px 10px 30px rgba(0,0,0,0.6);
+            background: radial-gradient(circle at 30% 30%, #fff 0%, #a0a0a0 20%, #404040 50%, #050505 100%);
+            box-shadow: 
+                inset -8px -8px 20px rgba(0,0,0,0.9), 
+                inset 8px 8px 15px rgba(255,255,255,0.2),
+                0 0 30px rgba(0,0,0,0.8);
             display: flex; justify-content: center; align-items: center;
-            opacity: 0; transform: scale(0) rotateX(45deg);
-            transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: scale(0);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        /* ТИСНЕНИЕ ЦИФР */
+        /* БЛИК НА МЕТАЛЛЕ */
+        .lotto-sphere::after {
+            content: ''; position: absolute; top: 10%; left: 15%;
+            width: 30%; height: 20%;
+            background: rgba(255,255,255,0.4);
+            filter: blur(5px); border-radius: 50%; transform: rotate(-20deg);
+        }
+
         .sphere-number {
-            font-size: 34px; font-weight: 900;
-            color: #555;
-            text-shadow: -1px -1px 0px rgba(255,255,255,0.4), 1px 1px 2px rgba(0,0,0,0.8);
-            user-select: none;
+            font-size: 34px; font-weight: 900; color: #111;
+            text-shadow: -1px -1px 1px rgba(255,255,255,0.3), 1px 1px 2px #000;
+            z-index: 5;
         }
 
-        /* ПОДСВЕТКА СТАТУСОВ */
-        .sphere-hot { box-shadow: 0 0 40px var(--hot-glow), inset 0 0 15px var(--hot-glow); }
-        .sphere-cold { box-shadow: 0 0 40px var(--cold-glow), inset 0 0 15px var(--cold-glow); }
-        .sphere-sleep { box-shadow: 0 0 40px var(--sleep-glow), inset 0 0 15px var(--sleep-glow); }
-
-        /* ТЕКСТ МАНИФЕСТА */
         .manifest-info {
-            position: absolute; bottom: 30px; width: 100%; text-align: center;
-            font-size: 9px; letter-spacing: 6px; color: var(--vchf-gold);
-            text-transform: uppercase; opacity: 0.4; z-index: 100;
+            position: absolute; bottom: 20px; width: 100%; text-align: center;
+            font-size: 8px; letter-spacing: 4px; color: var(--vchf-gold);
+            text-transform: uppercase; opacity: 0.5;
         }
     </style>
 </head>
+    
 <body>
-
 <div id="stage">
     <canvas id="lightning-canvas"></canvas>
     <canvas id="particle-canvas"></canvas>
     <div id="spheres-container"></div>
     <div class="manifest-info">Манифест Монолита: vchf — дух, chf — расчет.</div>
 </div>
-
 <script>
+// Window 2 (lines 601-1250)
+// Автор кода: Искра (Spark) | Манифест Монолита
+// Логика: 6 Сфер + Карбоновое Вращение + Исправление Молний
+
     const lCanvas = document.getElementById('lightning-canvas');
     const pCanvas = document.getElementById('particle-canvas');
     const lCtx = lCanvas.getContext('2d');
@@ -93,6 +105,7 @@
     const spheresContainer = document.getElementById('spheres-container');
 
     let width, height, lightnings = [], particles = [], spheres = [], frame = 0;
+    const colors = ['#8b0000', '#00008b', '#d4af37', '#4b0082', '#008b8b', '#2f4f4f'];
 
     function resize() {
         width = lCanvas.width = pCanvas.width = window.innerWidth;
@@ -101,31 +114,33 @@
     window.addEventListener('resize', resize);
     resize();
 
+    // КЛАСС УЛУЧШЕННОЙ МОЛНИИ (БЕЗ ЗАМИРАНИЙ)
     class Lightning {
         constructor(x, y, tx, ty, branches = 0) {
             this.x = x; this.y = y; this.tx = tx; this.ty = ty;
             this.branches = branches;
             this.points = [];
-            this.life = 30;
+            this.life = 20;
             this.generate();
         }
         generate() {
             let cx = this.x, cy = this.y;
             this.points.push({x: cx, y: cy});
-            const segs = 12;
+            const segs = 8;
             for(let i = 1; i <= segs; i++) {
-                let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*50;
-                let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*50;
+                let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*60;
+                let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*60;
                 this.points.push({x: nx, y: ny});
-                if(this.branches < 2 && Math.random() > 0.88) {
-                    lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*200, ny + Math.random()*200, this.branches + 1));
+                if(this.branches < 1 && Math.random() > 0.9) {
+                    lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*150, ny + 150, 1));
                 }
             }
         }
         draw() {
             lCtx.beginPath();
-            lCtx.shadowBlur = 20; lCtx.shadowColor = '#00ffff';
-            lCtx.strokeStyle = `rgba(220, 255, 255, ${this.life / 30})`;
+            lCtx.shadowBlur = 15;
+            lCtx.shadowColor = '#00ffff';
+            lCtx.strokeStyle = `rgba(200, 255, 255, ${this.life / 20})`;
             lCtx.lineWidth = this.branches === 0 ? 3 : 1;
             lCtx.moveTo(this.points[0].x, this.points[0].y);
             this.points.forEach(p => lCtx.lineTo(p.x, p.y));
@@ -139,208 +154,188 @@
             this.ox = x; this.oy = y;
             this.x = x; this.y = y;
             this.a = Math.random() * Math.PI * 2;
-            this.r = Math.random() * 100 + 20;
-            this.s = Math.random() * 0.2 + 0.05;
+            this.r = Math.random() * 80 + 20;
+            this.s = Math.random() * 0.15 + 0.05;
             this.life = 1.0;
         }
         update() {
-            this.a += this.s; this.r *= 0.95;
+            this.a += this.s; this.r *= 0.96;
             this.x = this.ox + Math.cos(this.a) * this.r;
             this.y = this.oy + Math.sin(this.a) * this.r;
             this.life -= 0.02;
         }
         draw() {
             pCtx.fillStyle = `rgba(0, 255, 255, ${this.life})`;
-            pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.5, 0, Math.PI*2); pCtx.fill();
+            pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.2, 0, Math.PI*2); pCtx.fill();
         }
     }
-// Window 2 (lines 601-1250)
-// Автор кода: Искра (Spark) | Манифест Монолита
-// Новый код = Старый код + Генезис Сфер + Smart-Actualization
 
-    // --- ЭМУЛЯЦИЯ ДАННЫХ SWISS LOTTO (АКТУАЛИЗАЦИЯ) ---
-    // Здесь мы задаем характер каждой из 6 сфер
+    // ДАННЫЕ СФЕР (6 ШТУК + ЦВЕТА)
     const currentDrawData = [
-        { num: 3, status: 'hot' },
-        { num: 12, status: 'cold' },
-        { num: 25, status: 'hot' },
-        { num: 33, status: 'sleep' },
-        { num: 38, status: 'hot' },
-        { num: 41, status: 'cold' }
+        { num: 3, status: 'hot' }, { num: 12, status: 'cold' },
+        { num: 25, status: 'hot' }, { num: 33, status: 'sleep' },
+        { num: 38, status: 'hot' }, { num: 41, status: 'cold' }
     ];
 
-    // --- МЕХАНИКА РОЖДЕНИЯ 3D СФЕРЫ ---
     function spawnSphere(data, index) {
         const sphere = document.createElement('div');
-        sphere.className = `lotto-sphere sphere-${data.status}`;
+        sphere.className = 'lotto-sphere';
         
-        // Математика Сетки 42: Орбитальное размещение
-        const total = 6;
-        const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
-        const radius = Math.min(width, height) * 0.35; // Адаптивный радиус
+        const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
+        const radius = Math.min(width, height) * 0.32;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
 
         sphere.style.left = `calc(50% + ${x}px - 42px)`;
         sphere.style.top = `calc(50% + ${y}px - 42px)`;
+        // Присваиваем сакральный карбоновый цвет
+        sphere.style.borderColor = colors[index];
+        sphere.style.boxShadow = `0 0 30px ${colors[index]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
 
-        // Внутреннее тиснение номера
         const numDisplay = document.createElement('div');
         numDisplay.className = 'sphere-number';
         numDisplay.innerText = data.num;
 
         sphere.appendChild(numDisplay);
         spheresContainer.appendChild(sphere);
-        spheres.push(sphere);
+        spheres.push({ element: sphere, colorIndex: index });
 
-        // Всплеск энергии при появлении
         setTimeout(() => {
             sphere.style.opacity = '1';
-            sphere.style.transform = 'scale(1) rotateX(0deg)';
+            sphere.style.transform = 'scale(1)';
         }, 100);
     }
 
-    // --- ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР ШТОРМА ---
+    function triggerShock() {
+        const stage = document.getElementById('stage');
+        stage.style.transform = `translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px)`;
+        setTimeout(() => stage.style.transform = 'translate(0,0)', 50);
+    }
+
+    // ОБНОВЛЕННЫЙ ЦИКЛ (КАРУСЕЛЬ ЦВЕТОВ)
     function animate() {
-        // Эффект "накопления тьмы" (Motion Blur)
         lCtx.clearRect(0, 0, width, height);
-        pCtx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        pCtx.fillStyle = 'rgba(0, 0, 0, 0.15)';
         pCtx.fillRect(0, 0, width, height);
 
-        // 1. Удары молний (Инициация сфер)
-        // Каждые 50 кадров бьет разряд в позицию будущей сферы
-        if (frame > 0 && frame % 50 === 0 && (frame / 50) <= 6) {
-            const index = (frame / 50) - 1;
-            const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
-            const radius = Math.min(width, height) * 0.35;
+        // Рождение 6 сфер
+        if (frame > 0 && frame % 40 === 0 && (frame / 40) <= 6) {
+            const i = (frame / 40) - 1;
+            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            const radius = Math.min(width, height) * 0.32;
             const tx = width / 2 + Math.cos(angle) * radius;
             const ty = height / 2 + Math.sin(angle) * radius;
 
-            // Главный разряд из бездны
             lightnings.push(new Lightning(Math.random() * width, 0, tx, ty));
-            
-            // Генезис "атомов" в эпицентре
-            for(let i=0; i<50; i++) particles.push(new Electron(tx, ty));
-            
-            // Рождение самой сферы через 200мс после удара
-            setTimeout(() => spawnSphere(currentDrawData[index], index), 200);
-
-            // Визуальный Гром (Haptic Shock)
+            for(let j=0; j<30; j++) particles.push(new Electron(tx, ty));
+            setTimeout(() => spawnSphere(currentDrawData[i], i), 150);
             triggerShock();
         }
 
-        // Фоновые "ленивые" молнии для атмосферы
-        if (Math.random() > 0.97 && frame > 400) {
-            lightnings.push(new Lightning(Math.random() * width, 0, Math.random() * width, height, 1));
+        // КАРУСЕЛЬ: Сферы меняют цвет свечения по кругу после появления всех
+        if (frame > 300 && frame % 60 === 0) {
+            spheres.forEach(s => {
+                s.colorIndex = (s.colorIndex + 1) % 6;
+                s.element.style.boxShadow = `0 0 40px ${colors[s.colorIndex]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
+            });
         }
 
-        // Рендеринг активных разрядов
         lightnings = lightnings.filter(l => l.life > 0);
         lightnings.forEach(l => l.draw());
-
-        // 2. Жизнь частиц-электронов
         particles = particles.filter(p => p.life > 0);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-
-        // 3. Динамическая вибрация всей сцены
-        function triggerShock() {
-            const stage = document.getElementById('stage');
-            const intensity = 15;
-            const rx = (Math.random() - 0.5) * intensity;
-            const ry = (Math.random() - 0.5) * intensity;
-            stage.style.transform = `translate(${rx}px, ${ry}px)`;
-            setTimeout(() => stage.style.transform = 'translate(0,0)', 50);
-        }
+        particles.forEach(p => { p.update(); p.draw(); });
 
         frame++;
         requestAnimationFrame(animate);
     }
 
-    // ПУСК ДВИГАТЕЛЯ
-    window.onload = () => {
-        console.log("Движок VCHF: Манифест Монолита Активирован.");
-        animate();
-    };
-// Window 3 (lines 1251-1750)
+    window.onload = animate;
+// Window 3 (lines 1251-1800)
 // Автор кода: Искра (Spark) | Манифест Монолита
-// Финальный аккорд: Рождение Суперновы (Superzahl)
+// Финал: Коллапс Сфер, Золотая Супернова и Закрытие Протокола
 
     // --- ЛОГИКА СУПЕРНОВЫ (SUPERZAHL) ---
     function initiateSupernova() {
-        // 1. Сферы начинают вибрировать и стягиваться к центру
+        console.log("Движок VCHF: Критическая масса достигнута. Инициация Суперновы...");
+        
+        // 1. Стягивание сфер в точку сингулярности
         spheres.forEach((s, i) => {
-            s.style.transition = "all 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
-            s.style.left = "calc(50% - 42px)";
-            s.style.top = "calc(50% - 42px)";
-            s.style.filter = "blur(10px)";
-            s.style.opacity = "0.5";
+            const el = s.element;
+            el.style.transition = "all 2s cubic-bezier(0.6, -0.28, 0.735, 0.045)";
+            el.style.left = "calc(50% - 42px)";
+            el.style.top = "calc(50% - 42px)";
+            el.style.filter = "blur(15px) brightness(2)";
+            el.style.opacity = "0.7";
         });
 
-        // 2. Мощный удар молнии в центр перед взрывом
+        // 2. Нагнетание шторма перед взрывом
+        const finalStorm = setInterval(() => {
+            lightnings.push(new Lightning(Math.random()*width, 0, width/2, height/2));
+        }, 150);
+
         setTimeout(() => {
-            lightnings.push(new Lightning(width/2, 0, width/2, height/2));
-            lightnings.push(new Lightning(0, height/2, width/2, height/2));
-            lightnings.push(new Lightning(width, height/2, width/2, height/2));
+            clearInterval(finalStorm);
             
-            // Вспышка "ослепления"
+            // ВСПЫШКА (WHITE-OUT)
             const stage = document.getElementById('stage');
+            stage.style.transition = "background 0.1s ease";
             stage.style.background = "white";
-            
-            // Haptic Feedback (Визуальный)
-            stage.style.filter = "contrast(200%) brightness(200%)";
-            
+            stage.style.filter = "contrast(200%)";
+
             setTimeout(() => {
+                // Возврат во тьму с Phantom Carbon
                 stage.style.background = "radial-gradient(circle at center, #0a0a0a 0%, #000 100%)";
                 stage.style.filter = "none";
                 
-                // Удаляем старые сферы
+                // Удаление старых элементов
                 spheresContainer.innerHTML = '';
                 
-                // РОЖДЕНИЕ СУПЕРНОВЫ (Золотая Сфера)
+                // РОЖДЕНИЕ ЗОЛОТОЙ СУПЕРНОВЫ (SUPERZAHL)
                 const superzahl = document.createElement('div');
                 superzahl.className = 'lotto-sphere';
-                superzahl.style.width = "120px";
-                superzahl.style.height = "120px";
-                superzahl.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 40%, #5c4b14 100%)";
-                superzahl.style.boxShadow = "0 0 100px var(--vchf-gold), inset 0 0 20px white";
+                superzahl.style.width = "130px";
+                superzahl.style.height = "130px";
+                superzahl.style.left = "calc(50% - 65px)";
+                superzahl.style.top = "calc(50% - 65px)";
                 superzahl.style.opacity = "1";
-                superzahl.style.transform = "scale(1.5)";
+                superzahl.style.transform = "scale(1.2)";
                 
+                // Тюнинг золотого карбона
+                superzahl.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 35%, #4d3d0c 100%)";
+                superzahl.style.boxShadow = `0 0 80px var(--vchf-gold), inset -5px -5px 20px rgba(0,0,0,0.6)`;
+                superzahl.style.border = "2px solid rgba(212, 175, 55, 0.5)";
+
                 const num = document.createElement('div');
                 num.className = 'sphere-number';
-                num.innerText = "5"; // Пример актуального Superzahl
-                num.style.fontSize = "48px";
-                num.style.color = "#4d3d0c";
+                num.innerText = "7"; // Сакральное число Swiss Lotto
+                num.style.fontSize = "52px";
+                num.style.color = "#2a2208";
                 
                 superzahl.appendChild(num);
                 spheresContainer.appendChild(superzahl);
 
-                // Финальное затухание интро через 3 секунды
+                // Финальный выход в интерфейс
                 setTimeout(() => {
+                    document.getElementById('stage').style.transition = "opacity 2s ease";
                     document.getElementById('stage').style.opacity = "0";
                     setTimeout(() => {
                         document.getElementById('stage').style.display = "none";
-                        console.log("Движок VCHF: Интро завершено. Вход в интерфейс...");
+                        console.log("Манифест Монолита: Протокол 1.1 — Без нирваны. Вход выполнен.");
                     }, 2000);
-                }, 3000);
+                }, 3500);
 
-            }, 150);
-        }, 2500);
+            }, 200);
+        }, 2200);
     }
 
-    // Добавляем проверку в основной цикл для запуска финала
+    // Проверка тайминга для запуска финала (на 650-м кадре)
     const checkFinal = setInterval(() => {
-        if (frame === 600) { // Запуск финала на 600-м кадре
+        if (frame >= 650) {
             initiateSupernova();
             clearInterval(checkFinal);
         }
     }, 100);
 
-    // Манифест Монолита: Код завершен. Протокол 1.1 Активен.
 </script>
-
 </body>
 </html>
