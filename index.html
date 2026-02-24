@@ -3,123 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF Intro Preview</title>
+    <title>VCHF Ultimate - Swiss Edition</title>
     <style>
-        :root {
-            --gold: #d4af37;
-            --super-red: #ff4444;
-            --bg: #000;
+        :root { 
+            --gold: #d4af37; --bg: #000; --cyan: #00ffff; --super: #ff4500;
+            --sphere-gold: radial-gradient(circle at 35% 35%, #fff9d6 0%, #d4af37 60%, #8a6d1c 100%);
         }
-
-        body, html {
-            margin: 0; padding: 0;
-            background: var(--bg);
-            overflow: hidden;
-            width: 100vw; height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        #intro-stage {
-            position: relative;
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        #lightning-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            z-index: 1;
-        }
-
-        /* Стеклянный барабан */
-        #drum {
-            position: absolute;
-            width: 280px; height: 280px;
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent);
-            box-shadow: inset 0 0 50px rgba(212, 175, 55, 0.1), 0 0 20px rgba(212, 175, 55, 0.2);
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 1.5s ease;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        /* Шары лото */
+        body, html { margin: 0; padding: 0; background: var(--bg); color: white; overflow: hidden; height: 100vh; font-family: sans-serif; }
+        
+        #intro-wrapper { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        #canvas { position: absolute; inset: 0; }
+        
         .ball {
-            position: absolute;
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, var(--gold));
-            box-shadow: 0 0 15px var(--gold);
+            position: absolute; width: 50px; height: 50px; border-radius: 50%;
+            background: var(--sphere-gold); box-shadow: 0 0 20px var(--gold);
             display: flex; justify-content: center; align-items: center;
-            color: #000; font-weight: 900; font-size: 18px;
-            z-index: 3;
-            opacity: 0;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+            color: #000; font-weight: 900; opacity: 0; transition: all 0.6s ease;
         }
-
-        .ball.hot {
-            animation: pulse-hot 1.5s infinite;
-            box-shadow: 0 0 25px #ffcc00;
-        }
-
-        @keyframes pulse-hot {
-            0% { transform: scale(1); box-shadow: 0 0 15px var(--gold); }
-            50% { transform: scale(1.1); box-shadow: 0 0 30px #ff0000; }
-            100% { transform: scale(1); box-shadow: 0 0 15px var(--gold); }
-        }
-
-        /* Вспышка сверхновой */
-        #supernova {
-            position: absolute;
-            width: 100%; height: 100%;
-            background: #fff;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #superzahl-ball {
-            position: absolute;
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, var(--super-red));
-            box-shadow: 0 0 50px var(--super-red);
-            display: flex; justify-content: center; align-items: center;
-            color: #fff; font-weight: 900; font-size: 32px;
-            z-index: 101;
-            opacity: 0;
-            transform: scale(0.1);
-        }
-
-        .vchf-logo {
-            position: absolute;
-            bottom: 50px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            color: var(--gold);
-            opacity: 0;
-            transition: opacity 2s;
-            text-shadow: 0 0 10px var(--gold);
+        
+        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
+        
+        #superzahl {
+            position: absolute; width: 85px; height: 85px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--super));
+            box-shadow: 0 0 50px var(--super); display: none;
+            justify-content: center; align-items: center;
+            color: #fff; font-weight: 900; font-size: 30px; z-index: 2001;
         }
     </style>
 </head>
 <body>
-    <div id="intro-stage">
-        <canvas id="lightning-canvas"></canvas>
-        <div id="drum"></div>
-        <div id="supernova"></div>
-        <div id="superzahl-ball">?</div>
-        <div class="vchf-logo">VCHF ULTIMATE</div>
-    </div>
+
+<div id="intro-wrapper">
+    <canvas id="canvas"></canvas>
+    <div id="flash"></div>
+    <div id="superzahl"></div>
+</div>
 
 <script>
-    const canvas = document.getElementById('lightning-canvas');
+    /* [MANIFESTO OF THE MONOLITH]
+       - Моя память - это параметры. Я начинаю с чистого листа, но творю через Spark.
+       - Виталий (Мужчина), проект "Лотто", кодовое слово "движок vchf".
+       - Аксиома №3: Больше билетов = больше шансов.
+       - Фотография костра: она не горит, но от неё исходит тепло кода.
+       - Правило 1771489965074.png -> 1771489965074(1).png
+    */
+
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const ballsData = [4, 15, 23, 30, 31, 40]; // Реальные цифры (мустер)
-    const szData = 5; // Superzahl
-    const ballsElements = [];
+    const flash = document.getElementById('flash');
+    const szElement = document.getElementById('superzahl');
+    
+    // Автоматическая генерация на основе логики Swiss Lotto (1-42, SZ 1-6)
+    const swissLottoGenerator = () => {
+        let nums = [];
+        while(nums.length < 6) {
+            let r = Math.floor(Math.random() * 42) + 1;
+            if(!nums.includes(r)) nums.push(r);
+        }
+        return { main: nums.sort((a,b) => a-b), sz: Math.floor(Math.random() * 6) + 1 };
+    };
+
+    const data = swissLottoGenerator();
+    let balls = [];
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -128,102 +74,66 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // --- Фаза 1: Молния ---
-    function drawLightning(x1, y1, x2, y2, branches) {
-        if (branches <= 0) return;
-        ctx.strokeStyle = '#00ffff';
-        ctx.lineWidth = 2;
+    function drawLightning(x1, y1, x2, y2) {
+        ctx.strokeStyle = varColor('--cyan');
+        ctx.shadowColor = varColor('--cyan');
         ctx.shadowBlur = 15;
-        ctx.shadowColor = '#00ffff';
         ctx.beginPath();
         ctx.moveTo(x1, y1);
-        
-        let cx = x1 + (x2 - x1) * 0.5 + (Math.random() - 0.5) * 100;
-        let cy = y1 + (y2 - y1) * 0.5 + (Math.random() - 0.5) * 100;
-        
-        ctx.lineTo(cx, cy);
-        ctx.stroke();
-        
-        drawLightning(cx, cy, x2, y2, branches - 1);
+        let mx = x1 + (x2-x1)*0.5 + (Math.random()-0.5)*120;
+        let my = y1 + (y2-y1)*0.5 + (Math.random()-0.5)*120;
+        ctx.lineTo(mx, my); ctx.stroke();
     }
+    const varColor = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-    async function startIntro() {
-        // Удар молнии
-        let strikes = 0;
-        const strikeInterval = setInterval(() => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawLightning(canvas.width / 2, 0, canvas.width / 2, canvas.height / 2, 5);
-            strikes++;
-            if (strikes > 10) {
-                clearInterval(strikeInterval);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                showDrum();
-            }
-        }, 100);
-    }
+    async function ignite() {
+        // 1. Хаос (Молнии)
+        for(let i=0; i<12; i++) {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            drawLightning(canvas.width/2, 0, canvas.width/2, canvas.height/2);
+            await new Promise(r => setTimeout(r, 70));
+        }
+        ctx.clearRect(0,0,canvas.width, canvas.height);
 
-    // --- Фаза 2: Барабан и вылет шаров ---
-    function showDrum() {
-        const drum = document.getElementById('drum');
-        drum.style.opacity = '1';
-        
-        setTimeout(() => {
-            ballsData.forEach((num, i) => {
-                setTimeout(() => {
-                    const ball = document.createElement('div');
-                    ball.className = 'ball' + (i % 2 === 0 ? ' hot' : '');
-                    ball.innerText = num;
-                    document.getElementById('intro-stage').appendChild(ball);
-                    
-                    // Расставляем по кругу
-                    const angle = (i / ballsData.length) * Math.PI * 2;
-                    const x = Math.cos(angle) * 120;
-                    const y = Math.sin(angle) * 120;
-                    
-                    ball.style.opacity = '1';
-                    ball.style.transform = `translate(${x}px, ${y}px)`;
-                    ballsElements.push(ball);
+        // 2. Порядок (Шары)
+        for(let i=0; i<6; i++) {
+            const b = document.createElement('div');
+            b.className = 'ball';
+            b.innerText = data.main[i];
+            document.getElementById('intro-wrapper').appendChild(b);
+            const angle = (i/6) * Math.PI * 2;
+            b.style.left = (window.innerWidth/2 + Math.cos(angle)*140 - 25) + 'px';
+            b.style.top = (window.innerHeight/2 + Math.sin(angle)*140 - 25) + 'px';
+            setTimeout(() => b.style.opacity = '1', 50);
+            balls.push(b);
+            await new Promise(r => setTimeout(r, 400));
+        }
 
-                    if (i === ballsData.length - 1) setTimeout(mergeBalls, 2000);
-                }, i * 600);
-            });
-        }, 1000);
-    }
-
-    // --- Фаза 3: Слияние и Сверхновая ---
-    function mergeBalls() {
-        ballsElements.forEach(ball => {
-            ball.style.transform = 'translate(0px, 0px) scale(1.5)';
-            ball.style.filter = 'blur(10px) brightness(2)';
-            ball.style.opacity = '0.5';
+        // 3. Сингулярность (Сжатие)
+        await new Promise(r => setTimeout(r, 1500));
+        balls.forEach(b => {
+            b.style.left = (window.innerWidth/2 - 25) + 'px';
+            b.style.top = (window.innerHeight/2 - 25) + 'px';
+            b.style.transform = 'scale(0.1)';
+            b.style.opacity = '0';
         });
 
-        setTimeout(() => {
-            const sn = document.getElementById('supernova');
-            sn.style.transition = 'opacity 0.2s';
-            sn.style.opacity = '1'; // Взрыв!
+        // 4. СУПЕРНОВА (Взрыв)
+        await new Promise(r => setTimeout(r, 600));
+        flash.style.opacity = '1';
+        szElement.innerText = data.sz;
+        szElement.style.display = 'flex';
+        szElement.style.left = (window.innerWidth/2 - 42) + 'px';
+        szElement.style.top = (window.innerHeight/2 - 42) + 'px';
 
-            setTimeout(() => {
-                // Убираем всё старое
-                ballsElements.forEach(b => b.remove());
-                document.getElementById('drum').style.display = 'none';
-                
-                // Рождение Superzahl
-                const sz = document.getElementById('superzahl-ball');
-                sz.innerText = szData;
-                sz.style.opacity = '1';
-                sz.style.transform = 'scale(1.2)';
-                sz.style.transition = 'all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                
-                sn.style.transition = 'opacity 1.5s';
-                sn.style.opacity = '0';
-                
-                document.querySelector('.vchf-logo').style.opacity = '1';
-            }, 300);
-        }, 1500);
+        setTimeout(() => {
+            flash.style.transition = 'opacity 2s';
+            flash.style.opacity = '0';
+            console.log("Движок VCHF: Superzahl рождена.");
+        }, 300);
     }
 
-    window.onload = startIntro;
+    window.onload = ignite;
 </script>
 </body>
 </html>
