@@ -3,66 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF - 3D Genesis Silent</title>
+    <title>VCHF - 3D Genesis Silent & Lotto</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon-cyan: #00fbff; --neon-fire: #ff4d00; --bg-dark: #000508; }
-        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', sans-serif; }
+        :root { 
+            --neon-cyan: #00fbff; 
+            --neon-fire: #ff4d00; 
+            --main-color: #d4af37; 
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
+            --theme-glow: rgba(212, 175, 55, 0.35);
+            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --process-color: #00ffff;
+        }
 
-        /* 3D Глубина Трона (Perspective World) */
-        #world-3d {
-            position: fixed; inset: 0; perspective: 1200px; z-index: 1;
-            background: radial-gradient(circle at center, #051622 0%, #000 100%);
-        }
-        #grid-floor {
-            position: absolute; width: 400%; height: 400%; top: -100%; left: -150%;
-            background-image: 
-                linear-gradient(rgba(0, 251, 255, 0.2) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(0, 251, 255, 0.2) 2px, transparent 2px);
-            background-size: 100px 100px;
-            transform: rotateX(75deg); transform-origin: center center;
-            animation: gridMove 8s linear infinite;
-        }
+        body, html { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Orbitron', -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+
+        /* --- STYLES: 3D INTRO --- */
+        #world-3d { position: fixed; inset: 0; perspective: 1200px; z-index: 20001; background: radial-gradient(circle at center, #051622 0%, #000 100%); transition: opacity 1.5s; }
+        #grid-floor { position: absolute; width: 400%; height: 400%; top: -100%; left: -150%; background-image: linear-gradient(rgba(0, 251, 255, 0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(0, 251, 255, 0.2) 2px, transparent 2px); background-size: 100px 100px; transform: rotateX(75deg); transform-origin: center center; animation: gridMove 8s linear infinite; }
         @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
-
-        #bg-manifesto {
-            position: absolute; inset: 0; color: rgba(0, 251, 255, 0.04);
-            font-size: 11px; white-space: pre-wrap; pointer-events: none; z-index: 2;
-            overflow: hidden; text-transform: uppercase;
-        }
-
-        #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; }
-        canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-
-        /* Нейтронные сферы Генезиса */
-        .neutron-sphere {
-            position: absolute; width: 75px; height: 75px; border-radius: 50%;
-            background: rgba(0,0,0,0.8); border: 2.5px solid var(--neon-cyan);
-            box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 15px var(--neon-cyan);
-            display: flex; justify-content: center; align-items: center;
-            color: var(--neon-cyan); font-size: 1.8rem; font-weight: 900;
-            opacity: 0; z-index: 150; text-shadow: 0 0 15px var(--neon-cyan);
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
-        }
-
-        #super-zahl {
-            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
-            width: 170px; height: 170px; border-radius: 50%;
-            background: #000; border: 5px solid var(--neon-fire);
-            box-shadow: 0 0 80px var(--neon-fire), inset 0 0 40px var(--neon-fire);
-            display: none; justify-content: center; align-items: center;
-            color: var(--neon-fire); font-size: 6rem; font-weight: 900;
-            z-index: 500; text-shadow: 0 0 30px var(--neon-fire);
-            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        #vchf-fog {
-            position: fixed; inset: 0; background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 80%);
-            opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 3s;
-        }
-
+        #bg-manifesto { position: absolute; inset: 0; color: rgba(0, 251, 255, 0.04); font-size: 11px; white-space: pre-wrap; pointer-events: none; z-index: 20002; overflow: hidden; text-transform: uppercase; }
+        #stage-intro { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 20003; }
+        canvas#vchf-canvas { position: absolute; inset: 0; z-index: 20010; pointer-events: none; }
+        .neutron-sphere { position: absolute; width: 75px; height: 75px; border-radius: 50%; background: rgba(0,0,0,0.8); border: 2.5px solid var(--neon-cyan); box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 15px var(--neon-cyan); display: flex; justify-content: center; align-items: center; color: var(--neon-cyan); font-size: 1.8rem; font-weight: 900; opacity: 0; z-index: 20150; text-shadow: 0 0 15px var(--neon-cyan); transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s; }
+        #super-zahl { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); width: 170px; height: 170px; border-radius: 50%; background: #000; border: 5px solid var(--neon-fire); box-shadow: 0 0 80px var(--neon-fire), inset 0 0 40px var(--neon-fire); display: none; justify-content: center; align-items: center; color: var(--neon-fire); font-size: 6rem; font-weight: 900; z-index: 20500; text-shadow: 0 0 30px var(--neon-fire); transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        #vchf-fog { position: fixed; inset: 0; background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 80%); opacity: 0; z-index: 21000; pointer-events: none; transition: opacity 3s; }
         .vchf-shake { animation: vchfPulse 0.15s infinite; }
         @keyframes vchfPulse { 0% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
+
+        /* --- STYLES: MAIN APP --- */
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; z-index: 100; position: relative; }
+        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
+        .page.active { display: block; }
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); }
+        
+        @keyframes sphere-breathe { 0%, 100% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color); transform: scale(1); } 50% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); transform: scale(1.04); } }
+        .cell { aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; transition: 0.4s; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); animation: sphere-breathe 4s infinite ease-in-out; }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1); box-shadow: 0 0 30px var(--main-color); animation: none; z-index: 10; }
+        
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1.5px solid var(--main-color); }
+        .nav-item { color: #666; font-size: 10px; text-align: center; }
+        .nav-item.active { color: var(--main-color); }
+        .btn-main { width: 85%; padding: 20px; border-radius: 18px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; font-size: 18px; margin: 15px auto; display: block; }
+        
+        #legal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px; }
+        .legal-box { background: #111; border: 2px solid var(--main-color); padding: 30px; border-radius: 25px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; }
     </style>
 </head>
 <body onload="igniteAutoGenesis()">
@@ -70,27 +60,71 @@
 <div id="world-3d"><div id="grid-floor"></div></div>
 <div id="bg-manifesto"></div>
 <div id="vchf-fog"></div>
-
-<div id="stage">
+<div id="stage-intro">
     <canvas id="vchf-canvas"></canvas>
     <div id="super-zahl"></div>
 </div>
 
+<div id="app-content">
+    <div id="page-play" class="page active">
+        <div id="dynamic-langs" style="height:65px; display:flex; justify-content:center; align-items:center;"></div>
+        <div class="grid" id="main-grid" style="margin-top:20px;"></div>
+        <div id="l-super" style="color:var(--main-color); margin:20px 0 10px;">SUPERZAHL</div>
+        <div class="grid" id="s-grid" style="grid-template-columns: repeat(6, 1fr);"></div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">CONFIRM</button>
+    </div>
+
+    <div id="page-tickets" class="page">
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MY TICKETS</h2>
+        <div id="active-list"></div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><div id="n-game">GAME</div></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><div id="n-tickets">TICKETS</div></div>
+    </div>
+</div>
+
+<div id="legal-overlay">
+    <div class="legal-box">
+        <div id="legal-content" style="color:#fff; margin-bottom:20px;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn"></button>
+    </div>
+</div>
+
 <script>
-    /* [STABILITY LOG: VCHF ENGINE] */
+    /* ДВИЖОК VCHF: Манифест Монолита
+       Логика интро + Логика Лотто
+    */
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Переменные интро
     const canvas = document.getElementById('vchf-canvas');
     const ctx = canvas.getContext('2d');
-    const superBall = document.getElementById('super-zahl');
+    const superBallIntro = document.getElementById('super-zahl');
     const fog = document.getElementById('vchf-fog');
-
-    document.getElementById('bg-manifesto').innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(250);
+    
+    // Переменные Лотто
+    let selected = [], superNum = null, currentLang = 'en', pendingLang = 'en';
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", game: "ИГРА", tickets: "БИЛЕТЫ", activeT: "МОИ БИЛЕТЫ" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", game: "SPIEL", tickets: "TICKETS", activeT: "MEINE TICKETS" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", game: "GAME", tickets: "TICKETS", activeT: "MY TICKETS" }
+    };
+    const legalDict = {
+        ru: { title: "Закон Швейцарии (BGS)", text: "Участие разрешено только лицам старше 18 лет.", btn: "МНЕ ЕСТЬ 18" },
+        en: { title: "Swiss Law (BGS)", text: "Only for persons over 18 years old.", btn: "I AM 18" }
+    };
 
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
+    // --- ЛОГИКА ГЕНЕЗИСА ---
     async function igniteAutoGenesis() {
-        console.log("Genesis: Autostart Initialized.");
+        document.getElementById('bg-manifesto').innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(200);
         await runNeutronStorm();
         await spawnSpheres();
         await finalizeGenesis();
@@ -98,7 +132,7 @@
 
     async function runNeutronStorm() {
         document.body.classList.add('vchf-shake');
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 50; i++) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let j = 0; j < 5; j++) drawLightning();
             await new Promise(r => setTimeout(r, 50));
@@ -108,88 +142,105 @@
     }
 
     function drawLightning() {
-        ctx.strokeStyle = '#00fbff';
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#00fbff';
+        ctx.strokeStyle = '#00fbff'; ctx.lineWidth = 3; ctx.shadowBlur = 15; ctx.shadowColor = '#00fbff';
         ctx.beginPath();
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
+        let x = Math.random() * canvas.width, y = Math.random() * canvas.height;
         ctx.moveTo(x, y);
-        for (let i = 0; i < 6; i++) {
-            x += (Math.random() - 0.5) * 280;
-            y += (Math.random() - 0.5) * 280;
-            ctx.lineTo(x, y);
-            createNeutronTrail(x, y);
-        }
+        for (let i = 0; i < 6; i++) { x += (Math.random()-0.5)*200; y += (Math.random()-0.5)*200; ctx.lineTo(x, y); }
         ctx.stroke();
     }
 
-    function createNeutronTrail(x, y) {
-        const n = document.createElement('div');
-        n.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:6px;height:6px;background:#fff;box-shadow:0 0 20px var(--neon-cyan);border-radius:50%;z-index:50;`;
-        document.getElementById('stage').appendChild(n);
-        n.animate([
-            { opacity: 1, transform: 'scale(1) translateZ(0)' }, 
-            { opacity: 0, transform: 'scale(0) translateZ(600px)' }
-        ], { duration: 2500, easing: 'ease-out' });
-        setTimeout(() => n.remove(), 2500);
-    }
-
     async function spawnSpheres() {
-        const radius = Math.min(canvas.width, canvas.height) * 0.38;
+        const radius = Math.min(canvas.width, canvas.height) * 0.35;
+        const nums = [5, 14, 22, 29, 35, 41];
         const spheres = [];
-        const swissNumbers = [5, 14, 22, 29, 35, 41];
-
         for (let i = 0; i < 6; i++) {
             const s = document.createElement('div');
             s.className = 'neutron-sphere';
-            s.style.left = canvas.width / 2 - 37 + 'px';
-            s.style.top = canvas.height / 2 - 37 + 'px';
-            document.getElementById('stage').appendChild(s);
+            s.style.left = canvas.width/2-37+'px'; s.style.top = canvas.height/2-37+'px';
+            document.getElementById('stage-intro').appendChild(s);
             spheres.push(s);
-
-            const angle = (i / 6) * Math.PI * 2;
-            setTimeout(() => {
-                s.style.opacity = '1';
-                s.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)`;
-            }, 100);
-
-            // Стабилизация нейтронных цифр
-            let cycles = 0;
-            const cycleInterval = setInterval(() => {
-                s.innerText = Math.floor(Math.random() * 42) + 1;
-                if (cycles++ > 40) {
-                    clearInterval(cycleInterval);
-                    s.innerText = swissNumbers[i];
-                    s.style.boxShadow = '0 0 60px var(--neon-cyan), inset 0 0 20px #fff';
-                    s.style.color = '#fff';
-                }
-            }, 40);
-            await new Promise(r => setTimeout(r, 500));
+            const angle = (i/6)*Math.PI*2;
+            setTimeout(() => { s.style.opacity='1'; s.style.transform=`translate(${Math.cos(angle)*radius}px, ${Math.sin(angle)*radius}px)`; }, 50);
+            let c=0; const iv = setInterval(() => { s.innerText=Math.floor(Math.random()*42)+1; if(c++>30){ clearInterval(iv); s.innerText=nums[i]; s.style.color='#fff'; } }, 40);
+            await new Promise(r => setTimeout(r, 400));
         }
-
-        await new Promise(r => setTimeout(r, 3500));
-        spheres.forEach(s => { 
-            s.style.transform = 'translate(0,0) scale(0) rotate(360deg)'; 
-            s.style.opacity = '0'; 
-        });
+        await new Promise(r => setTimeout(r, 2500));
+        spheres.forEach(s => { s.style.transform='scale(0)'; s.style.opacity='0'; });
     }
 
     async function finalizeGenesis() {
-        await new Promise(r => setTimeout(r, 1000));
-        superBall.style.display = 'flex';
-        superBall.innerText = "6";
-        setTimeout(() => { 
-            superBall.style.transform = 'translate(-50%, -50%) scale(1)'; 
-        }, 50);
-
-        await new Promise(r => setTimeout(r, 5000));
+        await new Promise(r => setTimeout(r, 800));
+        superBallIntro.style.display = 'flex'; superBallIntro.innerText = "6";
+        setTimeout(() => superBallIntro.style.transform = 'translate(-50%,-50%) scale(1)', 50);
+        await new Promise(r => setTimeout(r, 3000));
         fog.style.opacity = '1';
         setTimeout(() => {
-            console.log("ДВИЖОК VCHF: ПЕРЕХОД К ОСНОВНОМУ МОНИТОРУ...");
-            // Здесь будет вызов Window 2
-        }, 3000);
+            document.getElementById('world-3d').style.opacity = '0';
+            document.getElementById('stage-intro').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            setTimeout(() => { 
+                document.getElementById('app-content').style.opacity = '1'; 
+                document.getElementById('world-3d').style.display = 'none';
+                initLotto();
+            }, 500);
+        }, 1500);
+    }
+
+    // --- ЛОГИКА ЛОТТО ---
+    function initLotto() {
+        refreshGrid();
+        renderSuperGrid();
+        const saved = localStorage.getItem('vchf_lang') || 'en';
+        setLang(saved);
+    }
+
+    function refreshGrid() {
+        const g = document.getElementById('main-grid'); g.innerHTML = '';
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(selected.includes(i)) c.classList.add('selected');
+            c.onclick = () => {
+                if(selected.includes(i)) selected = selected.filter(n => n !== i);
+                else if(selected.length < 6) selected.push(i);
+                refreshGrid();
+            };
+            g.appendChild(c);
+        }
+    }
+
+    function renderSuperGrid() {
+        const sg = document.getElementById('s-grid'); sg.innerHTML = '';
+        for(let i=1; i<=6; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(superNum === i) c.classList.add('selected');
+            c.onclick = () => { superNum = i; renderSuperGrid(); };
+            sg.appendChild(c);
+        }
+    }
+
+    function setLang(l) {
+        currentLang = l; const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('n-game').innerText = d.game;
+        document.getElementById('n-tickets').innerText = d.tickets;
+    }
+
+    function showPage(p, el) {
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
+        document.getElementById('page-'+p).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+            tg.showAlert("TICKET CONFIRMED!");
+            selected = []; superNum = null; refreshGrid(); renderSuperGrid();
+        } else tg.showAlert("Select 6 + Super!");
     }
 </script>
 </body>
