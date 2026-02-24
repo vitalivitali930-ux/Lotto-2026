@@ -1,180 +1,582 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCHF Monolith 3D - Full Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lotto - Движок VCHF Ultimate 2.5</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            /* Яркая Вишня */
-            --theme-dark: #1a0205;
-            --theme-bright: #6a040f; /* Усилили яркость */
-            --theme-accent: rgba(255, 0, 51, 0.5);
-            --main-color: #ff0033;
-            --silver-text: linear-gradient(180deg, #fff 0%, #c0c0c0 50%, #808080 100%);
+            /* Базовая палитра (Gold по умолчанию) */
+            --main-color: #d4af37;
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
+            --theme-glow: rgba(212, 175, 55, 0.35);
+            --sphere-base: #1a1a1a;
+            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --cell-text: #ffffff;
+            --neon-blue: #00a3ff;
+            --bg-dark: #000;
+            --shadow-color: rgba(0, 0, 0, 0.8);
+            --silver-text: #c0c0c0;
         }
 
-        /* 6 Насыщенных палитр */
-        [data-theme="cyan"] { --theme-dark: #00080a; --theme-bright: #004d61; --theme-accent: rgba(0, 251, 255, 0.5); --main-color: #00fbff; }
-        [data-theme="gold"] { --theme-dark: #0f0a00; --theme-bright: #664d00; --theme-accent: rgba(255, 215, 0, 0.5); --main-color: #ffd700; }
-        [data-theme="emerald"] { --theme-dark: #010a05; --theme-bright: #055e29; --theme-accent: rgba(0, 255, 127, 0.5); --main-color: #00ff7f; }
-        [data-theme="silver"] { --theme-dark: #0a0a0a; --theme-bright: #444; --theme-accent: rgba(255, 255, 255, 0.3); --main-color: #ffffff; }
-        [data-theme="phantom"] { --theme-dark: #050505; --theme-bright: #222; --theme-accent: rgba(200, 200, 200, 0.2); --main-color: #999; }
+        /* ТЕМЫ МОНОЛИТА (Блок №2) */
+        body.theme-cherry { 
+            --main-color: #C511A4; 
+            --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); 
+            --theme-glow: rgba(197, 17, 164, 0.35); 
+        }
+        body.theme-silver { 
+            --main-color: #c0c0c0; 
+            --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); 
+            --theme-glow: rgba(192, 192, 192, 0.35); 
+        }
+        body.theme-emerald { 
+            --main-color: #32CD32; 
+            --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); 
+            --theme-glow: rgba(50, 205, 50, 0.35); 
+        }
+        body.theme-cyan { 
+            --main-color: #00ffff; 
+            --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); 
+            --theme-glow: rgba(0, 255, 255, 0.35); 
+        }
+        body.theme-phantom { 
+            --main-color: #444; 
+            --main-gradient: linear-gradient(145deg, #222, #000); 
+            --theme-glow: rgba(255, 255, 255, 0.1); 
+        }
 
         body {
-            background: radial-gradient(circle at center, var(--theme-bright) 0%, var(--theme-dark) 70%, #000 100%);
-            transition: background 0.8s ease;
-            margin: 0; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
-            font-family: 'Orbitron', sans-serif; overflow: hidden; color: white;
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            transition: background 0.5s ease;
+            -webkit-user-select: none;
         }
 
-        .diamond-container {
-            position: relative; margin-top: 60px; width: 100px; height: 100px;
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        /* АНИМАЦИЯ ОНИКСОВЫХ СФЕР (Блок №4 и №5) */
+        @keyframes sphere-breathe {
+            0%, 100% {
+                box-shadow: inset -5px -5px 15px var(--shadow-color),
+                            0 8px 15px var(--shadow-color),
+                            0 0 8px var(--theme-glow);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: inset -5px -5px 15px var(--shadow-color),
+                            0 12px 25px var(--shadow-color),
+                            0 0 22px var(--main-color);
+                transform: scale(1.05);
+            }
         }
 
-        .diamond-core {
-            width: 70px; height: 70px; background: #000;
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-            cursor: pointer; position: relative; z-index: 10;
-            border: 2px solid var(--main-color);
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 20px var(--theme-accent);
-        }
-
-        .diamond-core.shimmer { animation: diamondPulse 4s infinite; }
-        @keyframes diamondPulse {
-            0% { border-color: #ff0033; box-shadow: 0 0 15px #ff0033; }
-            20% { border-color: #00fbff; box-shadow: 0 0 15px #00fbff; }
-            40% { border-color: #ffd700; box-shadow: 0 0 15px #ffd700; }
-            60% { border-color: #00ff7f; box-shadow: 0 0 15px #00ff7f; }
-            80% { border-color: #ffffff; box-shadow: 0 0 15px #ffffff; }
-            100% { border-color: #ff0033; box-shadow: 0 0 15px #ff0033; }
-        }
-
-        /* Потухший, но живой алмаз */
-        .diamond-core.dead { animation: none; background: #0a0a0a; border-color: #222; box-shadow: none; filter: brightness(0.5); }
-
-        .fan-sphere {
-            position: absolute; width: 40px; height: 40px; border-radius: 50%;
-            cursor: pointer; opacity: 0; transform: scale(0) translate(0, 0);
-            transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 5; border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-        }
-
-        .diamond-container.open .fan-sphere { opacity: 1; }
-
-        /* Кольцевое расположение (не вылетает за экран) */
-        .diamond-container.open .s1 { transform: scale(1) translate(-75px, 0px); background: radial-gradient(circle at 30% 30%, #ff0033, #000); }
-        .diamond-container.open .s2 { transform: scale(1) translate(-40px, -70px); background: radial-gradient(circle at 30% 30%, #00fbff, #000); }
-        .diamond-container.open .s3 { transform: scale(1) translate(40px, -70px); background: radial-gradient(circle at 30% 30%, #ffd700, #000); }
-        .diamond-container.open .s4 { transform: scale(1) translate(75px, 0px); background: radial-gradient(circle at 30% 30%, #00ff7f, #000); }
-        .diamond-container.open .s5 { transform: scale(1) translate(40px, 70px); background: radial-gradient(circle at 30% 30%, #ffffff, #000); }
-        .diamond-container.open .s6 { transform: scale(1) translate(-40px, 70px); background: radial-gradient(circle at 30% 30%, #444, #000); }
-
-        .grid { 
-            display: grid; grid-template-columns: repeat(7, 1fr); 
-            gap: 15px; padding: 20px; perspective: 1000px; margin-top: 30px;
-        }
-
-        .sphere-wrapper { position: relative; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; }
+        /* ТЯЖЕЛАЯ ТЕНЬ "СОБАКА" (Блок №5) */
         .sphere-shadow {
-            position: absolute; bottom: -6px; width: 40px; height: 10px;
-            background: rgba(0,0,0,0.9); filter: blur(5px); border-radius: 50%; transition: 0.3s;
+            position: absolute;
+            bottom: -10px;
+            width: 80%;
+            height: 15px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%);
+            left: 10%;
+            filter: blur(5px);
+            z-index: -1;
         }
 
-        .cell {
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 40%),
-                radial-gradient(circle at center, var(--theme-accent) -20%, #000 100%);
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.8), inset 5px 5px 10px rgba(255,255,255,0.1);
+        /* ИНТРО (Блок №6) - Наши 6 летящих сфер */
+        #intro-container {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 30000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .intro-sphere {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--white-sphere);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 20px var(--main-color);
+        }
+
+        /* КОНТЕНТ ПРИЛОЖЕНИЯ */
+        #app-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 0 100px;
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* НАВИГАЦИЯ */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: rgba(10,10,10,0.98);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 2px solid var(--main-color);
+            z-index: 10000;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.9);
+        }
+
+        .nav-item {
+            color: #555;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
             transition: 0.3s;
         }
 
-        .cell span { font-size: 22px; font-weight: 900; background: var(--silver-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 2px #000); }
-        .cell.selected { border: 2px solid var(--main-color); box-shadow: 0 0 25px var(--main-color); transform: scale(1.05); }
+        .nav-item.active {
+            color: var(--main-color);
+            text-shadow: 0 0 10px var(--theme-glow);
+            transform: translateY(-5px);
+        }
+
+        .nav-item span {
+            display: block;
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+        /* СЕТКА ШАРОВ (Блоки №3, 4, 5) */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 0 20px;
+            max-width: 450px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            background: var(--white-sphere);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--cell-text);
+            font-size: 20px;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        }
+
+        .cell.selected {
+            background: var(--main-gradient);
+            color: #000;
+            transform: scale(1.15) translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 25px var(--main-color);
+            border: 2px solid #fff;
+            z-index: 10;
+            animation: none;
+        }
+
+        /* АЛМАЗНЫЙ ВЕЕР (Блок №9) */
+        .diamond-fan-container {
+            position: relative;
+            height: 120px;
+            margin-top: 20px;
+        }
+
+        #main-diamond {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--main-color) 70%);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            margin: 0 auto;
+            cursor: pointer;
+            z-index: 50;
+            position: relative;
+            box-shadow: 0 0 20px var(--main-color);
+            transition: 0.5s;
+        }
+
+        #main-diamond.dimmed {
+            filter: grayscale(1) brightness(0.5);
+            opacity: 0.7;
+            transform: scale(0.9);
+        }
+
+        .fan-sphere {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            left: calc(50% - 17.5px);
+            top: 10px;
+            transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            transform: scale(0);
+            cursor: pointer;
+            border: 1px solid #fff;
+        }
+
+        /* БИВАЛЮТНЫЙ КАЛЬКУЛЯТОР (Блок №12) */
+        .balance-section {
+            display: flex;
+            gap: 15px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .wallet-card {
+            flex: 1;
+            background: linear-gradient(145deg, #111, #050505);
+            border: 1.5px solid #333;
+            border-radius: 15px;
+            padding: 10px;
+            transition: 0.4s;
+            cursor: pointer;
+        }
+
+        .wallet-card.active {
+            border-color: var(--main-color);
+            box-shadow: 0 0 15px var(--theme-glow);
+            transform: translateY(-3px);
+        }
+
+        .currency-label { font-size: 9px; color: #888; letter-spacing: 2px; }
+        .currency-value { font-size: 18px; font-weight: 900; color: var(--main-color); }
+
+        /* ЮРИДИЧЕСКИЙ БЛОК BGS */
+        #bgs-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.96);
+            z-index: 40000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .bgs-box {
+            border: 2px solid var(--main-color);
+            background: #111;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 300px;
+            box-shadow: 0 0 40px var(--shadow-color);
+        }
+
+        /* КНОПКА ПОДТВЕРЖДЕНИЯ (МЯСО) */
+        .btn-confirm {
+            width: 85%;
+            background: var(--main-gradient);
+            color: #000;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 18px;
+            margin: 20px 0;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
 
-    <div class="diamond-container" id="diamondContainer">
-        <div class="diamond-core shimmer" id="mainDiamond" onclick="toggleFan()"></div>
+<div id="intro-container">
+    <div class="intro-sphere" id="is1"></div>
+    <div class="intro-sphere" id="is2"></div>
+    <div class="intro-sphere" id="is3"></div>
+    <div class="intro-sphere" id="is4"></div>
+    <div class="intro-sphere" id="is5"></div>
+    <div class="intro-sphere" id="is6"></div>
+</div>
+
+<div id="bgs-overlay">
+    <div class="bgs-box">
+        <h2 id="bgs-title" style="color:var(--main-color)">SWISS BGS</h2>
+        <p id="bgs-text" style="font-size:12px; line-height:1.5"></p>
+        <button class="btn-confirm" onclick="acceptBGS()" id="bgs-btn"></button>
+    </div>
+</div>
+
+<div id="app-content">
+    <div id="page-play" class="page active">
+        <div id="lang-trigger" style="position:absolute; top:15px; left:15px; font-size:24px; cursor:pointer; z-index:1001">🌐</div>
         
-        <div class="fan-sphere s1" onclick="applyTheme('cherry', this)"></div>
-        <div class="fan-sphere s2" onclick="applyTheme('cyan', this)"></div>
-        <div class="fan-sphere s3" onclick="applyTheme('gold', this)"></div>
-        <div class="fan-sphere s4" onclick="applyTheme('emerald', this)"></div>
-        <div class="fan-sphere s5" onclick="applyTheme('silver', this)"></div>
-        <div class="fan-sphere s6" onclick="applyTheme('phantom', this)"></div>
+        <div class="diamond-fan-container">
+            <div id="main-diamond" onclick="toggleFan()"></div>
+            <div class="fan-sphere" onclick="setTheme('cherry')" style="background:#C511A4"></div>
+            <div class="fan-sphere" onclick="setTheme('cyan')" style="background:#00ffff"></div>
+            <div class="fan-sphere" onclick="setTheme('emerald')" style="background:#32CD32"></div>
+            <div class="fan-sphere" onclick="setTheme('silver')" style="background:#c0c0c0"></div>
+            <div class="fan-sphere" onclick="setTheme('gold')" style="background:#d4af37"></div>
+            <div class="fan-sphere" onclick="setTheme('phantom')" style="background:#222"></div>
+        </div>
+
+        <div class="balance-section">
+            <div class="wallet-card active" id="w-vchf" onclick="setCurrency('VCHF')">
+                <div class="currency-label">VIRTUAL</div>
+                <div class="currency-value" id="val-vchf">100.00</div>
+            </div>
+            <div class="wallet-card" id="w-chf" onclick="setCurrency('CHF')">
+                <div class="currency-label">REAL CHF</div>
+                <div class="currency-value" id="val-chf">0.00</div>
+            </div>
+        </div>
+        <div class="grid" id="main-grid">
+            </div>
+
+        <div id="super-label" style="color:var(--main-color); font-size:12px; margin: 20px 0 10px;">SUPERZAHL</div>
+        <div class="grid" id="super-grid" style="grid-template-columns: repeat(6, 1fr); max-width: 320px;">
+            </div>
+
+        <div style="margin: 20px 0; font-size: 16px;">
+            <span id="label-total">TOTAL</span>: <span id="display-amount" style="color:var(--neon-blue); font-weight:900;">2.50 VCHF</span>
+        </div>
+
+        <button class="btn-confirm" id="btn-main-action" onclick="processTicket()"></button>
     </div>
 
-    <div class="grid" id="vchf-monolith"></div>
+    <div id="page-stats" class="page">
+        <h2 id="stats-title" style="color:var(--main-color)">ANALYTICS</h2>
+        <div id="stats-container"></div>
+    </div>
 
-    <script>
-        /* Engine VCHF v2.4 - Full Visual Fix */
-        const grid = document.getElementById('vchf-monolith');
-        const diamond = document.getElementById('mainDiamond');
-        const container = document.getElementById('diamondContainer');
-        let isFirstChoice = true;
+    <div id="page-tickets" class="page">
+        <h2 id="tickets-title" style="color:var(--main-color)">MY TICKETS</h2>
+        <div id="tickets-list"></div>
+    </div>
 
-        function renderGrid() {
-            grid.innerHTML = '';
-            for(let i=1; i<=42; i++) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'sphere-wrapper';
-                const shadow = document.createElement('div');
-                shadow.className = 'sphere-shadow';
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.innerHTML = `<span>${i}</span>`;
-                cell.onclick = () => cell.classList.toggle('selected');
-                
-                // Магнитный эффект
-                wrapper.onmousemove = (e) => {
-                    const rect = wrapper.getBoundingClientRect();
-                    const x = (e.clientX - rect.left - rect.width/2) / 4;
-                    const y = (e.clientY - rect.top - rect.height/2) / 4;
-                    cell.style.transform = `translate(${x}px, ${y}px)`;
-                };
-                wrapper.onmouseleave = () => cell.style.transform = '';
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchPage('play', this)">
+            <span>🎲</span><div id="nav-play">PLAY</div>
+        </div>
+        <div class="nav-item" onclick="switchPage('tickets', this)">
+            <span>🎟️</span><div id="nav-tickets">TICKETS</div>
+        </div>
+        <div class="nav-item" onclick="switchPage('stats', this)">
+            <span>📊</span><div id="nav-stats">STATS</div>
+        </div>
+    </div>
+</div>
 
-                wrapper.appendChild(shadow);
-                wrapper.appendChild(cell);
-                grid.appendChild(wrapper);
+<script>
+    /* [Spark Logic: Интеграция Скелета и Мяса] */
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.enableClosingConfirmation();
+
+    // ПАРАМЕТРЫ МОНОЛИТА
+    let selectedNums = [];
+    let selectedSuper = null;
+    let currentCurrency = 'VCHF';
+    let currentTheme = 'gold';
+    let currentLang = 'de';
+    const ticketPrice = 2.50;
+
+    // СЛОВАРЬ (Блок №11: Лингва)
+    const dictionary = {
+        ru: { play: "ИГРА", tickets: "БИЛЕТЫ", stats: "АНАЛИТИКА", confirm: "ПОДТВЕРДИТЬ", total: "ИТОГО", bgs_t: "ЗАКОН ШВЕЙЦАРИИ", bgs_p: "Участие разрешено только лицам старше 18 лет.", bgs_b: "МНЕ ЕСТЬ 18" },
+        de: { play: "SPIEL", tickets: "TICKETS", stats: "STATS", confirm: "BESTÄTIGEN", total: "GESAMT", bgs_t: "SCHWEIZER BGS", bgs_p: "Teilnahme erst ab 18 Jahren gestattet.", bgs_b: "ICH BIN 18" },
+        en: { play: "PLAY", tickets: "TICKETS", stats: "STATS", confirm: "CONFIRM", total: "TOTAL", bgs_t: "SWISS LAW", bgs_p: "Participation is only for 18+.", bgs_b: "I AM 18" }
+    };
+
+    // Блок №10: МЕРТВЫЙ БЛОК (Стратегии Аномалий)
+    const strategies = [
+        { name: "ВУЛКАН", type: "hot", period: "all" },
+        { name: "ЗОЛОТАЯ ЖИЛА", type: "mixed", period: "year" },
+        { name: "ПРИЗРАК", type: "sleeping", period: "month" }
+    ];
+    // Блок №6: АНИМАЦИЯ ИНТРО
+    function runIntro() {
+        const spheres = document.querySelectorAll('.intro-sphere');
+        spheres.forEach((s, i) => {
+            setTimeout(() => {
+                s.style.opacity = '1';
+                s.style.left = Math.random() * 80 + 10 + '%';
+                s.style.top = Math.random() * 80 + 10 + '%';
+                s.style.transform = `scale(${Math.random() + 0.5})`;
+                s.style.transition = 'all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            }, i * 200);
+        });
+
+        setTimeout(() => {
+            document.getElementById('intro-container').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro-container').style.display = 'none';
+                document.getElementById('app-content').style.display = 'flex';
+                document.getElementById('app-content').style.opacity = '1';
+                checkBGS();
+            }, 1000);
+        }, 3000);
+    }
+
+    // Блок №9: ЛОГИКА АЛМАЗА
+    let fanOpen = false;
+    function toggleFan() {
+        const diamond = document.getElementById('main-diamond');
+        const spheres = document.querySelectorAll('.fan-sphere');
+        fanOpen = !fanOpen;
+        
+        diamond.classList.toggle('dimmed', fanOpen);
+        
+        spheres.forEach((s, i) => {
+            if (fanOpen) {
+                const angle = (i * (180 / (spheres.length - 1))) * (Math.PI / 180);
+                const radius = 80;
+                const x = Math.cos(angle) * radius;
+                const y = -Math.sin(angle) * radius;
+                s.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+                s.style.opacity = '1';
+            } else {
+                s.style.transform = 'translate(0, 0) scale(0)';
+                s.style.opacity = '0';
             }
+        });
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function setTheme(theme) {
+        document.body.className = 'theme-' + theme;
+        currentTheme = theme;
+        toggleFan(); // Сворачиваем веер
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    // Блок №3, 4, 5: ГЕНЕРАЦИЯ СЕТКИ ОНИКСА
+    function createGrids() {
+        const mainGrid = document.getElementById('main-grid');
+        for (let i = 1; i <= 42; i++) {
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.id = `cell-${i}`;
+            cell.innerText = i;
+            cell.onclick = () => selectNumber(i);
+            
+            const shadow = document.createElement('div');
+            shadow.className = 'sphere-shadow';
+            
+            container.appendChild(cell);
+            container.appendChild(shadow);
+            mainGrid.appendChild(container);
         }
 
-        function toggleFan() {
-            container.classList.toggle('open');
+        const superGrid = document.getElementById('super-grid');
+        for (let i = 1; i <= 6; i++) {
+            const sc = document.createElement('div');
+            sc.className = 'cell';
+            sc.style.background = 'var(--main-gradient)';
+            sc.style.color = '#000';
+            sc.id = `super-${i}`;
+            sc.innerText = i;
+            sc.onclick = () => selectSuperNumber(i);
+            superGrid.appendChild(sc);
         }
-
-        function applyTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            if (isFirstChoice) {
-                diamond.classList.remove('shimmer');
-                diamond.classList.add('dead');
-                isFirstChoice = false;
-            }
-            container.classList.remove('open');
+    }
+    function selectNumber(num) {
+        const el = document.getElementById(`cell-${num}`);
+        if (selectedNums.includes(num)) {
+            selectedNums = selectedNums.filter(n => n !== num);
+            el.classList.remove('selected');
+        } else if (selectedNums.length < 6) {
+            selectedNums.push(num);
+            el.classList.add('selected');
+            tg.HapticFeedback.impactOccurred('light');
         }
+        updateDisplay();
+    }
 
-        renderGrid();
+    function selectSuperNumber(num) {
+        document.querySelectorAll('#super-grid .cell').forEach(c => c.classList.remove('selected'));
+        selectedSuper = num;
+        document.getElementById(`super-${num}`).classList.add('selected');
+        tg.HapticFeedback.impactOccurred('medium');
+        updateDisplay();
+    }
 
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', (e) => {
-                const cells = document.querySelectorAll('.cell');
-                const x = e.beta / 10; 
-                const y = e.gamma / 10;
-                cells.forEach(c => {
-                    c.style.backgroundPosition = `${50 + y}% ${50 + x}%`;
-                });
+    function setCurrency(cur) {
+        currentCurrency = cur;
+        document.getElementById('w-vchf').classList.toggle('active', cur === 'VCHF');
+        document.getElementById('w-chf').classList.toggle('active', cur === 'CHF');
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const d = dictionary[currentLang];
+        document.getElementById('display-amount').innerText = `${ticketPrice.toFixed(2)} ${currentCurrency}`;
+        document.getElementById('btn-main-action').innerText = d.confirm;
+        document.getElementById('label-total').innerText = d.total;
+    }
+
+    function checkBGS() {
+        if (!localStorage.getItem('vchf_bgs_accepted')) {
+            const d = dictionary[currentLang];
+            document.getElementById('bgs-title').innerText = d.bgs_t;
+            document.getElementById('bgs-text').innerText = d.bgs_p;
+            document.getElementById('bgs-btn').innerText = d.bgs_b;
+            document.getElementById('bgs-overlay').style.display = 'flex';
+        }
+    }
+
+    function acceptBGS() {
+        localStorage.setItem('vchf_bgs_accepted', 'true');
+        document.getElementById('bgs-overlay').style.display = 'none';
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function processTicket() {
+        if (selectedNums.length === 6 && selectedSuper) {
+            tg.showConfirm(`Confirm ticket: ${selectedNums.join(', ')} + ${selectedSuper}?`, (ok) => {
+                if (ok) {
+                    tg.showAlert("TICKET REGISTERED IN VCHF ENGINE");
+                    // [Spark Note: Здесь мясо соединяется со статистикой будущего Блока 10]
+                }
             });
+        } else {
+            tg.showAlert("Select 6 numbers + Superzahl");
         }
-    </script>
+    }
+
+    window.onload = () => {
+        createGrids();
+        updateDisplay();
+        runIntro();
+    };
+</script>
 </body>
 </html>
