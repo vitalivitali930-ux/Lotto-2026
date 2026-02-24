@@ -6,50 +6,34 @@
     <title>Lotto - Движок VCHF Ultimate 2.5</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Базовая палитра (Gold по умолчанию) */
             --main-color: #d4af37;
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --theme-glow: rgba(212, 175, 55, 0.35);
+            --theme-glow: rgba(212, 175, 55, 0.45);
             --sphere-base: #1a1a1a;
-            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --white-sphere: radial-gradient(circle at 35% 35%, #555 0%, #1a1a1a 45%, #000 100%);
             --cell-text: #ffffff;
             --neon-blue: #00a3ff;
-            --bg-dark: #000;
-            --shadow-color: rgba(0, 0, 0, 0.8);
-            --silver-text: #c0c0c0;
+            --bg-dark: #000000;
+            --shadow-color: rgba(0, 0, 0, 0.9);
+            --process-color: #00ffff;
+            --hot-color: #ff4500;
+            --cold-color: #1e90ff;
+            --success-green: #32CD32;
         }
 
-        /* ТЕМЫ МОНОЛИТА (Блок №2) */
-        body.theme-cherry { 
-            --main-color: #C511A4; 
-            --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); 
-            --theme-glow: rgba(197, 17, 164, 0.35); 
-        }
-        body.theme-silver { 
-            --main-color: #c0c0c0; 
-            --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); 
-            --theme-glow: rgba(192, 192, 192, 0.35); 
-        }
-        body.theme-emerald { 
-            --main-color: #32CD32; 
-            --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); 
-            --theme-glow: rgba(50, 205, 50, 0.35); 
-        }
-        body.theme-cyan { 
-            --main-color: #00ffff; 
-            --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); 
-            --theme-glow: rgba(0, 255, 255, 0.35); 
-        }
-        body.theme-phantom { 
-            --main-color: #444; 
-            --main-gradient: linear-gradient(145deg, #222, #000); 
-            --theme-glow: rgba(255, 255, 255, 0.1); 
-        }
+        /* ТЕМАТИЧЕСКИЕ МОДИФИКАТОРЫ (ПОЛНЫЙ СПИСОК) */
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.45); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #f0f0f0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.45); }
+        body.theme-emerald { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.45); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.45); }
+        body.theme-phantom { --main-color: #444; --main-gradient: linear-gradient(145deg, #333, #111); --theme-glow: rgba(255, 255, 255, 0.1); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.45); }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background: var(--bg-dark);
@@ -57,379 +41,508 @@
             font-family: 'Orbitron', sans-serif;
             text-align: center;
             margin: 0;
+            padding: 0;
+            height: 100vh;
             overflow: hidden;
             transition: background 0.5s ease;
             -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* АНИМАЦИЯ ОНИКСОВЫХ СФЕР (Блок №4 и №5) */
+        /* АНИМАЦИИ МОНОЛИТА */
         @keyframes sphere-breathe {
-            0%, 100% {
-                box-shadow: inset -5px -5px 15px var(--shadow-color),
-                            0 8px 15px var(--shadow-color),
-                            0 0 8px var(--theme-glow);
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: inset -5px -5px 15px var(--shadow-color),
-                            0 12px 25px var(--shadow-color),
-                            0 0 22px var(--main-color);
-                transform: scale(1.05);
-            }
+            0%, 100% { box-shadow: inset -5px -5px 15px var(--shadow-color), 0 8px 15px var(--shadow-color), 0 0 10px var(--theme-glow); transform: scale(1); }
+            50% { box-shadow: inset -5px -5px 15px var(--shadow-color), 0 15px 30px var(--shadow-color), 0 0 25px var(--main-color); transform: scale(1.05); }
         }
 
-        /* ТЯЖЕЛАЯ ТЕНЬ "СОБАКА" (Блок №5) */
-        .sphere-shadow {
-            position: absolute;
-            bottom: -10px;
-            width: 80%;
-            height: 15px;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 70%);
-            left: 10%;
-            filter: blur(5px);
-            z-index: -1;
+        @keyframes processing-flash {
+            0% { background: var(--process-color); box-shadow: 0 0 35px var(--process-color); transform: scale(1.2); z-index: 100; }
+            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); z-index: 1; }
         }
 
-        /* ИНТРО (Блок №6) - Наши 6 летящих сфер */
-        #intro-container {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 30000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+        @keyframes pulse-hot { 0% { box-shadow: 0 0 10px #ff4500; } 100% { box-shadow: 0 0 25px #ff4500, 0 0 5px #fff; transform: scale(1.08); } }
+        @keyframes pulse-cold { 0% { box-shadow: 0 0 10px #1e90ff; } 100% { box-shadow: 0 0 25px #1e90ff, 0 0 5px #fff; transform: scale(1.08); } }
+        
+        @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
-        .intro-sphere {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: var(--white-sphere);
-            border-radius: 50%;
-            opacity: 0;
-            box-shadow: 0 0 20px var(--main-color);
-        }
+        /* СКЕЛЕТ ИНТЕРФЕЙСА */
+        #intro-container { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; justify-content: center; align-items: center; overflow: hidden; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .intro-sphere { position: absolute; width: 70px; height: 70px; background: var(--white-sphere); border-radius: 50%; opacity: 0; box-shadow: 0 0 30px var(--main-color); border: 1px solid rgba(255,255,255,0.2); }
 
-        /* КОНТЕНТ ПРИЛОЖЕНИЯ */
-        #app-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 1s ease;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .page {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px 0 100px;
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; flex-direction: column; position: relative; z-index: 1; }
+        
+        .page { flex: 1; overflow-y: auto; padding: 20px 0 120px; display: none; scroll-behavior: smooth; }
+        .page.active { display: block; animation: fade-in 0.6s ease; }
 
         /* НАВИГАЦИЯ */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 75px;
-            background: rgba(10,10,10,0.98);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 2px solid var(--main-color);
-            z-index: 10000;
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.9);
-        }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: rgba(5,5,5,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid var(--main-color); z-index: 10000; backdrop-filter: blur(15px); box-shadow: 0 -15px 35px rgba(0,0,0,0.9); }
+        .nav-item { color: #444; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .nav-item span { font-size: 28px; margin-bottom: 5px; transition: 0.3s; }
+        .nav-item.active { color: var(--main-color); transform: translateY(-8px); }
+        .nav-item.active span { text-shadow: 0 0 15px var(--theme-glow); transform: scale(1.2); }
 
-        .nav-item {
-            color: #555;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+        /* ГЛАВНАЯ СЕТКА */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; padding: 0 25px; max-width: 500px; margin: 25px auto; perspective: 1000px; }
+        
+        .cell-wrapper { position: relative; width: 100%; aspect-ratio: 1/1; }
+        
+        .cell { width: 100%; height: 100%; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--cell-text); font-size: 22px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; border: 1px solid rgba(255,255,255,0.08); animation: sphere-breathe 4s infinite ease-in-out; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.18) translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 50; animation: none; }
+        
+        .cell.processing-flash { animation: processing-flash 0.2s ease-out forwards; }
+        .cell.is-hot { border: 2.5px solid #ff4500 !important; animation: pulse-hot 1s infinite alternate !important; }
+        .cell.is-cold { border: 2.5px solid #1e90ff !important; animation: pulse-cold 1s infinite alternate !important; }
 
-        .nav-item.active {
-            color: var(--main-color);
-            text-shadow: 0 0 10px var(--theme-glow);
-            transform: translateY(-5px);
-        }
+        .sphere-shadow { position: absolute; bottom: -12px; width: 80%; height: 12px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 75%); left: 10%; filter: blur(6px); z-index: -1; transition: 0.5s; }
+        .cell.selected + .sphere-shadow { transform: scale(1.3); opacity: 0.6; filter: blur(10px); }
 
-        .nav-item span {
-            display: block;
-            font-size: 26px;
-            margin-bottom: 4px;
-        }
-        /* СЕТКА ШАРОВ (Блоки №3, 4, 5) */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 12px;
-            padding: 0 20px;
-            max-width: 450px;
-            margin: 20px auto;
-        }
+        /* АЛМАЗНЫЙ ВЕЕР */
+        .diamond-fan-container { position: relative; height: 130px; margin-top: 25px; z-index: 1000; }
+        #main-diamond { width: 55px; height: 55px; background: radial-gradient(circle at 35% 35%, #fff, var(--main-color) 75%); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); margin: 0 auto; cursor: pointer; position: relative; z-index: 1001; box-shadow: 0 0 25px var(--main-color); transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        #main-diamond.dimmed { filter: grayscale(0.8) brightness(0.4); transform: rotate(45deg) scale(0.85); }
+        
+        .fan-sphere { position: absolute; width: 40px; height: 40px; border-radius: 50%; left: calc(50% - 20px); top: 10px; transition: 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55); opacity: 0; transform: scale(0); cursor: pointer; border: 2.5px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000; }
 
-        .cell {
-            aspect-ratio: 1/1;
-            background: var(--white-sphere);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: var(--cell-text);
-            font-size: 20px;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            position: relative;
-            border: 1px solid rgba(255,255,255,0.05);
-            animation: sphere-breathe 4s infinite ease-in-out;
-        }
+        /* КОШЕЛЕК И ИНФО */
+        .balance-section { display: flex; gap: 18px; padding: 0 25px; margin-bottom: 25px; }
+        .wallet-card { flex: 1; background: linear-gradient(145deg, #151515, #050505); border: 2px solid #252525; border-radius: 20px; padding: 12px; transition: 0.5s; cursor: pointer; position: relative; overflow: hidden; }
+        .wallet-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent); transform: rotate(45deg); transition: 0.5s; }
+        .wallet-card:hover::after { left: 100%; }
+        .wallet-card.active { border-color: var(--main-color); box-shadow: 0 0 20px var(--theme-glow); transform: translateY(-5px); }
 
-        .cell.selected {
-            background: var(--main-gradient);
-            color: #000;
-            transform: scale(1.15) translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 25px var(--main-color);
-            border: 2px solid #fff;
-            z-index: 10;
-            animation: none;
-        }
-
-        /* АЛМАЗНЫЙ ВЕЕР (Блок №9) */
-        .diamond-fan-container {
-            position: relative;
-            height: 120px;
-            margin-top: 20px;
-        }
-
-        #main-diamond {
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle at 30% 30%, #fff, var(--main-color) 70%);
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-            margin: 0 auto;
-            cursor: pointer;
-            z-index: 50;
-            position: relative;
-            box-shadow: 0 0 20px var(--main-color);
-            transition: 0.5s;
-        }
-
-        #main-diamond.dimmed {
-            filter: grayscale(1) brightness(0.5);
-            opacity: 0.7;
-            transform: scale(0.9);
-        }
-
-        .fan-sphere {
-            position: absolute;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            left: calc(50% - 17.5px);
-            top: 10px;
-            transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            opacity: 0;
-            transform: scale(0);
-            cursor: pointer;
-            border: 1px solid #fff;
-        }
-
-        /* БИВАЛЮТНЫЙ КАЛЬКУЛЯТОР (Блок №12) */
-        .balance-section {
-            display: flex;
-            gap: 15px;
-            padding: 0 20px;
-            margin-bottom: 20px;
-        }
-
-        .wallet-card {
-            flex: 1;
-            background: linear-gradient(145deg, #111, #050505);
-            border: 1.5px solid #333;
-            border-radius: 15px;
-            padding: 10px;
-            transition: 0.4s;
-            cursor: pointer;
-        }
-
-        .wallet-card.active {
-            border-color: var(--main-color);
-            box-shadow: 0 0 15px var(--theme-glow);
-            transform: translateY(-3px);
-        }
-
-        .currency-label { font-size: 9px; color: #888; letter-spacing: 2px; }
-        .currency-value { font-size: 18px; font-weight: 900; color: var(--main-color); }
-
-        /* ЮРИДИЧЕСКИЙ БЛОК BGS */
-        #bgs-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.96);
-            z-index: 40000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(20px);
-        }
-
-        .bgs-box {
-            border: 2px solid var(--main-color);
-            background: #111;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 300px;
-            box-shadow: 0 0 40px var(--shadow-color);
-        }
-
-        /* КНОПКА ПОДТВЕРЖДЕНИЯ (МЯСО) */
-        .btn-confirm {
-            width: 85%;
-            background: var(--main-gradient);
-            color: #000;
-            border: none;
-            padding: 20px;
-            border-radius: 15px;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            font-size: 18px;
-            margin: 20px 0;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-    </style>
-</head>
-<body>
-
-<div id="intro-container">
-    <div class="intro-sphere" id="is1"></div>
-    <div class="intro-sphere" id="is2"></div>
-    <div class="intro-sphere" id="is3"></div>
-    <div class="intro-sphere" id="is4"></div>
-    <div class="intro-sphere" id="is5"></div>
-    <div class="intro-sphere" id="is6"></div>
+        .currency-label { font-size: 10px; color: #777; letter-spacing: 2px; font-weight: 700; margin-bottom: 5px; }
+        .currency-value { font-size: 20px; font-weight: 900; color: var(--main-color); text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
+        /* КНОПКИ И ТУЛЗЫ */
+        .smart-tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; padding: 0 15px; }
+        .tool-btn { padding: 10px 18px; border-radius: 25px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-family: 'Orbitron'; font-weight: 700; cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); }
+        .tool-btn.active-tool { background: var(--main-color); color: #000; box-shadow: 0 0 15px var(--main-color); }
+<div id="legal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 100000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px;">
+    <div class="legal-box" style="background: #111; border: 3px solid var(--main-color); padding: 35px; border-radius: 30px; max-width: 350px; text-align: center; box-shadow: 0 0 60px rgba(0,0,0,1);">
+        <h2 id="legal-title" style="color: var(--main-color); font-size: 22px; margin-bottom: 20px;"></h2>
+        <p id="legal-text" style="font-size: 14px; line-height: 1.7; color: #ccc; margin-bottom: 30px; font-family: sans-serif;"></p>
+        <button class="btn-confirm" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin:0;"></button>
+    </div>
 </div>
 
-<div id="bgs-overlay">
-    <div class="bgs-box">
-        <h2 id="bgs-title" style="color:var(--main-color)">SWISS BGS</h2>
-        <p id="bgs-text" style="font-size:12px; line-height:1.5"></p>
-        <button class="btn-confirm" onclick="acceptBGS()" id="bgs-btn"></button>
-    </div>
+<div id="intro-container">
+    <div class="intro-sphere" id="is1"></div><div class="intro-sphere" id="is2"></div>
+    <div class="intro-sphere" id="is3"></div><div class="intro-sphere" id="is4"></div>
+    <div class="intro-sphere" id="is5"></div><div class="intro-sphere" id="is6"></div>
 </div>
 
 <div id="app-content">
     <div id="page-play" class="page active">
-        <div id="lang-trigger" style="position:absolute; top:15px; left:15px; font-size:24px; cursor:pointer; z-index:1001">🌐</div>
+        <div id="lang-trigger" style="position:absolute; top:20px; left:20px; font-size:28px; cursor:pointer; z-index:1001; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));" onclick="cycleLanguage()">🌐</div>
         
         <div class="diamond-fan-container">
             <div id="main-diamond" onclick="toggleFan()"></div>
-            <div class="fan-sphere" onclick="setTheme('cherry')" style="background:#C511A4"></div>
-            <div class="fan-sphere" onclick="setTheme('cyan')" style="background:#00ffff"></div>
-            <div class="fan-sphere" onclick="setTheme('emerald')" style="background:#32CD32"></div>
-            <div class="fan-sphere" onclick="setTheme('silver')" style="background:#c0c0c0"></div>
-            <div class="fan-sphere" onclick="setTheme('gold')" style="background:#d4af37"></div>
-            <div class="fan-sphere" onclick="setTheme('phantom')" style="background:#222"></div>
+            <div class="fan-sphere" onclick="setTheme('cherry')" style="background:#C511A4" title="Cherry"></div>
+            <div class="fan-sphere" onclick="setTheme('cyan')" style="background:#00ffff" title="Cyan"></div>
+            <div class="fan-sphere" onclick="setTheme('emerald')" style="background:#32CD32" title="Emerald"></div>
+            <div class="fan-sphere" onclick="setTheme('silver')" style="background:#c0c0c0" title="Silver"></div>
+            <div class="fan-sphere" onclick="setTheme('gold')" style="background:#d4af37" title="Gold"></div>
+            <div class="fan-sphere" onclick="setTheme('phantom')" style="background:#222" title="Phantom"></div>
         </div>
 
         <div class="balance-section">
-            <div class="wallet-card active" id="w-vchf" onclick="setCurrency('VCHF')">
-                <div class="currency-label">VIRTUAL</div>
+            <div class="wallet-card active" id="w-vchf" onclick="switchCurrency('VCHF')">
+                <div class="currency-label">VIRTUAL ENGINE</div>
                 <div class="currency-value" id="val-vchf">100.00</div>
             </div>
-            <div class="wallet-card" id="w-chf" onclick="setCurrency('CHF')">
-                <div class="currency-label">REAL CHF</div>
+            <div class="wallet-card" id="w-chf" onclick="switchCurrency('CHF')">
+                <div class="currency-label">REAL SWISS CHF</div>
                 <div class="currency-value" id="val-chf">0.00</div>
             </div>
         </div>
-        <div class="grid" id="main-grid">
-            </div>
 
-        <div id="super-label" style="color:var(--main-color); font-size:12px; margin: 20px 0 10px;">SUPERZAHL</div>
-        <div class="grid" id="super-grid" style="grid-template-columns: repeat(6, 1fr); max-width: 320px;">
-            </div>
-
-        <div style="margin: 20px 0; font-size: 16px;">
-            <span id="label-total">TOTAL</span>: <span id="display-amount" style="color:var(--neon-blue); font-weight:900;">2.50 VCHF</span>
+        <div class="smart-tools">
+            <button class="tool-btn" onclick="applySmartPick('hot')" id="btn-hot">🔥 HOT</button>
+            <button class="tool-btn" onclick="applySmartPick('cold')" id="btn-cold">❄️ COLD</button>
+            <button class="tool-btn" onclick="applySmartPick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
+            <button class="tool-btn" onclick="triggerRandom()">🎲 RANDOM</button>
         </div>
 
-        <button class="btn-confirm" id="btn-main-action" onclick="processTicket()"></button>
-    </div>
+        <div class="stats-period" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
+            <button class="p-btn active" onclick="setStatsPeriod('month')" id="p-month" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">MONTH</button>
+            <button class="p-btn" onclick="setStatsPeriod('year')" id="p-year" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">YEAR</button>
+            <button class="p-btn" onclick="setStatsPeriod('all')" id="p-all" style="font-size: 10px; padding: 6px 15px; border-radius: 15px; border: 1px solid #444; background: #111; color: #888; cursor: pointer;">ALL TIME</button>
+        </div>
 
-    <div id="page-stats" class="page">
-        <h2 id="stats-title" style="color:var(--main-color)">ANALYTICS</h2>
-        <div id="stats-container"></div>
+        <div class="grid" id="main-grid"></div>
+        
+        <div id="super-label" style="color:var(--main-color); font-size:14px; margin: 30px 0 15px; font-weight:900; letter-spacing:3px;">SUPERZAHL</div>
+        <div class="grid" id="super-grid" style="grid-template-columns: repeat(6, 1fr); max-width: 350px; margin-bottom: 30px;"></div>
+
+        <div style="margin: 25px 0; font-size: 18px; font-weight: 700;">
+            <span id="label-total">TOTAL</span>: <span id="display-amount" style="color:var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">2.50 VCHF</span>
+        </div>
+        
+        <button class="btn-confirm" id="btn-main-action" onclick="runEngine()" style="width: 85%; height: 70px; background: var(--main-gradient); color: #000; border: none; border-radius: 20px; font-family: 'Orbitron'; font-weight: 900; font-size: 20px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: 0.3s;"></button>
     </div>
 
     <div id="page-tickets" class="page">
-        <h2 id="tickets-title" style="color:var(--main-color)">MY TICKETS</h2>
-        <div id="tickets-list"></div>
+        <h2 id="tickets-title" style="color:var(--main-color); font-size: 24px; letter-spacing: 5px;">MY TICKETS</h2>
+        <div id="tickets-list" style="padding: 10px 20px;"></div>
+    </div>
+
+    <div id="page-stats" class="page">
+        <h2 id="stats-title" style="color:var(--main-color); font-size: 24px; letter-spacing: 5px;">ANALYTICS</h2>
+        <div id="stats-heatmap-container" style="padding: 0 10px;">
+            <div class="grid" id="stats-heatmap"></div>
+        </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchPage('play', this)">
-            <span>🎲</span><div id="nav-play">PLAY</div>
+        <div class="nav-item active" onclick="showPage('play', this)">
+            <span>🎲</span><div id="n-game">PLAY</div>
         </div>
-        <div class="nav-item" onclick="switchPage('tickets', this)">
-            <span>🎟️</span><div id="nav-tickets">TICKETS</div>
+        <div class="nav-item" onclick="showPage('tickets', this)">
+            <span>🎟️</span><div id="n-tickets">TICKETS</div>
         </div>
-        <div class="nav-item" onclick="switchPage('stats', this)">
-            <span>📊</span><div id="nav-stats">STATS</div>
+        <div class="nav-item" onclick="showPage('stats', this)">
+            <span>📊</span><div id="n-stats">STATS</div>
         </div>
     </div>
 </div>
 
 <script>
-    /* [Spark Logic: Интеграция Скелета и Мяса] */
+    /* [VCHF ENGINE v2.5: MONOLITH LOGIC] */
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.enableClosingConfirmation();
 
-    // ПАРАМЕТРЫ МОНОЛИТА
-    let selectedNums = [];
-    let selectedSuper = null;
-    let currentCurrency = 'VCHF';
-    let currentTheme = 'gold';
-    let currentLang = 'de';
-    const ticketPrice = 2.50;
-
-    // СЛОВАРЬ (Блок №11: Лингва)
-    const dictionary = {
-        ru: { play: "ИГРА", tickets: "БИЛЕТЫ", stats: "АНАЛИТИКА", confirm: "ПОДТВЕРДИТЬ", total: "ИТОГО", bgs_t: "ЗАКОН ШВЕЙЦАРИИ", bgs_p: "Участие разрешено только лицам старше 18 лет.", bgs_b: "МНЕ ЕСТЬ 18" },
-        de: { play: "SPIEL", tickets: "TICKETS", stats: "STATS", confirm: "BESTÄTIGEN", total: "GESAMT", bgs_t: "SCHWEIZER BGS", bgs_p: "Teilnahme erst ab 18 Jahren gestattet.", bgs_b: "ICH BIN 18" },
-        en: { play: "PLAY", tickets: "TICKETS", stats: "STATS", confirm: "CONFIRM", total: "TOTAL", bgs_t: "SWISS LAW", bgs_p: "Participation is only for 18+.", bgs_b: "I AM 18" }
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "СУПЕРЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ВСЁ ВРЕМЯ", total: "ИТОГО", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", bgs_t: "Закон Швейцарии (BGS)", bgs_p: "Согласно Федеральному закону, участие разрешено только лицам старше 18 лет.", bgs_b: "МНЕ ЕСТЬ 18" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "СУПЕРЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "РАЗОМ", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", bgs_t: "Закон Швейцарії (BGS)", bgs_p: "Згідно з законом, участь дозволена лише особам старше 18 років.", bgs_b: "МЕНІ Є 18" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "GESAMT", game: "SPIEL", tickets: "TICKETS", stats: "STATS", bgs_t: "Schweizer Gesetz (BGS)", bgs_p: "Gemäss Bundesgesetz ist die Teilnahme erst ab 18 Jahren gestattet.", bgs_b: "ICH BIN 18" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "TOTAL", game: "PLAY", tickets: "TICKETS", stats: "STATS", bgs_t: "Swiss Law (BGS)", bgs_p: "According to Federal Act, participation is only for 18+.", bgs_b: "I AM 18" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "TOTAL", game: "JEU", tickets: "BILLETS", stats: "STATS", bgs_t: "Loi Suisse (BGS)", bgs_p: "Selon la loi fédérale, la participation est réservée aux 18+.", bgs_b: "J'AI 18 ANS" }
     };
+    // Window 3: Core Mathematical Engine & Swiss Synchronization
+    let selected = [], superNum = null, currentLang = 'de', currentCurrency = 'VCHF', currentPeriod = 'month';
+    let balances = { VCHF: 100.00, CHF: 0.00 };
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    let realStatsDB = {}; 
 
-    // Блок №10: МЕРТВЫЙ БЛОК (Стратегии Аномалий)
-    const strategies = [
-        { name: "ВУЛКАН", type: "hot", period: "all" },
-        { name: "ЗОЛОТАЯ ЖИЛА", type: "mixed", period: "year" },
-        { name: "ПРИЗРАК", type: "sleeping", period: "month" }
-    ];
-    // Блок №6: АНИМАЦИЯ ИНТРО
-    function runIntro() {
+    // Инициализация глубокой базы статистики
+    function initStats() {
+        for(let i=1; i<=42; i++) {
+            // Структура: [0]=Месяц, [1]=Год, [2]=Все время
+            realStatsDB[i] = [
+                Math.floor(Math.random() * 12), 
+                Math.floor(Math.random() * 60), 
+                400 + Math.floor(Math.random() * 250)
+            ];
+        }
+    }
+
+    // Синхронизация по времени Швейцарии
+    function getSwissTime() {
+        return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Zurich"}));
+    }
+
+    async function runActualization() {
+        const now = getSwissTime();
+        const lastSync = localStorage.getItem('vchf_last_sync_full');
+        // Логика обновления: имитируем подгрузку данных реального тиража (Среда/Суббота)
+        if (lastSync !== now.toDateString()) {
+            console.log("vchf Engine: Starting Actualization...");
+            for(let i=0; i<5; i++) {
+                let r = Math.floor(Math.random()*42)+1;
+                realStatsDB[r][0] += 1;
+                realStatsDB[r][1] += 1;
+                realStatsDB[r][2] += 1;
+            }
+            localStorage.setItem('vchf_last_sync_full', now.toDateString());
+            console.log("vchf Engine: Sync Complete.");
+        }
+    }
+
+    function createGrids() {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'cell-wrapper';
+            const c = document.createElement('div');
+            c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            c.onclick = () => handleCellClick(i);
+            const shadow = document.createElement('div'); shadow.className = 'sphere-shadow';
+            wrapper.appendChild(c); wrapper.appendChild(shadow);
+            grid.appendChild(wrapper);
+        }
+        const sgrid = document.getElementById('super-grid');
+        sgrid.innerHTML = '';
+        for (let i = 1; i <= 6; i++) {
+            const sc = document.createElement('div');
+            sc.className = 'cell'; sc.id = `super-${i}`; sc.innerText = i;
+            sc.onclick = () => selectSuper(i);
+            sgrid.appendChild(sc);
+        }
+    }
+
+    function handleCellClick(num) {
+        if(selected.includes(num)) {
+            selected = selected.filter(n => n !== num);
+        } else if(selected.length < 6) {
+            selected.push(num);
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        refreshView();
+    }
+
+    function selectSuper(num) {
+        superNum = num;
+        tg.HapticFeedback.impactOccurred('medium');
+        refreshView();
+    }
+
+    function applySmartPick(type) {
+        // Сброс предыдущего выбора
+        selected = [];
+        const pIdx = currentPeriod === 'month' ? 0 : (currentPeriod === 'year' ? 1 : 2);
+        
+        // Сортировка по весам из базы
+        let data = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        
+        if (type === 'hot') {
+            data.sort((a, b) => b.val - a.val);
+        } else {
+            // Cold и Sleeping (самые редкие)
+            data.sort((a, b) => a.val - b.val);
+        }
+        
+        selected = data.slice(0, 6).map(x => x.num);
+        tg.HapticFeedback.notificationOccurred('success');
+        
+        // Подсвечиваем кнопки инструментов
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        document.getElementById(`btn-${type}`).classList.add('active-tool');
+        
+        refreshView(type);
+    }
+
+    function setStatsPeriod(p) {
+        currentPeriod = p;
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`));
+        
+        // ПРАВИЛО: Мгновенный пересчет активного фильтра при смене периода
+        const activeBtn = document.querySelector('.tool-btn.active-tool');
+        if(activeBtn) {
+            const currentType = activeBtn.id.replace('btn-', '');
+            applySmartPick(currentType);
+        }
+        refreshView();
+    }
+
+    function refreshView(activeType = null) {
+        document.querySelectorAll('.cell').forEach(c => {
+            const id = parseInt(c.innerText);
+            c.classList.remove('selected', 'is-hot', 'is-cold');
+            
+            if(c.id.startsWith('cell-')) {
+                if(selected.includes(id)) {
+                    c.classList.add('selected');
+                    if(activeType === 'hot') c.classList.add('is-hot');
+                    if(activeType === 'cold' || activeType === 'sleeping') c.classList.add('is-cold');
+                }
+            } else if(c.id.startsWith('super-')) {
+                if(superNum === id) c.classList.add('selected');
+            }
+        });
+        updatePriceDisplay();
+    }
+    // Window 4: Transaction Processing, UI Effects & Launch Initialization
+    function triggerRandom() {
+        selected = []; superNum = null;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        let iterations = 0;
+        const interval = setInterval(() => {
+            const r = Math.floor(Math.random() * 42) + 1;
+            const el = document.getElementById(`cell-${r}`);
+            el.classList.add('processing-flash');
+            setTimeout(() => el.classList.remove('processing-flash'), 150);
+            iterations++;
+            if(iterations > 25) {
+                clearInterval(interval);
+                while(selected.length < 6) {
+                    let nr = Math.floor(Math.random() * 42) + 1;
+                    if(!selected.includes(nr)) selected.push(nr);
+                }
+                superNum = Math.floor(Math.random() * 6) + 1;
+                tg.HapticFeedback.notificationOccurred('success');
+                refreshView();
+            }
+        }, 70);
+    }
+
+    let fanOpen = false;
+    function toggleFan() {
+        fanOpen = !fanOpen;
+        const diamond = document.getElementById('main-diamond');
+        const spheres = document.querySelectorAll('.fan-sphere');
+        diamond.classList.toggle('dimmed', fanOpen);
+        spheres.forEach((s, i) => {
+            if(fanOpen) {
+                const angle = (i * (180 / (spheres.length - 1))) * (Math.PI / 180);
+                const dist = 95;
+                const x = Math.cos(angle) * dist;
+                const y = -Math.sin(angle) * dist;
+                s.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+                s.style.opacity = '1';
+            } else {
+                s.style.transform = 'translate(0,0) scale(0)';
+                s.style.opacity = '0';
+            }
+        });
+    }
+
+    function setTheme(t) {
+        document.body.className = 'theme-' + t;
+        if(fanOpen) toggleFan();
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function switchCurrency(c) {
+        currentCurrency = c;
+        document.getElementById('w-vchf').classList.toggle('active', c === 'VCHF');
+        document.getElementById('w-chf').classList.toggle('active', c === 'CHF');
+        updatePriceDisplay();
+    }
+
+    function runEngine() {
+        if(selected.length === 6 && superNum) {
+            if(balances[currentCurrency] >= 2.5) {
+                tg.showConfirm(dict[currentLang].btn + "?", (ok) => {
+                    if(ok) {
+                        balances[currentCurrency] -= 2.5;
+                        const ticket = {
+                            id: Date.now(),
+                            nums: [...selected].sort((a,b)=>a-b),
+                            sn: superNum,
+                            time: new Date().toLocaleString(),
+                            currency: currentCurrency
+                        };
+                        myTickets.unshift(ticket);
+                        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+                        tg.HapticFeedback.notificationOccurred('success');
+                        tg.showAlert("VCHF ENGINE: TRANSACTION SECURE");
+                        selected = []; superNum = null; 
+                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+                        refreshView();
+                    }
+                });
+            } else { tg.showAlert("Low Balance!"); }
+        } else { tg.showAlert("Select 6 + 1 Superzahl"); }
+    }
+
+    function showPage(pageId, navEl) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        navEl.classList.add('active');
+        if(pageId === 'tickets') renderTickets();
+        if(pageId === 'stats') renderHeatmap();
+    }
+
+    function renderTickets() {
+        const container = document.getElementById('tickets-list');
+        if(myTickets.length === 0) {
+            container.innerHTML = `<p style="color:#555; margin-top:50px;">NO TICKETS FOUND</p>`;
+            return;
+        }
+        container.innerHTML = myTickets.map(t => `
+            <div class="ticket-card" style="background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: left;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="font-size:10px; color:var(--main-color); font-weight:900;">ID: ${t.id}</span>
+                    <span style="font-size:10px; color:#666;">${t.time}</span>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${t.nums.map(n => `<div style="width:35px; height:35px; background:#000; border:1px solid var(--main-color); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900;">${n}</div>`).join('')}
+                    <div style="width:35px; height:35px; background:#000; border:2px solid #ff4500; color:#ff4500; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900;">${t.sn}</div>
+                </div>
+                <div style="margin-top:10px; font-size:10px; text-align:right; color:#444;">PRICE: 2.50 ${t.currency}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderHeatmap() {
+        const g = document.getElementById('stats-heatmap');
+        g.innerHTML = '';
+        const pIdx = currentPeriod === 'month' ? 0 : (currentPeriod === 'year' ? 1 : 2);
+        for(let i=1; i<=42; i++) {
+            const div = document.createElement('div');
+            div.className = 'cell';
+            div.innerText = i;
+            const val = realStatsDB[i][pIdx];
+            // Визуальный градиент частоты
+            if(val > 450 || (pIdx === 0 && val > 10)) {
+                div.style.boxShadow = "inset 0 0 20px var(--main-color), 0 0 10px var(--main-color)";
+                div.style.borderColor = "var(--main-color)";
+            }
+            g.appendChild(div);
+        }
+    }
+
+    function updatePriceDisplay() {
+        const d = dict[currentLang];
+        document.getElementById('val-vchf').innerText = balances.VCHF.toFixed(2);
+        document.getElementById('val-chf').innerText = balances.CHF.toFixed(2);
+        document.getElementById('display-amount').innerText = `2.50 ${currentCurrency}`;
+        document.getElementById('btn-main-action').innerText = d.btn;
+        document.getElementById('super-label').innerText = d.super;
+        document.getElementById('label-total').innerText = d.total;
+        document.getElementById('n-game').innerText = d.game;
+        document.getElementById('n-tickets').innerText = d.tickets;
+        document.getElementById('n-stats').innerText = d.stats;
+        document.getElementById('p-month').innerText = d.month;
+        document.getElementById('p-year').innerText = d.year;
+        document.getElementById('p-all').innerText = d.all;
+        document.getElementById('tickets-title').innerText = d.tickets;
+        document.getElementById('stats-title').innerText = d.stats;
+    }
+
+    function cycleLanguage() {
+        const codes = ['de', 'en', 'ru', 'fr', 'ua'];
+        currentLang = codes[(codes.indexOf(currentLang) + 1) % codes.length];
+        updatePriceDisplay();
+        if(document.getElementById('legal-overlay').style.display === 'flex') {
+            const d = dict[currentLang];
+            document.getElementById('legal-title').innerText = d.bgs_t;
+            document.getElementById('legal-text').innerText = d.bgs_p;
+            document.getElementById('legal-agree-btn').innerText = d.bgs_b;
+        }
+    }
+
+    function acceptLegal() {
+        localStorage.setItem('vchf_bgs_confirmed', 'true');
+        document.getElementById('legal-overlay').style.display = 'none';
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    window.onload = () => {
+        initStats();
+        createGrids();
+        updatePriceDisplay();
+        
+        if(!localStorage.getItem('vchf_bgs_confirmed')) {
+            const d = dict[currentLang];
+            document.getElementById('legal-title').innerText = d.bgs_t;
+            document.getElementById('legal-text').innerText = d.bgs_p;
+            document.getElementById('legal-agree-btn').innerText = d.bgs_b;
+            document.getElementById('legal-overlay').style.display = 'flex';
+        }
+
         const spheres = document.querySelectorAll('.intro-sphere');
         spheres.forEach((s, i) => {
             setTimeout(() => {
                 s.style.opacity = '1';
-                s.style.left = Math.random() * 80 + 10 + '%';
-                s.style.top = Math.random() * 80 + 10 + '%';
-                s.style.transform = `scale(${Math.random() + 0.5})`;
+                s.style.left = Math.random() * 80 + '%';
+                s.style.top = Math.random() * 80 + '%';
                 s.style.transition = 'all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            }, i * 200);
+            }, i * 150);
         });
 
         setTimeout(() => {
@@ -438,144 +551,10 @@
                 document.getElementById('intro-container').style.display = 'none';
                 document.getElementById('app-content').style.display = 'flex';
                 document.getElementById('app-content').style.opacity = '1';
-                checkBGS();
             }, 1000);
         }, 3000);
-    }
 
-    // Блок №9: ЛОГИКА АЛМАЗА
-    let fanOpen = false;
-    function toggleFan() {
-        const diamond = document.getElementById('main-diamond');
-        const spheres = document.querySelectorAll('.fan-sphere');
-        fanOpen = !fanOpen;
-        
-        diamond.classList.toggle('dimmed', fanOpen);
-        
-        spheres.forEach((s, i) => {
-            if (fanOpen) {
-                const angle = (i * (180 / (spheres.length - 1))) * (Math.PI / 180);
-                const radius = 80;
-                const x = Math.cos(angle) * radius;
-                const y = -Math.sin(angle) * radius;
-                s.style.transform = `translate(${x}px, ${y}px) scale(1)`;
-                s.style.opacity = '1';
-            } else {
-                s.style.transform = 'translate(0, 0) scale(0)';
-                s.style.opacity = '0';
-            }
-        });
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function setTheme(theme) {
-        document.body.className = 'theme-' + theme;
-        currentTheme = theme;
-        toggleFan(); // Сворачиваем веер
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    // Блок №3, 4, 5: ГЕНЕРАЦИЯ СЕТКИ ОНИКСА
-    function createGrids() {
-        const mainGrid = document.getElementById('main-grid');
-        for (let i = 1; i <= 42; i++) {
-            const container = document.createElement('div');
-            container.style.position = 'relative';
-            
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.id = `cell-${i}`;
-            cell.innerText = i;
-            cell.onclick = () => selectNumber(i);
-            
-            const shadow = document.createElement('div');
-            shadow.className = 'sphere-shadow';
-            
-            container.appendChild(cell);
-            container.appendChild(shadow);
-            mainGrid.appendChild(container);
-        }
-
-        const superGrid = document.getElementById('super-grid');
-        for (let i = 1; i <= 6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'cell';
-            sc.style.background = 'var(--main-gradient)';
-            sc.style.color = '#000';
-            sc.id = `super-${i}`;
-            sc.innerText = i;
-            sc.onclick = () => selectSuperNumber(i);
-            superGrid.appendChild(sc);
-        }
-    }
-    function selectNumber(num) {
-        const el = document.getElementById(`cell-${num}`);
-        if (selectedNums.includes(num)) {
-            selectedNums = selectedNums.filter(n => n !== num);
-            el.classList.remove('selected');
-        } else if (selectedNums.length < 6) {
-            selectedNums.push(num);
-            el.classList.add('selected');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-        updateDisplay();
-    }
-
-    function selectSuperNumber(num) {
-        document.querySelectorAll('#super-grid .cell').forEach(c => c.classList.remove('selected'));
-        selectedSuper = num;
-        document.getElementById(`super-${num}`).classList.add('selected');
-        tg.HapticFeedback.impactOccurred('medium');
-        updateDisplay();
-    }
-
-    function setCurrency(cur) {
-        currentCurrency = cur;
-        document.getElementById('w-vchf').classList.toggle('active', cur === 'VCHF');
-        document.getElementById('w-chf').classList.toggle('active', cur === 'CHF');
-        updateDisplay();
-    }
-
-    function updateDisplay() {
-        const d = dictionary[currentLang];
-        document.getElementById('display-amount').innerText = `${ticketPrice.toFixed(2)} ${currentCurrency}`;
-        document.getElementById('btn-main-action').innerText = d.confirm;
-        document.getElementById('label-total').innerText = d.total;
-    }
-
-    function checkBGS() {
-        if (!localStorage.getItem('vchf_bgs_accepted')) {
-            const d = dictionary[currentLang];
-            document.getElementById('bgs-title').innerText = d.bgs_t;
-            document.getElementById('bgs-text').innerText = d.bgs_p;
-            document.getElementById('bgs-btn').innerText = d.bgs_b;
-            document.getElementById('bgs-overlay').style.display = 'flex';
-        }
-    }
-
-    function acceptBGS() {
-        localStorage.setItem('vchf_bgs_accepted', 'true');
-        document.getElementById('bgs-overlay').style.display = 'none';
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    function processTicket() {
-        if (selectedNums.length === 6 && selectedSuper) {
-            tg.showConfirm(`Confirm ticket: ${selectedNums.join(', ')} + ${selectedSuper}?`, (ok) => {
-                if (ok) {
-                    tg.showAlert("TICKET REGISTERED IN VCHF ENGINE");
-                    // [Spark Note: Здесь мясо соединяется со статистикой будущего Блока 10]
-                }
-            });
-        } else {
-            tg.showAlert("Select 6 numbers + Superzahl");
-        }
-    }
-
-    window.onload = () => {
-        createGrids();
-        updateDisplay();
-        runIntro();
+        runActualization();
     };
 </script>
 </body>
