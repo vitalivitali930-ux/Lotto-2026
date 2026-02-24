@@ -3,100 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCHF Cherry Chrome Test</title>
+    <title>VCHF Ultimate 3D</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Вишневая палитра: 70% черного, 30% вишневого */
-            --cherry-dark: #1a0205; 
-            --cherry-bright: #4a040d;
-            --main-color: #00fbff; 
+            --cherry-bg: radial-gradient(circle at center, #4a040d 0%, #1a0205 70%, #000 100%);
+            --main-color: #00fbff;
             --silver-text: linear-gradient(180deg, #fff 0%, #a8a8a8 50%, #7d7d7d 100%);
         }
 
         body {
-            /* Фон "Скатерть": глубокий градиент */
-            background: radial-gradient(circle at center, var(--cherry-bright) 0%, var(--cherry-dark) 70%, #000 100%);
+            background: var(--cherry-bg);
+            margin: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            overflow: hidden;
             font-family: 'Orbitron', sans-serif;
         }
 
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 15px; 
-            padding: 35px; 
-            background: rgba(0,0,0,0.4);
-            border-radius: 50px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-            border: 1px solid rgba(139, 0, 0, 0.2); /* Вишневая кайма */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 20px;
+            padding: 40px;
+            perspective: 1000px; /* Глубина для всей сетки */
         }
 
-        .cell { 
-            width: 55px;
-            height: 55px;
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
+        /* Контейнер для шара и его тени */
+        .sphere-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ТЕНЬ ПОД ШАРОМ (Contact Shadow) - Тот самый ключ! */
+        .sphere-shadow {
+            position: absolute;
+            bottom: -5px;
+            width: 40px;
+            height: 10px;
+            background: rgba(0,0,0,0.9);
+            filter: blur(5px);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
             cursor: pointer;
+            position: relative;
             
-            /* Сложный градиент: черный лак + вишневый отблеск снизу */
+            /* СЛОЖНЫЙ ГРАДИЕНТ: Лак + Рефлекс + Каустика */
             background: 
-                radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, transparent 40%), /* Блик сверху */
-                radial-gradient(circle at 50% 120%, rgba(139, 0, 0, 0.4) 0%, transparent 60%), /* Рефлекс от вишневого пола */
-                radial-gradient(circle at center, #1a1a1a 0%, #000 100%); /* Тело шара */
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 30%), /* Острый блик */
+                radial-gradient(circle at 70% 70%, rgba(139, 0, 0, 0.3) 0%, transparent 50%), /* Вишневая каустика внутри */
+                radial-gradient(circle at center, #222 0%, #000 100%); /* Тело шара */
             
             box-shadow: 
-                inset -10px -10px 20px rgba(0,0,0,1), 
-                inset 5px 5px 12px rgba(255,255,255,0.05),
-                0 15px 30px rgba(0,0,0,0.7);
+                inset -5px -5px 15px rgba(0,0,0,0.8),
+                inset 5px 5px 10px rgba(255,255,255,0.1),
+                0 0 0 1px rgba(255,255,255,0.05); /* Тонкий край */
             
-            border: 1px solid rgba(255,255,255,0.05); /* Тончайший край для отделения */
-            transition: all 0.4s ease;
-            animation: float 5s infinite ease-in-out;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         }
 
         .cell span {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
             background: var(--silver-text);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,1));
+            pointer-events: none;
         }
 
-        .cell.selected { 
-            background: radial-gradient(circle at 35% 35%, #333 0%, #000 100%);
+        /* Эффект МАГНИТА и ВМЯТИНЫ */
+        .sphere-wrapper:hover .cell {
+            transform: scale(1.1) translateY(-5px);
+        }
+        .sphere-wrapper:hover .sphere-shadow {
+            transform: scale(1.3);
+            opacity: 0.4;
+            filter: blur(8px);
+        }
+
+        .sphere-wrapper:active .cell {
+            transform: scale(0.95) translateY(2px); /* Шар "вминается" */
+        }
+        .sphere-wrapper:active .sphere-shadow {
+            transform: scale(0.8);
+            opacity: 1;
+            filter: blur(2px);
+        }
+
+        /* Выбранный шар */
+        .cell.selected {
             border: 2px solid var(--main-color);
-            box-shadow: 0 0 30px var(--main-color);
-            transform: scale(1.1) translateY(-10px);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-7px); }
+            box-shadow: 0 0 30px var(--main-color), inset 0 0 20px var(--main-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="grid" id="cherry-test"></div>
+<div class="grid" id="vchf-monolith"></div>
 
-    <script>
-        const grid = document.getElementById('cherry-test');
-        for(let i=1; i<=42; i++) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.innerHTML = `<span>${i}</span>`;
-            c.onclick = () => c.classList.toggle('selected');
-            grid.appendChild(c);
-        }
-    </script>
+<script>
+    const grid = document.getElementById('vchf-monolith');
+    
+    // Создаем сетку
+    for(let i=1; i<=42; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sphere-wrapper';
+        
+        const shadow = document.createElement('div');
+        shadow.className = 'sphere-shadow';
+        
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.innerHTML = `<span>${i}</span>`;
+        
+        cell.onclick = () => cell.classList.toggle('selected');
+        
+        // ЛОГИКА МАГНИТА (для ПК)
+        wrapper.onmousemove = (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width/2;
+            const y = e.clientY - rect.top - rect.height/2;
+            cell.style.transform = `translate(${x/4}px, ${y/4}px) scale(1.1)`;
+        };
+        wrapper.onmouseleave = () => {
+            cell.style.transform = '';
+        };
+
+        wrapper.appendChild(shadow);
+        wrapper.appendChild(cell);
+        grid.appendChild(wrapper);
+    }
+
+    // ГИРОСКОП (для телефонов)
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (event) => {
+            const cells = document.querySelectorAll('.cell');
+            const rotX = event.beta / 4;  // наклон вперед/назад
+            const rotY = event.gamma / 4; // наклон влево/вправо
+            
+            cells.forEach(c => {
+                // Двигаем блики градиентом (имитация)
+                c.style.backgroundPosition = `${50 + rotY}% ${50 + rotX}%`;
+            });
+        });
+    }
+</script>
 </body>
 </html>
