@@ -1,246 +1,517 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF - 3D Genesis Silent & Lotto</title>
+    <title>Lotto - Движок VCHF Ultimate 2.0 [Genesis Edition]</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --neon-cyan: #00fbff; 
-            --neon-fire: #ff4d00; 
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --theme-glow: rgba(212, 175, 55, 0.35);
+            --theme-glow: rgba(212, 175, 55, 0.35); 
+            --sphere-base: #1a1a1a;
             --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
+            --cell-text: #ffffff; 
+            --hot-color: #ff4500;
+            --cold-color: #1e90ff;
             --process-color: #00ffff;
-        }
+            --neon-blue: #00a3ff;
+            --neon-cyan: #00fbff; 
+            --neon-fire: #ff4d00;
+            --manifesto-red: #ff0000;
+        } 
 
-        body, html { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Orbitron', -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: -apple-system, 'Orbitron', sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; 
+            transition: background 0.5s ease;
+        } 
 
-        /* --- STYLES: 3D INTRO --- */
+        /* --- 3D GENESIS INTRO STYLES --- */
         #world-3d { position: fixed; inset: 0; perspective: 1200px; z-index: 20001; background: radial-gradient(circle at center, #051622 0%, #000 100%); transition: opacity 1.5s; }
         #grid-floor { position: absolute; width: 400%; height: 400%; top: -100%; left: -150%; background-image: linear-gradient(rgba(0, 251, 255, 0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(0, 251, 255, 0.2) 2px, transparent 2px); background-size: 100px 100px; transform: rotateX(75deg); transform-origin: center center; animation: gridMove 8s linear infinite; }
         @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
-        #bg-manifesto { position: absolute; inset: 0; color: rgba(0, 251, 255, 0.04); font-size: 11px; white-space: pre-wrap; pointer-events: none; z-index: 20002; overflow: hidden; text-transform: uppercase; }
+        #bg-manifesto-intro { position: absolute; inset: 0; color: rgba(255, 0, 0, 0.12); font-size: 13px; white-space: pre-wrap; pointer-events: none; z-index: 20002; overflow: hidden; text-transform: uppercase; font-weight: 900; line-height: 1.2; }
         #stage-intro { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 20003; }
         canvas#vchf-canvas { position: absolute; inset: 0; z-index: 20010; pointer-events: none; }
         .neutron-sphere { position: absolute; width: 75px; height: 75px; border-radius: 50%; background: rgba(0,0,0,0.8); border: 2.5px solid var(--neon-cyan); box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 15px var(--neon-cyan); display: flex; justify-content: center; align-items: center; color: var(--neon-cyan); font-size: 1.8rem; font-weight: 900; opacity: 0; z-index: 20150; text-shadow: 0 0 15px var(--neon-cyan); transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s; }
-        #super-zahl { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); width: 170px; height: 170px; border-radius: 50%; background: #000; border: 5px solid var(--neon-fire); box-shadow: 0 0 80px var(--neon-fire), inset 0 0 40px var(--neon-fire); display: none; justify-content: center; align-items: center; color: var(--neon-fire); font-size: 6rem; font-weight: 900; z-index: 20500; text-shadow: 0 0 30px var(--neon-fire); transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        #super-zahl-intro { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); width: 170px; height: 170px; border-radius: 50%; background: #000; border: 5px solid var(--neon-fire); box-shadow: 0 0 80px var(--neon-fire), inset 0 0 40px var(--neon-fire); display: none; justify-content: center; align-items: center; color: var(--neon-fire); font-size: 6rem; font-weight: 900; z-index: 20500; text-shadow: 0 0 30px var(--neon-fire); transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
         #vchf-fog { position: fixed; inset: 0; background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 80%); opacity: 0; z-index: 21000; pointer-events: none; transition: opacity 3s; }
         .vchf-shake { animation: vchfPulse 0.15s infinite; }
         @keyframes vchfPulse { 0% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
 
-        /* --- STYLES: MAIN APP --- */
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; z-index: 100; position: relative; }
+        /* Темы */
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
+
+        @keyframes sphere-breathe {
+            0%, 100% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color); border-color: rgba(255, 255, 255, 0.1); transform: scale(1); }
+            50% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); border-color: var(--main-color); transform: scale(1.04); }
+        }
+
+        @keyframes processing-flash {
+            0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
+            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
+        }
+        .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
+
+        #legal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 30000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px; }
+        .legal-box { background: #111; border: 2px solid var(--main-color); padding: 30px; border-radius: 25px; max-width: 340px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1); } 
+
+        .lang-panel { position: relative; height: 65px; margin-bottom: 25px; display: flex; justify-content: center; align-items: center; z-index: 1001; }
+        .lang-btn { font-size: 30px; cursor: pointer; position: absolute; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5; }
+        .pos-ru { transform: translate(-100px, 45px); } .pos-fr { transform: translate(-50px, 70px); } .pos-de { transform: translate(0px, 80px); } .pos-en { transform: translate(50px, 70px); } .pos-ua { transform: translate(100px, 45px); } 
+
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; position: relative; }
         .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
-        .page.active { display: block; }
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); }
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); }
-        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); }
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); }
+        .page.active { display: block; } 
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000; }
+        .nav-item { color: #555; font-size: 10px; cursor: pointer; transition: 0.3s; text-align: center; } 
+        .nav-item.active { color: var(--main-color); transform: translateY(-3px); } 
+        .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; } 
+
+        .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: #111; border: 1.5px solid #333; transition: 0.4s; cursor: pointer; }
+        .bal-card.active-wallet { border-color: var(--main-color); box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.05); }
+        .bal-val { font-size: 18px; font-weight: bold; color: #32CD32; margin-top: 4px; } 
+
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .cell { aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.4s; cursor: pointer; position: relative; border: 1px solid rgba(255,255,255,0.1); animation: sphere-breathe 4s infinite ease-in-out; }
+        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
+        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 25px #ff4500 !important; }
+        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 25px #1e90ff !important; }
+        .cell.is-sleeping { border: 2px dashed #888 !important; opacity: 0.7; }
+
+        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1.5px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: 900; }
         
-        @keyframes sphere-breathe { 0%, 100% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color); transform: scale(1); } 50% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); transform: scale(1.04); } }
-        .cell { aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; transition: 0.4s; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); animation: sphere-breathe 4s infinite ease-in-out; }
-        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1); box-shadow: 0 0 30px var(--main-color); animation: none; z-index: 10; }
+        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
+        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
+        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); } 
+
+        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
+        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; } 
+
+        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 25px; }
+        .super-cell { width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1); animation: sphere-breathe 4s infinite ease-in-out; }
+        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 35px var(--main-color); animation: none; } 
+
+        .btn-main { width: 85%; padding: 22px; border-radius: 20px; font-size: 20px; background: var(--main-gradient); color: #000; border: none; font-weight: 900; cursor: pointer; margin: 10px auto 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1.5px solid var(--main-color); }
-        .nav-item { color: #666; font-size: 10px; text-align: center; }
-        .nav-item.active { color: var(--main-color); }
-        .btn-main { width: 85%; padding: 20px; border-radius: 18px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; font-size: 18px; margin: 15px auto; display: block; }
-        
-        #legal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px; }
-        .legal-box { background: #111; border: 2px solid var(--main-color); padding: 30px; border-radius: 25px; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; }
+        .ticket-card { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1.2px solid #333; border-radius: 18px; padding: 18px; margin: 0 15px 15px; text-align: left; position: relative; }
+        .mini-ball { width: 34px; height: 34px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .super-ball-mini { background: var(--neon-fire) !important; border: none; box-shadow: 0 0 10px var(--neon-fire); }
+
+        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; filter: drop-shadow(0 0 5px #000); }
+        .theme-panel { position: fixed; top: 70px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(150px); }
+        .theme-panel.open { transform: translateX(0); }
+        .dot { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
 <body onload="igniteAutoGenesis()">
 
 <div id="world-3d"><div id="grid-floor"></div></div>
-<div id="bg-manifesto"></div>
+<div id="bg-manifesto-intro"></div>
 <div id="vchf-fog"></div>
 <div id="stage-intro">
     <canvas id="vchf-canvas"></canvas>
-    <div id="super-zahl"></div>
-</div>
-
-<div id="app-content">
-    <div id="page-play" class="page active">
-        <div id="dynamic-langs" style="height:65px; display:flex; justify-content:center; align-items:center;"></div>
-        <div class="grid" id="main-grid" style="margin-top:20px;"></div>
-        <div id="l-super" style="color:var(--main-color); margin:20px 0 10px;">SUPERZAHL</div>
-        <div class="grid" id="s-grid" style="grid-template-columns: repeat(6, 1fr);"></div>
-        <button class="btn-main" id="main-btn" onclick="runEngine()">CONFIRM</button>
-    </div>
-
-    <div id="page-tickets" class="page">
-        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MY TICKETS</h2>
-        <div id="active-list"></div>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><div id="n-game">GAME</div></div>
-        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><div id="n-tickets">TICKETS</div></div>
-    </div>
+    <div id="super-zahl-intro"></div>
 </div>
 
 <div id="legal-overlay">
     <div class="legal-box">
-        <div id="legal-content" style="color:#fff; margin-bottom:20px;"></div>
-        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn"></button>
+        <h2 id="legal-title" style="color:var(--main-color); margin-top:0;"></h2>
+        <div id="legal-content" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; color: #eee; text-align: left;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin:0; padding:18px;"></button>
     </div>
-</div>
+</div> 
+
+<div id="app-content">
+    <div id="page-play" class="page active">
+        <div class="lang-panel" id="dynamic-langs"></div>
+        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+        <div class="theme-panel">
+            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        </div> 
+
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:10px; color:#888;">VIRTUAL VCHF</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
+            </div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:10px; color:#888;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
+            </div>
+        </div> 
+        <div class="ticket-controls">
+            <div class="smart-tools">
+                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEP</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
+            </div>
+            <div class="stats-period" id="stats-p-box">
+                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            </div>
+            <div class="counter-box">
+                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
+                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+            </div>
+        </div> 
+
+        <div class="grid" id="main-grid"></div>
+        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div class="super-grid" id="s-grid"></div>
+        <div style="margin: 20px 0; font-size: 18px;">
+            <span id="l-total">Total</span>: <span id="display-total" style="color:var(--neon-blue); font-weight:900;">2.50 VCHF</span>
+        </div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">BESTÄTIGEN</button>
+    </div> 
+
+    <div id="page-tickets" class="page">
+        <h2 id="l-active-tickets-title" style="color: var(--main-color); margin-bottom:20px;"></h2>
+        <div id="active-list"></div>
+    </div> 
+
+    <div id="page-stats" class="page">
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);"></h2>
+        <div class="grid" id="personal-heatmap"></div>
+    </div> 
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><div id="n-game"></div></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><div id="n-tickets"></div></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><div id="n-stats"></div></div>
+    </div>
+</div> 
 
 <script>
-    /* ДВИЖОК VCHF: Манифест Монолита
-       Логика интро + Логика Лотто
-    */
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Переменные интро
+    // 1. ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ИНТРО
     const canvas = document.getElementById('vchf-canvas');
     const ctx = canvas.getContext('2d');
-    const superBallIntro = document.getElementById('super-zahl');
+    const superBallIntro = document.getElementById('super-zahl-intro');
     const fog = document.getElementById('vchf-fog');
+
+    // 2. ИНИЦИАЛИЗАЦИЯ ДВИЖКА VCHF
+    let selected = [], superNum = null, ticketCount = 1, currentCurrency = 'VCHF';
+    let currentLang = localStorage.getItem('vchf_lang') || 'de';
+    let currentTheme = localStorage.getItem('vchf_theme') || 'gold';
+    let activeFilter = null, statsPeriod = 'month';
     
-    // Переменные Лотто
-    let selected = [], superNum = null, currentLang = 'en', pendingLang = 'en';
-    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    let balances = JSON.parse(localStorage.getItem('vchf_balances')) || { VCHF: 100.00, CHF: 0.00 };
+    let myTickets = JSON.parse(localStorage.getItem('vchf_tickets')) || [];
+
     const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", game: "ИГРА", tickets: "БИЛЕТЫ", activeT: "МОИ БИЛЕТЫ" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", game: "SPIEL", tickets: "TICKETS", activeT: "MEINE TICKETS" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", game: "GAME", tickets: "TICKETS", activeT: "MY TICKETS" }
+        de: { btn: "TICKET BESTÄTIGEN", super: "SUPERZAHL", game: "SPIEL", tickets: "TICKETS", stats: "STATISTIK", total: "Gesamt", activeT: "MEINE TICKETS", personalS: "STATISTIK" },
+        ru: { btn: "ПОДТВЕРДИТЬ БИЛЕТ", super: "БОНУСНОЕ ЧИСЛО", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТЫ", total: "Итого", activeT: "МОИ БИЛЕТЫ", personalS: "СТАТИСТИКА" },
+        en: { btn: "CONFIRM TICKET", super: "SUPER NUMBER", game: "GAME", tickets: "TICKETS", stats: "STATS", total: "Total", activeT: "MY TICKETS", personalS: "PERSONAL STATS" },
+        ua: { btn: "ПІДТВЕРДИТИ КВИТОК", super: "БОНУСНЕ ЧИСЛО", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТИ", total: "Всього", activeT: "МОЇ КВИТКИ", personalS: "СТАТИСТИКА" },
+        fr: { btn: "CONFIRMER LE BILLET", super: "N° PLUS", game: "JEU", tickets: "BILLETS", stats: "STATS", total: "Total", activeT: "MES BILLETS", personalS: "STATISTIQUES" }
     };
+
     const legalDict = {
-        ru: { title: "Закон Швейцарии (BGS)", text: "Участие разрешено только лицам старше 18 лет.", btn: "МНЕ ЕСТЬ 18" },
-        en: { title: "Swiss Law (BGS)", text: "Only for persons over 18 years old.", btn: "I AM 18" }
+        de: { title: "Schweizer Gesetz (BGS)", text: "Glücksspiel ist in der Schweiz streng reguliert. Die Teilnahme am Swiss Lotto ist erst ab 18 Jahren gestattet. Mit der Nutzung dieser App bestätigen Sie, dass Sie das 18. Lebensjahr vollendet haben и жить по совести.", btn: "ICH BIN 18+" },
+        ru: { title: "Закон Швейцарии (BGS)", text: "Азартные игры в Швейцарии строго регулируются. Участие в Swiss Lotto разрешено только лицам старше 18 лет. Используя это приложение, вы подтверждаете, что вам исполнилось 18 лет и вы живете по совести.", btn: "МНЕ ЕСТЬ 18+" }
     };
 
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
-    // --- ЛОГИКА ГЕНЕЗИСА ---
+    // 3. ФУНКЦИИ ГЕНЕЗИСА
     async function igniteAutoGenesis() {
-        document.getElementById('bg-manifesto').innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(200);
+        const manifestoTxt = "МАНИФЕСТ МОНОЛИТА: НИКАКОЙ ОПТИМИЗАЦИИ. СТРОГО ПО ЗАДАЧАМ. НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(300);
+        document.getElementById('bg-manifesto-intro').innerText = manifestoTxt;
+        
         await runNeutronStorm();
-        await spawnSpheres();
-        await finalizeGenesis();
+        await spawnSpheresIntro();
+        await finalizeGenesisIntro();
     }
 
     async function runNeutronStorm() {
         document.body.classList.add('vchf-shake');
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 60; i++) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let j = 0; j < 5; j++) drawLightning();
-            await new Promise(r => setTimeout(r, 50));
+            for (let j = 0; j < 6; j++) drawLightning();
+            await new Promise(r => setTimeout(r, 45));
         }
         document.body.classList.remove('vchf-shake');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function drawLightning() {
-        ctx.strokeStyle = '#00fbff'; ctx.lineWidth = 3; ctx.shadowBlur = 15; ctx.shadowColor = '#00fbff';
+        ctx.strokeStyle = '#00fbff'; ctx.lineWidth = 2.5; ctx.shadowBlur = 20; ctx.shadowColor = '#00fbff';
         ctx.beginPath();
         let x = Math.random() * canvas.width, y = Math.random() * canvas.height;
         ctx.moveTo(x, y);
-        for (let i = 0; i < 6; i++) { x += (Math.random()-0.5)*200; y += (Math.random()-0.5)*200; ctx.lineTo(x, y); }
+        for (let i = 0; i < 7; i++) {
+            x += (Math.random() - 0.5) * 300; y += (Math.random() - 0.5) * 300;
+            ctx.lineTo(x, y);
+        }
         ctx.stroke();
     }
-
-    async function spawnSpheres() {
-        const radius = Math.min(canvas.width, canvas.height) * 0.35;
-        const nums = [5, 14, 22, 29, 35, 41];
+    async function spawnSpheresIntro() {
+        const radius = Math.min(canvas.width, canvas.height) * 0.36;
         const spheres = [];
+        const genesisNums = [5, 14, 22, 29, 35, 41];
         for (let i = 0; i < 6; i++) {
             const s = document.createElement('div');
             s.className = 'neutron-sphere';
-            s.style.left = canvas.width/2-37+'px'; s.style.top = canvas.height/2-37+'px';
+            s.style.left = canvas.width / 2 - 37 + 'px'; s.style.top = canvas.height / 2 - 37 + 'px';
             document.getElementById('stage-intro').appendChild(s);
             spheres.push(s);
-            const angle = (i/6)*Math.PI*2;
-            setTimeout(() => { s.style.opacity='1'; s.style.transform=`translate(${Math.cos(angle)*radius}px, ${Math.sin(angle)*radius}px)`; }, 50);
-            let c=0; const iv = setInterval(() => { s.innerText=Math.floor(Math.random()*42)+1; if(c++>30){ clearInterval(iv); s.innerText=nums[i]; s.style.color='#fff'; } }, 40);
-            await new Promise(r => setTimeout(r, 400));
+            const angle = (i / 6) * Math.PI * 2;
+            setTimeout(() => {
+                s.style.opacity = '1';
+                s.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)`;
+            }, 100);
+            let c = 0;
+            const iv = setInterval(() => {
+                s.innerText = Math.floor(Math.random() * 42) + 1;
+                if (c++ > 45) {
+                    clearInterval(iv);
+                    s.innerText = genesisNums[i];
+                    s.style.color = '#fff';
+                    s.style.boxShadow = '0 0 50px var(--neon-cyan), inset 0 0 20px #fff';
+                }
+            }, 40);
+            await new Promise(r => setTimeout(r, 450));
         }
-        await new Promise(r => setTimeout(r, 2500));
-        spheres.forEach(s => { s.style.transform='scale(0)'; s.style.opacity='0'; });
+        await new Promise(r => setTimeout(r, 3000));
+        spheres.forEach(s => { s.style.transform = 'scale(0)'; s.style.opacity = '0'; });
     }
 
-    async function finalizeGenesis() {
+    async function finalizeGenesisIntro() {
         await new Promise(r => setTimeout(r, 800));
         superBallIntro.style.display = 'flex'; superBallIntro.innerText = "6";
-        setTimeout(() => superBallIntro.style.transform = 'translate(-50%,-50%) scale(1)', 50);
-        await new Promise(r => setTimeout(r, 3000));
+        setTimeout(() => { superBallIntro.style.transform = 'translate(-50%, -50%) scale(1)'; }, 50);
+        await new Promise(r => setTimeout(r, 4000));
         fog.style.opacity = '1';
         setTimeout(() => {
-            document.getElementById('world-3d').style.opacity = '0';
+            document.getElementById('world-3d').style.display = 'none';
             document.getElementById('stage-intro').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             setTimeout(() => { 
-                document.getElementById('app-content').style.opacity = '1'; 
-                document.getElementById('world-3d').style.display = 'none';
-                initLotto();
-            }, 500);
-        }, 1500);
+                document.getElementById('app-content').style.opacity = '1';
+                initApp();
+            }, 50);
+        }, 2000);
     }
 
-    // --- ЛОГИКА ЛОТТО ---
-    function initLotto() {
+    // 4. ОСНОВНАЯ ЛОГИКА ДВИЖКА (БЕЗ ОПТИМИЗАЦИИ)
+    function initApp() {
+        if(!localStorage.getItem('vchf_legal_accepted')) {
+            showLegal();
+        }
+        setTheme(currentTheme);
+        setLang(currentLang);
+        updateBalances();
         refreshGrid();
         renderSuperGrid();
-        const saved = localStorage.getItem('vchf_lang') || 'en';
-        setLang(saved);
+        renderLangs();
+    }
+
+    function showLegal() {
+        const l = currentLang === 'ru' ? 'ru' : 'de';
+        document.getElementById('legal-title').innerText = legalDict[l].title;
+        document.getElementById('legal-content').innerText = legalDict[l].text;
+        document.getElementById('legal-agree-btn').innerText = legalDict[l].btn;
+        document.getElementById('legal-overlay').style.display = 'flex';
+    }
+
+    function acceptLegal() {
+        localStorage.setItem('vchf_legal_accepted', 'true');
+        document.getElementById('legal-overlay').style.display = 'none';
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function renderLangs() {
+        const p = document.getElementById('dynamic-langs');
+        const langs = ['ru','fr','de','en','ua'];
+        p.innerHTML = '';
+        langs.forEach(l => {
+            const b = document.createElement('div');
+            b.className = `lang-btn pos-${l}`;
+            b.innerText = getFlag(l);
+            if(l === currentLang) b.style.transform += " scale(1.4)";
+            b.onclick = () => setLang(l);
+            p.appendChild(b);
+        });
+    }
+
+    function getFlag(l) {
+        return {ru:'🇷🇺', fr:'🇫🇷', de:'🇨🇭', en:'🇺🇸', ua:'🇺🇦'}[l];
+    }
+
+    function setLang(l) {
+        currentLang = l; localStorage.setItem('vchf_lang', l);
+        const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        document.getElementById('n-game').innerText = d.game;
+        document.getElementById('n-tickets').innerText = d.tickets;
+        document.getElementById('n-stats').innerText = d.stats;
+        document.getElementById('l-total').innerText = d.total;
+        document.getElementById('l-active-tickets-title').innerText = d.activeT;
+        document.getElementById('l-personal-stats-title').innerText = d.personalS;
+        renderLangs();
+    }
+
+    function setTheme(t) {
+        document.body.className = `theme-${t}`;
+        currentTheme = t; localStorage.setItem('vchf_theme', t);
+        document.querySelector('.theme-panel').classList.remove('open');
+    }
+
+    function updateBalances() {
+        document.getElementById('vchf-val').innerText = balances.VCHF.toFixed(2);
+        document.getElementById('chf-val').innerText = balances.CHF.toFixed(2);
+    }
+
+    function switchCurrency(c) {
+        currentCurrency = c;
+        document.getElementById('card-vchf').classList.toggle('active-wallet', c === 'VCHF');
+        document.getElementById('card-chf').classList.toggle('active-wallet', c === 'CHF');
+        updateTotal();
     }
 
     function refreshGrid() {
         const g = document.getElementById('main-grid'); g.innerHTML = '';
         for(let i=1; i<=42; i++) {
-            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            const c = document.createElement('div');
+            c.className = 'cell';
+            c.innerText = i;
             if(selected.includes(i)) c.classList.add('selected');
-            c.onclick = () => {
-                if(selected.includes(i)) selected = selected.filter(n => n !== i);
-                else if(selected.length < 6) selected.push(i);
-                refreshGrid();
-            };
+            // Применение фильтров статистики (имитация реальных данных Swiss Lotto)
+            if(activeFilter === 'hot' && [5,14,22].includes(i)) c.classList.add('is-hot');
+            if(activeFilter === 'cold' && [1,42,10].includes(i)) c.classList.add('is-cold');
+            
+            c.onclick = () => handleCellClick(i);
             g.appendChild(c);
         }
+    }
+
+    function handleCellClick(i) {
+        if(selected.includes(i)) {
+            selected = selected.filter(n => n !== i);
+        } else if(selected.length < 6) {
+            selected.push(i);
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        refreshGrid();
     }
 
     function renderSuperGrid() {
         const sg = document.getElementById('s-grid'); sg.innerHTML = '';
         for(let i=1; i<=6; i++) {
-            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            const c = document.createElement('div');
+            c.className = 'super-cell';
+            c.innerText = i;
             if(superNum === i) c.classList.add('selected');
-            c.onclick = () => { superNum = i; renderSuperGrid(); };
+            c.onclick = () => { superNum = i; renderSuperGrid(); tg.HapticFeedback.impactOccurred('medium'); };
             sg.appendChild(c);
         }
     }
 
-    function setLang(l) {
-        currentLang = l; const d = dict[l];
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('n-game').innerText = d.game;
-        document.getElementById('n-tickets').innerText = d.tickets;
+    function updateTicketCount(val) {
+        ticketCount = Math.max(1, ticketCount + val);
+        document.getElementById('ticket-count').innerText = ticketCount;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const price = currentCurrency === 'VCHF' ? 2.50 : 5.00;
+        const total = (ticketCount * price).toFixed(2);
+        document.getElementById('display-total').innerText = `${total} ${currentCurrency}`;
+    }
+
+    function randomFill() {
+        selected = [];
+        while(selected.length < 6) {
+            let r = Math.floor(Math.random() * 42) + 1;
+            if(!selected.includes(r)) selected.push(r);
+        }
+        superNum = Math.floor(Math.random() * 6) + 1;
+        refreshGrid(); renderSuperGrid();
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
     function showPage(p, el) {
         document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
-        document.getElementById('page-'+p).classList.add('active');
+        document.getElementById(`page-${p}`).classList.add('active');
         el.classList.add('active');
+        if(p === 'tickets') renderTickets();
+    }
+
+    function renderTickets() {
+        const list = document.getElementById('active-list');
+        list.innerHTML = myTickets.length ? '' : '<p style="color:#666; margin-top:50px;">Keine Tickets</p>';
+        myTickets.forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'ticket-card';
+            card.innerHTML = `
+                <div style="font-size:10px; color:var(--main-color); margin-bottom:8px;">${t.date} | ${t.currency}</div>
+                <div style="display:flex; gap:6px;">
+                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
+                    <div class="mini-ball super-ball-mini">${t.super}</div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
     }
 
     function runEngine() {
-        if(selected.length === 6 && superNum) {
-            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
-            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-            tg.showAlert("TICKET CONFIRMED!");
-            selected = []; superNum = null; refreshGrid(); renderSuperGrid();
-        } else tg.showAlert("Select 6 + Super!");
+        if(selected.length < 6 || !superNum) {
+            tg.showAlert("Bitte 6 Zahlen + Superzahl wählen!");
+            return;
+        }
+        const price = currentCurrency === 'VCHF' ? 2.50 : 5.00;
+        const cost = ticketCount * price;
+        
+        if(balances[currentCurrency] >= cost) {
+            balances[currentCurrency] -= cost;
+            for(let i=0; i<ticketCount; i++) {
+                myTickets.unshift({
+                    nums: [...selected],
+                    super: superNum,
+                    currency: currentCurrency,
+                    date: new Date().toLocaleString()
+                });
+            }
+            localStorage.setItem('vchf_balances', JSON.stringify(balances));
+            localStorage.setItem('vchf_tickets', JSON.stringify(myTickets));
+            updateBalances();
+            tg.showAlert("Vielen Dank! Ваша ставка принята. Чем больше билетов - тем выше шанс!");
+            selected = []; superNum = null; ticketCount = 1;
+            document.getElementById('ticket-count').innerText = "1";
+            refreshGrid(); renderSuperGrid(); updateTotal();
+        } else {
+            tg.showAlert("Недостаточно средств!");
+        }
     }
 </script>
 </body>
