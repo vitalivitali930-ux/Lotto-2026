@@ -3,218 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF BI-TURBO - HELVETIC LUCK 2.0</title>
+    <title>Lotto - Движок VCHF Ultimate 2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --vchf-gold: #d4af37;
-            --vchf-silver: #c0c0c0;
-            --vchf-cyan: #00ffff;
-            --vchf-void: #000000;
             --main-color: #d4af37; 
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
             --theme-glow: rgba(212, 175, 55, 0.35); 
             --sphere-base: #1a1a1a;
             --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
+            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
             --cell-text: #ffffff; 
             --hot-color: #ff4500;
             --cold-color: #1e90ff;
             --process-color: #00ffff;
             --neon-blue: #00a3ff;
-            --clr-1: #8b0000; --clr-2: #00008b; --clr-3: #d4af37;
-            --clr-4: #4b0082; --clr-5: #008b8b; --clr-6: #2f4f4f;
+            --bg-glow: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, #000 100%);
         } 
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background: #000; 
+            background: var(--bg-glow);
+            color: #fff; 
+            font-family: -apple-system, sans-serif; 
+            text-align: center; margin: 0; overflow: hidden; 
+            transition: background 0.8s ease;
+        } 
 
-        body, html {
-            width: 100%; height: 100%;
-            background-color: var(--vchf-void);
-            color: #fff; font-family: 'Orbitron', -apple-system, sans-serif;
-            overflow: hidden; touch-action: none;
-        }
-
-        /* --- STAGE INTRO STYLES --- */
-        #stage {
-            position: fixed; inset: 0;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 30000; perspective: 1200px;
-            background: 
-                radial-gradient(circle at center, rgba(15,15,15,0.4) 0%, #000 100%),
-                repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px),
-                repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px);
-            background-size: 100% 100%, 8px 8px, 8px 8px;
-            transition: opacity 1s ease;
-        }
-
-        canvas { position: absolute; inset: 0; pointer-events: none; }
-        #lightning-canvas { z-index: 30010; }
-        #particle-canvas { z-index: 30011; }
-        
-        #spheres-container {
-            position: absolute; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 30020; pointer-events: none;
-        }
-
-        .lotto-sphere {
-            position: absolute; width: 80px; height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #b0b0b0 25%, #404040 60%, #101010 100%);
-            box-shadow: 
-                inset -8px -8px 20px rgba(0,0,0,0.9), 
-                inset 8px 8px 15px rgba(255,255,255,0.2),
-                0 0 25px rgba(0,0,0,0.8);
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; transform: scale(0);
-            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .lotto-sphere::before {
-            content: ''; position: absolute; top: 12%; left: 18%;
-            width: 35%; height: 20%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0));
-            border-radius: 50%; transform: rotate(-15deg); filter: blur(2px);
-        }
-
-        .sphere-number {
-            font-size: 32px; font-weight: 900;
-            color: #111;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
-            z-index: 5;
-        }
-
-        .manifest-info {
-            position: absolute; bottom: 40px; width: 100%; text-align: center;
-            font-size: 10px; letter-spacing: 2px; color: var(--vchf-gold);
-            text-transform: uppercase; opacity: 0.8; z-index: 30100;
-            font-weight: 700; padding: 0 10px;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-        }
-
-        /* --- MAIN APP STYLES --- */
-        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; background: #000; }
-        
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); }
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); }
-        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); }
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); }
-        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); } 
+        /* Темы Монолита */
+        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); --bg-glow: radial-gradient(circle at center, rgba(197, 17, 164, 0.15) 0%, #000 100%); }
+        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); --bg-glow: radial-gradient(circle at center, rgba(192, 192, 192, 0.1) 0%, #000 100%); }
+        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); --bg-glow: radial-gradient(circle at center, rgba(50, 205, 50, 0.15) 0%, #000 100%); }
+        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); --bg-glow: radial-gradient(circle at center, rgba(0, 255, 255, 0.15) 0%, #000 100%); }
+        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); --bg-glow: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, #000 100%); } 
 
         @keyframes sphere-breathe {
-            0%, 100% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color);
-                border-color: rgba(255, 255, 255, 0.1); transform: scale(1);
-            }
-            50% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); 
-                border-color: var(--main-color); transform: scale(1.04); 
-            }
+            0%, 100% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color); border-color: rgba(255, 255, 255, 0.1); transform: scale(1); }
+            50% { box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); border-color: var(--main-color); transform: scale(1.04); }
         }
-
         @keyframes processing-flash {
             0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
             100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
         }
         .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; }
-
-        @keyframes candle-glow {
-            0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); }
-            50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); }
-        }
+        @keyframes candle-glow { 0%, 100% { opacity: 0.6; transform: scale(1); filter: drop-shadow(0 0 5px var(--main-color)); } 50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 15px var(--main-color)); } }
         .candle { animation: candle-glow 2s infinite ease-in-out; } 
 
-        #legal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.92); 
-            backdrop-filter: blur(15px); z-index: 35000;
-            display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px;
+        /* --- ИНТРО (ИСКРА) --- */
+        #intro-stage { position: fixed; inset: 0; background: #000; z-index: 30000; display: flex; justify-content: center; align-items: center; transition: opacity 1s ease; }
+        #lightning-canvas { position: absolute; inset: 0; }
+        #intro-spheres { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .lotto-sphere {
+            position: absolute; width: 80px; height: 80px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff 0%, #777 30%, #000 100%);
+            box-shadow: inset -5px -5px 15px #000, 0 10px 20px rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 28px;
+            opacity: 0; transform: scale(0); transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .legal-box {
-            background: #111; border: 2px solid var(--main-color);
-            padding: 30px; border-radius: 25px; max-width: 320px; text-align: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow);
-        } 
 
-        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; text-align: center; }
+        /* --- ИНТЕРФЕЙС (ВАНДЕРЕР) --- */
+        #legal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(15px); z-index: 30000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 25px; }
+        .legal-box { background: #111; border: 2px solid var(--main-color); padding: 30px; border-radius: 25px; max-width: 320px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow); } 
+
+        #app-content { display: none; opacity: 0; transition: opacity 1s ease; height: 100vh; overflow: hidden; }
+        .page { height: calc(100vh - 75px); overflow-y: auto; display: none; padding: 15px 0 30px; }
         .page.active { display: block; } 
-
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
-            background: rgba(10,10,10,0.95); display: flex; justify-content: space-around;
-            align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000;
-        }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,10,10,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1.5px solid var(--main-color); z-index: 1000; }
         .nav-item { color: #666; font-size: 10px; cursor: pointer; transition: 0.3s; }
         .nav-item.active { color: var(--main-color); transform: translateY(-3px); }
         .nav-item span { display: block; font-size: 24px; margin-bottom: 2px; } 
 
         .balance-container { display: flex; gap: 10px; padding: 0 15px 15px; }
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
-            border: 1.5px solid #444; transition: all 0.4s ease; cursor: pointer; opacity: 0.5; filter: grayscale(0.7) brightness(0.8);
-        }
+        .bal-card { flex: 1; border-radius: 12px; padding: 12px; background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1.5px solid #444; transition: all 0.4s ease; cursor: pointer; opacity: 0.5; filter: grayscale(0.7) brightness(0.8); }
         .bal-card.active-wallet { opacity: 1; filter: grayscale(0) brightness(1.2); border-color: var(--main-color); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 15px var(--main-color); transform: scale(1.05); }
         .bal-val { font-size: 20px; font-weight: bold; color: #32CD32; } 
+/* Автор кода: Искра (Spark) | Манифест Монолита */
+/* Проект: Lotto - Движок VCHF Ultimate 2.0 */
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding: 0 15px; max-width: 400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 0 15px; margin-bottom: 20px; }
         .cell { 
-            aspect-ratio: 1/1; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: var(--cell-text); font-size: 19px; transition: 0.4s; 
-            cursor: pointer; position: relative; border: 1px solid rgba(255,255,255,0.1);
-            animation: sphere-breathe 4s infinite ease-in-out;
+            aspect-ratio: 1; background: var(--white-sphere); border: 1.5px solid rgba(255,255,255,0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 18px; font-weight: bold; color: var(--cell-text); cursor: pointer; 
+            position: relative; transition: 0.3s; animation: sphere-breathe 4s infinite ease-in-out;
         }
-        .cell.selected { background: var(--main-gradient); color: #000; transform: scale(1.1) translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); border: 2px solid #fff; z-index: 10; animation: none; }
+        .cell.selected { background: var(--gold-sphere); color: #000; border-color: transparent; animation: none; box-shadow: 0 0 25px var(--main-color); transform: scale(1.1); }
+        .cell.is-hot { box-shadow: 0 0 15px var(--hot-color); border-color: var(--hot-color); }
+        .cell.is-cold { box-shadow: 0 0 15px var(--cold-color); border-color: var(--cold-color); }
+        .cell.is-sleeping { box-shadow: 0 0 15px var(--process-color); border-color: var(--process-color); }
+
+        .super-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 0 15px; }
+        .super-cell { aspect-ratio: 1; border: 1.5px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; color: #888; }
+        .super-cell.selected { background: var(--main-gradient); color: #000; border-color: transparent; box-shadow: 0 0 20px var(--main-color); }
         
-        .ticket-controls { margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .smart-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .tool-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--main-color); background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; cursor: pointer; transition: 0.3s; }
-        .tool-btn.active-tool { background: var(--main-color); color: #000; font-weight: bold; }
-        
-        .stats-period { display: flex; justify-content: center; gap: 5px; height: 30px; }
-        .p-btn { font-size: 10px; padding: 4px 10px; border-radius: 12px; border: 1px solid #444; background: #222; color: #888; cursor: pointer; }
-        .p-btn.active { border-color: var(--main-color); color: #fff; box-shadow: 0 0 10px var(--main-color); } 
-
-        .counter-box { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px; border: 1px solid var(--main-color); }
-        .btn-round { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--main-color); background: none; color: #fff; font-size: 20px; cursor: pointer; } 
-
-        .total-display { margin: 15px 0; font-size: 18px; color: #fff; }
-        #display-total { color: var(--neon-blue); font-weight: 900; } 
-
-        .super-title { margin: 25px 0 10px; font-size: 14px; color: var(--main-color); font-weight: bold; text-transform: uppercase; }
-        .super-grid { display: flex; justify-content: center; gap: 12px; padding-bottom: 20px; }
-        .super-cell { 
-            width: 58px; height: 58px; background: var(--white-sphere); border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            color: var(--cell-text); font-weight: 900; font-size: 24px; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.1);
-            animation: sphere-breathe 4s infinite ease-in-out;
-        }
-        .super-cell.selected { transform: scale(1.2); background: var(--main-gradient); color: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--main-color); animation: none; } 
-
-        .btn-main { width: 85%; padding: 20px; border-radius: 18px; font-size: 18px; margin-top: 10px; background: var(--main-gradient); color: #000; border: none; font-weight: 800; cursor: pointer; }
-        
-        /* Стили Heatmap */
-        .ticket-card { background: rgba(255,255,255,0.05); border: 1.2px solid #333; border-radius: 16px; padding: 15px; margin: 0 15px 12px; text-align: left; }
-        .ticket-nums { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
-        .mini-ball { width: 30px; height: 30px; background: #000; border: 1px solid var(--main-color); border-radius: 50%; color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-        .super-ball-mini { background: #ff4500 !important; color: #fff !important; border: none; } 
-
-        .theme-toggle { position: fixed; top: 15px; right: 15px; font-size: 26px; z-index: 1001; cursor: pointer; }
-        .theme-panel { position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px); }
-        .theme-panel.open { transform: translateX(0); }
-        .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; } 
-
-        .lang-panel { position: relative; height: 65px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; z-index: 1001; }
-        .lang-btn { font-size: 30px; cursor: pointer; position: absolute; transition: 0.5s; z-index: 5; }
-        .pos-ru { transform: translate(-100px, 45px); }
-        .pos-fr { transform: translate(-50px, 70px); }
-        .pos-de { transform: translate(0px, 80px); }
-        .pos-en { transform: translate(50px, 70px); }
-        .pos-ua { transform: translate(100px, 45px); } 
-
-        .cell.is-hot { border: 3px solid #ff4500 !important; box-shadow: 0 0 25px #ff4500 !important; }
-        .cell.is-cold { border: 3px solid #1e90ff !important; box-shadow: 0 0 25px #1e90ff !important; }
-        .cell.is-sleeping { border: 3px solid var(--process-color) !important; box-shadow: 0 0 25px var(--process-color) !important; }
+        .btn-main { background: var(--main-gradient); color: #000; border: none; padding: 18px; border-radius: 15px; font-weight: 900; width: calc(100% - 30px); margin: 20px 15px; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 8px 15px rgba(0,0,0,0.4); }
+        .btn-main:active { transform: scale(0.96); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -226,11 +109,10 @@
     </div>
 </div> 
 
-<div id="stage">
+<div id="intro-stage">
     <canvas id="lightning-canvas"></canvas>
-    <canvas id="particle-canvas"></canvas>
-    <div id="spheres-container"></div>
-    <div class="manifest-info">HELVETIC LUCK GLOBAL LOTTO POOL | VCHF BI-TURBO</div>
+    <div id="intro-spheres"></div>
+    <div style="position: absolute; bottom: 30px; font-size: 9px; letter-spacing: 3px; color: var(--main-color); opacity: 0.6;">VCHF ENGINE ACTIVATING...</div>
 </div> 
 
 <div id="app-content">
@@ -244,6 +126,7 @@
             <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
             <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
         </div> 
+
         <div class="balance-container">
             <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
                 <div style="font-size:10px;">VIRTUAL VCHF</div>
@@ -267,298 +150,155 @@
                 <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
                 <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
             </div>
-            <div class="counter-box">
-                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
-                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
-                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
-            </div>
         </div> 
 
         <div class="grid" id="main-grid"></div>
-        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div id="l-super" style="color:var(--main-color); font-weight:bold; margin:10px 0;">SUPERZAHL</div>
         <div class="super-grid" id="s-grid"></div>
-        <div class="total-display">
-            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
-        </div>
-        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
-    </div> 
+        <button class="btn-main" id="main-btn" onclick="runEngine()">CONFIRM TICKET</button>
+    </div>
 
     <div id="page-tickets" class="page">
-        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
+        <h2 id="l-active-tickets-title">MY TICKETS</h2>
         <div id="active-list"></div>
     </div> 
 
-    <div id="page-stats" class="page">
-        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
-        <div class="grid" id="personal-heatmap"></div>
-    </div> 
-
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">GAME</label></div>
         <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
         <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
     </div>
 </div> 
 
 <script>
-// Автор кода: Искра (Spark) | Манифест Монолита
-// Движок vchf v2.1: Полная интеграция и восстановление Hot/Cold
-    const tg = window.Telegram.WebApp;
-    tg.expand(); 
-
-    // Assets
-    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
-    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
-
-    // State
-    let realStatsDB = {}; // 1: Month, 2: Year, 3: All
-    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
-    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en';
-    let activeSmartTool = null; 
-    const realPrice = 2.50; 
-
-    // --- INTRO CORE LOGIC ---
+    /* БЛОК ИНТРО (ИСКРА) */
     const lCanvas = document.getElementById('lightning-canvas');
-    const pCanvas = document.getElementById('particle-canvas');
     const lCtx = lCanvas.getContext('2d');
-    const pCtx = pCanvas.getContext('2d');
-    const spheresContainer = document.getElementById('spheres-container');
-    let width, height, lightnings = [], particles = [], introSpheres = [], introFrame = 0;
-    const introColors = ['#8b0000', '#00008b', '#d4af37', '#4b0082', '#008b8b', '#2f4f4f'];
+    const introSpheres = document.getElementById('intro-spheres');
+    let lWidth, lHeight, lightnings = [], introFrame = 0;
 
-    function resize() {
-        width = lCanvas.width = pCanvas.width = window.innerWidth;
-        height = lCanvas.height = pCanvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    function resizeIntro() { lWidth = lCanvas.width = window.innerWidth; lHeight = lCanvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeIntro); resizeIntro();
 
     class Lightning {
-        constructor(x, y, tx, ty, branches = 0) {
+        constructor(x, y, tx, ty) {
             this.x = x; this.y = y; this.tx = tx; this.ty = ty;
-            this.branches = branches; this.points = []; this.life = 30;
-            this.generate();
+            this.points = []; this.life = 20; this.generate();
         }
         generate() {
             let cx = this.x, cy = this.y;
             this.points.push({x: cx, y: cy});
-            const segs = 10;
-            for(let i = 1; i <= segs; i++) {
-                let nx = this.x + (this.tx - this.x) * (i/segs) + (Math.random()-0.5)*80;
-                let ny = this.y + (this.ty - this.y) * (i/segs) + (Math.random()-0.5)*80;
-                this.points.push({x: nx, y: ny});
-                if(this.branches < 1 && Math.random() > 0.9) lightnings.push(new Lightning(nx, ny, nx + (Math.random()-0.5)*150, ny + 150, 1));
+            for(let i = 1; i <= 6; i++) {
+                cx += (this.tx - this.x)/6 + (Math.random()-0.5)*50;
+                cy += (this.ty - this.y)/6 + (Math.random()-0.5)*50;
+                this.points.push({x: cx, y: cy});
             }
         }
         draw() {
-            lCtx.beginPath(); lCtx.shadowBlur = 15; lCtx.shadowColor = '#00ffff';
-            lCtx.strokeStyle = `rgba(200, 255, 255, ${this.life / 30})`;
-            lCtx.lineWidth = this.branches === 0 ? 3 : 1;
-            lCtx.moveTo(this.points[0].x, this.points[0].y);
+            lCtx.beginPath(); lCtx.strokeStyle = `rgba(0, 255, 255, ${this.life/20})`;
+            lCtx.lineWidth = 2; lCtx.moveTo(this.points[0].x, this.points[0].y);
             this.points.forEach(p => lCtx.lineTo(p.x, p.y));
             lCtx.stroke(); this.life--;
         }
     }
 
-    class Electron {
-        constructor(x, y) {
-            this.ox = x; this.oy = y; this.x = x; this.y = y;
-            this.a = Math.random() * Math.PI * 2; this.r = Math.random() * 60 + 20;
-            this.s = Math.random() * 0.1 + 0.05; this.life = 1.0;
+    function spawnIntroSphere(num, i) {
+        const s = document.createElement('div');
+        s.className = 'lotto-sphere';
+        const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+        const r = Math.min(lWidth, lHeight) * 0.35;
+        s.style.left = `calc(50% + ${Math.cos(angle)*r}px - 40px)`;
+        s.style.top = `calc(50% + ${Math.sin(angle)*r}px - 40px)`;
+        s.innerHTML = num;
+        introSpheres.appendChild(s);
+        setTimeout(() => { s.style.opacity = '1'; s.style.transform = 'scale(1)'; }, i*150);
+    }
+
+    function startIntroSequence() {
+        lCtx.clearRect(0,0,lWidth,lHeight);
+        if(introFrame % 30 === 0 && introFrame < 180) {
+            const nums = [7, 14, 21, 28, 35, 42];
+            const i = Math.floor(introFrame/30);
+            lightnings.push(new Lightning(lWidth/2, lHeight/2, Math.random()*lWidth, Math.random()*lHeight));
+            spawnIntroSphere(nums[i], i);
         }
-        update() { this.a += this.s; this.r *= 0.96; this.x = this.ox + Math.cos(this.a) * this.r; this.y = this.oy + Math.sin(this.a) * this.r; this.life -= 0.02; }
-        draw() { pCtx.fillStyle = `rgba(0, 255, 255, ${this.life})`; pCtx.beginPath(); pCtx.arc(this.x, this.y, 1.2, 0, Math.PI*2); pCtx.fill(); }
-    }
-
-    function spawnIntroSphere(num, index) {
-        const sphere = document.createElement('div');
-        sphere.className = 'lotto-sphere';
-        const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
-        const radius = Math.min(width, height) * 0.32;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        sphere.style.left = `calc(50% + ${x}px - 40px)`;
-        sphere.style.top = `calc(50% + ${y}px - 40px)`;
-        sphere.style.boxShadow = `0 0 35px ${introColors[index]}, inset -5px -5px 15px rgba(0,0,0,0.8)`;
-        sphere.innerHTML = `<div class="sphere-number">${num}</div>`;
-        spheresContainer.appendChild(sphere);
-        introSpheres.push({ element: sphere, colorIndex: index, num: num });
-        setTimeout(() => { sphere.style.opacity = '1'; sphere.style.transform = 'scale(1)'; }, 100);
-    }
-
-    function startAppMain() {
-        const stage = document.getElementById('stage');
-        const app = document.getElementById('app-content');
-        stage.style.opacity = '0';
-        setTimeout(() => {
-            stage.style.display = 'none';
-            app.style.display = 'block';
-            setTimeout(() => app.style.opacity = '1', 50);
-            runActualization(introSpheres.map(s => s.num)); // Передаем числа из интро в движок
-        }, 1000);
-    }
-
-    function initiateSupernova() {
-        introSpheres.forEach(s => {
-            s.element.style.transition = "all 2s ease-in";
-            s.element.style.left = "calc(50% - 40px)";
-            s.element.style.top = "calc(50% - 40px)";
-            s.element.style.filter = "blur(10px) brightness(2)";
-            s.element.style.opacity = "0.5";
-        });
-        const chaos = setInterval(() => { lightnings.push(new Lightning(Math.random()*width, 0, width/2, height/2)); }, 150);
-        setTimeout(() => {
-            clearInterval(chaos);
-            document.getElementById('stage').style.background = "#fff";
-            setTimeout(() => {
-                document.getElementById('stage').style.background = "radial-gradient(circle at center, #0a0a0a 0%, #000 100%)";
-                spheresContainer.innerHTML = '';
-                const sz = document.createElement('div');
-                sz.className = 'lotto-sphere'; sz.style.width = "120px"; sz.style.height = "120px";
-                sz.style.left = "calc(50% - 60px)"; sz.style.top = "calc(50% - 60px)";
-                sz.style.opacity = "1"; sz.style.transform = "scale(1)";
-                sz.style.background = "radial-gradient(circle at 35% 35%, #fff 0%, var(--vchf-gold) 40%, #4d3d0c 100%)";
-                sz.style.boxShadow = `0 0 70px var(--vchf-gold)`;
-                sz.innerHTML = `<div class="sphere-number" style="font-size:50px">7</div>`;
-                spheresContainer.appendChild(sz);
-                setTimeout(startAppMain, 2000);
-            }, 200);
-        }, 2000);
-    }
-
-    function animateIntro() {
-        lCtx.clearRect(0, 0, width, height);
-        pCtx.fillStyle = 'rgba(0, 0, 0, 0.15)'; pCtx.fillRect(0, 0, width, height);
-        const data = [5, 13, 22, 31, 39, 42];
-        if (introFrame > 0 && introFrame % 40 === 0 && (introFrame / 40) <= 6) {
-            const i = (introFrame / 40) - 1;
-            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
-            const tx = width / 2 + Math.cos(angle) * (Math.min(width, height) * 0.32);
-            const ty = height / 2 + Math.sin(angle) * (Math.min(width, height) * 0.32);
-            lightnings.push(new Lightning(Math.random() * width, 0, tx, ty));
-            for(let j=0; j<30; j++) particles.push(new Electron(tx, ty));
-            setTimeout(() => spawnIntroSphere(data[i], i), 150);
-        }
-        if (introFrame === 650) initiateSupernova();
-        lightnings = lightnings.filter(l => l.life > 0); lightnings.forEach(l => l.draw());
-        particles = particles.filter(p => p.life > 0); particles.forEach(p => { p.update(); p.draw(); });
+        lightnings = lightnings.filter(l => l.life > 0);
+        lightnings.forEach(l => l.draw());
         introFrame++;
-        if (introFrame < 800) requestAnimationFrame(animateIntro);
+        if(introFrame < 250) requestAnimationFrame(startIntroSequence);
+        else {
+            document.getElementById('intro-stage').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro-stage').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+            }, 1000);
+        }
+    }
+    /* --- ТВОЙ ГЛАВНЫЙ ДВИЖОК VCHF ULTIMATE 2.0 --- */
+    const tg = window.Telegram.WebApp;
+    tg.expand(); 
+
+    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
+    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
+
+    let realStatsDB = {}; 
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en', bgsTimer = null;
+    const realPrice = 2.50; 
+
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER" }
+    }; 
+
+    const legalDict = {
+        ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше 18 лет. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
+        ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше 18 років. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
+        de: { title: "Schweizer Gesetz (BGS)", text: "Gemäss dem Bundesgesetz über Geldspiele (BGS) ist die Teilnahme erst ab 18 Jahren gestattet. Bestätigen Sie Ihr Einverständnis.", btn: "ICH BIN 18 JAHRE ALT" },
+        en: { title: "Swiss Law (BGS)", text: "According to the Swiss Federal Act on Gambling (BGS), participation is only allowed for persons over 18 years old. Please confirm your agreement.", btn: "I AM 18 YEARS OLD" },
+        fr: { title: "Loi Suisse (BGS)", text: "Selon la Loi fédérale sur les jeux d'argent (BGS), la participation est réservée aux personnes de plus de 18 ans. Veuillez confirmer votre accord.", btn: "J'AI 18 ANS" }
+    };
+
+    const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' };
+
+    /* Твоя логика актуализации Swiss Lotto */
+    async function runActualization() {
+        console.log("Starting Swiss Lotto Sync...");
+        const mockData = {};
+        for(let i=1; i<=42; i++) {
+            mockData[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
+        }
+        realStatsDB = mockData;
+        refreshGrid();
     }
 
-    // --- ДВИЖОК АКТУАЛИЗАЦИИ И SMART-ФИЛЬТРЫ ---
     function setPeriod(p) {
         currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
-        applySmartFilters();
+        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('p-' + p).classList.add('active');
+        refreshGrid();
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     function togglePick(type) {
-        if (activeSmartTool === type) activeSmartTool = null;
-        else activeSmartTool = type;
+        selected = [];
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
         
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        if (activeSmartTool) document.getElementById(`btn-${type}`).classList.add('active-tool');
-        applySmartFilters();
-    }
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val);
+        else if (type === 'cold') sorted.sort((a, b) => a.val - b.val);
+        else sorted.sort(() => Math.random() - 0.5); // Sleeping / Random logic
 
-    function applySmartFilters() {
-        const idx = (currentPeriod === 'month') ? 0 : (currentPeriod === 'year' ? 1 : 2);
-        document.querySelectorAll('.cell').forEach(cell => {
-            const num = parseInt(cell.innerText);
-            cell.classList.remove('is-hot', 'is-cold', 'is-sleeping');
-            if (!activeSmartTool) return;
-            
-            const val = realStatsDB[num][idx];
-            // Логика порогов: Hot > 3, Cold < 1, Sleeping - долго не было
-            if (activeSmartTool === 'hot' && val >= 3) cell.classList.add('is-hot');
-            if (activeSmartTool === 'cold' && val <= 1) cell.classList.add('is-cold');
-            if (activeSmartTool === 'sleeping' && val === 0) cell.classList.add('is-sleeping');
-        });
-    }
-
-    async function runActualization(introNums = []) {
-        // Здесь имитация 6 часов розыгрышей Swiss Lotto (синхронизация)
-        for(let i=1; i<=42; i++) {
-            // Генерируем базу: [Месяц, Год, Всего]
-            realStatsDB[i] = [
-                Math.floor(Math.random()*5), 
-                Math.floor(Math.random()*20), 
-                300 + Math.floor(Math.random()*200)
-            ];
-            // Синхронизация с интро: если число было в интро, оно "горячее" в этом месяце
-            if (introNums.includes(i)) realStatsDB[i][0] += 5; 
-        }
+        selected = sorted.slice(0, 6).map(i => i.num);
+        superNum = Math.floor(Math.random() * 6) + 1;
         refreshGrid();
-        applySmartFilters();
-    }
-
-    // --- DICTIONARIES & UI ---
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS" }
-    };
-
-    const legalDict = {
-        ru: { title: "Закон Швейцарии (BGS)", text: "Участие разрешено только лицам старше <b>18 лет</b>.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
-        de: { title: "Schweizer Gesetz (BGS)", text: "Teilnahme erst ab <b>18 Jahren</b> gestattet.", btn: "ICH BIN 18 JAHRE ALT" },
-        en: { title: "Swiss Law (BGS)", text: "Participation only for persons over <b>18 years</b>.", btn: "I AM 18 YEARS OLD" }
-    };
-
-    const langIcons = { ru: '🇷🇺', fr: '🇫🇷', de: '🇩🇪', en: '🇺🇸', ua: '🇺🇦' }; 
-
-    function renderLangPanel(isExpanded) {
-        const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
-        const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
-        main.innerHTML = langIcons[currentLang]; main.onclick = () => renderLangPanel(!isExpanded);
-        container.appendChild(main);
-        if (isExpanded) {
-            ['ru', 'fr', 'de', 'en', 'ua'].forEach(l => {
-                const btn = document.createElement('span'); btn.className = `lang-btn pos-${l}`; btn.innerHTML = langIcons[l];
-                btn.onclick = () => { pendingLang = l; showLegal(l); };
-                container.appendChild(btn);
-            });
-        }
-    }
-
-    function showLegal(l) {
-        const overlay = document.getElementById('legal-overlay');
-        const content = document.getElementById('legal-content');
-        const btn = document.getElementById('legal-agree-btn');
-        const d = legalDict[l] || legalDict['en'];
-        content.innerHTML = `<h3 style="color:var(--main-color);">${d.title}</h3>${d.text}`;
-        btn.innerText = d.btn; overlay.style.display = 'flex';
-    }
-
-    function acceptLegal() {
-        currentLang = pendingLang; localStorage.setItem('vchf_lang', currentLang);
-        document.getElementById('legal-overlay').style.display = 'none';
-        setLang(currentLang); renderLangPanel(false);
-    }
-
-    function setLang(l) {
-        const d = dict[l]; if(!d) return;
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super;
-        document.getElementById('l-total').innerText = d.total;
-        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
-        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
-        document.getElementById('l-active-tickets-title').innerText = d.activeT;
-    }
-
-    function refreshGrid() {
-        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
-        for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
-            if (selected.includes(i)) c.classList.add('selected');
-            c.onclick = () => handleCellClick(i); grid.appendChild(c);
-        }
-        applySmartFilters();
+        updateSuperGrid();
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
     function handleCellClick(i) {
@@ -568,75 +308,91 @@
         refreshGrid();
     }
 
-    function randomFill() {
-        selected = []; sndShuffle.play();
-        let it = 0; const iv = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
-            for(let j=0; j<4; j++) {
-                const r = Math.floor(Math.random() * 42) + 1;
-                document.getElementById(`cell-${r}`).classList.add('processing-flash');
-            }
-            if (it % 3 === 0 && selected.length < 6) {
-                let nr; do { nr = Math.floor(Math.random() * 42) + 1; } while (selected.includes(nr));
-                selected.push(nr);
-            }
-            if (++it >= 20) { clearInterval(iv); superNum = Math.floor(Math.random() * 6) + 1; refreshGrid(); updateSuper(); sndWin.play(); }
-        }, 80);
-    }
-
-    function updateSuper() {
-        document.querySelectorAll('.super-cell').forEach(el => el.classList.toggle('selected', el.innerText == superNum));
-    }
-
-    function switchCurrency(type) { currentCurrency = type; updatePriceDisplay(); }
-    function updatePriceDisplay() { 
-        document.getElementById('card-vchf').classList.toggle('active-wallet', currentCurrency === 'VCHF');
-        document.getElementById('card-chf').classList.toggle('active-wallet', currentCurrency === 'CHF');
-        document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; 
-    }
-    function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
-
-    function showPage(p, el) {
-        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + p).classList.add('active'); el.classList.add('active');
-        if(p === 'stats') renderHeatmap();
-    }
-
-    function renderHeatmap() {
-        const g = document.getElementById('personal-heatmap'); g.innerHTML = '';
-        const idx = (currentPeriod === 'month') ? 0 : (currentPeriod === 'year' ? 1 : 2);
-        for(let i=1; i<=42; i++) {
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
             const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
-            const val = realStatsDB[i][idx];
-            if(val > 4) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
-            if(val > 10) c.style.background = 'var(--main-gradient)';
-            g.appendChild(c);
+            if (selected.includes(i)) c.classList.add('selected');
+            c.onclick = () => handleCellClick(i);
+            grid.appendChild(c);
         }
     }
 
-    function setTheme(t) { document.body.className = 'theme-' + t; }
+    function updateSuperGrid() {
+        document.querySelectorAll('.super-cell').forEach(el => {
+            el.classList.toggle('selected', parseInt(el.innerText) === superNum);
+        });
+    }
+
+    function renderLangPanel(isExpanded) {
+        const container = document.getElementById('dynamic-langs');
+        container.innerHTML = '';
+        const main = document.createElement('span');
+        main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
+        main.innerHTML = langIcons[currentLang];
+        main.onclick = () => renderLangPanel(!isExpanded);
+        container.appendChild(main);
+        if (isExpanded) {
+            Object.keys(langIcons).forEach(l => {
+                const btn = document.createElement('span');
+                btn.innerHTML = langIcons[l];
+                btn.onclick = () => { pendingLang = l; showLegal(l); };
+                container.appendChild(btn);
+            });
+        }
+    }
+
+    function showLegal(l) {
+        const overlay = document.getElementById('legal-overlay');
+        document.getElementById('legal-content').innerHTML = `<h3>${legalDict[l].title}</h3>${legalDict[l].text}`;
+        document.getElementById('legal-agree-btn').innerText = legalDict[l].btn;
+        overlay.style.display = 'flex';
+    }
+
+    function acceptLegal() {
+        currentLang = pendingLang;
+        localStorage.setItem('vchf_lang', currentLang);
+        localStorage.setItem('vchf_legal_accepted', 'true');
+        document.getElementById('legal-overlay').style.display = 'none';
+        setLang(currentLang);
+        renderLangPanel(false);
+    }
+
+    function setLang(l) {
+        const d = dict[l];
+        document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super;
+        ['month', 'year', 'all'].forEach(p => document.getElementById('p-'+p).innerText = d[p]);
+        ['game', 'tickets', 'stats'].forEach(n => document.getElementById('n-'+n).innerText = d[n]);
+    }
+
+    function setTheme(t) { 
+        document.body.className = 'theme-' + t; 
+        const colors = { gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4' }; 
+        document.documentElement.style.setProperty('--main-color', colors[t]);
+    }
 
     function runEngine() {
-        if (selected.length < 6 || !superNum) { tg.showAlert("Please select 6 numbers and Superzahl"); return; }
-        const ticket = { nums: [...selected], super: superNum, id: Date.now() };
-        myTickets.push(ticket);
-        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-        tg.showConfirm("Ticket saved! Good luck, Wanderer.");
-        selected = []; superNum = null; refreshGrid(); updateSuper();
+        if(selected.length === 6 && superNum) {
+            myTickets.push({ nums: [...selected], super: superNum, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
+            tg.showAlert(dict[currentLang].status);
+            selected = []; superNum = null; refreshGrid(); updateSuperGrid();
+        } else tg.showAlert("Select 6 numbers + Superzahl!");
     }
 
     window.onload = () => {
-        const saved = localStorage.getItem('vchf_lang');
-        if (saved) { currentLang = saved; setLang(currentLang); }
-        renderLangPanel(false); updatePriceDisplay();
-        
         const sgrid = document.getElementById('s-grid');
         for (let i = 1; i <= 6; i++) {
             const sc = document.createElement('div'); sc.className = 'super-cell'; sc.innerText = i;
-            sc.onclick = () => { superNum = i; updateSuper(); }; sgrid.appendChild(sc);
+            sc.onclick = () => { superNum = i; updateSuperGrid(); };
+            sgrid.appendChild(sc);
         }
-        animateIntro();
+        runActualization();
+        startIntroSequence();
+        const savedLang = localStorage.getItem('vchf_lang');
+        if(savedLang) { currentLang = savedLang; setLang(currentLang); }
+        renderLangPanel(false);
     };
 </script>
 </body>
