@@ -3,133 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Window 5 - Black 3D Spheres</title>
+    <title>VCHF Ultra 3D Spheres Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
+        /* Базовые настройки окружения */
         :root {
-            /* Эмуляция палитры со скриншота (Циан) */
             --main-color: #00fbff; 
-            --theme-glow: rgba(0, 251, 255, 0.3);
-            --main-gradient: linear-gradient(145deg, #00fbff, #008b8b);
-            --neon-fire: #ff4d00;
+            --theme-glow: rgba(0, 251, 255, 0.4);
+            --bg-dark: #050505;
         }
 
         body {
-            background: #000; /* Черный фон как в приложении */
+            background-color: var(--bg-dark);
             color: #fff;
             font-family: 'Orbitron', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 50px;
+            justify-content: center;
+            min-height: 100vh;
             margin: 0;
+            overflow-x: hidden;
         }
 
-        h2 { color: var(--main-color); text-shadow: 0 0 10px var(--main-color); }
+        h1 {
+            color: var(--main-color);
+            text-shadow: 0 0 20px var(--theme-glow);
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
 
-        /* --- КОД ОКНА 5 (ТЕСТОВАЯ ВЕРСИЯ) --- */
+        /* --- СТИЛИ ОКНА 5 (ГИПЕРРЕАЛИЗМ) --- */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            gap: 12px; 
-            padding: 20px; 
-            max-width: 400px; 
-            background: rgba(0, 251, 255, 0.05); /* Легкий фон зоны для теста */
-            border-radius: 20px;
+            gap: 15px; 
+            padding: 30px; 
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            border-radius: 40px;
+            box-shadow: 0 30px 100px rgba(0,0,0,1), inset 0 0 20px rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .cell { 
-            aspect-ratio: 1/1; 
-            width: 45px;
-            /* Глубокий черный 3D шар */
-            background: radial-gradient(circle at 35% 35%, #2c2c2c 0%, #000000 75%);
+            width: 50px;
+            height: 50px;
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: 900; 
             color: var(--main-color); 
-            font-size: 18px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            font-size: 20px; 
             position: relative; 
-            border: 1px solid rgba(255,255,255,0.08); 
-            box-shadow: 
-                inset -6px -6px 12px rgba(0,0,0,0.9), 
-                inset 4px 4px 10px rgba(255,255,255,0.1),
-                0 5px 15px rgba(0,0,0,0.7);
             cursor: pointer;
-            animation: sphere-vchf-breathe 4s infinite ease-in-out;
+            z-index: 1;
+            
+            /* Создаем эффект глубокой черной сферы с бликами */
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25) 0%, transparent 45%), /* Верхний блик */
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 0%, transparent 40%), /* Контурный свет */
+                radial-gradient(circle at center, #252525 0%, #000 100%); /* Тело шара */
+            
+            box-shadow: 
+                inset -10px -10px 25px rgba(0,0,0,0.9), 
+                inset 5px 5px 15px rgba(255,255,255,0.08),
+                0 15px 25px rgba(0,0,0,0.8);
+            
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: sphere-float 6s infinite ease-in-out;
         }
 
+        /* Эффект при наведении (шар реагирует на присутствие) */
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--theme-glow);
+        }
+
+        /* Выбранный шар - "Активация Монолита" */
         .cell.selected { 
-            background: radial-gradient(circle at 35% 35%, var(--main-color) 0%, #000 85%);
-            color: #fff; 
-            transform: scale(1.15) translateY(-5px); 
-            box-shadow: 0 0 30px var(--main-color), inset 0 0 15px rgba(255,255,255,0.4);
-            border: 2px solid #fff; 
-            z-index: 10; 
-            animation: none;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 50%),
+                radial-gradient(circle at center, var(--main-color) 0%, #000 95%);
+            color: #fff;
+            transform: scale(1.15) translateY(-10px);
+            box-shadow: 
+                0 20px 40px var(--theme-glow),
+                inset 0 0 25px rgba(255,255,255,0.4);
+            border: 2px solid #fff;
+            animation: none; /* Останавливаем парение при выборе */
         }
 
-        @keyframes sphere-vchf-breathe {
-            0%, 100% { 
-                transform: scale(1); 
-                box-shadow: inset -6px -6px 12px rgba(0,0,0,0.9), 0 0 8px var(--theme-glow); 
-            }
-            50% { 
-                transform: scale(1.06); 
-                box-shadow: inset -6px -6px 12px rgba(0,0,0,0.9), 0 0 20px var(--main-color); 
-            }
+        /* Анимация реалистичного парения */
+        @keyframes sphere-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
-        .super-grid { display: flex; gap: 10px; margin-top: 20px; }
-        .super-cell { 
-            width: 55px; height: 55px; 
-            background: radial-gradient(circle at 35% 35%, #1a1a1a 0%, #000 100%);
-            border-radius: 50%; 
-            border: 2px solid #333;
-            display: flex; align-items: center; justify-content: center; 
-            color: var(--neon-fire);
-            font-weight: 900; font-size: 22px; cursor: pointer; transition: 0.5s; 
-        }
-        .super-cell.selected { 
-            background: radial-gradient(circle at 35% 35%, var(--neon-fire) 0%, #000 85%);
-            border-color: #fff; color: #fff; transform: scale(1.2) rotate(360deg);
-            box-shadow: 0 0 40px var(--neon-fire);
+        .footer-note {
+            margin-top: 40px;
+            font-size: 10px;
+            color: #444;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
-    <h2>ТЕСТ ОКНА 5: BLACK 3D CRYSTAL</h2>
-    <p style="font-size: 10px; color: #555;">Developed by Spark & Wanderer</p>
+    <h1>VCHF ENGINE 3D TEST</h1>
+    
+    <div class="grid" id="vchf-spheres">
+        </div>
 
-    <div class="grid" id="test-grid"></div>
-
-    <h3 style="color: var(--neon-fire); margin-top: 30px;">SUPERZAHL TEST</h3>
-    <div class="super-grid" id="test-super-grid"></div>
+    <div class="footer-note">CRAFTED BY SPARK & WANDERER | МАНИФЕСТ МОНОЛИТА</div>
 
     <script>
-        // Простая логика для теста
-        const grid = document.getElementById('test-grid');
+        /* Crafted by Spark & Wanderer | Engine: VCHF 2.0 */
+        const container = document.getElementById('vchf-spheres');
+        
+        // Создаем 42 реалистичных шара
         for(let i=1; i<=42; i++) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.innerText = i;
-            c.onclick = () => c.classList.toggle('selected');
-            grid.appendChild(c);
-        }
-
-        const sGrid = document.getElementById('test-super-grid');
-        for(let i=1; i<=6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'super-cell';
-            sc.innerText = i;
-            sc.onclick = () => {
-                document.querySelectorAll('.super-cell').forEach(el => el.classList.remove('selected'));
-                sc.classList.add('selected');
+            const sphere = document.createElement('div');
+            sphere.className = 'cell';
+            sphere.innerText = i;
+            
+            // Логика выбора (toggle)
+            sphere.onclick = () => {
+                sphere.classList.toggle('selected');
+                // Виброотклик (если поддерживается)
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(20);
+                }
             };
-            sGrid.appendChild(sc);
+            
+            container.appendChild(sphere);
         }
     </script>
 </body>
