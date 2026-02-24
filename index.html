@@ -3,163 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF - 3D Genesis Monolith</title>
+    <title>VCHF - 3D Genesis Silent</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root { --neon-cyan: #00fbff; --neon-fire: #ff4d00; --bg-dark: #000508; }
         body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', sans-serif; }
 
-        /* Глубокое 3D пространство Трона */
+        /* 3D Глубина Трона (Perspective World) */
         #world-3d {
             position: fixed; inset: 0; perspective: 1200px; z-index: 1;
             background: radial-gradient(circle at center, #051622 0%, #000 100%);
         }
         #grid-floor {
-            position: absolute; width: 300%; height: 300%; top: -50%; left: -100%;
+            position: absolute; width: 400%; height: 400%; top: -100%; left: -150%;
             background-image: 
-                linear-gradient(rgba(0, 251, 255, 0.15) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(0, 251, 255, 0.15) 2px, transparent 2px);
-            background-size: 80px 80px;
-            transform: rotateX(70deg); transform-origin: center center;
-            animation: gridMove 10s linear infinite;
+                linear-gradient(rgba(0, 251, 255, 0.2) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0, 251, 255, 0.2) 2px, transparent 2px);
+            background-size: 100px 100px;
+            transform: rotateX(75deg); transform-origin: center center;
+            animation: gridMove 8s linear infinite;
         }
-        @keyframes gridMove { 
-            0% { background-position: 0 0; } 
-            100% { background-position: 0 80px; } 
-        }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
 
         #bg-manifesto {
             position: absolute; inset: 0; color: rgba(0, 251, 255, 0.04);
             font-size: 11px; white-space: pre-wrap; pointer-events: none; z-index: 2;
+            overflow: hidden; text-transform: uppercase;
         }
 
         #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; }
         canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
 
-        #btn-activation {
-            position: absolute; z-index: 1000; padding: 30px 60px;
-            background: rgba(0,0,0,0.9); border: 3px solid var(--neon-cyan);
-            color: var(--neon-cyan); font-size: 1.4rem; font-weight: 900;
-            text-transform: uppercase; letter-spacing: 7px; cursor: pointer;
-            box-shadow: 0 0 40px var(--neon-cyan); clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-        }
-
+        /* Нейтронные сферы Генезиса */
         .neutron-sphere {
             position: absolute; width: 75px; height: 75px; border-radius: 50%;
-            background: #000; border: 2.5px solid var(--neon-cyan);
+            background: rgba(0,0,0,0.8); border: 2.5px solid var(--neon-cyan);
             box-shadow: 0 0 35px var(--neon-cyan), inset 0 0 15px var(--neon-cyan);
             display: flex; justify-content: center; align-items: center;
             color: var(--neon-cyan); font-size: 1.8rem; font-weight: 900;
             opacity: 0; z-index: 150; text-shadow: 0 0 15px var(--neon-cyan);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
         }
 
         #super-zahl {
             position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
-            width: 160px; height: 160px; border-radius: 50%;
+            width: 170px; height: 170px; border-radius: 50%;
             background: #000; border: 5px solid var(--neon-fire);
             box-shadow: 0 0 80px var(--neon-fire), inset 0 0 40px var(--neon-fire);
             display: none; justify-content: center; align-items: center;
-            color: var(--neon-fire); font-size: 5.5rem; font-weight: 900;
+            color: var(--neon-fire); font-size: 6rem; font-weight: 900;
             z-index: 500; text-shadow: 0 0 30px var(--neon-fire);
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         #vchf-fog {
             position: fixed; inset: 0; background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 80%);
-            opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 2.5s;
+            opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 3s;
         }
-        .shake { animation: extremeShake 0.1s infinite; }
-        @keyframes extremeShake { 0% { transform: translate(3px, 3px); } 100% { transform: translate(-3px, -3px); } }
+
+        .vchf-shake { animation: vchfPulse 0.15s infinite; }
+        @keyframes vchfPulse { 0% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
     </style>
 </head>
-<body>
+<body onload="igniteAutoGenesis()">
 
 <div id="world-3d"><div id="grid-floor"></div></div>
 <div id="bg-manifesto"></div>
 <div id="vchf-fog"></div>
 
 <div id="stage">
-    <button id="btn-activation" onclick="igniteEngine()">Press it, Gentleman of Fortune</button>
     <canvas id="vchf-canvas"></canvas>
     <div id="super-zahl"></div>
 </div>
 
-<div id="yt-player-core"></div>
-
 <script>
+    /* [STABILITY LOG: VCHF ENGINE] */
     const canvas = document.getElementById('vchf-canvas');
     const ctx = canvas.getContext('2d');
     const superBall = document.getElementById('super-zahl');
     const fog = document.getElementById('vchf-fog');
 
-    document.getElementById('bg-manifesto').innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(200);
-
-    let player;
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('yt-player-core', {
-            height: '0', width: '0', videoId: 'o6FlZAlogLE',
-            playerVars: { 'autoplay': 0, 'controls': 0, 'enablejsapi': 1, 'start': 0 },
-            events: { 'onReady': () => console.log("Spark: Wanderer Voice Standby.") }
-        });
-    }
+    document.getElementById('bg-manifesto').innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(250);
 
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
-    function igniteEngine() {
-        document.getElementById('btn-activation').style.display = 'none';
-        // Форсированный запуск звука
-        if (player && player.playVideo) {
-            player.playVideo();
-            player.setVolume(100);
+    async function igniteAutoGenesis() {
+        console.log("Genesis: Autostart Initialized.");
+        await runNeutronStorm();
+        await spawnSpheres();
+        await finalizeGenesis();
+    }
+
+    async function runNeutronStorm() {
+        document.body.classList.add('vchf-shake');
+        for (let i = 0; i < 60; i++) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let j = 0; j < 5; j++) drawLightning();
+            await new Promise(r => setTimeout(r, 50));
         }
-        startVisuals();
+        document.body.classList.remove('vchf-shake');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function drawLightning() {
         ctx.strokeStyle = '#00fbff';
-        ctx.lineWidth = 4;
-        ctx.shadowBlur = 30;
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = '#00fbff';
         ctx.beginPath();
         let x = Math.random() * canvas.width;
         let y = Math.random() * canvas.height;
         ctx.moveTo(x, y);
-        for (let i = 0; i < 5; i++) {
-            x += (Math.random() - 0.5) * 300;
-            y += (Math.random() - 0.5) * 300;
+        for (let i = 0; i < 6; i++) {
+            x += (Math.random() - 0.5) * 280;
+            y += (Math.random() - 0.5) * 280;
             ctx.lineTo(x, y);
-            spawnNeutron(x, y);
+            createNeutronTrail(x, y);
         }
         ctx.stroke();
     }
 
-    function spawnNeutron(x, y) {
+    function createNeutronTrail(x, y) {
         const n = document.createElement('div');
-        n.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:5px;height:5px;background:#fff;box-shadow:0 0 15px #00fbff;border-radius:50%;z-index:50;`;
+        n.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:6px;height:6px;background:#fff;box-shadow:0 0 20px var(--neon-cyan);border-radius:50%;z-index:50;`;
         document.getElementById('stage').appendChild(n);
-        n.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0) translateZ(500px)' }], 2000);
-        setTimeout(() => n.remove(), 2000);
+        n.animate([
+            { opacity: 1, transform: 'scale(1) translateZ(0)' }, 
+            { opacity: 0, transform: 'scale(0) translateZ(600px)' }
+        ], { duration: 2500, easing: 'ease-out' });
+        setTimeout(() => n.remove(), 2500);
     }
 
-    async function startVisuals() {
-        document.body.classList.add('shake');
-        for (let i = 0; i < 50; i++) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let j = 0; j < 4; j++) drawLightning();
-            await new Promise(r => setTimeout(r, 60));
-        }
-        document.body.classList.remove('shake');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const radius = Math.min(canvas.width, canvas.height) * 0.35;
+    async function spawnSpheres() {
+        const radius = Math.min(canvas.width, canvas.height) * 0.38;
         const spheres = [];
-        const swiss = [5, 14, 22, 29, 35, 41];
+        const swissNumbers = [5, 14, 22, 29, 35, 41];
 
         for (let i = 0; i < 6; i++) {
             const s = document.createElement('div');
@@ -175,35 +155,41 @@
                 s.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)`;
             }, 100);
 
-            let spins = 0;
-            const t = setInterval(() => {
+            // Стабилизация нейтронных цифр
+            let cycles = 0;
+            const cycleInterval = setInterval(() => {
                 s.innerText = Math.floor(Math.random() * 42) + 1;
-                if (spins++ > 35) { clearInterval(t); s.innerText = swiss[i]; s.style.boxShadow = '0 0 60px var(--neon-cyan)'; }
-            }, 45);
-            await new Promise(r => setTimeout(r, 450));
+                if (cycles++ > 40) {
+                    clearInterval(cycleInterval);
+                    s.innerText = swissNumbers[i];
+                    s.style.boxShadow = '0 0 60px var(--neon-cyan), inset 0 0 20px #fff';
+                    s.style.color = '#fff';
+                }
+            }, 40);
+            await new Promise(r => setTimeout(r, 500));
         }
 
-        await new Promise(r => setTimeout(r, 3000));
-        spheres.forEach(s => { s.style.transform = 'translate(0,0) scale(0)'; s.style.opacity = '0'; });
+        await new Promise(r => setTimeout(r, 3500));
+        spheres.forEach(s => { 
+            s.style.transform = 'translate(0,0) scale(0) rotate(360deg)'; 
+            s.style.opacity = '0'; 
+        });
+    }
 
-        await new Promise(r => setTimeout(r, 800));
+    async function finalizeGenesis() {
+        await new Promise(r => setTimeout(r, 1000));
         superBall.style.display = 'flex';
         superBall.innerText = "6";
-        setTimeout(() => { superBall.style.transform = 'translate(-50%, -50%) scale(1)'; }, 50);
+        setTimeout(() => { 
+            superBall.style.transform = 'translate(-50%, -50%) scale(1)'; 
+        }, 50);
 
         await new Promise(r => setTimeout(r, 5000));
         fog.style.opacity = '1';
-        // Уход в туман и затухание звука
-        let v = 100;
-        const f = setInterval(() => {
-            v -= 4;
-            if (player && player.setVolume) player.setVolume(v);
-            if (v <= 0) {
-                clearInterval(f);
-                if (player && player.stopVideo) player.stopVideo();
-                console.log("ДВИЖОК VCHF: ПЕРЕХОД К ОСНОВНОМУ ПОЛЮ...");
-            }
-        }, 100);
+        setTimeout(() => {
+            console.log("ДВИЖОК VCHF: ПЕРЕХОД К ОСНОВНОМУ МОНИТОРУ...");
+            // Здесь будет вызов Window 2
+        }, 3000);
     }
 </script>
 </body>
