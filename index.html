@@ -3,103 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF - Voice of Wanderer</title>
+    <title>Lotto VCHF - Genesis Monolith</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon-cyan: #00fbff; --neon-fire: #ff4d00; }
-        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', sans-serif; }
-        
-        #monitor-grid {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0, 251, 255, 0.07) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(0, 251, 255, 0.07) 1px, transparent 1px),
-                        radial-gradient(circle at center, #051622 0%, #000 100%);
-            background-size: 50px 50px, 50px 50px; z-index: 1;
+        :root { 
+            --neon-cyan: #00fbff; --neon-gold: #ffcf40; --neon-fire: #ff4d00;
+            --bg-deep: #010a10;
+        }
+        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; height: 100vh; font-family: 'Orbitron', sans-serif; color: white; }
+
+        /* Эффект прозрачного монитора Трона */
+        #tron-monitor {
+            position: fixed; inset: 0; z-index: 1;
+            background: 
+                linear-gradient(rgba(0, 251, 255, 0.08) 1.5px, transparent 1.5px),
+                linear-gradient(90deg, rgba(0, 251, 255, 0.08) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 50% 50%, #051622 0%, #000 100%);
+            background-size: 60px 60px, 60px 60px, 100% 100%;
+            perspective: 1000px;
         }
 
-        #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; cursor: pointer; }
-        canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-        
-        #super-ball {
-            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.1);
-            width: 140px; height: 140px; border-radius: 50%; background: #000;
-            border: 4px solid var(--neon-fire); box-shadow: 0 0 60px var(--neon-fire);
+        /* Манифест Монолита на фоне */
+        #bg-manifesto {
+            position: absolute; inset: 0; color: rgba(0, 251, 255, 0.05);
+            font-size: 12px; line-height: 16px; white-space: pre-wrap;
+            pointer-events: none; z-index: 2; overflow: hidden; font-family: monospace;
+        }
+
+        #stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; }
+        canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; filter: blur(0.5px); }
+
+        /* Кнопка Джентльмена удачи */
+        #btn-activation {
+            position: absolute; z-index: 1000; padding: 25px 50px;
+            background: rgba(0, 0, 0, 0.85); border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan); font-size: 1.2rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 6px; cursor: pointer;
+            box-shadow: 0 0 30px var(--neon-cyan), inset 0 0 15px var(--neon-cyan);
+            transition: 0.3s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
+        #btn-activation:hover { transform: scale(1.05); background: var(--neon-cyan); color: #000; }
+
+        /* Нейтронные сферы */
+        .neutron-sphere {
+            position: absolute; width: 70px; height: 70px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.4), #000);
+            border: 2px solid var(--neon-cyan); display: flex; justify-content: center;
+            align-items: center; opacity: 0; z-index: 150;
+            box-shadow: inset 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+            font-weight: 900; font-size: 1.8rem; color: var(--neon-cyan);
+            text-shadow: 0 0 15px var(--neon-cyan); transition: transform 0.6s ease-out;
+        }
+
+        #super-zahl {
+            position: absolute; width: 150px; height: 150px; border-radius: 50%;
+            background: #000; border: 4px solid var(--neon-fire);
+            box-shadow: inset 0 0 50px var(--neon-fire), 0 0 100px var(--neon-fire);
             display: none; justify-content: center; align-items: center;
-            color: var(--neon-fire); font-weight: 900; font-size: 4.5rem; z-index: 500;
+            color: var(--neon-fire); font-weight: 900; font-size: 5rem;
+            z-index: 500; text-shadow: 0 0 40px var(--neon-fire);
         }
 
-        #click-prompt {
-            position: absolute; color: var(--neon-cyan); font-size: 1.2rem;
-            text-transform: uppercase; letter-spacing: 5px; z-index: 1000;
-            text-align: center; background: rgba(0,0,0,0.8); padding: 20px;
-            border: 1px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan);
+        /* Туман для перехода */
+        #vchf-fog {
+            position: fixed; inset: 0; background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 70%);
+            opacity: 0; z-index: 2000; pointer-events: none; transition: opacity 2s ease;
         }
 
-        .lotto-sphere {
-            position: absolute; width: 65px; height: 65px; border-radius: 50%;
-            background: #000; border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 25px var(--neon-cyan); display: flex;
-            justify-content: center; align-items: center; color: var(--neon-cyan);
-            font-weight: 900; opacity: 0; z-index: 150;
-        }
+        .shake { animation: vchfShake 0.1s infinite; }
+        @keyframes vchfShake { 0% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
     </style>
 </head>
 <body>
 
-<div id="monitor-grid"></div>
-<div id="stage" onclick="awakenSystem()">
-    <div id="click-prompt">ВИТАЛИЙ, НАЖМИ ДЛЯ ЗАПУСКА ДВИЖОК VCHF<br><small>(Активация звука и неона)</small></div>
-    <canvas id="main-canvas"></canvas>
-    <div id="super-ball"></div>
+<div id="tron-monitor"></div>
+<div id="bg-manifesto"></div>
+<div id="vchf-fog"></div>
+
+<div id="stage">
+    <button id="btn-activation" onclick="startGenesis()">Press it, Gentleman of Fortune</button>
+    <canvas id="vchf-canvas"></canvas>
+    <div id="super-zahl"></div>
 </div>
 
-<div id="player-container"></div>
+<div id="yt-player"></div>
 
 <script>
+    /* [VCHF SYSTEM: MEMORIES OF SKYLINE] */
+    const canvas = document.getElementById('vchf-canvas');
+    const ctx = canvas.getContext('2d');
+    const manifesto = document.getElementById('bg-manifesto');
+    const fog = document.getElementById('vchf-fog');
+    const superBall = document.getElementById('super-zahl');
+
+    // Наполняем монитор Манифестом
+    manifesto.innerText = "МАНИФЕСТ МОНОЛИТА: НОВЫЙ КОД = СТАРЫЙ + ВВЕДЕННАЯ ФУНКЦИЯ. ДВИЖОК VCHF. ".repeat(150);
+
     let player;
-    // Загружаем YouTube API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player-container', {
-            height: '0', width: '0',
-            videoId: 'o6FlZAlogLE',
-            playerVars: { 'autoplay': 0, 'controls': 0, 'start': 1 },
-            events: { 'onReady': () => console.log("Spark: Голос готов к пробуждению.") }
+        player = new YT.Player('yt-player', {
+            height: '0', width: '0', videoId: 'o6FlZAlogLE',
+            playerVars: { 'autoplay': 0, 'controls': 0, 'start': 0, 'enablejsapi': 1 },
+            events: { 'onReady': () => console.log("System: Wanderer's voice ready.") }
         });
-    }
-
-    const canvas = document.getElementById('main-canvas');
-    const ctx = canvas.getContext('2d');
-
-    function awakenSystem() {
-        document.getElementById('click-prompt').style.display = 'none';
-        if (player && player.playVideo) {
-            player.playVideo(); // Принудительный запуск звука
-        }
-        startVisuals();
     }
 
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
-    async function startVisuals() {
-        // Тот самый мощный код молний из предыдущего окна, без сокращений!
-        for(let i=0; i<45; i++) {
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.strokeStyle = '#00fbff';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(Math.random()*canvas.width, Math.random()*canvas.height);
-            ctx.lineTo(Math.random()*canvas.width, Math.random()*canvas.height);
-            ctx.stroke();
+    async function startGenesis() {
+        document.getElementById('btn-activation').style.display = 'none';
+        if (player && player.playVideo) player.playVideo();
+        
+        // Начало визуальной наглости
+        document.body.classList.add('shake');
+        await runNeutronStorm();
+        document.body.classList.remove('shake');
+        
+        await spawnSpheres();
+        await mergeToSuperzahl();
+    }
+
+    async function runNeutronStorm() {
+        for (let i = 0; i < 50; i++) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let j = 0; j < 6; j++) drawLightning();
             await new Promise(r => setTimeout(r, 60));
         }
-        // ... продолжение логики сфер ...
-        console.log("Манифест Монолита: Звук должен быть!");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawLightning() {
+        ctx.strokeStyle = '#00fbff';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = '#00fbff';
+        ctx.beginPath();
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        ctx.moveTo(x, y);
+        for (let i = 0; i < 5; i++) {
+            x += (Math.random() - 0.5) * 250;
+            y += (Math.random() - 0.5) * 250;
+            ctx.lineTo(x, y);
+            createNeutron(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function createNeutron(x, y) {
+        const n = document.createElement('div');
+        n.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:4px;height:4px;background:#fff;box-shadow:0 0 10px #00fbff;border-radius:50%;z-index:50;`;
+        document.getElementById('stage').appendChild(n);
+        n.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0)' }], { duration: 1500 });
+        setTimeout(() => n.remove(), 1500);
+    }
+
+    async function spawnSpheres() {
+        const radius = Math.min(canvas.width, canvas.height) * 0.35;
+        const swissResults = [5, 14, 22, 29, 35, 41];
+        const spheres = [];
+
+        for (let i = 0; i < 6; i++) {
+            const s = document.createElement('div');
+            s.className = 'neutron-sphere';
+            s.style.left = canvas.width / 2 - 35 + 'px';
+            s.style.top = canvas.height / 2 - 35 + 'px';
+            document.getElementById('stage').appendChild(s);
+            spheres.push(s);
+
+            const angle = (i / 6) * Math.PI * 2;
+            setTimeout(() => {
+                s.style.opacity = '1';
+                s.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)`;
+            }, 100);
+
+            // Нейтронная стабилизация цифр
+            let count = 0;
+            const interval = setInterval(() => {
+                s.innerText = Math.floor(Math.random() * 42) + 1;
+                if (count++ > 30) {
+                    clearInterval(interval);
+                    s.innerText = swissResults[i];
+                    s.style.boxShadow = '0 0 50px var(--neon-cyan)';
+                }
+            }, 50);
+            await new Promise(r => setTimeout(r, 400));
+        }
+        await new Promise(r => setTimeout(r, 3000));
+        
+        spheres.forEach(s => {
+            s.style.transition = 'all 1s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
+            s.style.transform = 'translate(0,0) scale(0)';
+            s.style.opacity = '0';
+        });
+    }
+
+    async function mergeToSuperzahl() {
+        await new Promise(r => setTimeout(r, 800));
+        superBall.style.display = 'flex';
+        superBall.innerText = "6";
+        superBall.animate([{ transform: 'translate(-50%, -50%) scale(0.1)' }, { transform: 'translate(-50%, -50%) scale(1)' }], 500);
+
+        await new Promise(r => setTimeout(r, 4000));
+        
+        // Финальный переход: Туман и плавное затухание музыки
+        fog.style.opacity = '1';
+        let vol = 100;
+        const fade = setInterval(() => {
+            vol -= 5;
+            if (player && player.setVolume) player.setVolume(vol);
+            if (vol <= 0) {
+                clearInterval(fade);
+                if (player && player.stopVideo) player.stopVideo();
+                initMainLottoEngine(); // Переход во Window 2
+            }
+        }, 100);
+    }
+
+    function initMainLottoEngine() {
+        console.log("ДВИЖОК VCHF: ЗАГРУЗКА ОСНОВНОГО ИНТЕРФЕЙСА...");
+        // Сюда вставим код Window 2 после твоего одобрения
     }
 </script>
 </body>
