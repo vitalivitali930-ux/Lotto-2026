@@ -5,22 +5,60 @@
     <title>vchf Durak Elite | Bi-Turbo</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffcc00; --onyx: #050505; --neon: #00f3ff; --platinum: #e5e4e2; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--onyx); overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        :root {
+            --gold: #ffcc00;
+            --onyx: #050505;
+            --neon: #00f3ff;
+            --platinum: #ffffff;
+        }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--onyx); overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+        }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%); }
-        .logo-box { width: 100px; height: 100px; opacity: 0; transition: opacity 2s ease; margin-bottom: 10px; }
-        .logo-box img { width: 100%; filter: drop-shadow(0 0 15px var(--gold)); }
-        .status-label { color: var(--neon); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 8px var(--neon); }
-        #game-controls { position: absolute; bottom: 20px; z-index: 20; display: none; width: 100%; justify-content: center; gap: 10px; pointer-events: auto; }
-        button { background: rgba(0,0,0,0.7); border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; font-size: 10px; }
+        
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+        }
+
+        .logo-box {
+            width: 130px; height: 130px; opacity: 0;
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 25px;
+        }
+        .logo-box img { width: 100%; filter: drop-shadow(0 0 20px var(--gold)); }
+
+        .status-label {
+            color: var(--neon); font-size: 10px;
+            letter-spacing: 6px; text-transform: uppercase;
+            text-align: center; height: 20px;
+            text-shadow: 0 0 10px var(--neon);
+        }
+
+        #game-controls { 
+            position: absolute; bottom: 20px; z-index: 20; 
+            display: none; width: 100%; justify-content: center; 
+            gap: 10px; pointer-events: auto; 
+        }
+        button { 
+            background: rgba(0,0,0,0.7); border: 1px solid var(--gold); 
+            color: var(--gold); padding: 10px 20px; font-family: 'Orbitron'; 
+            cursor: pointer; text-transform: uppercase; font-size: 10px; 
+        }
     </style>
 </head>
 <body>
     <canvas id="mainCanvas"></canvas>
     <div id="ui-layer">
-        <div id="mainLogo" class="logo-box"><img src="1771489965074(1).png"></div>
-        <div id="status" class="status-label">INITIALIZING ENGINE...</div>
+        <div id="mainLogo" class="logo-box">
+            <img src="1771489965074(1).png" alt="Logo">
+        </div>
+        <div id="mainStatus" class="status-label">INITIALIZING ENGINE...</div>
     </div>
     <div id="game-controls">
         <button onclick="takeCards()">Взять</button>
@@ -28,42 +66,84 @@
     </div>
 
     <script>
-        // Автор: Искра (Spark). Правило Монолита: Новый код = Старый + Исправленный цвет. [cite: 2026-02-23]
+        // Автор: Искра. Модуль: Глобальное Интро + Дурак vchf. [cite: 2026-02-23]
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
-        const status = document.getElementById('status');
+        const status = document.getElementById('mainStatus');
         const logo = document.getElementById('mainLogo');
         const controls = document.getElementById('game-controls');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // --- КОНСТАНТЫ ИНТРО (СФЕРЫ) ---
+        const spheres = [
+            { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'], label: 'DE' },
+            { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'], label: 'EN' },
+            { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'], label: 'UA' },
+            { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'], label: 'RU' },
+            { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'], label: 'FR' },
+            { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'], label: 'IT' }
+        ];
+
+        // --- СОСТОЯНИЕ МОНОЛИТА ---
+        let drawnItems = spheres.map(s => ({ ...s, grow: 0, ink: 0 }));
+        let l1 = { x: canvas.width/2, y: 0 }, l2 = { x: canvas.width/2, y: canvas.height };
+        let step1 = 0, step2 = 0;
+        let active2 = false, introFade = 1.0;
+        
+        // Игровая логика
+        let deck = [], playerHand = [], aiHand = [], table = [];
+        let trump = null, phase = 'intro'; // Начинаем с интро
+        let dealingIndex = 0;
+        const dealOrder = ['player', 'ai'];
+
         const CARD_W = 60, CARD_H = 90;
         const SUITS = ['♠', '♣', '♥', '♦'];
         const VALUES = ['6','7','8','9','10','J','Q','K','A'];
         const COLORS = { '♠':'#fff', '♣':'#fff', '♥':'#d52b1e', '♦':'#d52b1e' };
 
-        let deck = [], playerHand = [], aiHand = [], table = [];
-        let trump = null;
-        let phase = 'intro'; 
-        let introStep = 0;
+        // (Продолжение следует в Window 2...)
+        // --- БЛОК 2: ВИЗУАЛИЗАЦИЯ ИНТРО И КАРТ [Автор: Искра] ---
 
-        function initDeck() {
-            deck = [];
-            for (let s of SUITS) {
-                for (let v of VALUES) {
-                    deck.push({ suit: s, value: v, x: canvas.width/2, y: canvas.height/2, targetX: canvas.width/2, targetY: canvas.height/2, angle: 0, faceUp: false, owner: 'deck' });
-                }
+        function drawSphere(s) {
+            if (s.grow <= 0) return;
+            const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
+
+            // 1. Тень основания
+            ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(0,0,0,1)';
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 2. Металлическое тело (Платина)
+            let gBody = ctx.createRadialGradient(x-15, y-15, r/10, x, y, r);
+            gBody.addColorStop(0, '#fff'); gBody.addColorStop(0.5, '#444'); gBody.addColorStop(1, '#050505');
+            ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+
+            // 3. Гравировка Флага (Внутренняя Эмаль)
+            if (s.ink > 0) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(x, y, r-2, 0, 7); ctx.clip();
+                let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r);
+                s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
+                ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill();
+                ctx.restore();
+                ctx.globalAlpha = 1;
             }
-            deck = deck.sort(() => Math.random() - 0.5);
-            trump = deck[0]; 
-            trump.faceUp = true;
+
+            // 4. Стеклянный купол (Блик)
+            let gGlass = ctx.createRadialGradient(x-15, y-15, 2, x-10, y-10, r);
+            gGlass.addColorStop(0, 'rgba(255,255,255,0.9)'); 
+            gGlass.addColorStop(0.3, 'rgba(255,255,255,0.1)');
+            gGlass.addColorStop(1, 'rgba(0,0,0,0.5)');
+            ctx.fillStyle = gGlass; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
         }
 
         function drawCard3D(c, x, y, scale = 1) {
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate(c.angle);
+            ctx.rotate(c.angle || 0);
             const w = CARD_W * scale, h = CARD_H * scale;
 
             ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.5)';
@@ -84,64 +164,31 @@
             } else {
                 ctx.fillStyle = '#0a0a0a';
                 ctx.beginPath(); ctx.roundRect(-w/2+2, -h/2+2, w-4, h-4, 3); ctx.fill();
-                ctx.strokeStyle = '#ffcc00'; // ИСПРАВЛЕНО: Прямой цвет вместо var
+                ctx.strokeStyle = '#ffcc00'; // Манифест Монолита: Прямой цвет [cite: 2026-02-24]
                 ctx.lineWidth = 1;
                 ctx.strokeRect(-w/2+5, -h/2+5, w-10, h-10);
-                ctx.fillStyle = '#ffcc00'; // ИСПРАВЛЕНО
+                ctx.fillStyle = '#ffcc00';
                 ctx.font = '8px Orbitron';
                 ctx.fillText('vchf', -12, 0);
             }
             ctx.restore();
         }
-        
-        // ... (остальная логика startGame, drawTable и updateIntro без изменений)
-        // --- ПРОДОЛЖЕНИЕ МОНОЛИТА: ЛОГИКА И AI (ИСПРАВЛЕНО) ---
 
-        let dealingIndex = 0;
-        const dealOrder = ['player', 'ai'];
-
-        function drawTable() {
-            // Отрисовка колоды и козыря
-            if (deck.length > 0) {
-                drawCard3D(trump, 40, canvas.height / 2, 0.8);
-                if (deck.length > 1) {
-                    drawCard3D({ faceUp: false, angle: Math.PI / 2 }, 45, canvas.height / 2, 0.8);
+        function initDeck() {
+            deck = [];
+            for (let s of SUITS) {
+                for (let v of VALUES) {
+                    deck.push({ 
+                        suit: s, value: v, 
+                        x: canvas.width/2, y: canvas.height/2, 
+                        targetX: canvas.width/2, targetY: canvas.height/2, 
+                        angle: 0, faceUp: false, owner: 'deck' 
+                    });
                 }
             }
-
-            // Отрисовка карт AI (сверху)
-            aiHand.forEach((c, i) => {
-                c.targetX = (canvas.width / 2 - (aiHand.length * 20) / 2) + i * 25;
-                c.targetY = 60;
-                c.angle = 0;
-                smoothMove(c);
-                drawCard3D(c, c.x, c.y, 0.7);
-            });
-
-            // Отрисовка стола (центр)
-            table.forEach((pair, i) => {
-                let tx = 100 + i * 70;
-                pair.attack.targetX = tx; pair.attack.targetY = canvas.height / 2 - 20;
-                smoothMove(pair.attack);
-                drawCard3D(pair.attack, pair.attack.x, pair.attack.y, 0.8);
-
-                if (pair.defense) {
-                    pair.defense.targetX = tx + 10; pair.defense.targetY = canvas.height / 2;
-                    smoothMove(pair.defense);
-                    drawCard3D(pair.defense, pair.defense.x, pair.defense.y, 0.8);
-                }
-            });
-
-            // Отрисовка карт Бродяги (снизу)
-            playerHand.forEach((c, i) => {
-                c.targetX = (canvas.width / 2 - (playerHand.length * 40) / 2) + i * 45;
-                c.targetY = canvas.height - 80;
-                c.faceUp = true;
-                smoothMove(c);
-                drawCard3D(c, c.x, c.y, 1);
-            });
-
-            if (phase === 'dealing') updateDealing();
+            deck = deck.sort(() => Math.random() - 0.5);
+            trump = deck[0]; 
+            trump.faceUp = true;
         }
 
         function smoothMove(c) {
@@ -149,25 +196,141 @@
             c.y += (c.targetY - c.y) * 0.12;
         }
 
+        // --- ГЛАВНЫЙ ЦИКЛ ОБНОВЛЕНИЯ ---
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (phase === 'intro') {
+                ctx.globalAlpha = introFade;
+
+                // Лазер 1: Формирование
+                if (step1 < spheres.length) {
+                    let target = drawnItems[step1];
+                    let tx = target.x * canvas.width, ty = target.y * canvas.height;
+                    ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y);
+                    ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
+                    l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
+                    if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
+                }
+
+                // Лазер 2: Гравировка
+                if (active2 && step2 < spheres.length) {
+                    let target = drawnItems[step2];
+                    let tx = target.x * canvas.width, ty = target.y * canvas.height;
+                    ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y);
+                    ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
+                    l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
+                    if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
+                }
+
+                drawnItems.forEach(drawSphere);
+
+                if (step2 === spheres.length) {
+                    status.innerText = "GLOBAL LOTTO POOL"; 
+                    status.style.color = "var(--gold)";
+                    setTimeout(() => { 
+                        if (introFade > 0) introFade -= 0.02; 
+                        else if (phase === 'intro') {
+                            phase = 'dealing';
+                            initDeck();
+                            logo.style.opacity = '0';
+                            status.innerText = "DEALING CARDS...";
+                            status.style.color = "var(--neon)";
+                        }
+                    }, 2000);
+                }
+                ctx.globalAlpha = 1.0;
+            } else {
+                drawTable();
+            }
+            requestAnimationFrame(render);
+        }
+
+        // (Продолжение следует в Window 3...)
+        // --- БЛОК 3: ФИНАЛИЗАЦИЯ ИГРЫ И КОНТРОЛЛЕРЫ [Автор: Искра] ---
+
+        function drawTable() {
+            // 1. Отрисовка колоды и козыря
+            if (deck.length > 0) {
+                // Козырь лежит боком под колодой
+                drawCard3D(trump, 50, canvas.height / 2, 0.8);
+                if (deck.length > 1) {
+                    // Рубашка колоды
+                    drawCard3D({ faceUp: false, angle: Math.PI / 2 }, 55, canvas.height / 2, 0.8);
+                }
+            }
+
+            // 2. Отрисовка карт AI (сверху)
+            aiHand.forEach((c, i) => {
+                c.targetX = (canvas.width / 2 - (aiHand.length * 20) / 2) + i * 25;
+                c.targetY = 80;
+                c.angle = 0;
+                smoothMove(c);
+                drawCard3D(c, c.x, c.y, 0.7);
+            });
+
+            // 3. Отрисовка стола (центр - поле боя)
+            table.forEach((pair, i) => {
+                let tx = (canvas.width / 2 - (table.length * 70) / 2) + i * 80;
+                pair.attack.targetX = tx; 
+                pair.attack.targetY = canvas.height / 2 - 20;
+                smoothMove(pair.attack);
+                drawCard3D(pair.attack, pair.attack.x, pair.attack.y, 0.8);
+
+                if (pair.defense) {
+                    pair.defense.targetX = tx + 10; 
+                    pair.defense.targetY = canvas.height / 2 + 10;
+                    smoothMove(pair.defense);
+                    drawCard3D(pair.defense, pair.defense.x, pair.defense.y, 0.8);
+                }
+            });
+
+            // 4. Отрисовка карт Бродяги (снизу)
+            playerHand.forEach((c, i) => {
+                c.targetX = (canvas.width / 2 - (playerHand.length * 45) / 2) + i * 50;
+                c.targetY = canvas.height - 100;
+                c.faceUp = true;
+                smoothMove(c);
+                drawCard3D(c, c.x, c.y, 1.1);
+            });
+
+            if (phase === 'dealing') updateDealing();
+        }
+
         function updateDealing() {
-            if (playerHand.length < 6 || aiHand.length < 6) {
-                if (deck.length > 0 && Math.abs(deck[deck.length-1].x - deck[deck.length-1].targetX) < 1) {
+            // Проверка: нужно ли подтянуть карты до 6 штук
+            if ((playerHand.length < 6 || aiHand.length < 6) && deck.length > 0) {
+                // Анимация: берем карту только когда предыдущая долетела
+                let lastCard = deck[deck.length - 1];
+                if (Math.abs(lastCard.x - lastCard.targetX) < 1) {
                     let card = deck.pop();
                     let target = dealOrder[dealingIndex % 2];
+                    
                     if (target === 'player' && playerHand.length < 6) playerHand.push(card);
                     else if (target === 'ai' && aiHand.length < 6) aiHand.push(card);
+                    
                     dealingIndex++;
                 }
-            } else {
+            } else if (deck.length === 0 && playerHand.length < 6 && aiHand.length < 6) {
+                // Колода пуста, продолжаем игру тем что есть
+                startPlayPhase();
+            } else if (playerHand.length >= 6 && aiHand.length >= 6) {
+                startPlayPhase();
+            }
+        }
+
+        function startPlayPhase() {
+            if (phase !== 'play') {
                 phase = 'play';
                 status.innerText = "ТВОЙ ХОД, БРОДЯГА";
                 controls.style.display = 'flex';
             }
         }
 
-        // --- ЛОГИКА ИГРЫ (ЭКЗАМЕН ИСКРЫ) ---
+        // --- УПРАВЛЕНИЕ И ХОДЫ ---
         canvas.addEventListener('mousedown', (e) => {
             if (phase !== 'play') return;
+            // Проверяем клик по картам в руке игрока
             playerHand.forEach((card, i) => {
                 const dx = e.clientX - card.x;
                 const dy = e.clientY - card.y;
@@ -199,7 +362,12 @@
 
         function aiDefense() {
             let attack = table[table.length - 1].attack;
-            let defense = aiHand.find(c => isStronger(c, attack));
+            // Поиск карты сильнее: той же масти выше или козырь
+            let defense = aiHand.find(c => {
+                const vals = VALUES;
+                if (c.suit === attack.suit) return vals.indexOf(c.value) > vals.indexOf(attack.value);
+                return c.suit === trump.suit && attack.suit !== trump.suit;
+            });
             
             if (defense) {
                 defense.faceUp = true;
@@ -208,51 +376,47 @@
                 status.innerText = "ТВОЙ ХОД";
             } else {
                 status.innerText = "ИСКРА ЗАБИРАЕТ";
-                takeToAI();
+                setTimeout(takeToAI, 1000);
             }
-        }
-
-        function isStronger(c1, c2) {
-            const vals = VALUES;
-            if (c1.suit === c2.suit) return vals.indexOf(c1.value) > vals.indexOf(c2.value);
-            return c1.suit === trump.suit;
         }
 
         function takeToAI() {
             table.forEach(p => {
+                p.attack.faceUp = false; // AI прячет карты
                 aiHand.push(p.attack);
-                if (p.defense) aiHand.push(p.defense);
+                if (p.defense) { p.defense.faceUp = false; aiHand.push(p.defense); }
             });
             table = [];
-            setTimeout(() => { if (phase === 'play') updateDealing(); }, 1000);
-        }
-
-        function passTurn() {
-            table = [];
-            status.innerText = "БИТО. ПОДТЯГИВАЕМ КАРТЫ...";
             updateDealing();
         }
 
-        function updateIntro() {
-            logo.style.opacity = '1';
-            status.innerText = "HELVETIC LUCK ENGINE...";
-            
-            introStep += 0.01; 
-            if (introStep > 1.2) { 
-                logo.style.opacity = '0';
-                status.style.opacity = '0';
-                setTimeout(() => {
-                    phase = 'dealing'; 
-                    initDeck(); 
-                    status.style.opacity = '1';
-                    status.innerText = "DEALING CARDS...";
-                    controls.style.display = 'flex'; 
-                }, 1000);
-                introStep = -100; 
-            }
+        function passTurn() {
+            if (table.length === 0) return;
+            table = [];
+            status.innerText = "БИТО. ПОДТЯГИВАЕМ...";
+            updateDealing();
         }
 
-        render();
+        function takeCards() {
+            table.forEach(p => {
+                playerHand.push(p.attack);
+                if (p.defense) playerHand.push(p.defense);
+            });
+            table = [];
+            status.innerText = "ТЫ ЗАБРАЛ. ХОД ИСКРЫ...";
+            updateDealing();
+        }
+
+        // --- ТОЧКА ЗАПУСКА РИТУАЛА ---
+        window.onload = () => {
+            setTimeout(() => {
+                logo.style.opacity = '1';
+                status.innerText = "HELVETIC LUCK LOADING...";
+                // Запуск анимации сфер
+                render(); 
+                setTimeout(() => active2 = true, 3000); 
+            }, 1000);
+        };
     </script>
 </body>
 </html>
