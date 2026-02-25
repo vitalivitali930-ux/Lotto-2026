@@ -10,7 +10,6 @@
             --gold: #ffcc00;
             --onyx: #050505;
             --neon-blue: #00f3ff;
-            --platinum: #e5e5e5;
         }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -23,42 +22,35 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 100%);
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
             pointer-events: none;
         }
 
         .logo-box {
-            width: 140px; height: 140px; opacity: 0;
-            transition: opacity 2.5s ease; margin-bottom: 25px;
+            width: 130px; height: 130px; opacity: 0;
+            transition: opacity 2s ease; margin-bottom: 20px;
         }
-        .logo-box img { width: 100%; filter: drop-shadow(0 0 20px var(--gold)); }
+        .logo-box img { width: 100%; filter: drop-shadow(0 0 15px var(--gold)); }
 
         .status-label {
             color: var(--neon-blue); font-size: 11px;
-            letter-spacing: 5px; text-transform: uppercase;
-            text-align: center; transition: all 0.8s ease;
-        }
-
-        .guilloche-bg {
-            position: absolute; width: 100%; height: 100%;
-            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px; z-index: 0;
+            letter-spacing: 4px; text-transform: uppercase;
+            text-align: center; height: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="guilloche-bg"></div>
     <canvas id="introCanvas"></canvas>
     
     <div id="ui-layer">
         <div id="mainLogo" class="logo-box">
-            <img src="1771489965074(1).png" alt="Helvetic Luck Logo">
+            <img src="1771489965074(1).png" alt="Logo">
         </div>
         <div id="mainStatus" class="status-label">SYSTEM INITIALIZING...</div>
     </div>
 
     <script>
-        /* Двигатель vchf 2.3: Лазерная симметрия */
+        /* Двигатель vchf 2.4: Ювелирная точность */
         const canvas = document.getElementById('introCanvas');
         const ctx = canvas.getContext('2d');
         const status = document.getElementById('mainStatus');
@@ -67,89 +59,127 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Симметричная сетка 2.3: UA/RU в центре по бокам
+        // Симметричная сетка: UA слева центр, RU справа центр
         const spheres = [
-            { id: 1, x: 0.15, y: 0.2, color: '#ffcc00', label: 'DE', flag: false }, // Top Left
-            { id: 2, x: 0.85, y: 0.2, color: '#ffffff', label: 'EN', flag: false }, // Top Right
-            { id: 3, x: 0.15, y: 0.5, color: '#0057b7', label: 'UA', flag: true },  // Center Left
-            { id: 4, x: 0.85, y: 0.5, color: '#d52b1e', label: 'RU', flag: true },  // Center Right
-            { id: 5, x: 0.15, y: 0.8, color: '#002395', label: 'FR', flag: false }, // Bottom Left
-            { id: 6, x: 0.85, y: 0.8, color: '#008c45', label: 'IT', flag: false }  // Bottom Right
+            { x: 0.15, y: 0.2, color: '#ffcc00', label: 'DE' },
+            { x: 0.85, y: 0.2, color: '#ffffff', label: 'EN' },
+            { x: 0.15, y: 0.5, color: '#0057b7', label: 'UA' }, 
+            { x: 0.85, y: 0.5, color: '#d52b1e', label: 'RU' },
+            { x: 0.15, y: 0.8, color: '#002395', label: 'FR' },
+            { x: 0.85, y: 0.8, color: '#008c45', label: 'IT' }
         ];
 
-        let drawnBodies = []; 
-        let drawnFlags = [];
-        let laser1 = { x: canvas.width/2, y: 0 }; // Верхний (Форма)
-        let laser2 = { x: canvas.width/2, y: canvas.height }; // Нижний (Гравировка)
+        let drawnSpheres = spheres.map(s => ({ ...s, bodyScale: 0, flagAlpha: 0 }));
+        let laserTop = { x: canvas.width/2, y: 0 };
+        let laserBottom = { x: canvas.width/2, y: canvas.height };
         
-        let idx1 = 0; let idx2 = 0;
-        let laser2Active = false;
-        let fade = 1.0;
+        let currentIdx1 = 0; 
+        let currentIdx2 = 0;
+        let isLaser2Active = false;
+        let globalFade = 1.0;
 
-        function startSequence() {
+        function start() {
             setTimeout(() => {
                 status.innerText = "HELVETIC LUCK LOADING...";
                 logo.style.opacity = '1';
-                setTimeout(() => { requestAnimationFrame(loop); }, 1500);
-                setTimeout(() => { laser2Active = true; }, 2200); // Рассинхрон 0.7 сек
+                setTimeout(() => { requestAnimationFrame(update); }, 1500);
+                setTimeout(() => { isLaser2Active = true; }, 2200); // Рассинхрон 0.7 сек
             }, 1000);
         }
 
-        function drawBody(s) {
-            const tx = s.x * canvas.width; const ty = s.y * canvas.height;
-            let g = ctx.createRadialGradient(tx-10, ty-10, 2, tx, ty, 38);
-            g.addColorStop(0, '#ffffff'); g.addColorStop(0.2, '#777'); g.addColorStop(1, '#000');
-            ctx.shadowBlur = 15; ctx.shadowColor = 'black';
-            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, 38, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
-        }
+        function drawFull3DSphere(s) {
+            if (s.bodyScale <= 0) return;
+            const tx = s.x * canvas.width;
+            const ty = s.y * canvas.height;
+            const radius = 38 * s.bodyScale;
 
-        function drawFlag(s) {
-            const tx = s.x * canvas.width; const ty = s.y * canvas.height;
-            ctx.save();
-            ctx.beginPath(); ctx.arc(tx, ty, 35, 0, Math.PI*2); ctx.clip();
-            let g = ctx.createLinearGradient(tx-35, ty-35, tx+35, ty+35);
-            g.addColorStop(0, 'rgba(0,0,0,0.5)'); g.addColorStop(0.5, s.color); g.addColorStop(1, 'rgba(0,0,0,0.8)');
-            ctx.fillStyle = g; ctx.fill();
-            ctx.restore();
-        }
+            // 1. Глубокая тень (Ambient Occlusion)
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            
+            // 2. Платиновое тело (Base)
+            let bodyGrad = ctx.createRadialGradient(tx - 10, ty - 10, radius/5, tx, ty, radius);
+            bodyGrad.addColorStop(0, '#ffffff'); 
+            bodyGrad.addColorStop(0.3, '#777777'); 
+            bodyGrad.addColorStop(1, '#050505');
+            
+            ctx.fillStyle = bodyGrad;
+            ctx.beginPath(); ctx.arc(tx, ty, radius, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0; // Сброс тени для слоев
 
-        function loop() {
-            if (fade <= 0.01) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.globalAlpha = fade;
-
-            // Волна 1: Верхний лазер (Форма)
-            if (idx1 < spheres.length) {
-                let target = spheres[idx1];
-                let tx = target.x * canvas.width; let ty = target.y * canvas.height;
-                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(laser1.x, laser1.y);
-                ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
-                laser1.x += (tx - laser1.x) * 0.12; laser1.y += (ty - laser1.y) * 0.12;
-                if (Math.abs(laser1.x - tx) < 4) { drawnBodies.push(target); idx1++; }
+            // 3. Слой Флага (Гравировка)
+            if (s.flagAlpha > 0) {
+                ctx.globalAlpha = s.flagAlpha * globalFade;
+                ctx.save();
+                ctx.beginPath(); ctx.arc(tx, ty, radius - 2, 0, Math.PI*2); ctx.clip();
+                let flagGrad = ctx.createLinearGradient(tx-radius, ty-radius, tx+radius, ty+radius);
+                flagGrad.addColorStop(0, 'rgba(0,0,0,0.4)');
+                flagGrad.addColorStop(0.5, s.color);
+                flagGrad.addColorStop(1, 'rgba(0,0,0,0.6)');
+                ctx.fillStyle = flagGrad;
+                ctx.fill();
+                ctx.restore();
+                ctx.globalAlpha = globalFade;
             }
 
-            // Волна 2: Нижний лазер (Флаг)
-            if (laser2Active && idx2 < spheres.length) {
-                let target = spheres[idx2];
-                let tx = target.x * canvas.width; let ty = target.y * canvas.height;
+            // 4. Глянцевый Блик (Specular)
+            let shineGrad = ctx.createRadialGradient(tx - 12, ty - 12, 1, tx - 12, ty - 12, 15);
+            shineGrad.addColorStop(0, 'rgba(255,255,255,0.8)');
+            shineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = shineGrad;
+            ctx.beginPath(); ctx.arc(tx - 12, ty - 12, 15, 0, Math.PI*2); ctx.fill();
+        }
+
+        function update() {
+            if (globalFade <= 0.01) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = globalFade;
+
+            // Лазер 1: Создание формы
+            if (currentIdx1 < spheres.length) {
+                let s = drawnSpheres[currentIdx1];
+                let tx = s.x * canvas.width; let ty = s.y * canvas.height;
+                
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(laserTop.x, laserTop.y);
+                ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
+                
+                laserTop.x += (tx - laserTop.x) * 0.1;
+                laserTop.y += (ty - laserTop.y) * 0.1;
+
+                if (Math.abs(laserTop.x - tx) < 5) {
+                    if (s.bodyScale < 1) s.bodyScale += 0.05; // Пауза на "раздувание"
+                    else currentIdx1++;
+                }
+            }
+
+            // Лазер 2: Гравировка флага
+            if (isLaser2Active && currentIdx2 < spheres.length) {
+                let s = drawnSpheres[currentIdx2];
+                let tx = s.x * canvas.width; let ty = s.y * canvas.height;
+
                 ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(laser2.x, laser2.y);
                 ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
-                laser2.x += (tx - laser2.x) * 0.12; laser2.y += (ty - laser2.y) * 0.12;
-                if (Math.abs(laser2.x - tx) < 4) { drawnFlags.push(target); idx2++; }
+
+                laser2.x += (tx - laser2.x) * 0.1;
+                laser2.y += (ty - laser2.y) * 0.1;
+
+                if (Math.abs(laser2.x - tx) < 5) {
+                    if (s.flagAlpha < 1) s.flagAlpha += 0.04; // Плавное проявление флага
+                    else currentIdx2++;
+                }
             }
 
-            drawnBodies.forEach(drawBody);
-            drawnFlags.forEach(drawFlag);
+            drawnSpheres.forEach(drawFull3DSphere);
 
-            if (idx2 === spheres.length) {
-                status.innerText = "GLOBAL LOTTO POOL"; status.style.color = "#ffcc00";
-                setTimeout(() => { fade -= 0.015; }, 2500);
+            if (currentIdx2 === spheres.length) {
+                status.innerText = "GLOBAL LOTTO POOL";
+                status.style.color = "#ffcc00";
+                setTimeout(() => { globalFade -= 0.01; }, 3000);
             }
-            requestAnimationFrame(loop);
+            requestAnimationFrame(update);
         }
 
-        window.onload = startSequence;
+        window.onload = start;
     </script>
 </body>
 </html>
