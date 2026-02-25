@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetic Luck | Bi-Turbo Ultimate</title>
+    <title>Helvetic Luck | Global Lotto Pool</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,134 +18,159 @@
         }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; }
         
-        #ui-overlay {
+        #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
-            transition: opacity 1s ease;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
         }
 
-        .start-btn {
-            width: 150px; height: 150px;
-            border: 2px solid var(--gold);
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
-            animation: pulse 2s infinite;
-            background: rgba(255, 204, 0, 0.05);
+        .logo-container {
+            width: 120px; height: 120px; opacity: 0;
+            transition: opacity 2s ease-in-out;
+            margin-bottom: 20px;
         }
-
-        .start-btn img { width: 80%; filter: drop-shadow(0 0 10px var(--gold)); }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 204, 0, 0.6); }
-            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); }
-        }
+        .logo-container img { width: 100%; filter: drop-shadow(0 0 15px var(--gold)); }
 
         .status-text {
-            color: var(--neon-blue); font-size: 10px; margin-top: 30px; 
-            letter-spacing: 3px; text-transform: uppercase;
+            color: var(--neon-blue); font-size: 12px;
+            letter-spacing: 4px; text-transform: uppercase;
+            text-align: center; min-height: 20px;
+            transition: color 0.5s ease;
+        }
+
+        /* Эффект гильоше */
+        .bg-grid {
+            position: absolute; width: 100%; height: 100%;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px; z-index: 0;
         }
     </style>
 </head>
 <body>
-    <canvas id="mainCanvas"></canvas>
+    <div class="bg-grid"></div>
+    <canvas id="introCanvas"></canvas>
     
-    <div id="ui-overlay">
-        <div class="start-btn" onclick="activateSystem()">
-            <img src="1771489965074(1).png" alt="Lotto Logo">
+    <div id="ui-layer">
+        <div id="logoBox" class="logo-container">
+            <img src="1771489965074(1).png" alt="Logo">
         </div>
-        <div id="status" class="status-text">Система ожидает активации...</div>
+        <div id="statusLabel" class="status-text">SYSTEM INITIALIZING...</div>
     </div>
 
     <script>
-        const canvas = document.getElementById('mainCanvas');
+        /* Двигатель vchf: Автономная Анимация */
+        const canvas = document.getElementById('introCanvas');
         const ctx = canvas.getContext('2d');
-        const status = document.getElementById('status');
-        const overlay = document.getElementById('ui-overlay');
+        const status = document.getElementById('statusLabel');
+        const logo = document.getElementById('logoBox');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
         const spheres = [
-            { x: 0.2, y: 0.2, label: 'UA', color: '#0057b7', msg: 'Ми не продаємо надію. Ми даємо інструмент.' },
-            { x: 0.8, y: 0.2, label: 'DE', color: '#ffcc00', msg: 'Wir verkaufen keine Hoffnung. Wir geben ein Werkzeug.' },
-            { x: 0.2, y: 0.5, label: 'EN', color: '#ffffff', msg: 'We do not sell hope. We give a tool.' },
-            { x: 0.8, y: 0.5, label: 'FR', color: '#002395', msg: 'Nous ne vendons pas d\'espoir.' },
-            { x: 0.2, y: 0.8, label: 'IT', color: '#008c45', msg: 'Non vendiamo speranza.' },
-            { x: 0.8, y: 0.8, label: 'RU', color: '#d52b1e', msg: 'Мы не продаем надежду. Мы даем инструмент.' }
+            { x: 0.2, y: 0.2, label: 'UA', color: '#0057b7' },
+            { x: 0.8, y: 0.2, label: 'DE', color: '#ffcc00' },
+            { x: 0.2, y: 0.5, label: 'EN', color: '#ffffff' },
+            { x: 0.8, y: 0.5, label: 'FR', color: '#002395' },
+            { x: 0.2, y: 0.8, label: 'IT', color: '#008c45' },
+            { x: 0.8, y: 0.8, label: 'RU', color: '#d52b1e' }
         ];
 
-        let currentStep = 0;
-        let laser = { x: canvas.width/2, y: 0 };
-        let spheresDrawn = [];
-        let systemActive = false;
+        let drawnSpheres = [];
+        let laserTop = { x: canvas.width/2, y: 0 };
+        let laserBottom = { x: canvas.width/2, y: canvas.height };
+        let currentIdx = 0;
+        let fadeOut = 1.0;
 
-        function speak(text, lang = 'ru-RU') {
-            try {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = lang;
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
-            } catch(e) { console.error("Speech error", e); }
+        function initSystem() {
+            setTimeout(() => {
+                status.innerText = "HELVETIC LUCK LOADING...";
+                logo.style.opacity = '1';
+                setTimeout(startLasers, 2000);
+            }, 1500);
         }
 
-        function activateSystem() {
-            if (systemActive) return;
-            systemActive = true;
-            overlay.style.opacity = '0.3'; 
-            overlay.style.pointerEvents = 'none';
-            status.innerText = "Инициализация...";
-            speak("Протокол один один активен. Приветствую, Бродяга. Начинаю калибровку лазеров.");
-            animate();
+        function startLasers() {
+            requestAnimationFrame(render);
         }
 
-        function drawSphere(s) {
+        function drawSphere3D(s) {
             const tx = s.x * canvas.width;
             const ty = s.y * canvas.height;
+            
+            // Тень и глубина
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = 'rgba(0,0,0,1)';
+            
             let grad = ctx.createRadialGradient(tx-10, ty-10, 5, tx, ty, 35);
-            grad.addColorStop(0, '#fff');
+            grad.addColorStop(0, '#ffffff');
             grad.addColorStop(0.3, s.color);
-            grad.addColorStop(1, '#000');
+            grad.addColorStop(1, '#000000');
+            
             ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(tx, ty, 35, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath();
+            ctx.arc(tx, ty, 35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Блик
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
         }
 
-        function animate() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function render() {
+            if (fadeOut <= 0.01) {
+                // Здесь будет вызов основного игрового поля
+                status.innerText = "ENGINE READY";
+                return;
+            }
 
-            if (currentStep < spheres.length) {
-                let s = spheres[currentStep];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = fadeOut;
+
+            if (currentIdx < spheres.length) {
+                let s = spheres[currentIdx];
                 let tx = s.x * canvas.width;
                 let ty = s.y * canvas.height;
 
+                // Верхний лазер (Печать сферы)
                 ctx.beginPath();
                 ctx.moveTo(canvas.width/2, 0);
-                ctx.lineTo(laser.x, laser.y);
+                ctx.lineTo(laserTop.x, laserTop.y);
                 ctx.strokeStyle = '#00f3ff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1.5;
                 ctx.stroke();
 
-                laser.x += (tx - laser.x) * 0.12;
-                laser.y += (ty - laser.y) * 0.12;
+                // Нижний лазер (Гравировка флага)
+                ctx.beginPath();
+                ctx.moveTo(canvas.width/2, canvas.height);
+                ctx.lineTo(laserBottom.x, laserBottom.y);
+                ctx.strokeStyle = '#ffcc00';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
-                if (Math.abs(laser.x - tx) < 5) {
-                    spheresDrawn.push(s);
-                    speak(s.msg);
-                    currentStep++;
+                laserTop.x += (tx - laserTop.x) * 0.15;
+                laserTop.y += (ty - laserTop.y) * 0.15;
+                laserBottom.x += (tx - laserBottom.x) * 0.15;
+                laserBottom.y += (ty - laserBottom.y) * 0.15;
+
+                if (Math.abs(laserTop.x - tx) < 3) {
+                    drawnSpheres.push(s);
+                    currentIdx++;
                 }
             } else {
-                status.innerText = "HELVETIC LUCK ACTIVE";
+                status.innerText = "GLOBAL LOTTO POOL";
                 status.style.color = "#ffcc00";
+                setTimeout(() => { fadeOut -= 0.02; }, 2000);
             }
 
-            spheresDrawn.forEach(drawSphere);
-            requestAnimationFrame(animate);
+            drawnSpheres.forEach(drawSphere3D);
+            requestAnimationFrame(render);
         }
+
+        window.onload = initSystem;
     </script>
 </body>
 </html>
