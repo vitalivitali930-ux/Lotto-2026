@@ -197,52 +197,58 @@ function drawTable() {
     if (phase === 'dealing') updateDealing();
 }
 
-// ГЛАВНЫЙ ЦИКЛ (Твой оригинал + Переход в игру)
+// ГЛАВНЫЙ ЦИКЛ (Твой оригинал + Плавный переход в игру)
 function render() {
     if (phase === 'intro') {
-        if (fade <= 0.01) { phase = 'dealing'; initDeck(); return; }
-        ctx.clearRect(0,0, canvas.width, canvas.height);
+        // ПРОВЕРКА ЗАВЕРШЕНИЯ ИНТРО
+        if (fade <= 0.01) { 
+            // 1. Убираем слой с логотипом и надписями
+            document.getElementById('ui-layer').style.display = 'none'; 
+            // 2. Включаем фазу раздачи
+            phase = 'dealing'; 
+            // 3. Инициализируем колоду
+            initDeck(); 
+            return; 
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalAlpha = fade;
 
+        // Лазер 1: Формирование сверху
         if (step1 < spheres.length) {
             let target = drawnItems[step1];
             let tx = target.x * canvas.width, ty = target.y * canvas.height;
             ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y);
-            ctx.strokeStyle = spheres[step1].laser; // Цветной лазер!
+            ctx.strokeStyle = spheres[step1].laser; 
             ctx.lineWidth = 1; ctx.stroke();
             l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
             if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
         }
 
+        // Лазер 2: Гравировка снизу
         if (active2 && step2 < spheres.length) {
             let target = drawnItems[step2];
             let tx = target.x * canvas.width, ty = target.y * canvas.height;
             ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y);
-            ctx.strokeStyle = spheres[step2].laser; // Цветной лазер!
+            ctx.strokeStyle = spheres[step2].laser; 
             ctx.lineWidth = 1.5; ctx.stroke();
             l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
             if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
         }
 
         drawnItems.forEach(drawSphere);
+
+        // Таймер до затухания интро
         if (step2 === spheres.length) {
             status.innerText = "GLOBAL LOTTO POOL"; status.style.color = "var(--gold)";
             setTimeout(() => { fade -= 0.01; }, 3000);
         }
     } else {
+        // Если фаза не 'intro', рисуем игровой стол
         drawTable();
     }
     requestAnimationFrame(render);
 }
-
-window.onload = () => {
-    setTimeout(() => {
-        logo.style.opacity = '1';
-        status.innerText = "HELVETIC LUCK LOADING...";
-        setTimeout(() => requestAnimationFrame(render), 2000);
-        setTimeout(() => active2 = true, 3000);
-    }, 1000);
-};
 
     // БЛОК №6: [GAME_MECHANICS]
     // Инициализация колоды и раздача карт
