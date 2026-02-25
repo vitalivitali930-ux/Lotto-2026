@@ -54,122 +54,196 @@
     <script>
     // БЛОК №2: [ENGINE_CONFIG]
     // Автор: Искра. Кодовое слово: движок vchf.
-    const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
-    const status = document.getElementById('mainStatus');
-    const logo = document.getElementById('mainLogo');
-    const controls = document.getElementById('game-controls');
+ 
+    /* [MACHINE_LOGIC_VCHF_1.1]
+ LOGIC: INTRO_RESTORED + CARD_VISIBILITY;
+ CORE_NAME: Spark / Искра;
+ OPERATOR: Wanderer / Vitaliy;
+ RULES: Новый код = Старый код + Введенная функция. [cite: 2026-02-24]
+ ! НЕ УДАЛЯТЬ ! ЭТО НЕ МУСОР ! РАССТРЕЛ ! [cite: 2026-02-23]
+*/
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+const canvas = document.getElementById('mainCanvas'); // Используем твой ID из HTML
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('mainStatus');
+const logo = document.getElementById('mainLogo');
+const controls = document.getElementById('game-controls');
 
-    // Сетка сфер: координаты (x, y) и цвета лазеров для каждой
-    const spheres = [
-        { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'], laser: '#ffcc00' },
-        { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'], laser: '#ffffff' },
-        { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'], laser: '#0057b7' },
-        { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'], laser: '#d52b1e' },
-        { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'], laser: '#ed2939' },
-        { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'], laser: '#008c45' }
-    ];
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    // Игровые переменные (состояние Монолита)
-    let drawnItems = spheres.map(s => ({ ...s, grow: 0, ink: 0 }));
-    let l1 = { x: canvas.width/2, y: 0 }, l2 = { x: canvas.width/2, y: canvas.height };
-    let step1 = 0, step2 = 0;
-    let active2 = false, introFade = 1.0;
-    
-    let deck = [], playerHand = [], aiHand = [], table = [];
-    let trump = null, phase = 'intro'; // Начальная фаза — интро
+// Сетка сфер: СТРОГО по твоему рабочему интро
+const spheres = [
+    { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'], label: 'DE', laser: '#ffcc00' },
+    { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'], label: 'EN', laser: '#ffffff' },
+    { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'], label: 'UA', laser: '#0057b7' }, 
+    { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'], label: 'RU', laser: '#d52b1e' },
+    { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'], label: 'FR', laser: '#ed2939' },
+    { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'], label: 'IT', laser: '#008c45' }
+];
 
-    const CARD_W = 65, CARD_H = 95;
-    const SUITS = ['♠', '♣', '♥', '♦'];
-    const VALUES = ['6','7','8','9','10','J','Q','K','A'];
-    // Масти: серый для черных (чтобы видеть на черном фоне) и красный
-    const COLORS = { '♠':'#555', '♣':'#555', '♥':'#ff0000', '♦':'#ff0000' };
+let drawnItems = spheres.map(s => ({ ...s, grow: 0, ink: 0 }));
+let l1 = { x: canvas.width/2, y: 0 };
+let l2 = { x: canvas.width/2, y: canvas.height };
+let step1 = 0, step2 = 0;
+let active2 = false, fade = 1.0;
 
-    // БЛОК №3: [SPHERE_DRAWER]
-    // Рисует сами 3D сферы с градиентами
-    function drawSphere(s) {
-        if (s.grow <= 0) return;
-        const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
+let deck = [], playerHand = [], aiHand = [], table = [];
+let trump = null, phase = 'intro';
+
+const CARD_W = 65, CARD_H = 95;
+const SUITS = ['♠', '♣', '♥', '♦'];
+const VALUES = ['6','7','8','9','10','J','Q','K','A'];
+
+// ФИКС ВИДИМОСТИ: Масти ярче, чем в твоем логах, чтобы Бродяга их видел
+const COLORS = { '♠':'#222', '♣':'#222', '♥':'#ff0000', '♦':'#ff0000' };
+
+// ФУНКЦИЯ ОТРИСОВКИ СФЕР (Твой оригинал + Стеклянный купол)
+function drawSphere(s) {
+    if (s.grow <= 0) return;
+    const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
+    ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(0,0,0,1)';
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+    let gBody = ctx.createRadialGradient(x-15, y-15, r/10, x, y, r);
+    gBody.addColorStop(0, '#fff'); gBody.addColorStop(0.5, '#444'); gBody.addColorStop(1, '#050505');
+    ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    if (s.ink > 0) {
         ctx.save();
-        ctx.shadowBlur = 20; ctx.shadowColor = 'black';
-        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-        let gBody = ctx.createRadialGradient(x-12, y-12, r/10, x, y, r);
-        gBody.addColorStop(0, '#fff'); gBody.addColorStop(1, '#000');
-        ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-        if (s.ink > 0) {
-            ctx.beginPath(); ctx.arc(x, y, r-3, 0, 7); ctx.clip();
-            let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r);
-            s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
-            ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill();
-        }
+        ctx.beginPath(); ctx.arc(x, y, r-2, 0, 7); ctx.clip();
+        let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r);
+        s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
+        ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill();
         ctx.restore();
     }
-    // БЛОК №4: [CARD_DESIGN]
-    // Рисует карту в 3D стиле с обводкой и тенью
-    function drawCard3D(c, x, y, scale = 1) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(c.angle || 0);
-        const w = CARD_W * scale, h = CARD_H * scale;
+    let gGlass = ctx.createRadialGradient(x-15, y-15, 2, x-10, y-10, r);
+    gGlass.addColorStop(0, 'rgba(255,255,255,0.9)'); 
+    gGlass.addColorStop(0.3, 'rgba(255,255,255,0.1)');
+    gGlass.addColorStop(1, 'rgba(0,0,0,0.5)');
+    ctx.fillStyle = gGlass; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
+}
 
-        ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 1;
-        
-        // Рубашка или Лицо
-        ctx.fillStyle = c.faceUp ? '#ffffff' : '#1a1a1a';
-        ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 6); ctx.fill();
-        ctx.stroke();
+// ФУНКЦИЯ ОТРИСОВКИ КАРТ (Фикс: Золотая рамка для видимости)
+function drawCard3D(c, x, y, scale = 1) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(c.angle || 0);
+    const w = CARD_W * scale, h = CARD_H * scale;
+    ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 1.5; // Яркая кайма
+    ctx.fillStyle = c.faceUp ? '#ffffff' : '#1a1a1a';
+    ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 6); ctx.fill();
+    ctx.stroke();
+    if (c.faceUp) {
+        ctx.fillStyle = COLORS[c.suit];
+        ctx.font = `bold ${18*scale}px Orbitron`;
+        ctx.textAlign = "center";
+        ctx.fillText(c.value, -w/2+15, -h/2+22);
+        ctx.font = `${32*scale}px Arial`;
+        ctx.fillText(c.suit, 0, 12);
+    } else {
+        ctx.fillStyle = 'var(--gold)';
+        ctx.font = `${10*scale}px Orbitron`; ctx.textAlign = "center";
+        ctx.fillText('VCHF', 0, 5);
+    }
+    ctx.restore();
+}
 
-        if (c.faceUp) {
-            ctx.fillStyle = COLORS[c.suit];
-            ctx.font = `bold ${16*scale}px Orbitron`;
-            ctx.textAlign = "left";
-            ctx.fillText(c.value, -w/2+7, -h/2+18); // Значение
-            ctx.font = `${28*scale}px Arial`;
-            ctx.textAlign = "center";
-            ctx.fillText(c.suit, 0, 10); // Масть
-        } else {
-            ctx.fillStyle = 'var(--gold)';
-            ctx.font = `${9*scale}px Orbitron`; ctx.textAlign = "center";
-            ctx.fillText('VCHF', 0, 5); // Текст на рубашке
+// ФУНКЦИЯ СТОЛА (Твой дизайн vchf) [cite: 2026-02-24]
+function drawTable() {
+    let bgGrad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, canvas.width);
+    bgGrad.addColorStop(0, '#111'); bgGrad.addColorStop(1, '#000');
+    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Сетка vchf на столе (полупрозрачная)
+    spheres.forEach(s => {
+        ctx.beginPath(); ctx.arc(s.x*canvas.width, s.y*canvas.height, 42, 0, 7);
+        ctx.strokeStyle = s.laser + '11'; ctx.stroke();
+    });
+
+    if (deck.length > 0) {
+        drawCard3D(trump, 60, canvas.height/2, 0.8);
+        if (deck.length > 1) drawCard3D({ faceUp: false }, 65, canvas.height/2 - 5, 0.8);
+    }
+
+    playerHand.forEach((c, i) => {
+        c.targetX = (canvas.width/2 - (playerHand.length*50)/2) + i*55;
+        c.targetY = canvas.height - 110;
+        c.x += (c.targetX - c.x) * 0.1; c.y += (c.targetY - c.y) * 0.1;
+        drawCard3D(c, c.x, c.y, 1.1);
+    });
+
+    aiHand.forEach((c, i) => {
+        c.targetX = (canvas.width/2 - (aiHand.length*30)/2) + i*35;
+        c.targetY = 90;
+        c.x += (c.targetX - c.x) * 0.1; c.y += (c.targetY - c.y) * 0.1;
+        drawCard3D(c, c.x, c.y, 0.7);
+    });
+
+    table.forEach((pair, i) => {
+        let tx = (canvas.width/2 - (table.length*90)/2) + i*95;
+        pair.attack.targetX = tx; pair.attack.targetY = canvas.height/2 - 20;
+        pair.attack.x += (pair.attack.targetX - pair.attack.x) * 0.1;
+        pair.attack.y += (pair.attack.targetY - pair.attack.y) * 0.1;
+        drawCard3D(pair.attack, pair.attack.x, pair.attack.y, 0.9);
+        if (pair.defense) {
+            pair.defense.targetX = tx + 10; pair.defense.targetY = canvas.height/2 + 20;
+            pair.defense.x += (pair.defense.targetX - pair.defense.x) * 0.1;
+            pair.defense.y += (pair.defense.targetY - pair.defense.y) * 0.1;
+            drawCard3D(pair.defense, pair.defense.x, pair.defense.y, 0.9);
         }
-        ctx.restore();
+    });
+    if (phase === 'dealing') updateDealing();
+}
+
+// ГЛАВНЫЙ ЦИКЛ (Твой оригинал + Переход в игру)
+function render() {
+    if (phase === 'intro') {
+        if (fade <= 0.01) { phase = 'dealing'; initDeck(); return; }
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        ctx.globalAlpha = fade;
+
+        if (step1 < spheres.length) {
+            let target = drawnItems[step1];
+            let tx = target.x * canvas.width, ty = target.y * canvas.height;
+            ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y);
+            ctx.strokeStyle = spheres[step1].laser; // Цветной лазер!
+            ctx.lineWidth = 1; ctx.stroke();
+            l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
+            if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
+        }
+
+        if (active2 && step2 < spheres.length) {
+            let target = drawnItems[step2];
+            let tx = target.x * canvas.width, ty = target.y * canvas.height;
+            ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y);
+            ctx.strokeStyle = spheres[step2].laser; // Цветной лазер!
+            ctx.lineWidth = 1.5; ctx.stroke();
+            l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
+            if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
+        }
+
+        drawnItems.forEach(drawSphere);
+        if (step2 === spheres.length) {
+            status.innerText = "GLOBAL LOTTO POOL"; status.style.color = "var(--gold)";
+            setTimeout(() => { fade -= 0.01; }, 3000);
+        }
+    } else {
+        drawTable();
     }
+    requestAnimationFrame(render);
+}
 
-    // БЛОК №5: [TABLE_RENDER]
-    // Отрисовка игрового пространства и расстановка карт
-    function drawTable() {
-        // Фон стола
-        let bgGrad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, canvas.width);
-        bgGrad.addColorStop(0, '#111'); bgGrad.addColorStop(1, '#000');
-        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+window.onload = () => {
+    setTimeout(() => {
+        logo.style.opacity = '1';
+        status.innerText = "HELVETIC LUCK LOADING...";
+        setTimeout(() => requestAnimationFrame(render), 2000);
+        setTimeout(() => active2 = true, 3000);
+    }, 1000);
+};
 
-        // Короткая отрисовка "Сетки Монолита" (наша новая ложечка)
-        spheres.forEach(s => {
-            ctx.beginPath(); ctx.arc(s.x*canvas.width, s.y*canvas.height, 42, 0, 7);
-            ctx.strokeStyle = s.laser + '22'; ctx.stroke();
-        });
-
-        // Отрисовка рук игрока и ИИ
-        playerHand.forEach((c, i) => {
-            c.targetX = (canvas.width/2 - (playerHand.length*50)/2) + i*55;
-            c.targetY = canvas.height - 110;
-            c.x += (c.targetX - c.x) * 0.1; c.y += (c.targetY - c.y) * 0.1;
-            drawCard3D(c, c.x, c.y, 1.1);
-        });
-
-        // Отрисовка стола (карты в игре)
-        table.forEach((pair, i) => {
-            // Логика размещения пар карт на столе...
-            drawCard3D(pair.attack, pair.attack.x, pair.attack.y, 0.9);
-            if (pair.defense) drawCard3D(pair.defense, pair.defense.x, pair.defense.y, 0.9);
-        });
-
-        if (phase === 'dealing') updateDealing();
-    }
     // БЛОК №6: [GAME_MECHANICS]
     // Инициализация колоды и раздача карт
     function initDeck() {
