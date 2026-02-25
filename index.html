@@ -128,33 +128,57 @@
         }
 
         function drawCard3D(c, x, y, scale = 1) {
+                    // --- УЛУЧШЕННЫЙ ДИЗАЙН КАРТ (Вставка №1) ---
+        function drawCard3D(c, x, y, scale = 1) {
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(c.angle || 0);
             const w = CARD_W * scale, h = CARD_H * scale;
 
-            ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(0,0,0,0.6)';
-            ctx.fillStyle = '#111';
+            // 1. Глубокая тень (эффект парения над ониксом)
+            ctx.shadowBlur = 20 * scale; 
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 6); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 2. Рамка и основа
+            ctx.fillStyle = c.faceUp ? '#ffffff' : '#0a0a0a';
             ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 6); ctx.fill();
 
             if (c.faceUp) {
-                ctx.fillStyle = '#ffffff';
+                // Лицевая сторона: Градиент для блеска пластика
+                let gloss = ctx.createLinearGradient(-w/2, -h/2, w/2, h/2);
+                gloss.addColorStop(0, 'rgba(255,255,255,1)');
+                gloss.addColorStop(0.5, 'rgba(230,230,230,1)');
+                gloss.addColorStop(1, 'rgba(200,200,200,1)');
+                ctx.fillStyle = gloss;
                 ctx.beginPath(); ctx.roundRect(-w/2+2, -h/2+2, w-4, h-4, 4); ctx.fill();
-                ctx.fillStyle = COLORS[c.suit]; // Здесь теперь корректный цвет
-                ctx.font = `bold ${16*scale}px Orbitron`;
-                ctx.fillText(c.value, -w/2+8, -h/2+20);
-                ctx.font = `${24*scale}px Arial`;
+
+                // Текст и масть
+                ctx.fillStyle = COLORS[c.suit];
+                ctx.font = `bold ${18*scale}px Orbitron`;
+                ctx.textAlign = "left";
+                ctx.fillText(c.value, -w/2+8, -h/2+22);
+                
+                ctx.font = `${30*scale}px Arial`;
                 ctx.textAlign = "center";
-                ctx.fillText(c.suit, 0, 8);
+                ctx.fillText(c.suit, 0, 12);
             } else {
-                ctx.fillStyle = '#0a0a0a';
-                ctx.beginPath(); ctx.roundRect(-w/2+2, -h/2+2, w-4, h-4, 4); ctx.fill();
-                ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 1;
-                ctx.strokeRect(-w/2+6, -h/2+6, w-12, h-12);
-                ctx.fillStyle = 'var(--gold)'; ctx.font = '9px Orbitron'; ctx.textAlign = "center";
-                ctx.fillText('vchf', 0, 5);
+                // Рубашка: Золотой кант vchf
+                ctx.strokeStyle = 'var(--gold)'; 
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(-w/2+5, -h/2+5, w-10, h-10);
+                
+                // Центральный логотип на рубашке
+                ctx.fillStyle = 'var(--gold)';
+                ctx.font = `${10*scale}px Orbitron`;
+                ctx.textAlign = "center";
+                ctx.fillText('VCHF', 0, 5);
             }
             ctx.restore();
+        }
+
         }
 
         // Логика старшинства карт (взято из проверенного движка)
