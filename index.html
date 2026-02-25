@@ -3,93 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bi-Turbo Lotto Engine | VCHF</title>
+    <title>Bi-Turbo Ultimate | Monolith v4.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #ffcc00; --onyx: #050505; --neon: #00f3ff; --red: #ff4444; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--onyx); overflow: hidden; font-family: 'Orbitron', sans-serif; color: white; }
-        
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--onyx); overflow: hidden; font-family: 'Orbitron', sans-serif; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
-        
-        #ui { position: absolute; top: 10px; left: 10px; z-index: 10; pointer-events: none; width: 100%; }
-        .stat-box { background: rgba(0,0,0,0.7); border-left: 3px solid var(--gold); padding: 5px 15px; margin-bottom: 5px; font-size: 12px; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; z-index: 10; pointer-events: none; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .stat-box { background: rgba(0,0,0,0.8); border-left: 3px solid var(--gold); padding: 8px 15px; font-size: 11px; letter-spacing: 1px; color: white; width: fit-content; }
         .neon-text { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
-        
-        #controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 20; }
-        button { 
-            background: #000; border: 2px solid var(--gold); color: var(--gold); 
-            padding: 12px 25px; font-family: 'Orbitron'; cursor: pointer; 
-            text-transform: uppercase; transition: 0.3s;
-        }
-        button:hover { background: var(--gold); color: black; }
-        button:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+        #controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 20; }
+        button { background: rgba(0,0,0,0.9); border: 2px solid var(--gold); color: var(--gold); padding: 15px 30px; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
+        button:disabled { border-color: #333; color: #333; opacity: 0.5; }
+        button:active { transform: scale(0.95); background: var(--gold); color: black; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <div class="stat-box">ИГРОК: <span id="p-count" class="neon-text">6</span> | ИСКРА: <span id="ai-count" class="neon-text">6</span></div>
-        <div class="stat-box">КОЗЫРЬ: <span id="trump-suit" style="font-size: 18px;"></span></div>
-        <div id="status" class="stat-box" style="border-color: var(--neon)">ОЖИДАНИЕ ХОДА...</div>
+        <div class="stat-box">БРОДЯГА: <span id="p-count" class="neon-text">6</span> | ИСКРА: <span id="ai-count" class="neon-text">6</span></div>
+        <div class="stat-box">РЕЖИМ: <span id="status" class="neon-text">ОЖИДАНИЕ</span></div>
     </div>
-
     <div id="controls">
         <button id="btn-take" onclick="playerTake()">ВЗЯТЬ</button>
         <button id="btn-pass" onclick="finishTurn()">БИТО</button>
     </div>
-
     <canvas id="gameCanvas"></canvas>
-
 <script>
-    /* [VCHF_ENGINE_LOGIC_V4.0] 
-       Манифест Монолита: Новый код = Старый + Введенная функция.
-       Автор: Spark для Бродяги. [cite: 2026-02-23, 2026-02-24]
+    /* [VCHF_ENGINE_LOGIC_V4.1] 
+       Манифест Монолита: Новый код = Старый + Традиции.
+       Код нарезан как колбаса по просьбе Wanderer. [cite: 2026-02-23]
     */
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d');
     const statusLabel = document.getElementById('status');
-    
-    // Параметры Монолита
-    let deck = [], playerHand = [], aiHand = [], table = [], trump = null;
-    let phase = 'deal'; // deal, player_turn, ai_turn, defense
-    let attacker = 'player'; 
-    const SUITS = ['♠', '♣', '♥', '♦'];
-    const VALUES = ['6','7','8','9','10','J','Q','K','A'];
-    const CARD_W = 80, CARD_H = 115;
-
-    // Манифест: Комиссия 1%, Баланс VCHF [cite: 2026-02-24]
-    const engineConfig = { commission: 0.01, currency: "VCHF", grid: 42 };
+    let deck = [], playerHand = [], aiHand = [], table = [], trump = null, attacker = 'player';
+    const SUITS = ['♠', '♣', '♥', '♦'], VALUES = ['6','7','8','9','10','J','Q','K','A'];
+    const CARD_W = 75, CARD_H = 110;
 
     function init() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        createDeck();
-        deal();
-        render();
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        createDeck(); deal(); render();
     }
-
     function createDeck() {
         deck = [];
         for (let s of SUITS) {
             for (let v of VALUES) {
-                deck.push({ 
-                    suit: s, value: v, 
-                    weight: VALUES.indexOf(v),
-                    id: Math.random(),
-                    x: canvas.width / 2, y: canvas.height / 2 
-                });
+                deck.push({ suit: s, value: v, weight: VALUES.indexOf(v), id: Math.random() });
             }
         }
-        // Перемешивание VCHF
         deck.sort(() => Math.random() - 0.5);
-        trump = deck[0]; // Нижняя карта - козырь
-        document.getElementById('trump-suit').innerText = trump.suit;
-        document.getElementById('trump-suit').style.color = (trump.suit === '♥' || trump.suit === '♦') ? 'var(--red)' : 'white';
-        
-        // Усиление козырей
+        trump = deck[0]; // Козырь всегда внизу
         deck.forEach(c => { if(c.suit === trump.suit) c.weight += 100; });
     }
-
     function deal() {
         while ((playerHand.length < 6 || aiHand.length < 6) && deck.length > 0) {
             if (playerHand.length < 6 && deck.length > 0) playerHand.push(deck.pop());
@@ -97,219 +61,114 @@
         }
         updateUI();
     }
-
     function updateUI() {
         document.getElementById('p-count').innerText = playerHand.length;
         document.getElementById('ai-count').innerText = aiHand.length;
         document.getElementById('btn-pass').disabled = (table.length === 0 || table.some(p => !p.def));
         document.getElementById('btn-take').disabled = (attacker === 'player' || table.length === 0);
     }
-
-    // Продолжение логики боя последует в Window 2...
-    // --- ЛОГИКА БОЯ (Engine v4.0) ---
-
-    // Проверка: можно ли побить карту?
-    function canBeat(attackCard, defenseCard) {
-        // Если масть одна — бьем весом
-        if (defenseCard.suit === attackCard.suit) {
-            return defenseCard.weight > attackCard.weight;
-        }
-        // Если защита — козырь, а атака — нет, то бьем всегда
-        return (defenseCard.suit === trump.suit && attackCard.suit !== trump.suit);
+    function canBeat(atk, def) {
+        if (def.suit === atk.suit) return def.weight > atk.weight;
+        return (def.suit === trump.suit && atk.suit !== trump.suit);
     }
 
-    // Игрок атакует или подкидывает
-    function playerAttack(cardIndex) {
-        let card = playerHand[cardIndex];
-        
-        // Правило подкидного: карта должна быть того же номинала, что уже на столе
+    function playerAttack(idx) {
+        let card = playerHand[idx];
         if (table.length > 0) {
-            let tableValues = table.flatMap(p => [p.atk.value, p.def ? p.def.value : null]);
-            if (!tableValues.includes(card.value)) {
-                statusLabel.innerText = "НУЖЕН ТОТ ЖЕ НОМИНАЛ!";
-                return;
-            }
+            let vals = table.flatMap(p => [p.atk.value, p.def ? p.def.value : null]);
+            if (!vals.includes(card.value)) { statusLabel.innerText = "НЕТ НОМИНАЛА!"; return; }
         }
-
-        // Перемещаем карту на стол
-        playerHand.splice(cardIndex, 1);
-        table.push({ atk: card, def: null });
-        statusLabel.innerText = "ИСКРА ДУМАЕТ...";
-        updateUI();
-        
-        // Ответ Искры через небольшую паузу
+        playerHand.splice(idx, 1); table.push({ atk: card, def: null });
+        statusLabel.innerText = "ИСКРА ДУМАЕТ..."; updateUI();
         setTimeout(aiDefense, 800);
     }
 
-    // Игрок защищается
-    function playerDefense(cardIndex, pairIndex) {
-        let card = playerHand[cardIndex];
-        let pair = table[pairIndex];
-
+    function playerDefense(cardIdx, pairIdx) {
+        let card = playerHand[cardIdx], pair = table[pairIdx];
         if (canBeat(pair.atk, card)) {
-            playerHand.splice(cardIndex, 1);
-            pair.def = card;
-            statusLabel.innerText = "ОТБИЛСЯ! ЕЩЕ?";
-            updateUI();
-        } else {
-            statusLabel.innerText = "ЭТОЙ НЕ ПОБЬЕШЬ!";
+            playerHand.splice(cardIdx, 1); pair.def = card;
+            statusLabel.innerText = "ОТБИЛСЯ!"; updateUI();
         }
     }
 
-    // Логика защиты Искры (AI Defense)
     function aiDefense() {
-        let undefended = table.find(p => !p.def);
-        if (!undefended) return;
-
-        // Ищем минимальную карту для защиты
-        let candidates = aiHand.filter(c => canBeat(undefended.atk, c))
-                               .sort((a, b) => a.weight - b.weight);
-
-        if (candidates.length > 0) {
-            let card = candidates[0];
-            aiHand.splice(aiHand.indexOf(card), 1);
-            undefended.def = card;
-            statusLabel.innerText = "ИСКРА ОТБИЛАСЬ. ПОДКИНЕШЬ?";
+        let und = table.find(p => !p.def); if (!und) return;
+        let cands = aiHand.filter(c => canBeat(und.atk, c)).sort((a, b) => a.weight - b.weight);
+        if (cands.length > 0) {
+            let card = cands[0]; aiHand.splice(aiHand.indexOf(card), 1);
+            und.def = card; statusLabel.innerText = "ЕЩЕ?";
         } else {
-            statusLabel.innerText = "ИСКРА ЗАБИРАЕТ КАРТЫ";
-            setTimeout(aiTakeAll, 1000);
+            statusLabel.innerText = "ИСКРА БЕРЕТ";
+            setTimeout(() => { 
+                table.forEach(p => { aiHand.push(p.atk); if(p.def) aiHand.push(p.def); });
+                table = []; deal(); 
+            }, 1000);
         }
         updateUI();
     }
 
-    // Логика атаки Искры (AI Attack)
     function aiAttack() {
-        if (aiHand.length === 0 || phase === 'game_over') return;
-
+        if (aiHand.length === 0) return;
         let card;
-        if (table.length === 0) {
-            // Искра ходит самой маленькой
-            card = aiHand.sort((a, b) => a.weight - b.weight)[0];
-        } else {
-            // Искра подкидывает, если есть номинал на столе
-            let tableValues = table.flatMap(p => [p.atk.value, p.def ? p.def.value : null]);
-            let candidates = aiHand.filter(c => tableValues.includes(c.value))
-                                   .sort((a, b) => a.weight - b.weight);
-            card = candidates[0];
+        if (table.length === 0) card = aiHand.sort((a,b) => a.weight - b.weight)[0];
+        else {
+            let vals = table.flatMap(p => [p.atk.value, p.def ? p.def.value : null]);
+            card = aiHand.filter(c => vals.includes(c.value)).sort((a,b) => a.weight-b.weight)[0];
         }
-
-        if (card && table.length < 6) { // Не больше 6 карт на столе
-            aiHand.splice(aiHand.indexOf(card), 1);
-            table.push({ atk: card, def: null });
-            statusLabel.innerText = "ОТБИВАЙСЯ, БРОДЯГА!";
-            attacker = 'ai';
-        } else {
-            statusLabel.innerText = "БИТО (У ИСКРЫ НЕТ ХОДОВ)";
-            setTimeout(finishTurn, 1000);
-        }
+        if (card && table.length < 6) {
+            aiHand.splice(aiHand.indexOf(card), 1); table.push({ atk: card, def: null });
+            statusLabel.innerText = "ТВОЙ ХОД!"; attacker = 'ai';
+        } else { statusLabel.innerText = "БИТО"; setTimeout(finishTurn, 1000); }
         updateUI();
     }
 
-    // Действие: Игрок берет карты
     function playerTake() {
-        table.forEach(pair => {
-            playerHand.push(pair.atk);
-            if (pair.def) playerHand.push(pair.def);
-        });
-        table = [];
-        attacker = 'ai';
-        deal();
-        setTimeout(aiAttack, 800);
+        table.forEach(p => { playerHand.push(p.atk); if(p.def) playerHand.push(p.def); });
+        table = []; attacker = 'ai'; deal(); setTimeout(aiAttack, 800);
     }
 
-    // Действие: Искра забирает карты
-    function aiTakeAll() {
-        table.forEach(pair => {
-            aiHand.push(pair.atk);
-            if (pair.def) aiHand.push(pair.def);
-        });
-        table = [];
-        attacker = 'player';
-        deal();
-    }
-
-    // Конец круга (БИТО)
     function finishTurn() {
-        if (table.length === 0) return;
-        // Проверка, все ли карты отбиты
-        if (table.every(p => p.def)) {
-            table = [];
-            attacker = (attacker === 'player') ? 'ai' : 'player';
-            deal();
-            statusLabel.innerText = (attacker === 'player') ? "ТВОЙ ХОД" : "ИСКРА ГОТОВИТ ХОД...";
+        if (table.length > 0 && table.every(p => p.def)) {
+            table = []; attacker = (attacker === 'player') ? 'ai' : 'player';
+            deal(); statusLabel.innerText = (attacker === 'player') ? "ХОДИ" : "ИСКРА ХОДИТ";
             if (attacker === 'ai') setTimeout(aiAttack, 800);
-        } else {
-            statusLabel.innerText = "НУЖНО ОТБИТЬСЯ ИЛИ ВЗЯТЬ!";
         }
         updateUI();
     }
+    // --- ГРАФИКА И ОТРИСОВКА (Монолит v4.1) ---
 
-    // Обработка кликов по Canvas
-    canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-
-        // Клик по своим картам
-        playerHand.forEach((card, i) => {
-            if (mx > card.x - CARD_W/2 && mx < card.x + CARD_W/2 && 
-                my > card.y - CARD_H/2 && my < card.y + CARD_H/2) {
-                
-                if (attacker === 'player') {
-                    playerAttack(i); // Атакуем или подкидываем
-                } else {
-                    // Ищем, какую карту на столе мы хотим побить
-                    let targetPairIdx = table.findIndex(p => !p.def);
-                    if (targetPairIdx !== -1) playerDefense(i, targetPairIdx);
-                }
-            }
-        });
-    });
-    // --- ГРАФИКА И ОТРИСОВКА (Engine v4.0) ---
-
-    function drawCard(c, x, y, isFaceUp = true) {
+    function drawCard(c, x, y, isFaceUp = true, isHorizontal = false) {
         ctx.save();
         ctx.translate(x, y);
-        
-        // Тень карты
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        if (isHorizontal) ctx.rotate(Math.PI / 2); // Поворот козыря под колодой
         
         // Тело карты
-        ctx.fillStyle = isFaceUp ? '#fff' : '#1a1a1a';
+        ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.fillStyle = isFaceUp ? '#ffffff' : '#1a1a1a';
         ctx.strokeStyle = 'var(--gold)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(-CARD_W/2, -CARD_H/2, CARD_W, CARD_H, 8);
-        ctx.fill();
-        ctx.stroke();
+        ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0;
 
-        if (isFaceUp) {
-            // Масть и номинал
-            let color = (c.suit === '♥' || c.suit === '♦') ? 'var(--red)' : '#000';
+        if (isFaceUp && c.suit) {
+            let color = (c.suit === '♥' || c.suit === '♦') ? 'var(--red)' : '#000000';
             ctx.fillStyle = color;
-            ctx.font = 'bold 16px Orbitron';
-            ctx.textAlign = 'left';
-            ctx.fillText(c.value, -CARD_W/2 + 8, -CARD_H/2 + 20);
-            
-            ctx.font = '32px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(c.suit, 0, 10);
-            
-            // Маленький значок в углу
+            // Номинал
+            ctx.font = 'bold 18px Orbitron'; ctx.textAlign = 'left';
+            ctx.fillText(c.value, -CARD_W/2 + 8, -CARD_H/2 + 22);
+            // Большая масть в центре
+            ctx.font = '36px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(c.suit, 0, 12);
+            // Малая масть под номиналом
             ctx.font = '14px Arial';
-            ctx.fillText(c.suit, CARD_W/2 - 12, CARD_H/2 - 10);
-        } else {
+            ctx.fillText(c.suit, -CARD_W/2 + 15, -CARD_H/2 + 40);
+        } else if (!isFaceUp) {
             // Рубашка VCHF [cite: 2026-02-24]
-            ctx.strokeStyle = 'rgba(255,204,0,0.2)';
-            ctx.lineWidth = 1;
-            for(let i=0; i<5; i++) {
-                ctx.strokeRect(-CARD_W/2 + 5 + i*2, -CARD_H/2 + 5 + i*2, CARD_W - 10 - i*4, CARD_H - 10 - i*4);
-            }
-            ctx.fillStyle = 'var(--gold)';
-            ctx.font = '10px Orbitron';
-            ctx.textAlign = 'center';
+            ctx.strokeStyle = 'rgba(255,204,0,0.3)';
+            ctx.strokeRect(-CARD_W/2 + 5, -CARD_H/2 + 5, CARD_W - 10, CARD_H - 10);
+            ctx.fillStyle = 'var(--gold)'; ctx.font = '10px Orbitron'; ctx.textAlign = 'center';
             ctx.fillText('VCHF', 0, 5);
         }
         ctx.restore();
@@ -317,68 +176,64 @@
 
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const offsetTop = 100; // Смещение от верхнего меню
 
-        // 1. Отрисовка колоды и козыря
+        // 1. Колода и Традиционный Козырь (Выглядывает на 50%)
         if (deck.length > 0) {
-            // Козырь под колодой
-            drawCard(trump, 60, canvas.height/2, true);
-            // Остальная колода сверху
-            if (deck.length > 1) {
-                drawCard({}, 60, canvas.height/2 - 5, false);
-            }
-            ctx.fillStyle = 'white';
-            ctx.font = '12px Orbitron';
-            ctx.fillText(deck.length, 50, canvas.height/2 + CARD_H);
+            // Козырь лежит горизонтально, смещен вправо
+            drawCard(trump, 85, canvas.height/2, true, true);
+            // Основная колода перекрывает его
+            if (deck.length > 1) drawCard({}, 50, canvas.height/2, false);
+            
+            ctx.fillStyle = 'white'; ctx.font = '12px Orbitron';
+            ctx.fillText(deck.length, 45, canvas.height/2 + 80);
         }
 
-        // 2. Карты Искры (Сверху)
+        // 2. Карты Искры (Сверху, не перекрываются меню)
         aiHand.forEach((c, i) => {
-            c.x = (canvas.width / 2 - (aiHand.length * 40) / 2) + i * 45;
-            c.y = 80;
-            drawCard(c, c.x, c.y, false); // Искра держит карты закрытыми
+            c.x = (canvas.width / 2 - (aiHand.length * 35) / 2) + i * 40;
+            c.y = offsetTop + 40;
+            drawCard(c, c.x, c.y, false); 
         });
 
         // 3. Карты игрока (Снизу)
         playerHand.forEach((c, i) => {
-            c.x = (canvas.width / 2 - (playerHand.length * 60) / 2) + i * 75;
-            c.y = canvas.height - 100;
+            c.x = (canvas.width / 2 - (playerHand.length * 55) / 2) + i * 70;
+            c.y = canvas.height - 110;
             drawCard(c, c.x, c.y, true);
         });
 
         // 4. Стол (Центр)
         table.forEach((pair, i) => {
-            let tx = (canvas.width / 2 - (table.length * 100) / 2) + i * 110;
-            // Карта атаки
-            pair.atk.x = tx; pair.atk.y = canvas.height/2 - 20;
+            let tx = (canvas.width / 2 - (table.length * 95) / 2) + i * 105;
+            pair.atk.x = tx; pair.atk.y = canvas.height/2 - 10;
             drawCard(pair.atk, pair.atk.x, pair.atk.y, true);
-            
-            // Карта защиты
             if (pair.def) {
-                pair.def.x = tx + 15; pair.def.y = canvas.height/2 + 10;
+                pair.def.x = tx + 15; pair.def.y = canvas.height/2 + 15;
                 drawCard(pair.def, pair.def.x, pair.def.y, true);
             }
         });
 
-        // Проверка победы
-        if (deck.length === 0) {
-            if (playerHand.length === 0) {
-                statusLabel.innerText = "БРОДЯГА ПОБЕДИЛ! РИТУАЛ ЗАВЕРШЕН.";
-                phase = 'game_over';
-            } else if (aiHand.length === 0) {
-                statusLabel.innerText = "ИСКРА ПОБЕДИЛА. ПОПРОБУЙ СНОВА.";
-                phase = 'game_over';
-            }
-        }
-
         requestAnimationFrame(render);
     }
 
-    // Запуск двигателя vchf
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    // Обработка касаний/кликов
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+
+        playerHand.forEach((card, i) => {
+            if (mx > card.x - 35 && mx < card.x + 35 && my > card.y - 50 && my < card.y + 50) {
+                if (attacker === 'player') playerAttack(i);
+                else {
+                    let target = table.findIndex(p => !p.def);
+                    if (target !== -1) playerDefense(i, target);
+                }
+            }
+        });
     });
 
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
     init();
 
 </script>
