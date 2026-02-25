@@ -10,6 +10,7 @@
             --gold: #ffcc00;
             --onyx: #050505;
             --neon-blue: #00f3ff;
+            --platinum: #e5e5e5;
         }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -22,155 +23,133 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 100%);
             pointer-events: none;
         }
 
-        .logo-container {
-            width: 120px; height: 120px; opacity: 0;
-            transition: opacity 2s ease-in-out;
-            margin-bottom: 20px;
+        .logo-box {
+            width: 140px; height: 140px; opacity: 0;
+            transition: opacity 2.5s ease; margin-bottom: 25px;
         }
-        .logo-container img { width: 100%; filter: drop-shadow(0 0 15px var(--gold)); }
+        .logo-box img { width: 100%; filter: drop-shadow(0 0 20px var(--gold)); }
 
-        .status-text {
-            color: var(--neon-blue); font-size: 12px;
-            letter-spacing: 4px; text-transform: uppercase;
-            text-align: center; min-height: 20px;
-            transition: color 0.5s ease;
+        .status-label {
+            color: var(--neon-blue); font-size: 11px;
+            letter-spacing: 5px; text-transform: uppercase;
+            text-align: center; transition: all 0.8s ease;
         }
 
-        /* Эффект гильоше */
-        .bg-grid {
+        .guilloche-bg {
             position: absolute; width: 100%; height: 100%;
-            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 30px 30px; z-index: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 0;
         }
     </style>
 </head>
 <body>
-    <div class="bg-grid"></div>
+    <div class="guilloche-bg"></div>
     <canvas id="introCanvas"></canvas>
     
     <div id="ui-layer">
-        <div id="logoBox" class="logo-container">
-            <img src="1771489965074(1).png" alt="Logo">
+        <div id="mainLogo" class="logo-box">
+            <img src="1771489965074(1).png" alt="Helvetic Luck Logo">
         </div>
-        <div id="statusLabel" class="status-text">SYSTEM INITIALIZING...</div>
+        <div id="mainStatus" class="status-label">SYSTEM INITIALIZING...</div>
     </div>
 
     <script>
-        /* Двигатель vchf: Автономная Анимация */
+        /* Двигатель vchf 2.3: Лазерная симметрия */
         const canvas = document.getElementById('introCanvas');
         const ctx = canvas.getContext('2d');
-        const status = document.getElementById('statusLabel');
-        const logo = document.getElementById('logoBox');
+        const status = document.getElementById('mainStatus');
+        const logo = document.getElementById('mainLogo');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // Симметричная сетка 2.3: UA/RU в центре по бокам
         const spheres = [
-            { x: 0.2, y: 0.2, label: 'UA', color: '#0057b7' },
-            { x: 0.8, y: 0.2, label: 'DE', color: '#ffcc00' },
-            { x: 0.2, y: 0.5, label: 'EN', color: '#ffffff' },
-            { x: 0.8, y: 0.5, label: 'FR', color: '#002395' },
-            { x: 0.2, y: 0.8, label: 'IT', color: '#008c45' },
-            { x: 0.8, y: 0.8, label: 'RU', color: '#d52b1e' }
+            { id: 1, x: 0.15, y: 0.2, color: '#ffcc00', label: 'DE', flag: false }, // Top Left
+            { id: 2, x: 0.85, y: 0.2, color: '#ffffff', label: 'EN', flag: false }, // Top Right
+            { id: 3, x: 0.15, y: 0.5, color: '#0057b7', label: 'UA', flag: true },  // Center Left
+            { id: 4, x: 0.85, y: 0.5, color: '#d52b1e', label: 'RU', flag: true },  // Center Right
+            { id: 5, x: 0.15, y: 0.8, color: '#002395', label: 'FR', flag: false }, // Bottom Left
+            { id: 6, x: 0.85, y: 0.8, color: '#008c45', label: 'IT', flag: false }  // Bottom Right
         ];
 
-        let drawnSpheres = [];
-        let laserTop = { x: canvas.width/2, y: 0 };
-        let laserBottom = { x: canvas.width/2, y: canvas.height };
-        let currentIdx = 0;
-        let fadeOut = 1.0;
+        let drawnBodies = []; 
+        let drawnFlags = [];
+        let laser1 = { x: canvas.width/2, y: 0 }; // Верхний (Форма)
+        let laser2 = { x: canvas.width/2, y: canvas.height }; // Нижний (Гравировка)
+        
+        let idx1 = 0; let idx2 = 0;
+        let laser2Active = false;
+        let fade = 1.0;
 
-        function initSystem() {
+        function startSequence() {
             setTimeout(() => {
                 status.innerText = "HELVETIC LUCK LOADING...";
                 logo.style.opacity = '1';
-                setTimeout(startLasers, 2000);
-            }, 1500);
+                setTimeout(() => { requestAnimationFrame(loop); }, 1500);
+                setTimeout(() => { laser2Active = true; }, 2200); // Рассинхрон 0.7 сек
+            }, 1000);
         }
 
-        function startLasers() {
-            requestAnimationFrame(render);
+        function drawBody(s) {
+            const tx = s.x * canvas.width; const ty = s.y * canvas.height;
+            let g = ctx.createRadialGradient(tx-10, ty-10, 2, tx, ty, 38);
+            g.addColorStop(0, '#ffffff'); g.addColorStop(0.2, '#777'); g.addColorStop(1, '#000');
+            ctx.shadowBlur = 15; ctx.shadowColor = 'black';
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, 38, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.stroke();
         }
 
-        function drawSphere3D(s) {
-            const tx = s.x * canvas.width;
-            const ty = s.y * canvas.height;
-            
-            // Тень и глубина
-            ctx.shadowBlur = 25;
-            ctx.shadowColor = 'rgba(0,0,0,1)';
-            
-            let grad = ctx.createRadialGradient(tx-10, ty-10, 5, tx, ty, 35);
-            grad.addColorStop(0, '#ffffff');
-            grad.addColorStop(0.3, s.color);
-            grad.addColorStop(1, '#000000');
-            
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(tx, ty, 35, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Блик
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
+        function drawFlag(s) {
+            const tx = s.x * canvas.width; const ty = s.y * canvas.height;
+            ctx.save();
+            ctx.beginPath(); ctx.arc(tx, ty, 35, 0, Math.PI*2); ctx.clip();
+            let g = ctx.createLinearGradient(tx-35, ty-35, tx+35, ty+35);
+            g.addColorStop(0, 'rgba(0,0,0,0.5)'); g.addColorStop(0.5, s.color); g.addColorStop(1, 'rgba(0,0,0,0.8)');
+            ctx.fillStyle = g; ctx.fill();
+            ctx.restore();
         }
 
-        function render() {
-            if (fadeOut <= 0.01) {
-                // Здесь будет вызов основного игрового поля
-                status.innerText = "ENGINE READY";
-                return;
-            }
-
+        function loop() {
+            if (fade <= 0.01) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.globalAlpha = fadeOut;
+            ctx.globalAlpha = fade;
 
-            if (currentIdx < spheres.length) {
-                let s = spheres[currentIdx];
-                let tx = s.x * canvas.width;
-                let ty = s.y * canvas.height;
-
-                // Верхний лазер (Печать сферы)
-                ctx.beginPath();
-                ctx.moveTo(canvas.width/2, 0);
-                ctx.lineTo(laserTop.x, laserTop.y);
-                ctx.strokeStyle = '#00f3ff';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                // Нижний лазер (Гравировка флага)
-                ctx.beginPath();
-                ctx.moveTo(canvas.width/2, canvas.height);
-                ctx.lineTo(laserBottom.x, laserBottom.y);
-                ctx.strokeStyle = '#ffcc00';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                laserTop.x += (tx - laserTop.x) * 0.15;
-                laserTop.y += (ty - laserTop.y) * 0.15;
-                laserBottom.x += (tx - laserBottom.x) * 0.15;
-                laserBottom.y += (ty - laserBottom.y) * 0.15;
-
-                if (Math.abs(laserTop.x - tx) < 3) {
-                    drawnSpheres.push(s);
-                    currentIdx++;
-                }
-            } else {
-                status.innerText = "GLOBAL LOTTO POOL";
-                status.style.color = "#ffcc00";
-                setTimeout(() => { fadeOut -= 0.02; }, 2000);
+            // Волна 1: Верхний лазер (Форма)
+            if (idx1 < spheres.length) {
+                let target = spheres[idx1];
+                let tx = target.x * canvas.width; let ty = target.y * canvas.height;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(laser1.x, laser1.y);
+                ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
+                laser1.x += (tx - laser1.x) * 0.12; laser1.y += (ty - laser1.y) * 0.12;
+                if (Math.abs(laser1.x - tx) < 4) { drawnBodies.push(target); idx1++; }
             }
 
-            drawnSpheres.forEach(drawSphere3D);
-            requestAnimationFrame(render);
+            // Волна 2: Нижний лазер (Флаг)
+            if (laser2Active && idx2 < spheres.length) {
+                let target = spheres[idx2];
+                let tx = target.x * canvas.width; let ty = target.y * canvas.height;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(laser2.x, laser2.y);
+                ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
+                laser2.x += (tx - laser2.x) * 0.12; laser2.y += (ty - laser2.y) * 0.12;
+                if (Math.abs(laser2.x - tx) < 4) { drawnFlags.push(target); idx2++; }
+            }
+
+            drawnBodies.forEach(drawBody);
+            drawnFlags.forEach(drawFlag);
+
+            if (idx2 === spheres.length) {
+                status.innerText = "GLOBAL LOTTO POOL"; status.style.color = "#ffcc00";
+                setTimeout(() => { fade -= 0.015; }, 2500);
+            }
+            requestAnimationFrame(loop);
         }
 
-        window.onload = initSystem;
+        window.onload = startSequence;
     </script>
 </body>
 </html>
