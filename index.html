@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>vchf Durak Elite | Bi-Turbo</title>
+    <title>Helvetic Luck | Bi-Turbo Monolith</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffcc00; --onyx: #050505; --neon: #00f3ff; --platinum: #ffffff; }
+        :root { --gold: #ffcc00; --onyx: #050505; --neon: #00f3ff; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--onyx); overflow: hidden; font-family: 'Orbitron', sans-serif; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; touch-action: none; }
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%); pointer-events: none; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%); pointer-events: none; transition: opacity 1.5s; }
         .logo-box { width: 130px; height: 130px; opacity: 0; transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 25px; }
         .logo-box img { width: 100%; filter: drop-shadow(0 0 20px var(--gold)); }
         .status-label { color: var(--neon); font-size: 10px; letter-spacing: 6px; text-transform: uppercase; text-align: center; height: 20px; text-shadow: 0 0 10px var(--neon); }
-        #game-controls { position: absolute; bottom: 30px; z-index: 20; display: none; width: 100%; justify-content: center; gap: 15px; }
-        button { background: rgba(0,0,0,0.6); border: 1px solid var(--gold); color: var(--gold); padding: 12px 25px; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; font-size: 11px; }
+        #game-controls { position: absolute; bottom: 30px; z-index: 20; display: none; width: 100%; justify-content: center; gap: 20px; }
+        button { background: rgba(0,0,0,0.8); border: 2px solid var(--gold); color: var(--gold); padding: 15px 30px; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -29,112 +29,127 @@
     </div>
 
     <script>
-        /* МАНИФЕСТ МОНОЛИТА: Искра + Бродяга. [cite: 2026-02-24] */
-        const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
-        const status = document.getElementById('mainStatus'), logo = document.getElementById('mainLogo'), controls = document.getElementById('game-controls'), ui = document.getElementById('ui-layer');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    /* [VCHF_MONOLITH_V3.1] Spark (Искра) специально для Wanderer (Бродяга).
+       Манифест: Новый код = Старый код + Введенная функция. 
+       Код разделен на логические окна. [cite: 2026-02-23] 
+    */
+    const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
+    const status = document.getElementById('mainStatus'), logo = document.getElementById('mainLogo'), controls = document.getElementById('game-controls'), ui = document.getElementById('ui-layer');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
-        // --- ЛОГИКА ИНТРО (ТВОЙ ОРИГИНАЛ) ---
-        const spheres = [
-            { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'], label: 'DE' },
-            { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'], label: 'EN' },
-            { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'], label: 'UA' },
-            { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'], label: 'RU' },
-            { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'], label: 'FR' },
-            { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'], label: 'IT' }
-        ];
+    const spheres = [
+        { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'] },
+        { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'] },
+        { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'] },
+        { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'] },
+        { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'] },
+        { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'] }
+    ];
 
-        let drawnItems = spheres.map(s => ({ ...s, grow: 0, ink: 0 }));
-        let l1 = { x: canvas.width/2, y: 0 }, l2 = { x: canvas.width/2, y: canvas.height };
-        let step1 = 0, step2 = 0, active2 = false, fade = 1.0;
-        let deck = [], playerHand = [], aiHand = [], table = [], trump = null, phase = 'intro';
+    let drawnItems = spheres.map(s => ({ ...s, grow: 0, ink: 0 })), l1 = { x: canvas.width/2, y: 0 }, l2 = { x: canvas.width/2, y: canvas.height };
+    let step1 = 0, step2 = 0, active2 = false, fade = 1.0;
+    let deck = [], playerHand = [], aiHand = [], table = [], trump = null, phase = 'intro', attacker = 'player';
 
-        // --- КОНСТАНТЫ КАРТ (ДИЗАЙН) ---
-        const CARD_W = 65, CARD_H = 95, SUITS = ['♠', '♣', '♥', '♦'], VALUES = ['6','7','8','9','10','J','Q','K','A'], COLORS = { '♠':'#222', '♣':'#222', '♥':'#ff0000', '♦':'#ff0000' };
+    const CARD_W = 70, CARD_H = 100, SUITS = ['♠', '♣', '♥', '♦'], VALUES = ['6','7','8','9','10','J','Q','K','A'], COLORS = { '♠':'#222', '♣':'#222', '♥':'#ff0000', '♦':'#ff0000' };
 
-        function drawSphere(s) {
-            if (s.grow <= 0) return; const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
-            ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
-            let gBody = ctx.createRadialGradient(x-15, y-15, r/10, x, y, r); gBody.addColorStop(0, '#fff'); gBody.addColorStop(0.5, '#444'); gBody.addColorStop(1, '#050505');
-            ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-            if (s.ink > 0) { ctx.save(); ctx.beginPath(); ctx.arc(x, y, r-2, 0, 7); ctx.clip();
-                let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r); s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
-                ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill(); ctx.restore(); ctx.globalAlpha = 1; }
-            let gGlass = ctx.createRadialGradient(x-15, y-15, 2, x-10, y-10, r); gGlass.addColorStop(0, 'rgba(255,255,255,0.9)'); gGlass.addColorStop(0.3, 'rgba(255,255,255,0.1)'); gGlass.addColorStop(1, 'rgba(0,0,0,0.5)');
-            ctx.fillStyle = gGlass; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
+    function drawSphere(s) {
+        if (s.grow <= 0) return; const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
+        ctx.shadowBlur = 30; ctx.shadowColor = '#000'; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+        let gBody = ctx.createRadialGradient(x-15, y-15, r/10, x, y, r); gBody.addColorStop(0, '#fff'); gBody.addColorStop(0.5, '#444'); gBody.addColorStop(1, '#050505');
+        ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+        if (s.ink > 0) { ctx.save(); ctx.beginPath(); ctx.arc(x, y, r-2, 0, 7); ctx.clip();
+            let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r); s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
+            ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill(); ctx.restore(); ctx.globalAlpha = 1; }
+        let gGlass = ctx.createRadialGradient(x-15, y-15, 2, x-10, y-10, r); gGlass.addColorStop(0, 'rgba(255,255,255,0.9)'); gGlass.addColorStop(0.3, 'rgba(255,255,255,0.1)'); gGlass.addColorStop(1, 'rgba(0,0,0,0.5)');
+        ctx.fillStyle = gGlass; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    }
+    function drawCard3D(c, x, y, scale = 1) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(c.angle || 0);
+        const w = CARD_W * scale, h = CARD_H * scale;
+        ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 2 * scale;
+        ctx.fillStyle = c.faceUp ? '#ffffff' : '#1a1a1a'; ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 8 * scale); ctx.fill(); ctx.stroke();
+        if (c.faceUp) {
+            ctx.shadowBlur = 0; ctx.fillStyle = COLORS[c.suit]; ctx.font = `bold ${22*scale}px Orbitron`; ctx.textAlign = "center";
+            ctx.fillText(c.value, -w/2+(18*scale), -h/2+(25*scale)); ctx.font = `${40*scale}px Arial`; ctx.fillText(c.suit, 0, 15*scale);
+        } else {
+            ctx.fillStyle = 'var(--gold)'; ctx.font = `${14*scale}px Orbitron`; ctx.textAlign = "center"; ctx.fillText('VCHF', 0, 5*scale);
         }
+        ctx.restore();
+    }
 
-        function drawCard3D(c, x, y, scale = 1) {
-            ctx.save(); ctx.translate(x, y); ctx.rotate(c.angle || 0);
-            const w = CARD_W * scale, h = CARD_H * scale;
-            ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 1.5;
-            ctx.fillStyle = c.faceUp ? '#ffffff' : '#1a1a1a'; ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 6); ctx.fill(); ctx.stroke();
-            if (c.faceUp) { ctx.fillStyle = COLORS[c.suit]; ctx.font = `bold ${18*scale}px Orbitron`; ctx.textAlign = "center"; ctx.fillText(c.value, -w/2+15, -h/2+22); ctx.font = `${32*scale}px Arial`; ctx.fillText(c.suit, 0, 12); }
-            ctx.restore();
+    function initDeck() {
+        deck = []; for (let s of SUITS) for (let v of VALUES) deck.push({ suit: s, value: v, faceUp: false, weight: VALUES.indexOf(v) });
+        deck = deck.sort(() => Math.random() - 0.5); trump = deck[0]; trump.faceUp = true; trump.angle = Math.PI / 2;
+        deck.forEach(c => { if(c.suit === trump.suit) c.weight += 100; });
+    }
+
+    function dealCards() {
+        while ((playerHand.length < 6 || aiHand.length < 6) && deck.length > 0) {
+            if (playerHand.length < 6) { let c = deck.pop(); c.faceUp = true; playerHand.push(c); }
+            if (aiHand.length < 6 && deck.length > 0) { let c = deck.pop(); c.faceUp = false; aiHand.push(c); }
         }
+        phase = 'play'; status.innerText = (attacker === 'player') ? "ТВОЙ ХОД" : "ИСКРА ХОДИТ"; controls.style.display = 'flex';
+        if (attacker === 'ai') setTimeout(aiTurn, 1000);
+    }
 
-        function drawTable() {
-            ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (deck.length > 0) drawCard3D(trump, 60, canvas.height/2, 0.8);
-            playerHand.forEach((c, i) => { c.x = (canvas.width/2 - (playerHand.length*50)/2) + i*55; c.y = canvas.height - 110; drawCard3D(c, c.x, c.y, 1.1); });
-            aiHand.forEach((c, i) => { c.x = (canvas.width/2 - (aiHand.length*30)/2) + i*35; c.y = 90; drawCard3D(c, c.x, c.y, 0.7); });
-            table.forEach((pair, i) => { let tx = (canvas.width/2 - (table.length*90)/2) + i*95; drawCard3D(pair.attack, tx, canvas.height/2 - 20, 0.9); if (pair.defense) drawCard3D(pair.defense, tx + 10, canvas.height/2 + 20, 0.9); });
-            if (phase === 'dealing') updateDealing();
-        }
+    function aiTurn() {
+        if (phase !== 'play') return;
+        let valid = aiHand.filter(c => table.length === 0 || table.some(p => p.attack.value === c.value || (p.defense && p.defense.value === c.value)));
+        if (valid.length > 0) {
+            let card = valid.sort((a,b) => a.weight - b.weight)[0]; aiHand.splice(aiHand.indexOf(card), 1);
+            card.faceUp = true; table.push({ attack: card, defense: null }); status.innerText = "ОТБИВАЙСЯ!";
+        } else passTurn();
+    }
 
-        function initDeck() {
-            deck = []; for (let s of SUITS) for (let v of VALUES) deck.push({ suit: s, value: v, faceUp: false });
-            deck = deck.sort(() => Math.random() - 0.5); trump = deck[0]; trump.faceUp = true; trump.angle = Math.PI / 2;
-        }
+    function aiDefense() {
+        let undefended = table.find(p => !p.defense); if (!undefended) return;
+        let def = aiHand.filter(c => (c.suit === undefended.attack.suit && VALUES.indexOf(c.value) > VALUES.indexOf(undefended.attack.value)) || (c.suit === trump.suit && undefended.attack.suit !== trump.suit)).sort((a,b) => a.weight - b.weight)[0];
+        if (def) { aiHand.splice(aiHand.indexOf(def), 1); def.faceUp = true; undefended.defense = def; status.innerText = "ПОДКИНЕШЬ?"; }
+        else { status.innerText = "ИСКРА ЗАБИРАЕТ"; setTimeout(() => { table.forEach(p => { p.attack.faceUp = false; aiHand.push(p.attack); if(p.defense) { p.defense.faceUp = false; aiHand.push(p.defense); } }); table = []; dealCards(); }, 1000); }
+    }
 
-        function updateDealing() {
-            if ((playerHand.length < 6 || aiHand.length < 6) && deck.length > 0) {
-                if (playerHand.length <= aiHand.length) { let c = deck.pop(); c.faceUp = true; playerHand.push(c); } else aiHand.push(deck.pop());
-            } else { phase = 'play'; status.innerText = "ТВОЙ ХОД, БРОДЯГА"; controls.style.display = 'flex'; }
-        }
-
-        function aiDefense() {
-            let undefended = table.filter(p => !p.defense);
-            undefended.forEach(pair => {
-                let card = aiHand.find(c => (c.suit === pair.attack.suit && VALUES.indexOf(c.value) > VALUES.indexOf(pair.attack.value)) || (c.suit === trump.suit && pair.attack.suit !== trump.suit));
-                if (card) { aiHand.splice(aiHand.indexOf(card), 1); card.faceUp = true; pair.defense = card; }
-                else { status.innerText = "ИСКРА ЗАБИРАЕТ"; setTimeout(() => { table.forEach(p => { aiHand.push(p.attack); if(p.defense) aiHand.push(p.defense); }); table = []; phase = 'dealing'; }, 1000); }
-            });
-        }
-
-        canvas.addEventListener('mousedown', (e) => {
-            if (phase !== 'play') return;
-            playerHand.forEach((card, i) => {
-                if (Math.abs(e.clientX - card.x) < 35 && Math.abs(e.clientY - card.y) < 50) {
-                    playerHand.splice(i, 1); table.push({ attack: card, defense: null }); setTimeout(aiDefense, 600);
+    canvas.addEventListener('mousedown', (e) => {
+        if (phase !== 'play' || attacker !== 'player') return;
+        playerHand.forEach((card, i) => {
+            if (Math.abs(e.clientX - card.x) < 40 && Math.abs(e.clientY - card.y) < 60) {
+                if (table.length === 0 || table.some(p => p.attack.value === card.value || (p.defense && p.defense.value === card.value))) {
+                    playerHand.splice(i, 1); table.push({ attack: card, defense: null }); setTimeout(aiDefense, 800);
                 }
-            });
+            }
         });
+    });
 
-        function animate() {
-            if (phase === 'intro') {
-                ctx.clearRect(0,0, canvas.width, canvas.height); ctx.globalAlpha = fade;
-                if (step1 < spheres.length) {
-                    let target = drawnItems[step1]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
-                    ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y); ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
-                    l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
-                    if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
-                }
-                if (active2 && step2 < spheres.length) {
-                    let target = drawnItems[step2]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
-                    ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y); ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
-                    l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
-                    if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
-                }
-                drawnItems.forEach(drawSphere);
-                if (step2 === spheres.length) { status.innerText = "GLOBAL LOTTO POOL"; status.style.color = "var(--gold)"; setTimeout(() => { fade -= 0.02; if (fade <= 0) { phase = 'dealing'; ui.style.display = 'none'; initDeck(); } }, 3000); }
-            } else { drawTable(); }
-            requestAnimationFrame(animate);
+    function render() {
+        if (phase === 'intro') {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.globalAlpha = fade;
+            if (step1 < spheres.length) {
+                let s = spheres[step1]; let tx = s.x * canvas.width, ty = s.y * canvas.height;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y); ctx.strokeStyle = '#00f3ff'; ctx.stroke();
+                l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
+                if (Math.abs(l1.x-tx)<2) { if (drawnItems[step1].grow < 1) drawnItems[step1].grow += 0.04; else step1++; }
+            }
+            if (active2 && step2 < spheres.length) {
+                let s = spheres[step2]; let tx = s.x * canvas.width, ty = s.y * canvas.height;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y); ctx.strokeStyle = '#ffcc00'; ctx.stroke();
+                l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
+                if (Math.abs(l2.x-tx)<2) { if (drawnItems[step2].ink < 1) drawnItems[step2].ink += 0.03; else step2++; }
+            }
+            drawnItems.forEach(drawSphere);
+            if (step2 === spheres.length) { status.innerText = "GLOBAL LOTTO POOL"; setTimeout(() => { fade -= 0.02; if (fade <= 0) { phase = 'dealing'; ui.style.display = 'none'; initDeck(); } }, 3000); }
+        } else {
+            ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (deck.length > 0) drawCard3D(trump, 70, canvas.height/2, 0.9);
+            playerHand.forEach((c, i) => { c.x = (canvas.width/2 - (playerHand.length*60)/2) + i*65; c.y = canvas.height - 120; drawCard3D(c, c.x, c.y, 1.1); });
+            aiHand.forEach((c, i) => { c.x = (canvas.width/2 - (aiHand.length * 35) / 2) + i * 40; c.y = 100; drawCard3D(c, c.x, c.y, 0.75); });
+            table.forEach((pair, i) => { let tx = (canvas.width/2 - (table.length*110)/2) + i*120; drawCard3D(pair.attack, tx, canvas.height/2 - 30, 1.0); if (pair.defense) drawCard3D(pair.defense, tx + 15, canvas.height/2 + 20, 1.0); });
+            if (phase === 'dealing') dealCards();
         }
+        requestAnimationFrame(render);
+    }
 
-        window.onload = () => { setTimeout(() => { logo.style.opacity = '1'; status.innerText = "HELVETIC LUCK LOADING..."; setTimeout(() => requestAnimationFrame(animate), 2000); setTimeout(() => active2 = true, 3000); }, 1000); };
-        function takeCards() { table.forEach(p => { playerHand.push(p.attack); if(p.defense) playerHand.push(p.defense); }); table = []; phase = 'dealing'; }
-        function passTurn() { if (table.length > 0 && table.every(p => p.defense)) { table = []; phase = 'dealing'; } }
+    window.onload = () => { setTimeout(() => { logo.style.opacity = '1'; status.innerText = "LOADING VCHF ENGINE..."; setTimeout(render, 2000); setTimeout(() => active2 = true, 3500); }, 1000); };
+    function takeCards() { table.forEach(p => { playerHand.push(p.attack); if(p.defense) playerHand.push(p.defense); }); table = []; attacker = 'ai'; phase = 'dealing'; }
+    function passTurn() { if (table.length > 0 && table.every(p => p.defense)) { table = []; attacker = (attacker === 'player') ? 'ai' : 'player'; phase = 'dealing'; } }
     </script>
 </body>
 </html>
