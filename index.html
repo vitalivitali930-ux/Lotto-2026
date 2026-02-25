@@ -261,16 +261,26 @@
             updateDealing();
         }
 
-        function updateIntro() {
-            // Упрощенная логика перехода для теста
+                function updateIntro() {
             logo.style.opacity = '1';
-            setTimeout(() => {
-                status.innerText = "VCHF ENGINE READY";
-                setTimeout(() => { 
-                    logo.style.opacity = '0';
-                    startGame(); 
-                }, 1500);
-            }, 1000);
+            status.innerText = "HELVETIC LUCK ENGINE...";
+            
+            introStep += 0.01; 
+            if (introStep > 1.2) { 
+                logo.style.opacity = '0';
+                status.style.opacity = '0';
+                setTimeout(() => {
+                    phase = 'dealing'; 
+                    initDeck(); 
+                    status.style.opacity = '1';
+                    status.innerText = "DEALING CARDS...";
+                    controls.style.display = 'flex'; 
+                }, 1000);
+                introStep = -100; 
+            }
+        }
+
+
         }
 
         render();
