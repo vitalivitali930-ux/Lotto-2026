@@ -7,8 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: radial-gradient(circle, #ffcc00 0%, #996600 100%);
-            --platinum: radial-gradient(circle, #e5e5e5 0%, #777 100%);
+            --gold: #ffcc00;
             --onyx: #050505;
             --neon-blue: #00f3ff;
         }
@@ -21,41 +20,52 @@
         
         #ui-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; display: flex; flex-direction: column;
+            z-index: 10; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
-            pointer-events: none; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
+            transition: opacity 1s ease;
         }
 
-        .brand-logo {
-            color: #ffcc00; font-size: 24px; letter-spacing: 5px;
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
-            opacity: 0; transition: opacity 2s ease;
+        .start-btn {
+            width: 150px; height: 150px;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; pointer-events: auto;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+            animation: pulse 2s infinite;
+            background: rgba(255, 204, 0, 0.05);
         }
 
-        /* Эффект гильоше (сетка швейцарских часов) */
-        .guilloche {
-            position: absolute; width: 200%; height: 200%;
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 10px);
-            pointer-events: none; z-index: 0; animation: drift 60s linear infinite;
+        .start-btn img { width: 80%; filter: drop-shadow(0 0 10px var(--gold)); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 204, 0, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 204, 0, 0.3); }
         }
 
-        @keyframes drift { from { transform: translate(-25%, -25%); } to { transform: translate(0, 0); } }
+        .status-text {
+            color: var(--neon-blue); font-size: 10px; margin-top: 30px; 
+            letter-spacing: 3px; text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
-    <div class="guilloche"></div>
     <canvas id="mainCanvas"></canvas>
+    
     <div id="ui-overlay">
-        <div id="logo" class="brand-logo">HELVETIC LUCK</div>
-        <div id="status" style="color: var(--neon-blue); font-size: 10px; margin-top: 20px; letter-spacing: 3px;">INITIATING...</div>
+        <div class="start-btn" onclick="activateSystem()">
+            <img src="1771489965074(1).png" alt="Lotto Logo">
+        </div>
+        <div id="status" class="status-text">Система ожидает активации...</div>
     </div>
 
     <script>
-        /* Двигатель vchf: Протокол Интро */
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
         const status = document.getElementById('status');
-        const logo = document.getElementById('logo');
+        const overlay = document.getElementById('ui-overlay');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -64,48 +74,48 @@
             { x: 0.2, y: 0.2, label: 'UA', color: '#0057b7', msg: 'Ми не продаємо надію. Ми даємо інструмент.' },
             { x: 0.8, y: 0.2, label: 'DE', color: '#ffcc00', msg: 'Wir verkaufen keine Hoffnung. Wir geben ein Werkzeug.' },
             { x: 0.2, y: 0.5, label: 'EN', color: '#ffffff', msg: 'We do not sell hope. We give a tool.' },
-            { x: 0.8, y: 0.5, label: 'FR', color: '#002395', msg: 'Nous ne vendons pas d\'espoir. Мы даем инструмент.' },
-            { x: 0.2, y: 0.8, label: 'IT', color: '#008c45', msg: 'Non vendiamo speranza. Мы даем инструмент.' },
+            { x: 0.8, y: 0.5, label: 'FR', color: '#002395', msg: 'Nous ne vendons pas d\'espoir.' },
+            { x: 0.2, y: 0.8, label: 'IT', color: '#008c45', msg: 'Non vendiamo speranza.' },
             { x: 0.8, y: 0.8, label: 'RU', color: '#d52b1e', msg: 'Мы не продаем надежду. Мы даем инструмент.' }
         ];
 
         let currentStep = 0;
         let laser = { x: canvas.width/2, y: 0 };
         let spheresDrawn = [];
+        let systemActive = false;
 
         function speak(text, lang = 'ru-RU') {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            utterance.rate = 0.9;
-            utterance.pitch = 0.8; // Бархатный голос
-            window.speechSynthesis.speak(utterance);
+            try {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            } catch(e) { console.error("Speech error", e); }
+        }
+
+        function activateSystem() {
+            if (systemActive) return;
+            systemActive = true;
+            overlay.style.opacity = '0.3'; 
+            overlay.style.pointerEvents = 'none';
+            status.innerText = "Инициализация...";
+            speak("Протокол один один активен. Приветствую, Бродяга. Начинаю калибровку лазеров.");
+            animate();
         }
 
         function drawSphere(s) {
             const tx = s.x * canvas.width;
             const ty = s.y * canvas.height;
-            
-            // 3D Глянец и Тени
             let grad = ctx.createRadialGradient(tx-10, ty-10, 5, tx, ty, 35);
             grad.addColorStop(0, '#fff');
-            grad.addColorStop(0.2, s.color);
+            grad.addColorStop(0.3, s.color);
             grad.addColorStop(1, '#000');
-
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
             ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(tx, ty, 35, 0, Math.PI*2);
-            ctx.fill();
-            
-            // Блеск металла
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            ctx.beginPath(); ctx.arc(tx, ty, 35, 0, Math.PI*2); ctx.fill();
         }
 
         function animate() {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.1)';
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (currentStep < spheres.length) {
@@ -113,42 +123,29 @@
                 let tx = s.x * canvas.width;
                 let ty = s.y * canvas.height;
 
-                // Лазерный луч
                 ctx.beginPath();
                 ctx.moveTo(canvas.width/2, 0);
                 ctx.lineTo(laser.x, laser.y);
                 ctx.strokeStyle = '#00f3ff';
-                ctx.lineWidth = 1;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#00f3ff';
+                ctx.lineWidth = 2;
                 ctx.stroke();
 
-                laser.x += (tx - laser.x) * 0.15;
-                laser.y += (ty - laser.y) * 0.15;
+                laser.x += (tx - laser.x) * 0.12;
+                laser.y += (ty - laser.y) * 0.12;
 
-                if (Math.abs(laser.x - tx) < 2) {
+                if (Math.abs(laser.x - tx) < 5) {
                     spheresDrawn.push(s);
                     speak(s.msg);
                     currentStep++;
                 }
             } else {
-                logo.style.opacity = '1';
-                status.innerText = "BI-TURBO ULTIMATE ACTIVE";
-                // Финальная вспышка через 3 сек
-                setTimeout(() => { document.body.style.background = 'white'; }, 4000);
+                status.innerText = "HELVETIC LUCK ACTIVE";
+                status.style.color = "#ffcc00";
             }
 
             spheresDrawn.forEach(drawSphere);
             requestAnimationFrame(animate);
         }
-
-        // Запуск по клику (браузеры блокируют звук без участия пользователя)
-        window.addEventListener('click', () => {
-            if(currentStep === 0) {
-                speak("Инициализация системы лотто швейцария. Приветствую, Бродяга.");
-                animate();
-            }
-        });
     </script>
 </body>
 </html>
