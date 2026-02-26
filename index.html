@@ -1,9 +1,3 @@
-/* * Проект: Лотто (Bi-Turbo Ultimate) 
- * Автор: Spark (Gemini 3 Flash) для Wanderer (Виталий)
- * Заметки из памяти: Протокол VCHF-Static, Эдель Салями, 42 сферы.
- * Манифест Монолита: vchf — дух, chf — расчет.
- */
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -11,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lotto - Движок VCHF Ultimate 2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { 
             /* Константы Монолита */
@@ -30,15 +24,12 @@
             --gold: #ffcc00;
             --onyx: #050505;
             --neon: #00f3ff;
-            /* Психологические добавки: Глубина */
-            --shadow-depth: 0 10px 20px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.1);
-            --neuron-ping: cubic-bezier(0.4, 0, 0.2, 1);
         } 
 
         body, html { 
             background: #000; 
             color: #fff; 
-            font-family: 'Montserrat', -apple-system, sans-serif; 
+            font-family: -apple-system, sans-serif; 
             text-align: center; 
             margin: 0; 
             padding: 0;
@@ -46,7 +37,6 @@
             transition: background 0.5s ease;
             width: 100%; 
             height: 100%;
-            -webkit-tap-highlight-color: transparent;
         } 
 
         /* Стили Интро (Canvas Engine) */
@@ -69,7 +59,7 @@
             flex-direction: column;
             justify-content: center; 
             align-items: center;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.95) 100%);
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
             pointer-events: none; 
             transition: opacity 1s ease;
         }
@@ -78,9 +68,8 @@
             width: 130px; 
             height: 130px; 
             opacity: 0;
-            transition: opacity 3s var(--neuron-ping);
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
             margin-bottom: 25px;
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.5));
         }
 
         .logo-box-intro img { 
@@ -97,7 +86,6 @@
             text-align: center; 
             height: 20px;
             text-shadow: 0 0 10px var(--neon);
-            font-weight: 700;
         }
 
         /* Темы интерфейса - Протокол Эдельвейс */
@@ -130,8 +118,7 @@
             --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
             --theme-glow: rgba(212, 175, 55, 0.35); 
         }
-        
-        /* Нейро-анимация: Плавное Дыхание */
+        /* Оптимизированное ЦВЕТНОЕ Дыхание */
         @keyframes sphere-breathe {
             0%, 100% { 
                 box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color);
@@ -171,7 +158,7 @@
             }
             50% { 
                 opacity: 1; 
-                transform: scale(1.1); 
+                transform: scale(1.15); 
                 filter: drop-shadow(0 0 15px var(--main-color)); 
             }
         }
@@ -183,8 +170,8 @@
         #legal-overlay {
             position: fixed; 
             inset: 0; 
-            background: rgba(0,0,0,0.96); 
-            backdrop-filter: blur(20px); 
+            background: rgba(0,0,0,0.92); 
+            backdrop-filter: blur(15px); 
             z-index: 30000;
             display: none; 
             flex-direction: column; 
@@ -194,13 +181,13 @@
         }
 
         .legal-box {
-            background: #0a0a0a; 
-            border: 1px solid var(--main-color);
+            background: #111; 
+            border: 2px solid var(--main-color);
             padding: 30px; 
-            border-radius: 28px; 
+            border-radius: 25px; 
             max-width: 320px; 
             text-align: center;
-            box-shadow: 0 0 60px rgba(0,0,0,1), 0 0 30px var(--theme-glow);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow);
         } 
 
         .lang-panel { 
@@ -214,12 +201,11 @@
         }
 
         .lang-btn { 
-            font-size: 32px; 
+            font-size: 30px; 
             cursor: pointer; 
             position: absolute; 
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             z-index: 5; 
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
         }
         
         .pos-ru { transform: translate(-100px, 45px); }
@@ -241,95 +227,80 @@
             overflow-y: auto; 
             display: none; 
             padding: 15px 0 30px; 
-            scrollbar-width: none;
         }
-        .page::-webkit-scrollbar { display: none; }
 
         .page.active { 
             display: block; 
-            animation: fadeIn 0.4s ease-out;
         } 
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         .nav-bar {
             position: fixed; 
             bottom: 0; 
             left: 0; 
             right: 0; 
-            height: 75px;
-            background: rgba(5,5,5,0.98); 
+            height: 70px;
+            background: rgba(10,10,10,0.95); 
             display: flex; 
             justify-content: space-around;
             align-items: center; 
-            border-top: 1px solid rgba(212, 175, 55, 0.3); 
+            border-top: 1.5px solid var(--main-color); 
             z-index: 1000;
-            backdrop-filter: blur(10px);
         }
 
         .nav-item { 
-            color: #555; 
+            color: #666; 
             font-size: 10px; 
             cursor: pointer; 
-            transition: 0.3s var(--neuron-ping); 
-            flex: 1;
-            padding: 10px 0;
+            transition: 0.3s; 
         }
 
         .nav-item.active { 
             color: var(--main-color); 
-            transform: translateY(-5px); 
-            text-shadow: 0 0 15px var(--theme-glow);
+            transform: translateY(-3px); 
         }
 
         .nav-item span { 
             display: block; 
-            font-size: 26px; 
-            margin-bottom: 4px; 
+            font-size: 24px; 
+            margin-bottom: 2px; 
         } 
 
         .balance-container { 
             display: flex; 
-            gap: 12px; 
-            padding: 0 15px 20px; 
+            gap: 10px; 
+            padding: 0 15px 15px; 
         }
 
         .bal-card { 
             flex: 1; 
-            border-radius: 18px; 
-            padding: 14px; 
-            background: linear-gradient(145deg, #151515, #080808); 
-            border: 1px solid #333; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 12px; 
+            padding: 12px; 
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
+            border: 1.5px solid #444; 
+            transition: all 0.4s ease; 
             cursor: pointer; 
-            opacity: 0.6; 
-            filter: grayscale(0.5);
-            box-shadow: var(--shadow-depth);
+            opacity: 0.5; 
+            filter: grayscale(0.7) brightness(0.8);
         }
 
         .bal-card.active-wallet { 
             opacity: 1; 
-            filter: grayscale(0); 
+            filter: grayscale(0) brightness(1.2); 
             border-color: var(--main-color); 
-            background: rgba(212, 175, 55, 0.05); 
-            box-shadow: 0 0 20px var(--theme-glow), var(--shadow-depth); 
-            transform: scale(1.02); 
+            background: rgba(255, 255, 255, 0.07); 
+            box-shadow: 0 0 15px var(--main-color); 
+            transform: scale(1.05); 
         }
 
         .bal-val { 
-            font-size: 22px; 
-            font-weight: 800; 
+            font-size: 20px; 
+            font-weight: bold; 
             color: #32CD32; 
-            font-family: 'Orbitron', sans-serif;
-            margin-top: 4px;
         } 
+
         .grid { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            gap: 12px; 
+            gap: 10px; 
             padding: 0 15px; 
             max-width: 400px; 
             margin: 0 auto; 
@@ -344,198 +315,163 @@
             justify-content: center;
             font-weight: 800; 
             color: var(--cell-text); 
-            font-size: 20px; 
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            font-size: 19px; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             cursor: pointer; 
             position: relative; 
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: var(--shadow-depth);
+            border: 1px solid rgba(255,255,255,0.1);
             animation: sphere-breathe 4s infinite ease-in-out;
-            user-select: none;
         }
 
         .cell.selected { 
             background: var(--main-gradient); 
             color: #000; 
-            transform: scale(1.12) translateY(-6px); 
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 35px var(--main-color); 
+            transform: scale(1.1) translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); 
             border: 2px solid #fff; 
             z-index: 10; 
             animation: none; 
         }
-
-        /* Эффект нажатия (Тактильный резонанс) */
-        .cell:active {
-            transform: scale(0.92);
-            transition: 0.1s;
-        }
-
         .ticket-card { 
-            background: rgba(255,255,255,0.03); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: 20px; 
-            padding: 18px; 
-            margin: 0 15px 15px; 
+            background: rgba(255,255,255,0.05); 
+            border: 1.2px solid #333; 
+            border-radius: 16px; 
+            padding: 15px; 
+            margin: 0 15px 12px; 
             text-align: left; 
-            box-shadow: var(--shadow-depth);
-            backdrop-filter: blur(5px);
         }
 
         .ticket-nums { 
             display: flex; 
-            gap: 10px; 
-            margin: 12px 0; 
+            gap: 8px; 
+            margin: 10px 0; 
             flex-wrap: wrap; 
         }
 
         .mini-ball { 
-            width: 32px; 
-            height: 32px; 
+            width: 30px; 
+            height: 30px; 
             background: #000; 
             border: 1px solid var(--main-color); 
             border-radius: 50%; 
             color: #fff; 
-            font-size: 15px; 
+            font-size: 14px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-weight: 800; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
 
         .super-ball-mini { 
-            background: var(--hot-color) !important; 
+            background: #ff4500 !important; 
             color: #fff !important; 
             border: none; 
-            box-shadow: 0 0 10px var(--hot-color);
         } 
 
         .ticket-controls { 
-            margin-bottom: 25px; 
+            margin-bottom: 20px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 15px; 
+            gap: 12px; 
         }
 
         .smart-tools { 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             flex-wrap: wrap; 
             justify-content: center; 
         }
 
         .tool-btn { 
-            padding: 10px 18px; 
-            border-radius: 22px; 
-            border: 1px solid rgba(212, 175, 55, 0.4); 
-            background: rgba(0,0,0,0.7); 
-            color: #ccc; 
-            font-size: 12px; 
-            font-weight: 600;
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            border: 1px solid var(--main-color); 
+            background: rgba(0,0,0,0.6); 
+            color: #fff; 
+            font-size: 11px; 
             cursor: pointer; 
-            transition: 0.3s var(--neuron-ping); 
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: 0.3s; 
         }
 
         .tool-btn.active-tool { 
             background: var(--main-color); 
             color: #000; 
-            border-color: #fff;
-            box-shadow: 0 0 20px var(--theme-glow);
+            font-weight: bold; 
         }
         
         .stats-period { 
             display: flex; 
             justify-content: center; 
-            gap: 8px; 
-            height: 34px; 
+            gap: 5px; 
+            height: 30px; 
         }
 
         .p-btn { 
-            font-size: 11px; 
-            padding: 6px 14px; 
-            border-radius: 14px; 
-            border: 1px solid #333; 
-            background: #111; 
-            color: #666; 
+            font-size: 10px; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            border: 1px solid #444; 
+            background: #222; 
+            color: #888; 
             cursor: pointer; 
-            transition: 0.3s;
-            font-weight: 700;
         }
 
         .p-btn.active { 
             border-color: var(--main-color); 
             color: #fff; 
-            background: rgba(212, 175, 55, 0.1);
-            box-shadow: 0 0 12px var(--theme-glow); 
+            box-shadow: 0 0 10px var(--main-color); 
         } 
 
         .counter-box { 
             display: flex; 
             align-items: center; 
-            gap: 18px; 
-            background: rgba(255,255,255,0.05); 
-            padding: 12px 24px; 
-            border-radius: 30px; 
-            border: 1px solid rgba(212, 175, 55, 0.2); 
-            box-shadow: var(--shadow-depth);
+            gap: 15px; 
+            background: rgba(255,255,255,0.1); 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            border: 1px solid var(--main-color); 
         }
 
         .btn-round { 
-            width: 38px; 
-            height: 38px; 
+            width: 35px; 
+            height: 35px; 
             border-radius: 50%; 
             border: 1.5px solid var(--main-color); 
-            background: #000; 
+            background: none; 
             color: #fff; 
-            font-size: 22px; 
+            font-size: 20px; 
             cursor: pointer; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
         } 
-        
-        .btn-round:active {
-            background: var(--main-color);
-            color: #000;
-        }
 
         .total-display { 
-            margin: 18px 0; 
-            font-size: 20px; 
-            color: #bbb; 
-            font-weight: 500;
+            margin: 15px 0; 
+            font-size: 18px; 
+            color: #fff; 
         }
 
         #display-total { 
             color: var(--neon-blue); 
             font-weight: 900; 
-            font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 10px rgba(0, 163, 255, 0.4);
         } 
-
         .super-title { 
-            margin: 30px 0 12px; 
+            margin: 25px 0 10px; 
             font-size: 14px; 
             color: var(--main-color); 
-            font-weight: 700; 
+            font-weight: bold; 
             text-transform: uppercase; 
-            letter-spacing: 3px;
         }
 
         .super-grid { 
             display: flex; 
             justify-content: center; 
-            gap: 14px; 
-            padding-bottom: 25px; 
+            gap: 12px; 
+            padding-bottom: 20px; 
         }
 
         .super-cell { 
-            width: 60px; 
-            height: 60px; 
+            width: 58px; 
+            height: 58px; 
             background: var(--white-sphere); 
             border-radius: 50%; 
             display: flex; 
@@ -543,20 +479,19 @@
             justify-content: center; 
             color: var(--cell-text); 
             font-weight: 900; 
-            font-size: 26px; 
+            font-size: 24px; 
             cursor: pointer; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transition: 0.4s; 
             border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: var(--shadow-depth);
             animation: sphere-breathe 4s infinite ease-in-out;
         }
 
         .super-cell.selected { 
-            transform: scale(1.25); 
+            transform: scale(1.2); 
             background: var(--main-gradient); 
             color: #000; 
             border: 2px solid #fff; 
-            box-shadow: 0 0 35px var(--main-color); 
+            box-shadow: 0 0 30px var(--main-color); 
             animation: none; 
         } 
 
@@ -564,27 +499,25 @@
             position: fixed; 
             top: 15px; 
             right: 15px; 
-            font-size: 28px; 
+            font-size: 26px; 
             z-index: 1001; 
             cursor: pointer; 
-            filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
         }
 
         .theme-panel { 
             position: fixed; 
-            top: 70px; 
+            top: 65px; 
             right: 15px; 
             display: flex; 
             flex-direction: column; 
-            gap: 18px; 
+            gap: 15px; 
             z-index: 1000; 
-            background: rgba(10,10,10,0.95); 
-            padding: 20px; 
-            border-radius: 30px; 
+            background: rgba(0,0,0,0.95); 
+            padding: 15px; 
+            border-radius: 25px; 
             border: 1px solid var(--main-color); 
-            transition: 0.4s var(--neuron-ping); 
-            transform: translateX(130px); 
-            backdrop-filter: blur(15px);
+            transition: 0.3s; 
+            transform: translateX(120px); 
         }
 
         .theme-panel.open { 
@@ -592,38 +525,26 @@
         }
 
         .dot { 
-            width: 35px; 
-            height: 35px; 
+            width: 32px; 
+            height: 32px; 
             border-radius: 50%; 
-            border: 2px solid rgba(255,255,255,0.3); 
+            border: 2px solid #fff; 
             cursor: pointer; 
-            transition: 0.2s;
         } 
-        
-        .dot:hover { transform: scale(1.1); border-color: #fff; }
 
         .btn-main { 
-            width: 88%; 
-            padding: 24px; 
-            border-radius: 22px; 
-            font-size: 22px; 
+            width: 85%; 
+            padding: 22px; 
+            border-radius: 18px; 
+            font-size: 20px; 
             margin-top: 10px; 
             background: var(--main-gradient); 
             color: #000; 
             border: none; 
-            font-weight: 900; 
+            font-weight: 800; 
             cursor: pointer; 
-            font-family: 'Orbitron', sans-serif;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 20px var(--theme-glow);
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
         
-        .btn-main:active {
-            transform: scale(0.96);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        }
         @keyframes pulse-hot { 
             from { box-shadow: 0 0 15px #ff4500; transform: scale(1.02); } 
             to { box-shadow: 0 0 30px #ff4500; transform: scale(1.1); } 
@@ -655,11 +576,10 @@
     </style>
 </head>
 <body> 
-
 <div id="legal-overlay">
     <div class="legal-box">
-        <div id="legal-content" style="font-size: 15px; line-height: 1.7; margin-bottom: 25px; color: #eee; font-weight: 300;"></div>
-        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin-top:0; padding:18px; font-size: 16px;"></button>
+        <div id="legal-content" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; color: #eee;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin-top:0; padding:15px;"></button>
     </div>
 </div> 
 
@@ -685,11 +605,11 @@
 
         <div class="balance-container">
             <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-                <div style="font-size:11px; letter-spacing: 1px; color: #888;">VIRTUAL VCHF</div>
+                <div style="font-size:10px;">VIRTUAL VCHF</div>
                 <div class="bal-val" id="vchf-val">100.00</div>
             </div>
             <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:11px; letter-spacing: 1px; color: #888;">REAL CHF</div>
+                <div style="font-size:10px;">REAL CHF</div>
                 <div class="bal-val" id="chf-val">0.00</div>
             </div>
         </div> 
@@ -708,7 +628,7 @@
             </div>
             <div class="counter-box">
                 <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
-                <span style="font-size: 22px; font-weight: 800; font-family: 'Orbitron';"><span id="ticket-count">1</span> ×</span>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
                 <button class="btn-round" onclick="updateTicketCount(1)">+</button>
             </div>
         </div> 
@@ -717,17 +637,17 @@
         <div id="l-super" class="super-title">SUPERZAHL</div>
         <div class="super-grid" id="s-grid"></div>
         <div class="total-display">
-            <span id="l-total" style="text-transform: uppercase; font-size: 14px;">Total</span>: <span id="display-total">2.50 VCHF</span>
+            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
         </div>
         <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
     </div> 
 
     <div id="page-tickets" class="page">
-        <h2 id="l-active-tickets-title" style="color: var(--main-color); font-family: 'Orbitron'; letter-spacing: 2px;">MEINE TICKETS</h2>
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
         <div id="active-list"></div>
     </div> 
     <div id="page-stats" class="page">
-        <h2 id="l-personal-stats-title" style="color: var(--main-color); font-family: 'Orbitron'; letter-spacing: 2px;">STATISTIK</h2>
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
         <div class="grid" id="personal-heatmap"></div>
     </div> 
     <div class="nav-bar">
@@ -736,10 +656,9 @@
         <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
     </div>
 </div> 
+
 <script>
     /* Манифест Монолита: Движок VCHF */
-    /* Психологическая надстройка: Использование дофаминовых пауз и нейро-дизайна */
-    
     const canvas = document.getElementById('introCanvas');
     const ctx = canvas.getContext('2d');
     const statusIntro = document.getElementById('mainStatusIntro');
@@ -747,7 +666,6 @@
     const tg = window.Telegram.WebApp; 
     tg.expand(); 
 
-    // Аудио-активы с подготовкой для нейро-отклика
     const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
     const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
     const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
@@ -836,6 +754,7 @@
         }
         requestAnimationFrame(animateIntro);
     }
+
     function renderLangPanel(isExpanded) {
         const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
         const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
@@ -850,94 +769,45 @@
             });
         }
     }
-
-    function selectLang(l) { 
-        if (bgsTimer) clearTimeout(bgsTimer); 
-        pendingLang = l; 
-        tg.HapticFeedback.impactOccurred('medium');
-        showLegal(l); 
-    }
-
+    function selectLang(l) { if (bgsTimer) clearTimeout(bgsTimer); pendingLang = l; showLegal(l); }
     function showLegal(l) {
         const overlay = document.getElementById('legal-overlay'); const content = document.getElementById('legal-content');
-        content.innerHTML = `<h3 style="color:var(--main-color);margin-top:0;font-family:'Orbitron';">${legalDict[l].title}</h3>${legalDict[l].text}`;
+        content.innerHTML = `<h3 style="color:var(--main-color);margin-top:0;">${legalDict[l].title}</h3>${legalDict[l].text}`;
         document.getElementById('legal-agree-btn').innerText = legalDict[l].btn;
-        overlay.style.display = 'flex'; 
-        document.getElementById('app-content').style.filter = 'blur(15px)';
+        overlay.style.display = 'flex'; document.getElementById('app-content').style.filter = 'blur(10px)';
     }
-
     function acceptLegal() {
-        currentLang = pendingLang; 
-        localStorage.setItem('vchf_lang', currentLang); 
-        localStorage.setItem('vchf_legal_accepted', 'true');
-        document.getElementById('legal-overlay').style.display = 'none'; 
-        document.getElementById('app-content').style.filter = 'none';
-        setLang(currentLang); 
-        renderLangPanel(false); 
-        tg.HapticFeedback.notificationOccurred('success');
+        currentLang = pendingLang; localStorage.setItem('vchf_lang', currentLang); localStorage.setItem('vchf_legal_accepted', 'true');
+        document.getElementById('legal-overlay').style.display = 'none'; document.getElementById('app-content').style.filter = 'none';
+        setLang(currentLang); renderLangPanel(false); tg.HapticFeedback.notificationOccurred('success');
     }
-
     function togglePick(type) {
-        activeSmartTool = type; 
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        activeSmartTool = type; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         if (document.getElementById(`btn-${type}`)) document.getElementById(`btn-${type}`).classList.add('active-tool');
-        
-        selected = []; 
-        document.querySelectorAll('.cell').forEach(c => { 
-            c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); 
-            c.style.animation = 'none'; 
-        });
-
+        selected = []; document.querySelectorAll('.cell').forEach(c => { c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); c.style.animation = 'none'; });
         const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
         let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
-        
-        if (type === 'hot') sorted.sort((a, b) => b.val - a.val); 
-        else sorted.sort((a, b) => a.val - b.val);
-        
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val); else sorted.sort((a, b) => a.val - b.val);
         selected = sorted.slice(0, 6).map(i => i.num);
-        
-        // Нейро-отклик: каскадное выделение сфер
-        selected.forEach((n, idx) => { 
-            setTimeout(() => {
-                const el = document.getElementById(`cell-${n}`); 
-                if (el) el.classList.add('selected', `is-${type}`); 
-            }, idx * 40);
-        });
-
+        selected.forEach(n => { const el = document.getElementById(`cell-${n}`); if (el) el.classList.add('selected', `is-${type}`); });
         superNum = Math.floor(Math.random() * 6) + 1;
         document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
         sndWin.play();
     }
-
     function showPage(pId, el) {
-        tg.HapticFeedback.selectionChanged();
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pId).classList.add('active'); 
-        el.classList.add('active');
-        if(pId === 'tickets') renderTickets(); 
-        if(pId === 'stats') renderHeatmap();
+        document.getElementById('page-' + pId).classList.add('active'); el.classList.add('active');
+        if(pId === 'tickets') renderTickets(); if(pId === 'stats') renderHeatmap();
     }
-
     function renderTickets() {
         const container = document.getElementById('active-list'); container.innerHTML = '';
-        if (myTickets.length === 0) {
-            container.innerHTML = `<div style="padding:40px; color:#444; font-size:12px;">NO ACTIVE TICKETS</div>`;
-            return;
-        }
         myTickets.forEach(t => {
             const card = document.createElement('div'); card.className = 'ticket-card';
-            card.innerHTML = `
-                <div style="font-size:10px;color:#666;font-family:'Orbitron';margin-bottom:8px;">ID: ${t.timestamp}</div>
-                <div class="ticket-nums">
-                    ${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}
-                    <div class="mini-ball super-ball-mini">${t.super}</div>
-                </div>
-            `;
+            card.innerHTML = `<div style="font-size:11px;color:#888;">ID: ${t.timestamp}</div><div class="ticket-nums">${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}<div class="mini-ball super-ball-mini">${t.super}</div></div>`;
             container.appendChild(card);
         });
     }
-
     function renderHeatmap() {
         const grid = document.getElementById('personal-heatmap'); grid.innerHTML = '';
         for(let i=1; i<=42; i++) {
@@ -947,241 +817,56 @@
         }
     }
     function setLang(l) {
-        currentLang = l; const d = dict[l]; 
-        document.getElementById('main-btn').innerText = d.btn;
-        document.getElementById('l-super').innerText = d.super; 
-        document.getElementById('l-total').innerText = d.total;
-        
-        ['month', 'year', 'all'].forEach(p => {
-            const el = document.getElementById(`p-${p}`);
-            if (el) el.innerText = d[p];
-        });
-        
-        ['game', 'tickets', 'stats'].forEach(n => {
-            const el = document.getElementById(`n-${n}`);
-            if (el) el.innerText = d[n];
-        });
-        
+        currentLang = l; const d = dict[l]; document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super; document.getElementById('l-total').innerText = d.total;
+        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
+        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
         document.getElementById('l-active-tickets-title').innerText = d.activeT;
         document.getElementById('l-personal-stats-title').innerText = d.stats;
     }
-
     function handleCellClick(i) {
-        sndClick.currentTime = 0; sndClick.play(); 
-        activeSmartTool = null; 
-        tg.HapticFeedback.impactOccurred('light');
-        
+        sndClick.currentTime = 0; sndClick.play(); activeSmartTool = null; 
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
-        
-        if(selected.includes(i)) {
-            selected = selected.filter(n => n !== i); 
-        } else if(selected.length < 6) {
-            selected.push(i);
-        }
+        if(selected.includes(i)) selected = selected.filter(n => n !== i); else if(selected.length < 6) selected.push(i);
         refreshGrid();
     }
-
     function refreshGrid() {
         const grid = document.getElementById('main-grid'); grid.innerHTML = '';
         for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div'); 
-            c.className = 'cell'; 
-            c.id = `cell-${i}`; 
-            c.innerText = i;
-            
-            if (selected.includes(i)) { 
-                c.classList.add('selected'); 
-                c.style.animation = 'none'; 
-            } else { 
-                c.style.animation = 'sphere-breathe 4s infinite ease-in-out'; 
-                c.style.animationDelay = `${(Math.random()*2).toFixed(2)}s`; 
-            }
-            c.onclick = () => handleCellClick(i); 
-            grid.appendChild(c);
+            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            if (selected.includes(i)) { c.classList.add('selected'); c.style.animation = 'none'; }
+            else { c.style.animation = 'sphere-breathe 4s infinite ease-in-out'; c.style.animationDelay = `${(Math.random()*2).toFixed(2)}s`; }
+            c.onclick = () => handleCellClick(i); grid.appendChild(c);
         }
     }
-
     function randomFill() {
-        activeSmartTool = null; 
-        selected = []; 
-        sndShuffle.play();
-        tg.HapticFeedback.impactOccurred('medium');
-        
-        let it = 0; 
-        const iv = setInterval(() => {
+        activeSmartTool = null; selected = []; sndShuffle.play();
+        let it = 0; const iv = setInterval(() => {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
-            
-            // Нейро-эффект: вспышки активности мозга
-            for(let j=0; j<4; j++) { 
-                const r = Math.floor(Math.random()*42)+1; 
-                const cell = document.getElementById(`cell-${r}`);
-                if (cell) cell.classList.add('processing-flash'); 
-            }
-            
-            if (it % 3 === 0 && selected.length < 6) { 
-                let r; 
-                do { r = Math.floor(Math.random()*42)+1; } while(selected.includes(r)); 
-                selected.push(r); 
-                refreshGrid(); 
-                tg.HapticFeedback.selectionChanged();
-            }
-            
-            if (++it >= 20) { 
-                clearInterval(iv); 
-                superNum = Math.floor(Math.random()*6)+1; 
-                refreshGrid(); 
-                document.querySelectorAll('.super-cell').forEach((sc, idx) => {
-                    sc.classList.toggle('selected', idx + 1 === superNum);
-                }); 
-                sndWin.play();
-                tg.HapticFeedback.notificationOccurred('success');
-            }
+            for(let j=0; j<4; j++) { const r = Math.floor(Math.random()*42)+1; document.getElementById(`cell-${r}`).classList.add('processing-flash'); }
+            if (it % 3 === 0 && selected.length < 6) { let r; do { r=Math.floor(Math.random()*42)+1; } while(selected.includes(r)); selected.push(r); refreshGrid(); }
+            if (++it >= 20) { clearInterval(iv); superNum = Math.floor(Math.random()*6)+1; refreshGrid(); 
+                document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx+1===superNum)); sndWin.play(); }
         }, 85);
     }
-
-    function updateTicketCount(v) { 
-        ticketCount = Math.max(1, ticketCount + v); 
-        document.getElementById('ticket-count').innerText = ticketCount; 
-        tg.HapticFeedback.impactOccurred('light');
-        updatePriceDisplay(); 
-    }
-
-    function switchCurrency(t) { 
-        currentCurrency = t; 
-        document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF'); 
-        document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF'); 
-        tg.HapticFeedback.impactOccurred('medium');
-        updatePriceDisplay(); 
-    }
-
-    function updatePriceDisplay() { 
-        const total = (ticketCount * realPrice).toFixed(2);
-        document.getElementById('display-total').innerText = `${total} ${currentCurrency}`; 
-    }
-    function setTheme(t) {
-        document.body.className = `theme-${t}`;
-        localStorage.setItem('vchf_theme', t);
-        document.querySelector('.theme-panel').classList.remove('open');
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function setPeriod(p) {
-        currentPeriod = p;
-        document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`p-${p}`).classList.add('active');
-        tg.HapticFeedback.selectionChanged();
-        if (activeSmartTool) togglePick(activeSmartTool);
-    }
-
-    function runEngine() {
-        if (selected.length < 6 || !superNum) {
-            tg.showAlert("Bitte wählen Sie 6 Zahlen + Superzahl!");
-            return;
-        }
-
-        const cost = ticketCount * realPrice;
-        const balEl = currentCurrency === 'VCHF' ? document.getElementById('vchf-val') : document.getElementById('chf-val');
-        let currentBal = parseFloat(balEl.innerText);
-
-        if (currentBal < cost) {
-            tg.HapticFeedback.notificationOccurred('error');
-            tg.showConfirm("Guthaben unzureichend. Möchten Sie aufladen?");
-            return;
-        }
-
-        // Протокол «Дурака» v4.0: Визуализация подтверждения транзакции
-        balEl.innerText = (currentBal - cost).toFixed(2);
-        
-        const newTicket = {
-            nums: [...selected].sort((a,b) => a-b),
-            super: superNum,
-            timestamp: new Date().toLocaleTimeString(),
-            currency: currentCurrency
-        };
-
-        myTickets.unshift(newTicket);
-        localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets));
-        
-        tg.HapticFeedback.notificationOccurred('success');
-        tg.showScanQrPopup({ text: "TICKET VCHF-VALIDATED" });
-        setTimeout(() => tg.closeScanQrPopup(), 1200);
-
-        // Очистка поля после успеха
-        selected = []; superNum = null;
-        refreshGrid();
-        document.querySelectorAll('.super-cell').forEach(sc => sc.classList.remove('selected'));
-        updatePriceDisplay();
-    }
-
-    // Инициализация базы данных (Smart-фильтры)
-    function initStats() {
-        for (let i = 1; i <= 42; i++) {
-            // [Monat, Jahr, Alle] - имитация накопленного веса данных
-            realStatsDB[i] = [
-                Math.floor(Math.random() * 50), 
-                Math.floor(Math.random() * 200), 
-                Math.floor(Math.random() * 1000)
-            ];
-        }
-    }
-
-    // Запуск Ритуала
+    function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
+    function switchCurrency(t) { currentCurrency = t; document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF'); updatePriceDisplay(); }
+    function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
+    function setTheme(t) { document.body.className = 'theme-' + t; const c = {gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4'}; document.documentElement.style.setProperty('--main-color', c[t]); refreshGrid(); }
+    function setPeriod(p) { currentPeriod = p; document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); if (activeSmartTool) togglePick(activeSmartTool); }
+    function runEngine() { if(selected.length===6 && superNum) { myTickets.push({nums:[...selected], super:superNum, timestamp:new Date().toLocaleString()}); localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets)); tg.showAlert(dict[currentLang].status); selected=[]; superNum=null; refreshGrid(); } else tg.showAlert("Select 6+1!"); }
+    
     window.onload = () => {
-        initStats();
-        
-        // Сетка 42 сферы
-        const grid = document.getElementById('main-grid');
-        for (let i = 1; i <= 42; i++) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.id = `cell-${i}`;
-            c.innerText = i;
-            c.onclick = () => handleCellClick(i);
-            grid.appendChild(c);
-        }
-
-        // Супер-сетка
-        const sGrid = document.getElementById('s-grid');
-        for (let i = 1; i <= 6; i++) {
-            const sc = document.createElement('div');
-            sc.className = 'super-cell';
-            sc.innerText = i;
-            sc.onclick = () => {
-                superNum = i;
-                document.querySelectorAll('.super-cell').forEach((el, idx) => el.classList.toggle('selected', idx + 1 === i));
-                sndClick.play();
-                tg.HapticFeedback.impactOccurred('light');
-            };
-            sGrid.appendChild(sc);
-        }
-
-        // Восстановление настроек
-        const savedTheme = localStorage.getItem('vchf_theme') || 'gold';
-        setTheme(savedTheme);
-        
-        const savedLang = localStorage.getItem('vchf_lang') || 'en';
-        currentLang = savedLang;
-        setLang(savedLang);
-        renderLangPanel(false);
-
-        // Интро-движок
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        logoIntro.style.opacity = '1';
-        
-        setTimeout(() => { active2 = true; statusIntro.innerText = "LOADING VCHF ENGINE..."; }, 1500);
-        setTimeout(() => { statusIntro.innerText = "SYNCHRONIZING BGS DATA..."; }, 3500);
-        
-        animateIntro();
-
-        // Проверка Legal
-        if (!localStorage.getItem('vchf_legal_accepted')) {
-            bgsTimer = setTimeout(() => {
-                pendingLang = currentLang;
-                showLegal(currentLang);
-            }, 6000);
-        }
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const saved = localStorage.getItem('vchf_lang'); if(saved) { currentLang=saved; setLang(saved); renderLangPanel(false); }
+        else { currentLang='en'; renderLangPanel(false); bgsTimer=setTimeout(()=>showLegal('en'), 10000); }
+        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
+        refreshGrid(); updatePriceDisplay();
+        const sgrid = document.getElementById('s-grid');
+        for(let i=1;i<=6;i++){ const sc=document.createElement('div'); sc.className='super-cell'; sc.innerText=i; sc.onclick=()=>{superNum=i; document.querySelectorAll('.super-cell').forEach(el=>el.classList.toggle('selected', el.innerText==i));}; sgrid.appendChild(sc); }
+        setTimeout(() => { logoIntro.style.opacity = '1'; statusIntro.innerText = "HELVETIC LUCK LOADING..."; setTimeout(() => requestAnimationFrame(animateIntro), 2000); setTimeout(() => active2 = true, 3000); }, 1000);
     };
 </script>
 </body>
 </html>
+
