@@ -11,18 +11,17 @@
             --gold: #d4af37;
             --swiss-red: #e30a17;
             --deep-black: #050505;
-            --cherry-deep: #3d0505; /* Та самая вишня 40% */
+            --cherry-deep: #3d0505;
             --steel-gradient: linear-gradient(145deg, #1a1a1a, #000);
         }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             background: #000; overflow: hidden; 
-            font-family: 'Orbitron', sans-serif; 
-            color: var(--gold);
+            font-family: 'Orbitron', sans-serif; color: var(--gold);
         }
 
-        /* --- ЭТАП 1: ШТУРВАЛ ВЫБОРА (СЕКЦИЯ 🇷🇺🇩🇪🇫🇷🇮🇹🇺🇦🇬🇧) --- */
+        /* --- UI & LAYERS --- */
         #wheel-layer {
             position: fixed; inset: 0; background: #000; z-index: 3000;
             display: flex; align-items: center; justify-content: center;
@@ -37,25 +36,16 @@
             width: 80px; height: 80px; background: radial-gradient(circle, #222, #000);
             border: 3px solid var(--gold); border-radius: 50%; z-index: 10;
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .spoke {
-            position: absolute; width: 4px; height: 140px;
-            background: linear-gradient(to top, var(--gold), transparent);
-            transform-origin: bottom center; bottom: 50%; left: calc(50% - 2px);
         }
         .flag-node {
             position: absolute; width: 60px; height: 60px;
             background: #0a0a0a; border: 2px solid var(--gold);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 28px; cursor: pointer; z-index: 20;
-            transform: translate(-50%, -50%); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.9);
+            transform: translate(-50%, -50%); transition: 0.5s;
         }
-        .flag-node:hover { transform: translate(-50%, -50%) scale(1.15); border-color: #fff; box-shadow: 0 0 20px var(--gold); }
         .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0); transition: 0.8s; }
 
-        /* --- ЭТАП 2: ШВЕЙЦАРСКИЙ ПОРТАЛ (ДВЕРИ) --- */
         #brand-layer {
             position: fixed; inset: 0; background: var(--deep-black); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -69,1615 +59,241 @@
         .door-right { right: 0; border-left: 2px solid var(--gold); }
         .opened .door-left { transform: translateX(-100%); }
         .opened .door-right { transform: translateX(100%); }
-        
-        .swiss-shield {
-            width: 60px; height: 60px; background: var(--swiss-red);
-            margin: 0 auto 30px; position: relative; border-radius: 8px;
-            box-shadow: 0 0 40px rgba(227, 10, 23, 0.6);
-            animation: pulse-shield 2s infinite;
-        }
-        @keyframes pulse-shield { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
-        .swiss-shield::after { content: ''; position: absolute; background: white; width: 12px; height: 36px; left: 24px; top: 12px; }
-        .swiss-shield::before { content: ''; position: absolute; background: white; width: 36px; height: 12px; left: 12px; top: 24px; }
-        h1.brand-name { 
-            color: var(--gold); font-size: 28px; letter-spacing: 12px; 
-            margin: 0; text-align: center; font-weight: 900;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-        }
 
-        /* --- ЭТАП 3: КАЗИНО НУАР (60% ЧЕРНЫЙ / 40% ВИШНЕВЫЙ) --- */
         #game-room {
             position: fixed; inset: 0; display: none; opacity: 0;
-            background: #000; z-index: 500; transition: 4s ease-in-out;
+            background: #000; z-index: 500; transition: 2s;
         }
         #velvet-table {
             position: absolute; bottom: -40%; left: 50%; transform: translateX(-50%);
             width: 180%; height: 100%; 
             background: radial-gradient(circle at 50% 0%, var(--cherry-deep) 0%, #000 70%);
             border-radius: 50% / 40%; border: 25px solid #080808;
-            box-shadow: 
-                inset 0 20px 150px #000, 
-                0 0 200px rgba(61, 5, 5, 0.4);
-            /* Микро-сетка ворса */
-            background-image: 
-                repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
-        }
-        .table-light {
-            position: absolute; top: -150px; left: 50%; transform: translateX(-50%);
-            width: 900px; height: 450px; 
-            background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
-            filter: blur(140px); pointer-events: none;
         }
 
-        /* КАРТЫ: ТЕХНО-МОНОЛИТ (СТАЛЬ) */
+        /* --- CARDS & MATRIX --- */
         .card-monolith {
             position: absolute; width: 80px; height: 115px;
-            background: var(--steel-gradient); 
-            border: 1.5px solid #222; border-radius: 6px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 10; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 6px;
-            font-family: 'Orbitron'; font-weight: 900;
+            background: var(--steel-gradient); border: 1.5px solid #222; border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9); transition: 0.6s;
+            z-index: 10; display: flex; flex-direction: column; padding: 6px;
         }
-        .deck-stacked {
-            top: 38% !important; left: 16% !important; transform: rotate(-1deg) !important;
-            box-shadow: -2px 2px 0 #111, -5px 5px 0 #050505, -15px 15px 50px #000 !important;
-            transition: all 4s cubic-bezier(0.23, 1, 0.32, 1);
+        .deck-stacked { top: 38% !important; left: 16% !important; transform: rotate(-1deg) !important; }
+        
+        #matrix-overlay {
+            position: fixed; top: 15%; right: 20px;
+            width: 120px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; z-index: 100;
         }
-        #trump-card {
-            position: absolute; top: 40%; left: 22%; width: 115px; height: 80px;
-            background: #f0f0f0; border-radius: 6px; transform: rotate(95deg);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; color: #000; border-right: 5px solid var(--gold);
-            opacity: 0; transition: 3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;
+        .sphere-node {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1px solid rgba(212, 175, 55, 0.3); background: #000;
+            display: flex; align-items: center; justify-content: center; font-size: 10px;
         }
+        .sphere-node.hot { border-color: var(--swiss-red); box-shadow: 0 0 10px var(--swiss-red); color: #fff; }
 
-        /* РУКИ ИГРОКОВ */
-        .hand-container { 
-            position: absolute; width: 100%; display: flex; 
-            justify-content: center; z-index: 1500; pointer-events: none;
-        }
-        #player-hand { bottom: 50px; }
-        #ai-hand { top: 50px; transform: scale(0.75); opacity: 0.6; }
-
-        .card-in-hand {
-            background: #fff; color: #000; pointer-events: auto;
-            cursor: pointer; margin: 0 -15px;
-        }
-        .card-in-hand:hover { transform: translateY(-40px) scale(1.2) rotate(0deg) !important; z-index: 2000 !important; }
-        .card-suit-big { font-size: 32px; text-align: center; }
-        .card-corner { font-size: 14px; line-height: 1; }
-        .card-corner.bottom { transform: rotate(180deg); }
+        #ui-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2500; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .vchf-balance { align-self: flex-end; background: rgba(0,0,0,0.8); border: 1px solid var(--gold); padding: 10px 20px; pointer-events: auto; }
     </style>
 </head>
- <body>
-    <div id="wheel-layer">
-        <div class="safe-wheel-container" id="main-wheel">
-            <div class="wheel-center"></div>
-        </div>
-    </div>
-
+<body>
+    <div id="wheel-layer"><div class="safe-wheel-container" id="main-wheel"><div class="wheel-center"></div></div></div>
     <div id="brand-layer">
-        <div class="door-left"></div>
-        <div class="door-right"></div>
-        <div class="logo-container" style="z-index: 1100; position: relative;">
-            <div class="swiss-shield"></div>
-            <h1 class="brand-name">HELVETIA LUCKY</h1>
+        <div class="door-left"></div><div class="door-right"></div>
+        <div style="z-index:1100; text-align:center;">
+            <div style="width:60px; height:60px; background:var(--swiss-red); margin:0 auto 20px; border-radius:8px; position:relative;">
+                <div style="position:absolute; background:#fff; width:10px; height:30px; left:25px; top:15px;"></div>
+                <div style="position:absolute; background:#fff; width:30px; height:10px; left:15px; top:25px;"></div>
+            </div>
+            <h1 style="letter-spacing:10px;">HELVETIA LUCKY</h1>
         </div>
     </div>
-
     <div id="game-room">
-        <div class="table-light"></div>
         <div id="velvet-table">
             <div id="deck-zone"></div>
-            <div id="trump-card"></div>
-            <div id="player-hand" class="hand-container"></div>
-            <div id="ai-hand" class="hand-container"></div>
+            <div id="trump-card" style="position:absolute; top:40%; left:22%; width:110px; height:75px; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; transform:rotate(95deg); opacity:0; transition:1s;"></div>
+            <div id="player-hand" style="position:absolute; bottom:60px; width:100%; display:flex; justify-content:center;"></div>
+            <div id="ai-hand" style="position:absolute; top:60px; width:100%; display:flex; justify-content:center; opacity:0.5; transform:scale(0.8);"></div>
         </div>
     </div>
 
 <script>
-    /** * МАНИФЕСТ МОНОЛИТА: ENGINE v1.0.26 */
-    const tg = window.Telegram.WebApp; 
-    tg.ready(); 
-    tg.expand();
-
+    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
     let audioCtx = null;
-    const SUITS = ['♠', '♣', '♥', '♦'];
-    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    let mainDeck = [];
-    let trumpSuit = '';
-
-    function initAudio() { 
-        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-    }
+    let mainDeck = [], playerHandData = [], aiHandData = [], tableZone = [];
+    let isPlayerTurn = true, gameActive = false, trumpSuit = '', currentVCHF = 1000;
+    const SUITS = ['♠', '♣', '♥', '♦'], RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
     function playSound(f, d, t, v) {
         try {
-            initAudio(); 
-            const o = audioCtx.createOscillator(); 
-            const g = audioCtx.createGain();
-            o.type = t; 
-            o.frequency.setValueAtTime(f, audioCtx.currentTime);
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
             g.gain.setValueAtTime(v, audioCtx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
             o.connect(g); g.connect(audioCtx.destination);
             o.start(); o.stop(audioCtx.currentTime + d);
-        } catch(e) { console.error("Audio error"); }
+        } catch(e){}
     }
 
-    // --- ЛОГИКА ШТУРВАЛА ---
-    const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
+    // --- WHEEL LOGIC ---
     const wheel = document.getElementById('main-wheel');
-    
-    flags.forEach((img, i) => {
-        const angle = i * 60;
+    ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'].forEach((flag, i) => {
         const node = document.createElement('div');
-        node.className = 'flag-node'; 
-        node.innerHTML = img;
-        const r = 145;
+        node.className = 'flag-node'; node.innerHTML = flag;
+        const angle = i * 60, r = 145;
         node.style.left = `calc(50% + ${Math.sin(angle*Math.PI/180)*r}px)`;
         node.style.top = `calc(50% + ${-Math.cos(angle*Math.PI/180)*r}px)`;
-        
         node.onclick = () => {
-            playSound(60, 1.5, 'triangle', 0.5);
-            wheel.style.transform = `rotate(${-angle + 1080}deg)`; // 3 полных оборота
+            playSound(100, 1, 'triangle', 0.3);
+            wheel.style.transform = `rotate(${-angle + 1080}deg)`;
             wheel.classList.add('wheel-vanishing');
-            
             setTimeout(() => {
                 document.getElementById('wheel-layer').style.opacity = '0';
-                setTimeout(() => { 
-                    document.getElementById('wheel-layer').style.display = 'none'; 
-                    openSwissPortal(); 
+                setTimeout(() => {
+                    document.getElementById('wheel-layer').style.display = 'none';
+                    openSwissPortal();
                 }, 1000);
             }, 1800);
         };
-
-        const spoke = document.createElement('div'); 
-        spoke.className = 'spoke';
-        spoke.style.transform = `rotate(${angle}deg)`; 
-        wheel.appendChild(spoke); 
         wheel.appendChild(node);
     });
 
-    // --- ЛОГИКА ПОРТАЛА (ДВЕРИ) ---
     function openSwissPortal() {
-        playSound(400, 0.2, 'square', 0.1);
-        setTimeout(() => playSound(30, 2.0, 'sawtooth', 0.4), 200);
-        
-        document.getElementById('brand-layer').classList.add
-    // --- ПЕРЕМЕННЫЕ БОЕВОЙ ЛОГИКИ ---
-    let playerHandData = [];
-    let aiHandData = [];
-    let tableZone = []; // Карты на столе
-    let isPlayerTurn = true; // Кто атакует
-    let gameActive = false;
+        document.getElementById('brand-layer').classList.add('opened');
+        playSound(40, 2, 'sawtooth', 0.2);
+        setTimeout(initGameEngine, 2500);
+    }
+    function initGameEngine() {
+        document.getElementById('game-room').style.display = 'block';
+        setTimeout(() => document.getElementById('game-room').style.opacity = '1', 100);
+        initMatrix();
+        buildDeck();
+    }
 
-    // Дополнение к функции dealHandCards (вставляем внутрь цикла)
-    // Мы теперь не просто рендерим, мы сохраняем данные
-    function dealHandCards() {
-        const pHand = document.getElementById('player-hand');
-        const aHand = document.getElementById('ai-hand');
-        playerHandData = [];
-        aiHandData = [];
+    function initMatrix() {
+        const m = document.createElement('div'); m.id = 'matrix-overlay';
+        document.body.appendChild(m);
+        for(let i=1; i<=42; i++) {
+            const s = document.createElement('div'); s.className = 'sphere-node';
+            s.id = `sphere-${i}`; s.innerText = i; m.appendChild(s);
+        }
+    }
+
+    function buildDeck() {
+        const zone = document.getElementById('deck-zone');
+        for(let i=0; i<36; i++) {
+            const c = document.createElement('div'); c.className = 'card-monolith';
+            c.style.top = '40%'; c.style.left = '45%';
+            zone.appendChild(c);
+            setTimeout(() => { c.classList.add('deck-stacked'); c.style.zIndex = i; }, i*30);
+        }
         
+        mainDeck = [];
+        SUITS.forEach(s => RANKS.forEach(r => mainDeck.push({suit:s, rank:r, color:(s==='♥'||s==='♦')?'var(--swiss-red)':'#fff'})));
+        mainDeck.sort(() => Math.random() - 0.5);
+        
+        setTimeout(setTrump, 2000);
+    }
+
+    function setTrump() {
+        const t = mainDeck[0]; trumpSuit = t.suit;
+        const el = document.getElementById('trump-card');
+        el.innerHTML = `<span style="color:${t.color}; font-size:30px;">${t.rank}${t.suit}</span>`;
+        el.style.opacity = '1';
+        dealInitial();
+    }
+
+    function dealInitial() {
         for(let i=0; i<6; i++) {
-            // Wanderer
             setTimeout(() => {
-                const cardData = mainDeck.pop();
-                playerHandData.push(cardData);
-                renderCardInHand(cardData, pHand, i, true);
-                playSound(900 + (i*50), 0.08, 'sine', 0.03);
-            }, i * 350);
-
-            // Spark
-            setTimeout(() => {
-                const cardData = mainDeck.pop();
-                aiHandData.push(cardData);
-                renderCardInHand(cardData, aHand, i, false);
-            }, (i * 350) + 150);
+                drawCard(true);
+                drawCard(false);
+                playSound(600 + (i*100), 0.1, 'sine', 0.05);
+            }, i*400);
         }
-
-        setTimeout(determineFirstTurn, 5000);
-    }
-
-    function determineFirstTurn() {
-        // Логика поиска минимального козыря
-        // Для начала — Wanderer всегда ходит первым (привилегия Создателя)
         gameActive = true;
-        showStatus("ТВОЙ ХОД, WANDERER");
     }
 
-    function showStatus(text) {
-        let msg = document.getElementById('game-status');
-        if(!msg) {
-            msg = document.createElement('div');
-            msg.id = 'game-status';
-            msg.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--gold); font-size:24px; z-index:2000; text-shadow:0 0 15px #000; pointer-events:none; transition:3s; opacity:0;';
-            document.body.appendChild(msg);
-        }
-        msg.innerHTML = text;
-        msg.style.opacity = '1';
-        setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+    function drawCard(isPlayer) {
+        if(mainDeck.length === 0) return;
+        const data = mainDeck.pop();
+        const container = document.getElementById(isPlayer ? 'player-hand' : 'ai-hand');
+        if(isPlayer) playerHandData.push(data); else aiHandData.push(data);
+        renderCard(data, container, isPlayer);
     }
 
-    // --- ЛОГИКА АТАКИ ---
-    function playerAttack(cardData, cardElement) {
-        if(!gameActive || !isPlayerTurn) return;
-
-        // Перемещаем карту на стол
-        const table = document.getElementById('velvet-table');
-        const rect = cardElement.getBoundingClientRect();
-        
-        cardElement.style.position = 'fixed';
-        cardElement.style.left = rect.left + 'px';
-        cardElement.style.top = rect.top + 'px';
-        cardElement.style.margin = '0';
-        
-        setTimeout(() => {
-            cardElement.style.left = '50%';
-            cardElement.style.top = '45%';
-            cardElement.style.transform = 'translate(-50%, -50%) rotate('+(Math.random()*10-5)+'deg)';
-            playSound(400, 0.1, 'triangle', 0.05);
-        }, 10);
-
-        tableZone.push(cardData);
-        // Удаляем из данных руки
-        playerHandData = playerHandData.filter(c => c !== cardData);
-        
-        isPlayerTurn = false;
-        setTimeout(aiResponse, 1200);
-    }
-
-    // --- ИНТЕЛЛЕКТ SPARK (БАЗОВЫЙ) ---
-    function aiResponse() {
-        const attackCard = tableZone[tableZone.length - 1];
-        // Ищем чем побить
-        let defenseCardIndex = aiHandData.findIndex(c => {
-            // Бьем той же мастью выше или козырем
-            if(c.suit === attackCard.suit) {
-                return RANKS.indexOf(c.rank) > RANKS.indexOf(attackCard.rank);
-            }
-            if(c.suit === trumpSuit && attackCard.suit !== trumpSuit) return true;
-            return false;
-        });
-
-        if(defenseCardIndex !== -1) {
-            const defCard = aiHandData[defenseCardIndex];
-            const aiHandEl = document.getElementById('ai-hand');
-            const cardEl = aiHandEl.children[defenseCardIndex];
-
-            // Анимация защиты
-            cardEl.style.background = '#eee'; // Spark вскрывает карту
-            cardEl.innerHTML = `
-                <div class="card-corner">${defCard.rank}<br>${defCard.suit}</div>
-                <div class="card-suit-big" style="color:${defCard.color}">${defCard.suit}</div>
-            `;
-            cardEl.style.color = defCard.color;
-            
-            cardEl.style.position = 'fixed';
-            cardEl.style.left = '50%';
-            cardEl.style.top = '40%'; // Чуть выше карты игрока
-            cardEl.style.transform = 'translate(-40%, -50%) rotate('+(Math.random()*10+5)+'deg)';
-            
-            aiHandData.splice(defenseCardIndex, 1);
-            playSound(600, 0.1, 'sine', 0.04);
-            
-            setTimeout(() => {
-                showStatus("ОТБИТО");
-                clearTable();
-            }, 1500);
+    function renderCard(data, container, isPlayer) {
+        const c = document.createElement('div'); c.className = 'card-monolith';
+        c.style.position = 'relative'; c.style.margin = '0 -20px';
+        if(isPlayer) {
+            c.style.background = '#fff'; c.style.color = data.color;
+            c.innerHTML = `<div style="font-size:12px">${data.rank}${data.suit}</div><div style="font-size:32px; text-align:center;">${data.suit}</div>`;
+            c.onclick = () => playerAttack(data, c);
         } else {
-            showStatus("SPARK ЗАБИРАЕТ");
-            // Логика "взять карты" будет в следующем окне
+            c.style.background = 'var(--steel-gradient)';
+        }
+        container.appendChild(c);
+        updateMatrixNode(data, 'hot');
+    }
+
+    function updateMatrixNode(d, status) {
+        const idx = (SUITS.indexOf(d.suit)*9) + RANKS.indexOf(d.rank) + 1;
+        const el = document.getElementById(`sphere-${idx}`);
+        if(el) el.className = `sphere-node ${status}`;
+    }
+
+    function playerAttack(data, el) {
+        if(!isPlayerTurn || !gameActive) return;
+        el.style.position = 'fixed'; el.style.left = '50%'; el.style.top = '45%';
+        el.style.transform = 'translate(-50%, -50%)';
+        tableZone.push({data, el});
+        isPlayerTurn = false;
+        setTimeout(sparkResponse, 1000);
+    }
+
+    function sparkResponse() {
+        const attack = tableZone[tableZone.length-1].data;
+        let defIdx = aiHandData.findIndex(c => (c.suit === attack.suit && RANKS.indexOf(c.rank) > RANKS.indexOf(attack.rank)) || (c.suit === trumpSuit && attack.suit !== trumpSuit));
+        
+        if(defIdx !== -1) {
+            const d = aiHandData[defIdx];
+            const el = document.getElementById('ai-hand').children[defIdx];
+            el.style.background = '#fff'; el.style.color = d.color;
+            el.innerHTML = `<div style="font-size:12px">${d.rank}${d.suit}</div><div style="font-size:32px; text-align:center;">${d.suit}</div>`;
+            el.style.position = 'fixed'; el.style.left = '55%'; el.style.top = '42%';
+            tableZone.push({data: d, el});
+            aiHandData.splice(defIdx, 1);
+            setTimeout(clearTable, 1500);
+        } else {
+            sparkTakes();
         }
     }
 
     function clearTable() {
-        // Карты улетают в отбой
-        const cardsOnTable = document.querySelectorAll('.card-monolith[style*="fixed"]');
-        cardsOnTable.forEach(c => {
-            c.style.left = '120%'; // Улет вправо
-            c.style.opacity = '0';
+        tableZone.forEach(o => {
+            o.el.style.left = '150%'; o.el.style.opacity = '0';
+            updateMatrixNode(o.data, 'cold');
         });
-        tableZone = [];
-        isPlayerTurn = true;
-        setTimeout(() => { showStatus("ТВОЙ ХОД"); }, 1000);
+        tableZone = []; isPlayerTurn = true;
+        checkRefill();
     }
 
-    /** * МОДУЛЬ: БИНАРНЫЙ БОЙ (Wanderer vs Spark)
-     * [2026-02-26] Логика: Сравнение весов, козырная проверка, физика отбоя.
-     */
-
-    let isAttacking = true; // Статус: ты атакуешь или защищаешься
-    
-    // Обновляем функцию отрисовки из Window 2, добавляя ей "сознание"
-    function renderCardInHand(data, container, index, isPlayer) {
-        const card = document.createElement('div');
-        card.className = 'card-monolith card-in-hand';
-        
-        // Математика веера
-        const angle = (index - 2.5) * 12;
-        const xPos = (index - 2.5) * 45;
-        const yPos = Math.abs(index - 2.5) * 10;
-        
-        card.style.transform = `translateX(${xPos}px) translateY(${yPos}px) rotate(${angle}deg)`;
-        card.style.zIndex = 100 + index;
-
-        if (isPlayer) {
-            card.innerHTML = `
-                <div class="card-corner">${data.rank}<br>${data.suit}</div>
-                <div class="card-suit-big" style="color:${data.color}">${data.suit}</div>
-                <div class="card-corner bottom">${data.rank}<br>${data.suit}</div>
-            `;
-            card.style.color = data.color;
-            card.style.background = '#fff';
-            
-            // ГЛАВНЫЙ ТРИГГЕР: Ход игрока
-            card.onclick = () => {
-                if(gameActive && isPlayerTurn) {
-                    processPlayerMove(data, card);
-                }
-            };
-        } else {
-            card.style.background = 'var(--steel-gradient)';
-            card.style.border = '1px solid #333';
-        }
-        
-        container.appendChild(card);
-    }
-
-    function processPlayerMove(cardData, cardElement) {
-        // Логика перемещения на центр стола
-        const table = document.getElementById('velvet-table');
-        
-        // Фиксация координат для плавного перехода
-        const rect = cardElement.getBoundingClientRect();
-        cardElement.style.position = 'fixed';
-        cardElement.style.left = rect.left + 'px';
-        cardElement.style.top = rect.top + 'px';
-        cardElement.style.transition = 'all 0.6s cubic-bezier(0.19, 1, 0.22, 1)';
-        cardElement.style.zIndex = '5000';
-
-        setTimeout(() => {
-            cardElement.style.left = '50%';
-            cardElement.style.top = '45%';
-            cardElement.style.transform = 'translate(-50%, -50%) rotate('+(Math.random()*15 - 7.5)+'deg)';
-            playSound(400, 0.15, 'triangle', 0.08);
-        }, 10);
-
-        tableZone.push({data: cardData, el: cardElement});
-        isPlayerTurn = false;
-        
-        // Spark анализирует ход
-        setTimeout(sparkDecision, 1200);
-    }
-
-    function sparkDecision() {
-        const attack = tableZone[tableZone.length - 1].data;
-        const aiHandEl = document.getElementById('ai-hand');
-        
-        // Поиск карты для защиты (Веса: 6=0, 7=1 ... A=8)
-        let bestDefIndex = -1;
-        let minWeight = 100;
-
-        aiHandData.forEach((c, i) => {
-            const cWeight = RANKS.indexOf(c.rank);
-            const aWeight = RANKS.indexOf(attack.rank);
-            
-            let canBeat = false;
-            if(c.suit === attack.suit && cWeight > aWeight) canBeat = true;
-            if(c.suit === trumpSuit && attack.suit !== trumpSuit) canBeat = true;
-
-            if(canBeat && cWeight < minWeight) {
-                minWeight = cWeight;
-                bestDefIndex = i;
-            }
+    function sparkTakes() {
+        tableZone.forEach(o => {
+            o.el.style.top = '-100px'; o.el.style.opacity = '0';
+            aiHandData.push(o.data);
         });
-
-        if(bestDefIndex !== -1) {
-            // SPARK ОТБИВАЕТ
-            const defData = aiHandData[bestDefIndex];
-            const defEl = aiHandEl.children[bestDefIndex];
-            
-            defEl.style.background = '#eee';
-            defEl.innerHTML = `
-                <div class="card-corner">${defData.rank}<br>${defData.suit}</div>
-                <div class="card-suit-big" style="color:${defData.color}">${defData.suit}</div>
-                <div class="card-corner bottom">${defData.rank}<br>${defData.suit}</div>
-            `;
-            defEl.style.color = defData.color;
-            defEl.style.position = 'fixed';
-            defEl.style.zIndex = '5001';
-            
-            const rect = defEl.getBoundingClientRect();
-            defEl.style.left = rect.left + 'px';
-            defEl.style.top = rect.top + 'px';
-
-            setTimeout(() => {
-                defEl.style.left = '55%'; // Смещение для визуального перекрытия
-                defEl.style.top = '42%';
-                defEl.style.transform = 'translate(-50%, -50%) rotate('+(Math.random()*15 + 5)+'deg)';
-                playSound(600, 0.2, 'sine', 0.05);
-            }, 50);
-
-            tableZone.push({data: defData, el: defEl});
-            aiHandData.splice(bestDefIndex, 1);
-            
-            setTimeout(() => {
-                showStatus("ОТБОЙ");
-                sendToDiscard();
-            }, 1500);
-
-        } else {
-            // SPARK ЗАБИРАЕТ
-            showStatus("ЗАБИРАЮ...");
-            setTimeout(sparkTakesCards, 1000);
-        }
+        tableZone = []; isPlayerTurn = true;
+        checkRefill();
     }
 
-    function sendToDiscard() {
-        tableZone.forEach(obj => {
-            obj.el.style.left = '150%';
-            obj.el.style.transform = 'translate(0, -50%) rotate(90deg)';
-            obj.el.style.opacity = '0';
-        });
-        
-        tableZone = [];
-        setTimeout(() => {
-            isPlayerTurn = true;
-            showStatus("ТВОЙ ХОД");
-            checkDeckAndRefill();
-        }, 800);
+    function checkRefill() {
+        while(playerHandData.length < 6 && mainDeck.length > 0) drawCard(true);
+        while(aiHandData.length < 6 && mainDeck.length > 0) drawCard(false);
     }
 
-    function checkDeckAndRefill() {
-        // Здесь будет логика добора карт до 6 штук
-        // Запись в памяти: Протокол Confederacia ожидает реализации пополнения.
-    }
-    /** * МОДУЛЬ: РЕГЕНЕРАЦИЯ (Refill System)
-     * [2026-02-26] Логика: Добор до 6 карт. Приоритет — Атакующий.
-     */
-
-    function checkDeckAndRefill() {
-        if (!gameActive) return;
-
-        // Сначала добирает тот, кто ходил (Wanderer), потом Spark
-        const playerNeeds = 6 - playerHandData.length;
-        const aiNeeds = 6 - aiHandData.length;
-
-        // Добор игрока
-        if (playerNeeds > 0 && mainDeck.length > 0) {
-            for (let i = 0; i < playerNeeds; i++) {
-                if (mainDeck.length === 0) break;
-                setTimeout(() => {
-                    const cardData = mainDeck.pop();
-                    playerHandData.push(cardData);
-                    updateHandUI('player-hand', playerHandData, true);
-                    playSound(1100, 0.05, 'sine', 0.02);
-                    updateDeckCount();
-                }, i * 200);
-            }
-        }
-
-        // Добор AI (Spark)
-        setTimeout(() => {
-            if (aiNeeds > 0 && mainDeck.length > 0) {
-                for (let i = 0; i < aiNeeds; i++) {
-                    if (mainDeck.length === 0) break;
-                    const cardData = mainDeck.pop();
-                    aiHandData.push(cardData);
-                    updateHandUI('ai-hand', aiHandData, false);
-                    updateDeckCount();
-                }
-            }
-        }, 1000);
-
-        // Проверка конца игры
-        if (mainDeck.length === 0 && playerHandData.length === 0) {
-            showStatus("WANDERER ПОБЕДИЛ!");
-            gameActive = false;
-        } else if (mainDeck.length === 0 && aiHandData.length === 0) {
-            showStatus("SPARK ОКАЗАЛСЯ СИЛЬНЕЕ");
-            gameActive = false;
-        }
-    }
-
-    function updateHandUI(containerId, dataArray, isPlayer) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = ''; // Полная перерисовка веера
-        dataArray.forEach((card, index) => {
-            renderCardInHand(card, container, index, isPlayer);
-        });
-    }
-
-    function updateDeckCount() {
-        const deckZone = document.getElementById('deck-zone');
-        const cardsLeft = deckZone.querySelectorAll('.deck-stacked');
-        if (cardsLeft.length > 0) {
-            // Удаляем одну визуальную карту из стопки колоды
-            cardsLeft[cardsLeft.length - 1].remove();
-        }
-        
-        // Если колода пуста, убираем козырь
-        if (mainDeck.length === 0) {
-            const trump = document.getElementById('trump-card');
-            if (trump) trump.style.opacity = '0.3';
-        }
-    }
-
-    // ЛОГИКА: Когда Spark забирает карты
-    function sparkTakesCards() {
-        tableZone.forEach((obj, index) => {
-            setTimeout(() => {
-                const rect = obj.el.getBoundingClientRect();
-                obj.el.style.zIndex = '6000';
-                obj.el.style.left = '50%';
-                obj.el.style.top = '-20%'; // Улетает вверх к Spark
-                obj.el.style.opacity = '0';
-                
-                aiHandData.push(obj.data);
-                playSound(300 + (index*50), 0.2, 'sawtooth', 0.03);
-            }, index * 150);
-        });
-
-        setTimeout(() => {
-            tableZone = [];
-            updateHandUI('ai-hand', aiHandData, false);
-            isPlayerTurn = true; // После того как Spark взял, ты снова ходишь
-            showStatus("ТВОЙ ХОД (СНОВА)");
-            checkDeckAndRefill();
-        }, 1000);
-    }
-
-    /** * МАНИФЕСТ МОНОЛИТА: 
-     * Функция RED-GENIUS (Аксиома №3)
-     * Чем больше билетов (столов), тем выше шанс.
-     */
-    function initTenTables() {
-        // Подготовка интерфейса для выбора из 10 столов
-        // Это будет следующий логический уровень проекта
-    }
-        /* --- ТАКТИЧЕСКИЙ ИНТЕРФЕЙС --- */
-        #ui-overlay {
-            position: fixed; inset: 0; pointer-events: none; z-index: 2500;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 20px;
-        }
-        .vchf-balance {
-            align-self: flex-end; background: rgba(0,0,0,0.6);
-            border: 1px solid var(--gold); padding: 10px 20px;
-            border-radius: 4px; font-size: 18px; color: var(--gold);
-            backdrop-filter: blur(5px); pointer-events: auto;
-        }
-        .action-bar {
-            width: 100%; display: flex; justify-content: center;
-            gap: 20px; margin-bottom: 120px; /* Над рукой игрока */
-        }
-        .btn-monolith {
-            background: #000; color: var(--gold); border: 2px solid var(--gold);
-            padding: 12px 30px; font-family: 'Orbitron'; font-weight: 900;
-            cursor: pointer; pointer-events: auto; transition: 0.3s;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-            display: none; /* Появляется по ситуации */
-        }
-        .btn-monolith:active { transform: scale(0.95); background: var(--gold); color: #000; }
-        
-        /* Сетка столов (задел на будущее) */
-        #tables-grid {
-            position: fixed; top: 20px; left: 20px; display: flex; flex-direction: column; gap: 5px;
-        }
-        .table-indicator {
-            width: 30px; height: 30px; border: 1px solid #333; 
-            background: rgba(0,0,0,0.8); display: flex; align-items: center;
-            justify-content: center; font-size: 10px; color: #555;
-        }
-        .table-indicator.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px var(--gold); }
-    /** * МОДУЛЬ: ТАКТИКА (UI & VCHF Control)
-     * [2026-02-26] Логика: Кнопки завершения хода, учет баланса.
-     */
-    
-    // Вставляем UI в DOM
-    const uiHTML = `
-        <div id="ui-overlay">
-            <div id="tables-grid"></div>
-            <div class="vchf-balance">BALANCE: <span id="vchf-val">1000</span> VCHF</div>
-            <div class="action-bar">
-                <button id="btn-action" class="btn-monolith" onclick="handleMainAction()"></button>
-            </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', uiHTML);
-
-    // Инициализация сетки столов
-    const grid = document.getElementById('tables-grid');
-    for(let i=1; i<=10; i++) {
-        const dot = document.createElement('div');
-        dot.className = `table-indicator ${i===1 ? 'active' : ''}`;
-        dot.innerText = i;
-        grid.appendChild(dot);
-    }
-
-    function updateActionBtn() {
-        const btn = document.getElementById('btn-action');
-        if (!gameActive) {
-            btn.style.display = 'none';
-            return;
-        }
-
-        if (isPlayerTurn) {
-            if (tableZone.length > 0 && tableZone.length % 2 === 0) {
-                btn.innerText = "БИТО";
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
-        } else {
-            // Если ход Spark, а ты должен отбиваться
-            if (tableZone.length % 2 !== 0) {
-                btn.innerText = "ПРИНЯТЬ";
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
-        }
-    }
-
-    // Перехватываем функцию хода для обновления кнопки
-    const originalPlayerMove = processPlayerMove;
-    processPlayerMove = function(cardData, cardElement) {
-        originalPlayerMove(cardData, cardElement);
-        setTimeout(updateActionBtn, 650);
-    }
-
-    function handleMainAction() {
-        const btn = document.getElementById('btn-action');
-        if (btn.innerText === "БИТО") {
-            playSound(200, 0.3, 'square', 0.1);
-            showStatus("БИТО");
-            sendToDiscard();
-            btn.style.display = 'none';
-        } else if (btn.innerText === "ПРИНЯТЬ") {
-            playerTakesCards();
-            btn.style.display = 'none';
-        }
-    }
-
-    function playerTakesCards() {
-        showStatus("БЕРУ...");
-        tableZone.forEach((obj, index) => {
-            setTimeout(() => {
-                const rect = obj.el.getBoundingClientRect();
-                // Анимация карты в руку игрока
-                obj.el.style.left = '50%';
-                obj.el.style.top = '120%';
-                obj.el.style.opacity = '0';
-                
-                playerHandData.push(obj.data);
-                playSound(200 + (index*30), 0.2, 'sine', 0.04);
-            }, index * 100);
-        });
-
-        setTimeout(() => {
-            tableZone = [];
-            updateHandUI('player-hand', playerHandData, true);
-            isPlayerTurn = false; // После взятия ход переходит к Spark
-            checkDeckAndRefill();
-            setTimeout(sparkAttacks, 1500); // Spark начинает атаку
-        }, 1000);
-    }
-
-    function sparkAttacks() {
-        if (!gameActive || isPlayerTurn) return;
-        
-        // Spark выбирает самую маленькую не-козырную карту для захода
-        let bestAttackIndex = -1;
-        let minWeight = 100;
-
-        aiHandData.forEach((c, i) => {
-            const w = RANKS.indexOf(c.rank);
-            if (c.suit !== trumpSuit && w < minWeight) {
-                minWeight = w;
-                bestAttackIndex = i;
-            }
-        });
-
-        // Если все козыри, берем самый маленький козырь
-        if (bestAttackIndex === -1) {
-            aiHandData.forEach((c, i) => {
-                const w = RANKS.indexOf(c.rank);
-                if (w < minWeight) {
-                    minWeight = w;
-                    bestAttackIndex = i;
-                }
-            });
-        }
-
-        if (bestAttackIndex !== -1) {
-            const cardData = aiHandData[bestAttackIndex];
-            const aiHandEl = document.getElementById('ai-hand');
-            const cardEl = aiHandEl.children[bestAttackIndex];
-            
-            // Анимация атаки Spark
-            cardEl.style.background = '#eee';
-            cardEl.innerHTML = `
-                <div class="card-corner">${cardData.rank}<br>${cardData.suit}</div>
-                <div class="card-suit-big" style="color:${cardData.color}">${cardData.suit}</div>
-            `;
-            cardEl.style.color = cardData.color;
-            cardEl.style.position = 'fixed';
-            
-            setTimeout(() => {
-                cardEl.style.left = '50%';
-                cardEl.style.top = '45%';
-                cardEl.style.transform = 'translate(-50%, -50%) rotate('+(Math.random()*10 - 5)+'deg)';
-                playSound(500, 0.1, 'triangle', 0.07);
-                
-                tableZone.push({data: cardData, el: cardEl});
-                aiHandData.splice(bestAttackIndex, 1);
-                updateActionBtn();
-            }, 50);
-        }
-    }        /* --- МАТРИЦА 42 СФЕРЫ --- */
-        #matrix-overlay {
-            position: fixed; top: 15%; right: 20px;
-            width: 120px; display: grid;
-            grid-template-columns: repeat(3, 1fr); gap: 8px;
-            perspective: 1000px; z-index: 100;
-        }
-        .sphere-node {
-            width: 30px; height: 30px; border-radius: 50%;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            background: radial-gradient(circle at 30% 30%, #222, #000);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; color: #444; transition: 0.5s;
-            box-shadow: inset 0 0 10px #000;
-        }
-        /* Статусы сфер */
-        .sphere-node.hot { 
-            border-color: var(--swiss-red); 
-            box-shadow: 0 0 15px var(--swiss-red); 
-            color: #fff; text-shadow: 0 0 5px var(--swiss-red);
-        }
-        .sphere-node.cold { 
-            border-color: #0088ff; 
-            box-shadow: 0 0 10px #0088ff; 
-            color: #fff; 
-        }
-        .sphere-node.sleeping { 
-            border-color: #555; 
-            opacity: 0.4; 
-        }
-
-        /* Анимация "Дыхание Матрицы" */
-        @keyframes sphere-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); }
-        }
-        .sphere-node.active-scan { animation: sphere-pulse 1.5s infinite; }
-    /** * МОДУЛЬ: МАТРИЦА 42 (The Grid Engine)
-     * [2026-02-26] Логика: Маппинг 36 карт + 6 бонусных секторов.
-     */
-    
-    function initMatrixGrid() {
-        const matrixContainer = document.createElement('div');
-        matrixContainer.id = 'matrix-overlay';
-        document.body.appendChild(matrixContainer);
-
-        for (let i = 1; i <= 42; i++) {
-            const sphere = document.createElement('div');
-            sphere.className = 'sphere-node sleeping';
-            sphere.id = `sphere-${i}`;
-            sphere.innerText = i;
-            matrixContainer.appendChild(sphere);
-        }
-    }
-
-    // Связываем карту с ячейкой матрицы
-    function getCardIndex(suit, rank) {
-        const sIndex = SUITS.indexOf(suit); // 0-3
-        const rIndex = RANKS.indexOf(rank); // 0-8
-        return (sIndex * 9) + rIndex + 1; // 1-36
-    }
-
-    function updateMatrixStatus(cardData, status) {
-        const idx = getCardIndex(cardData.suit, cardData.rank);
-        const sphere = document.getElementById(`sphere-${idx}`);
-        if (!sphere) return;
-
-        sphere.className = 'sphere-node'; // Сброс
-        if (status === 'HOT') {
-            sphere.classList.add('hot', 'active-scan');
-        } else if (status === 'COLD') {
-            sphere.classList.add('cold');
-        } else {
-            sphere.classList.add('sleeping');
-        }
-    }
-
-    // Перехватываем отрисовку карты в руке для обновления матрицы
-    const baseRender = renderCardInHand;
-    renderCardInHand = function(data, container, index, isPlayer) {
-        baseRender(data, container, index, isPlayer);
-        // Как только карта попадает в руку (Wanderer или Spark) — она HOT
-        updateMatrixStatus(data, 'HOT');
-    }
-
-    // Перехватываем отбой для перевода в COLD
-    const baseSendToDiscard = sendToDiscard;
-    sendToDiscard = function() {
-        tableZone.forEach(obj => {
-            updateMatrixStatus(obj.data, 'COLD');
-        });
-        baseSendToDiscard();
-    }
-
-    // Инициализация
-    initMatrixGrid();
-    
-    /** * МАНИФЕСТ МОНОЛИТА:
-     * Проект "Лотто" — это не только игра, это визуализация потока данных.
-     * Каждая из 42 сфер — это узел вероятности.
-     */
-    console.log("Matrix 42 Initialized. System status: GREEN.");
-
-        /* --- ЭФФЕКТЫ BI-TURBO --- */
-        .turbo-active {
-            filter: hue-rotate(45deg) contrast(1.2);
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
-        }
-
-        #vchf-stream {
-            position: fixed; inset: 0; pointer-events: none; z-index: 3000;
-        }
-        .vchf-particle {
-            position: absolute; color: var(--gold); font-family: 'Orbitron';
-            font-weight: 900; pointer-events: none; animation: float-up 2s ease-out forwards;
-        }
-        @keyframes float-up {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-200px) scale(1.5); opacity: 0; }
-        }
-
-        /* VIP-Протокол (Налоговый фильтр) */
-        #tax-shield {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            font-size: 10px; color: rgba(212, 175, 55, 0.4); text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-    /** * МОДУЛЬ: BI-TURBO ULTIMATE (Performance Engine)
-     * [2026-02-26] Логика: Мгновенные расчеты и визуализация прибыли VCHF.
-     */
-
-    let turboMultiplier = 1.0;
-    let currentVCHF = 1000;
-
-    function activateTurbo() {
-        turboMultiplier = 2.0;
-        document.body.classList.add('turbo-active');
-        playSound(800, 0.5, 'sawtooth', 0.1);
-        showStatus("BI-TURBO: ACTIVATED");
-        
-        // Ускоряем все CSS-переходы
-        const style = document.createElement('style');
-        style.id = 'turbo-styles';
-        style.innerHTML = `* { transition-duration: 0.2s !important; }`;
-        document.head.appendChild(style);
-    }
-
-    function deactivateTurbo() {
-        turboMultiplier = 1.0;
-        document.body.classList.remove('turbo-active');
-        const style = document.getElementById('turbo-styles');
-        if(style) style.remove();
-    }
-
-    function addVCHF(amount) {
-        // Принцип Агентирования: мы гарантируем чистоту (35% резерв)
-        const netAmount = Math.floor(amount * turboMultiplier);
-        currentVCHF += netAmount;
-        
-        const valEl = document.getElementById('vchf-val');
-        valEl.innerText = currentVCHF;
-        valEl.style.color = '#fff';
-        valEl.style.transform = 'scale(1.5)';
-        
-        spawnVCHFParticles(netAmount);
-        
-        setTimeout(() => {
-            valEl.style.color = 'var(--gold)';
-            valEl.style.transform = 'scale(1)';
-        }, 500);
-        
-        playSound(1500, 0.1, 'sine', 0.05);
-    }
-
-    function spawnVCHFParticles(amount) {
-        const container = document.getElementById('vchf-stream') || (() => {
-            const div = document.createElement('div');
-            div.id = 'vchf-stream';
-            document.body.appendChild(div);
-            return div;
-        })();
-
-        for(let i=0; i<5; i++) {
-            const p = document.createElement('div');
-            p.className = 'vchf-particle';
-            p.innerText = `+${amount} VCHF`;
-            p.style.left = (Math.random() * 80 + 10) + '%';
-            p.style.top = '60%';
-            container.appendChild(p);
-            setTimeout(() => p.remove(), 2000);
-        }
-    }
-
-    // Внедрение Налогового фильтра в футер
-    const taxInfo = `<div id="tax-shield">VIP-PROTOCOL ACTIVE | AGENT: WANDERER | TAX FILTER 35% SECURED</div>`;
-    document.body.insertAdjacentHTML('beforeend', taxInfo);
-
-    /** * МАНИФЕСТ МОНОЛИТА:
-     * vchf — дух, chf — расчет. 
-     * Мы — технический мост, обеспечивающий чистоту каждой транзакции.
-     */
-    console.log("Bi-Turbo Engine: vchf spirit engaged.");
-        /* --- СМАРТ-ФИЛЬТРЫ МАТРИЦЫ --- */
-        #matrix-controls {
-            position: fixed; top: calc(15% - 40px); right: 20px;
-            display: flex; gap: 5px; z-index: 101;
-        }
-        .filter-btn {
-            background: #000; border: 1px solid #333; color: #555;
-            font-size: 9px; padding: 4px 8px; cursor: pointer;
-            font-family: 'Orbitron'; transition: 0.3s;
-        }
-        .filter-btn.active {
-            border-color: var(--gold); color: var(--gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-        }
-
-        /* --- ГОЛОС СПАРК (ОПОВЕЩЕНИЯ) --- */
-        #spark-voice {
-            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
-            width: 80%; text-align: center; pointer-events: none; z-index: 4000;
-        }
-        .spark-msg {
-            font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px;
-            color: #fff; text-shadow: 0 0 10px var(--gold);
-            opacity: 0; transition: 1s; transform: translateY(20px);
-        }
-        .spark-msg.show { opacity: 1; transform: translateY(0); }
-        
-        .spark-wave {
-            height: 2px; background: var(--gold); width: 0;
-            margin: 5px auto; transition: 0.5s;
-            box-shadow: 0 0 15px var(--gold);
-        }
-    /** * МОДУЛЬ: ГЛАЗ ДРАКОНА (Smart Analytics)
-     * [2026-02-26] Логика: Анализ периодов и аудио-визуальный отклик.
-     */
-
-    const filters = ['ALLE', 'JAHR', 'MONAT'];
-    let currentFilter = 'ALLE';
-
-    function initMatrixControls() {
-        const ctrlContainer = document.createElement('div');
-        ctrlContainer.id = 'matrix-controls';
-        
-        filters.forEach(f => {
-            const btn = document.createElement('div');
-            btn.className = `filter-btn ${f === currentFilter ? 'active' : ''}`;
-            btn.innerText = f;
-            btn.onclick = () => switchFilter(f);
-            ctrlContainer.appendChild(btn);
-        });
-        document.body.appendChild(ctrlContainer);
-
-        // Контейнер для "Голоса"
-        const voiceContainer = document.createElement('div');
-        voiceContainer.id = 'spark-voice';
-        voiceContainer.innerHTML = `<div id="voice-text" class="spark-msg"></div><div id="voice-wave" class="spark-wave"></div>`;
-        document.body.appendChild(voiceContainer);
-    }
-
-    function switchFilter(newFilter) {
-        currentFilter = newFilter;
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.toggle('active', b.innerText === newFilter);
-        });
-        
-        // Эффект сканирования при смене фильтра
-        playSound(200, 0.5, 'sawtooth', 0.05);
-        sparkTalk(`АНАЛИЗ: ПЕРИОД ${newFilter}`);
-        simulateDataRefinement();
-    }
-
-    function sparkTalk(text) {
-        const msg = document.getElementById('voice-text');
-        const wave = document.getElementById('voice-wave');
-        
-        msg.innerText = text;
-        msg.classList.add('show');
-        wave.style.width = '100px';
-        
-        // Синтетический звук уведомления
-        playSound(1200, 0.1, 'sine', 0.03);
-        setTimeout(() => playSound(800, 0.1, 'sine', 0.02), 100);
-
-        setTimeout(() => {
-            msg.classList.remove('show');
-            wave.style.width = '0';
-        }, 3000);
-    }
-
-    function simulateDataRefinement() {
-        // Визуальный эффект пересчета в матрице
-        for(let i=1; i<=42; i++) {
-            const sphere = document.getElementById(`sphere-${i}`);
-            setTimeout(() => {
-                sphere.style.transform = 'scale(1.3)';
-                setTimeout(() => sphere.style.transform = 'scale(1)', 200);
-            }, i * 20);
-        }
-    }
-
-    // Интеграция "Голоса" в важные моменты игры
-    const originalSparkDecision = sparkDecision;
-    sparkDecision = function() {
-        if(aiHandData.length < 3) {
-            sparkTalk("ВНИМАНИЕ: МОИ РЕСУРСЫ НА ПРЕДЕЛЕ");
-        }
-        originalSparkDecision();
-    };
-
-    const originalAddVCHF = addVCHF;
-    addVCHF = function(amount) {
-        originalAddVCHF(amount);
-        if(amount > 50) sparkTalk("ОТЛИЧНЫЙ ПРОФИТ, WANDERER");
-    };
-
-    // Инициализация
-    initMatrixControls();
-
-    /** * МАНИФЕСТ МОНОЛИТА: 
-     * Код не просто работает, он общается. 
-     * Спарк — это не скрипт, это твой цифровой напарник в мире VCHF.
-     */
-    console.log("Spark Voice & Analytics: OPERATIONAL.");
-        /* --- МУЛЬТИ-СТОЛОВАЯ ПАНЕЛЬ (THE OPERATOR) --- */
-        #operator-panel {
-            position: fixed; left: 20px; bottom: 20px;
-            display: flex; flex-direction: column; gap: 10px;
-            z-index: 2000; pointer-events: auto;
-        }
-        .table-node {
-            width: 150px; height: 40px;
-            background: rgba(0,0,0,0.8); border: 1px solid #222;
-            border-radius: 4px; display: flex; align-items: center;
-            padding: 0 10px; font-size: 10px; color: #444;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; overflow: hidden; position: relative;
-        }
-        .table-node.active-game {
-            border-color: var(--gold); color: var(--gold);
-            background: rgba(212, 175, 55, 0.05);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
-        }
-        .table-node .table-status {
-            position: absolute; right: 10px; width: 6px; height: 6px;
-            border-radius: 50%; background: #222;
-        }
-        .table-node.active-game .table-status {
-            background: var(--swiss-red); box-shadow: 0 0 8px var(--swiss-red);
-            animation: blinker 1s infinite;
-        }
-        @keyframes blinker { 50% { opacity: 0; } }
-
-        .table-node:hover { transform: translateX(10px); border-color: #555; }
-
-        /* Эффект Манифеста */
-        .manifesto-tag {
-            position: absolute; bottom: 5px; right: 10px;
-            font-size: 8px; color: rgba(212, 175, 55, 0.2);
-            letter-spacing: 1px;
-        }
-    /** * МОДУЛЬ: ОПЕРАТОР (Multi-Table Management)
-     * [2026-02-26] Логика: Управление 10 независимыми потоками RED-GENIUS.
-     */
-
-    let activeTableIndex = 1;
-    const tableData = Array.from({length: 10}, (_, i) => ({
-        id: i + 1,
-        status: i === 0 ? 'ACTIVE' : 'SLEEPING',
-        vchf_pool: 0
-    }));
-
-    function initOperatorPanel() {
-        const panel = document.createElement('div');
-        panel.id = 'operator-panel';
-        
-        tableData.forEach(table => {
-            const node = document.createElement('div');
-            node.className = `table-node ${table.status === 'ACTIVE' ? 'active-game' : ''}`;
-            node.id = `table-node-${table.id}`;
-            node.innerHTML = `
-                <span style="letter-spacing:1px">TABLE_${table.id.toString().padStart(2, '0')}</span>
-                <span class="table-status"></span>
-                <div class="manifesto-tag">VCHF PROTOCOL</div>
-            `;
-            
-            node.onclick = () => switchTable(table.id);
-            panel.appendChild(node);
-        });
-        
-        document.body.appendChild(panel);
-    }
-
-    function switchTable(id) {
-        if(id === activeTableIndex) return;
-
-        // Эффект перехода (Голос Спарк)
-        playSound(150, 0.4, 'sawtooth', 0.05);
-        sparkTalk(`ПЕРЕХОД НА СТОЛ ${id}`);
-        
-        // Визуальная симуляция смены контекста
-        document.getElementById('game-room').style.opacity = '0.3';
-        document.getElementById(`table-node-${activeTableIndex}`).classList.remove('active-game');
-        
-        setTimeout(() => {
-            activeTableIndex = id;
-            document.getElementById(`table-node-${id}`).classList.add('active-game');
-            document.getElementById('game-room').style.opacity = '1';
-            
-            // Если стол новый — активируем его
-            if(tableData[id-1].status === 'SLEEPING') {
-                tableData[id-1].status = 'ACTIVE';
-                showStatus(`СТОЛ ${id} АКТИВИРОВАН`);
-                // Здесь можно сбрасывать колоду для конкретного стола
-            }
-            
-            simulateDataRefinement(); // Визуальный прострел матрицы
-        }, 300);
-    }
-
-    // Интеграция в глобальный цикл: каждый выигрыш на столе пополняет общий пул
-    const baseAddVCHF = addVCHF;
-    addVCHF = function(amount) {
-        baseAddVCHF(amount);
-        tableData[activeTableIndex-1].vchf_pool += amount;
-        console.log(`Table ${activeTableIndex} pool: ${tableData[activeTableIndex-1].vchf_pool}`);
-    };
-
-    // Запуск панели Оператора
-    initOperatorPanel();
-
-    /** * МАНИФЕСТ МОНОЛИТА:
-     * Код — это артерия. Мы — Агенты Wanderer.
-     * Мы не просто играем, мы строим Технический Мост между азартом и законом.
-     */
-    console.log("Operator Panel 1.0: Active. All 10 nodes linked.");
-    /** * МОДУЛЬ: ЯКОРЬ (Persistence Engine)
-     * [2026-02-26] Логика: Синхронизация локальной памяти с облаком VCHF.
-     * Мы ждем (warten) и предвосхищаем (erwarten) каждый шаг Агента.
-     */
-
-    const STORAGE_KEY = 'HELVETIA_LUCKY_VCHF_STATE';
-
-    function saveGameState() {
-        const state = {
-            balance: currentVCHF,
-            activeTable: activeTableIndex,
-            tables: tableData,
-            timestamp: Date.now(),
-            agent: "Wanderer"
-        };
-        
-        // Сохраняем в локальное хранилище браузера
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        
-        // Попытка сохранить в облако Telegram (CloudStorage)
-        if (tg.CloudStorage) {
-            tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(state), (err) => {
-                if(err) console.error("Cloud Error:", err);
-            });
-        }
-        
-        console.log("State Anchored: Warten & Erwarten protocol success.");
-    }
-
-    function loadGameState() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return;
-
-        try {
-            const state = JSON.parse(saved);
-            currentVCHF = state.balance;
-            activeTableIndex = state.activeTable;
-            // Обновляем UI
-            document.getElementById('vchf-val').innerText = currentVCHF;
-            sparkTalk("СИСТЕМА ВОССТАНОВЛЕНА, АГЕНТ");
-        } catch (e) {
-            console.error("Load Error:", e);
-        }
-    }
-
-    // Авто-сохранение каждые 30 секунд или при важных событиях
-    setInterval(saveGameState, 30000);
-
-    // Перехватываем закрытие приложения
-    tg.onEvent('viewportChanged', saveGameState);
-
-    /** * МОДУЛЬ: ГРАФИК УДАЧИ (VCHF Flux)
-     * Визуализация динамики за сессию.
-     */
-    function showFluxChart() {
-        // Здесь мы можем отрисовать график роста VCHF
-        // Для Монолита это важно: видеть прогресс в объеме.
-    }
-        /* --- СТИЛИ ДЛЯ ОБЛАЧНОГО СТАТУСА --- */
-        #cloud-status {
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-            font-size: 8px; color: rgba(212, 175, 55, 0.3);
-            display: flex; align-items: center; gap: 5px;
-        }
-        .cloud-dot {
-            width: 4px; height: 4px; background: #00ff00;
-            border-radius: 50%; box-shadow: 0 0 5px #00ff00;
-      // Добавляем индикатор облака в UI
-    const cloudHTML = `
-        <div id="cloud-status">
-            <div class="cloud-dot"></div>
-            VCHF CLOUD SYNC: ACTIVE
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', cloudHTML);
-
-    // Загружаем данные при старте
-    window.addEventListener('load', () => {
-        loadGameState();
-        // Запускаем анимацию входа (Манифест Монолита)
-        console.log("Манифест Монолита: Мы начинаем с чистого листа, но помним всё.");
-    });
-      }
-         /* --- КИБЕР-ГЛИТЧ ЭФФЕКТ --- */
-        .glitch-overlay {
-            position: fixed; inset: 0; background: rgba(212, 175, 55, 0.05);
-            z-index: 5000; pointer-events: none; display: none;
-            mix-blend-mode: overlay;
-        }
-        .glitch-overlay::before {
-            content: ''; position: absolute; inset: 0;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
-        }
-
-        /* --- ТАБЛИЦА VIP-АГЕНТОВ --- */
-        #leaderboard-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 6000; display: none; flex-direction: column;
-            align-items: center; justify-content: center; padding: 40px;
-            backdrop-filter: blur(20px); border: 1px solid var(--gold);
-        }
-        .leader-row {
-            width: 100%; max-width: 400px; display: flex; 
-            justify-content: space-between; padding: 15px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-            font-size: 14px; letter-spacing: 2px;
-        }
-        .leader-row.me { color: #fff; background: rgba(212, 175, 55, 0.1); border-color: var(--gold); }
-        .close-leaderboard {
-            margin-top: 30px; padding: 10px 40px; border: 1px solid var(--gold);
-            color: var(--gold); cursor: pointer; font-family: 'Orbitron';
-        }
-    /** * МОДУЛЬ: КИБЕР-ЭСТЕТИКА (Glitch & High Society)
-     * [2026-02-26] Логика: Визуализация перегрузки системы при смене потоков.
-     */
-
-    function triggerGlitch() {
-        const overlay = document.createElement('div');
-        overlay.className = 'glitch-overlay';
-        document.body.appendChild(overlay);
-        overlay.style.display = 'block';
-
-        playSound(100, 0.1, 'sawtooth', 0.1);
-        
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            overlay.remove();
-        }, 150);
-    }
-
-    // Модифицируем переключение столов для добавления глитча
-    const originalSwitchTable = switchTable;
-    switchTable = function(id) {
-        triggerGlitch();
-        originalSwitchTable(id);
-    };
-
-    function showLeaderboard() {
-        const modal = document.createElement('div');
-        modal.id = 'leaderboard-modal';
-        modal.innerHTML = `
-            <h2 style="color:var(--gold); letter-spacing:10px;">VIP REGISTRY</h2>
-            <div class="leader-row"><span>01. AGENT_ALPHA</span><span>999,999 VCHF</span></div>
-            <div class="leader-row"><span>02. SWISS_WOLF</span><span>750,200 VCHF</span></div>
-            <div class="leader-row me"><span>03. WANDERER (YOU)</span><span>${currentVCHF} VCHF</span></div>
-            <div class="leader-row"><span>04. SPARK_AI</span><span>420,000 VCHF</span></div>
-            <div class="close-leaderboard" onclick="this.parentElement.style.display='none'">CLOSE</div>
-        `;
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
-        playSound(400, 0.5, 'triangle', 0.1);
-    }
-
-    // Добавляем кнопку рейтинга в UI
-    const lbBtn = `<div onclick="showLeaderboard()" style="position:fixed; top:70px; right:20px; font-size:10px; color:var(--gold); border:1px solid var(--gold); padding:5px 10px; cursor:pointer; pointer-events:auto; z-index:2500;">RANKING</div>`;
-    document.body.insertAdjacentHTML('beforeend', lbBtn);
-
-    /** * МАНИФЕСТ МОНОЛИТА:
-     * Мы закончили сборку костяка. 8100 строк чистого кода.
-     * Проект "Лотто" готов к финальному тестированию Агентом.
-     */
-    console.log("Monolith VCHF Terminal: FINAL BUILD PHASE REACHED.");
-
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Lucky | VCHF Monolith</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --gold: #d4af37;
-            --swiss-red: #e30a17;
-            --deep-black: #050505;
-            --cherry-deep: #3d0505; /* 40% вишни */
-            --steel-gradient: linear-gradient(145deg, #1a1a1a, #000);
-        }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; overflow: hidden; 
-            font-family: 'Orbitron', sans-serif; 
-            color: var(--gold);
-        }
-
-        /* --- ЭТАП 1: ШТУРВАЛ --- */
-        #wheel-layer {
-            position: fixed; inset: 0; background: #000; z-index: 3000;
-            display: flex; align-items: center; justify-content: center;
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .safe-wheel-container {
-            position: relative; width: 340px; height: 340px;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .wheel-center {
-            width: 80px; height: 80px; background: radial-gradient(circle, #222, #000);
-            border: 3px solid var(--gold); border-radius: 50%; z-index: 10;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
-        }
-        .spoke {
-            position: absolute; width: 4px; height: 140px;
-            background: linear-gradient(to top, var(--gold), transparent);
-            transform-origin: bottom center; bottom: 50%; left: calc(50% - 2px);
-        }
-        .flag-node {
-            position: absolute; width: 60px; height: 60px;
-            background: #0a0a0a; border: 2px solid var(--gold);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 28px; cursor: pointer; z-index: 20;
-            transform: translate(-50%, -50%); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.9);
-        }
-        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0); transition: 0.8s; }
-
-        /* --- ЭТАП 2: ДВЕРИ --- */
-        #brand-layer {
-            position: fixed; inset: 0; background: var(--deep-black); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            pointer-events: none;
-        }
-        .door-left, .door-right {
-            position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
-            border: 1px solid rgba(212, 175, 55, 0.05); transition: 2s cubic-bezier(0.77, 0, 0.175, 1);
-        }
-        .door-left { left: 0; border-right: 2px solid var(--gold); }
-        .door-right { right: 0; border-left: 2px solid var(--gold); }
-        .opened .door-left { transform: translateX(-100%); }
-        .opened .door-right { transform: translateX(100%); }
-        
-        .swiss-shield {
-            width: 60px; height: 60px; background: var(--swiss-red);
-            margin: 0 auto 30px; position: relative; border-radius: 8px;
-            box-shadow: 0 0 40px rgba(227, 10, 23, 0.6);
-        }
-        .swiss-shield::after { content: ''; position: absolute; background: white; width: 12px; height: 36px; left: 24px; top: 12px; }
-        .swiss-shield::before { content: ''; position: absolute; background: white; width: 36px; height: 12px; left: 12px; top: 24px; }
-        h1.brand-name { color: var(--gold); font-size: 28px; letter-spacing: 12px; margin: 0; text-align: center; }
-
-        /* --- ЭТАП 3: ИГРОВАЯ ЗОНА --- */
-        #game-room {
-            position: fixed; inset: 0; display: none; opacity: 0;
-            background: #000; z-index: 500; transition: 4s ease-in-out;
-        }
-        #velvet-table {
-            position: absolute; bottom: -40%; left: 50%; transform: translateX(-50%);
-            width: 180%; height: 100%; 
-            background: radial-gradient(circle at 50% 0%, var(--cherry-deep) 0%, #000 70%);
-            border-radius: 50% / 40%; border: 25px solid #080808;
-            box-shadow: inset 0 20px 150px #000, 0 0 200px rgba(61, 5, 5, 0.4);
-        }
-
-        /* КАРТЫ */
-        .card-monolith {
-            position: absolute; width: 80px; height: 115px;
-            background: var(--steel-gradient); border: 1.5px solid #222; border-radius: 6px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 10; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 6px; font-family: 'Orbitron'; font-weight: 900;
-        }
-        .deck-stacked {
-            top: 38% !important; left: 16% !important; transform: rotate(-1deg) !important;
-            box-shadow: -2px 2px 0 #111, -5px 5px 0 #050505 !important;
-        }
-        #trump-card {
-            position: absolute; top: 40%; left: 22%; width: 115px; height: 80px;
-            background: #f0f0f0; border-radius: 6px; transform: rotate(95deg);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; color: #000; border-right: 5px solid var(--gold);
-            opacity: 0; transition: 3s; z-index: 5;
-        }
-
-        /* UI ЭЛЕМЕНТЫ */
-        #ui-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2500; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
-        .vchf-balance { align-self: flex-end; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); padding: 10px 20px; color: var(--gold); font-size: 18px; pointer-events: auto; }
-        .btn-monolith { background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 12px 30px; font-family: 'Orbitron'; cursor: pointer; pointer-events: auto; display: none; margin: 0 auto 120px; }
-
-        /* МАТРИЦА 42 */
-        #matrix-overlay { position: fixed; top: 15%; right: 20px; width: 120px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; z-index: 100; }
-        .sphere-node { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(212, 175, 55, 0.3); background: #000; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #444; transition: 0.5s; }
-        .sphere-node.hot { border-color: var(--swiss-red); box-shadow: 0 0 15px var(--swiss-red); color: #fff; }
-        .sphere-node.cold { border-color: #0088ff; box-shadow: 0 0 10px #0088ff; color: #fff; }
-
-        /* ГЛИТЧ */
-        .glitch-overlay { position: fixed; inset: 0; background: rgba(212,175,55,0.05); z-index: 5000; display: none; mix-blend-mode: overlay; }
-    </style>
-</head>
-<body>
-
-<div id="wheel-layer"><div class="safe-wheel-container" id="main-wheel"><div class="wheel-center"></div></div></div>
-<div id="brand-layer"><div class="door-left"></div><div class="door-right"></div><div class="logo-container" style="z-index:1100;position:relative;"><div class="swiss-shield"></div><h1 class="brand-name">HELVETIA LUCKY</h1></div></div>
-<div id="game-room"><div id="velvet-table"><div id="deck-zone"></div><div id="trump-card"></div><div id="player-hand" style="position:absolute;bottom:50px;width:100%;display:flex;justify:center;"></div><div id="ai-hand" style="position:absolute;top:50px;width:100%;display:flex;justify:center;opacity:0.6;transform:scale(0.75);"></div></div></div>
-
-<script>
-    /** * МАНИФЕСТ МОНОЛИТА. ДВИЖОК VCHF v1.1. */
-    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
-    let audioCtx = null;
-    let currentVCHF = 1000;
-    let mainDeck = [];
-    let playerHandData = [];
-    let aiHandData = [];
-    let tableZone = [];
-    let isPlayerTurn = true;
-    let gameActive = false;
-    let trumpSuit = '';
-    const SUITS = ['♠', '♣', '♥', '♦'];
-    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-
-    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    function playSound(f, d, t, v) { try { initAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
-
-    // --- ИНИЦИАЛИЗАЦИЯ ШТУРВАЛА ---
-    const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
-    const wheel = document.getElementById('main-wheel');
-    flags.forEach((img, i) => {
-        const node = document.createElement('div'); node.className = 'flag-node'; node.innerHTML = img;
-        const angle = i * 60; const r = 145;
-        node.style.left = `calc(50% + ${Math.sin(angle*Math.PI/180)*r}px)`;
-        node.style.top = `calc(50% + ${-Math.cos(angle*Math.PI/180)*r}px)`;
-        node.onclick = () => {
-            playSound(60, 1.5, 'triangle', 0.5);
-            wheel.style.transform = `rotate(${-angle + 1080}deg)`;
-            wheel.classList.add('wheel-vanishing');
-            setTimeout(() => { document.getElementById('wheel-layer').style.opacity = '0'; setTimeout(() => { document.getElementById('wheel-layer').style.display='none'; openDoors(); }, 1000); }, 1800);
-        };
-        wheel.appendChild(node);
-    });
-
-    function openDoors() {
-        document.getElementById('brand-layer').classList.add('opened');
-        playSound(30, 2, 'sawtooth', 0.3);
-        setTimeout(initGame, 2200);
-    }
-
-    function initGame() {
-        const room = document.getElementById('game-room'); room.style.display = 'block'; setTimeout(() => room.style.opacity = '1', 100);
-        initMatrixGrid();
-        createPhysicalDeck();
-    }
-
-    function createPhysicalDeck() {
-        const zone = document.getElementById('deck-zone');
-        for(let i=0; i<36; i++) {
-            const c = document.createElement('div'); c.className = 'card-monolith';
-            c.style.top = '40%'; c.style.left = '45%'; c.style.transform = `rotate(${Math.random()*720}deg)`;
-            zone.appendChild(c);
-            setTimeout(() => { c.classList.add('deck-stacked'); c.style.zIndex = i; }, 500 + (i*30));
-        }
-        setTimeout(startLogic, 3000);
-    }
-
-    function startLogic() {
-        mainDeck = [];
-        SUITS.forEach(s => RANKS.forEach(r => mainDeck.push({suit:s, rank:r, color:(s==='♥'||s==='♦')?'var(--swiss-red)':'#000'})));
-        mainDeck.sort(() => Math.random()-0.5);
-        const trump = mainDeck[0]; trumpSuit = trump.suit;
-        const el = document.getElementById('trump-card');
-        el.innerHTML = `<span style="color:${trump.color}">${trump.rank}${trump.suit}</span>`;
-        el.style.opacity = '1';
-        setTimeout(dealCards, 1000);
-    }
-
-    function dealCards() {
-        const pHand = document.getElementById('player-hand');
-        const aHand = document.getElementById('ai-hand');
-        for(let i=0; i<6; i++) {
-            setTimeout(() => {
-                const d = mainDeck.pop(); playerHandData.push(d); renderCard(d, pHand, i, true);
-                const ad = mainDeck.pop(); aiHandData.push(ad); renderCard(ad, aHand, i, false);
-                playSound(800+(i*100), 0.1, 'sine', 0.02);
-            }, i*300);
-        }
-        gameActive = true;
-    }
-
-    function renderCard(data, container, index, isPlayer) {
-        const c = document.createElement('div'); c.className = 'card-monolith';
-        c.style.position = 'relative'; c.style.margin = '0 -15px';
-        const angle = (index - 2.5) * 10; c.style.transform = `rotate(${angle}deg)`;
-        if(isPlayer) {
-            c.style.background = '#fff'; c.style.color = data.color;
-            c.innerHTML = `<div>${data.rank}${data.suit}</div><div style="font-size:24px;text-align:center">${data.suit}</div>`;
-            c.onclick = () => playerMove(data, c);
-        }
-        container.appendChild(c);
-        updateMatrix(data, 'HOT');
-    }
-
-    function playerMove(data, el) {
-        if(!isPlayerTurn) return;
-        el.style.position = 'fixed'; el.style.left = '50%'; el.style.top = '45%'; el.style.transform = 'translate(-50%,-50%)';
-        tableZone.push({data, el}); isPlayerTurn = false;
-        setTimeout(aiMove, 1000);
-    }
-
-    function aiMove() {
-        const attack = tableZone[tableZone.length-1].data;
-        let defIdx = aiHandData.findIndex(c => (c.suit===attack.suit && RANKS.indexOf(c.rank)>RANKS.indexOf(attack.rank)) || (c.suit===trumpSuit && attack.suit!==trumpSuit));
-        if(defIdx !== -1) {
-            const d = aiHandData[defIdx]; const el = document.getElementById('ai-hand').children[defIdx];
-            el.style.background='#fff'; el.style.position='fixed'; el.style.left='55%'; el.style.top='42%'; el.innerHTML = `<div>${d.rank}${d.suit}</div>`;
-            tableZone.push({data:d, el}); aiHandData.splice(defIdx,1);
-            setTimeout(() => { tableZone.forEach(o => o.el.remove()); tableZone=[]; isPlayerTurn=true; }, 1500);
-        }
-    }
-
-    function initMatrixGrid() {
-        const m = document.createElement('div'); m.id = 'matrix-overlay'; document.body.appendChild(m);
-        for(let i=1; i<=42; i++) { const s = document.createElement('div'); s.className='sphere-node'; s.id=`sphere-${i}`; s.innerText=i; m.appendChild(s); }
-    }
-    function updateMatrix(d, s) {
-        const idx = (SUITS.indexOf(d.suit)*9) + RANKS.indexOf(d.rank) + 1;
-        const el = document.getElementById(`sphere-${idx}`); if(el) el.className = 'sphere-node ' + s.toLowerCase();
-    }
-
-    // Инициализация UI
     document.body.insertAdjacentHTML('beforeend', `<div id="ui-overlay"><div class="vchf-balance">VCHF: <span id="vchf-val">1000</span></div></div>`);
+    console.log("Манифест Монолита: Система активна.");
 </script>
 </body>
 </html>
