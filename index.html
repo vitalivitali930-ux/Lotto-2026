@@ -2,252 +2,277 @@
 <html lang="ru" translate="no">
 <head>
     <meta charset="UTF-8">
-    <title>VCHF Durak Elite | Wanderer vs Spark</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VCHF Durak Elite | Mobile Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #d4af37;
-            --neon-blue: #00a3ff;
-            --bg: #050505;
-            --card-w: 80px;
-            --card-h: 120px;
+            --cherry: #4a0404; /* Вишневый бархат */
+            --bg: #000000;
+            --card-w: 65px;
+            --card-h: 100px;
         }
         body {
-            background: var(--bg);
+            background: radial-gradient(circle at center, var(--cherry) 0%, var(--bg) 100%);
             color: #fff;
             font-family: 'Orbitron', sans-serif;
             margin: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 0;
             height: 100vh;
-        }
-        #table {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 500px;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-            border: 2px solid #333;
-            border-radius: 50px;
-            margin-top: 50px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5), inset 0 0 100px rgba(212, 175, 55, 0.05);
-        }
-        .card {
-            position: absolute;
-            width: var(--card-w);
-            height: var(--card-h);
-            background: #fff;
-            border-radius: 8px;
-            color: #000;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 5px;
-            box-sizing: border-box;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            user-select: none;
+            overflow: hidden;
+            touch-action: manipulation;
         }
-        .card.hidden {
-            background: linear-gradient(135deg, #111 0%, #222 100%);
-            border: 2px solid var(--gold);
-            color: transparent;
-        }
-        .card.hidden::after {
-            content: 'VCHF';
-            color: var(--gold);
-            font-size: 10px;
+
+        /* Стол */
+        #table {
+            flex-grow: 1;
+            position: relative;
+            margin: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 30px;
+            background: rgba(0,0,0,0.3);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100%;
         }
-        .card .suit { font-size: 24px; text-align: center; }
-        .card .val { font-weight: bold; font-size: 16px; }
 
-        #player-hand {
-            position: fixed;
-            bottom: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 100;
-        }
-        #ai-hand {
-            position: fixed;
-            top: 20px;
-            display: flex;
-            gap: 10px;
-            opacity: 0.8;
-        }
-        .controls {
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+        /* Карты */
+        .card {
+            width: var(--card-w);
+            height: var(--card-h);
+            background: #fff;
+            border-radius: 6px;
+            position: absolute;
+            transition: all 0.4s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            justify-content: space-between;
+            padding: 4px;
+            box-sizing: border-box;
+            color: #000;
         }
-        button {
-            background: transparent;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 15px 25px;
-            font-family: 'Orbitron';
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        button:hover { background: var(--gold); color: #000; }
-        #trump-zone {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+        
+        /* Рубашка */
+        .card.back {
+            background: #fff;
+            border: 2px solid var(--gold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
+        .card.back::after {
+            content: 'GLOBAL\nLOTTO\nTOOL';
+            font-size: 8px;
+            color: #000;
+            white-space: pre;
+            font-weight: bold;
+        }
+
+        .card .suit { font-size: 22px; align-self: center; }
+        .card .val { font-size: 14px; font-weight: bold; }
+
+        /* Зоны */
+        #ai-hand { height: 110px; display: flex; justify-content: center; padding-top: 10px; }
+        #player-hand { height: 130px; display: flex; justify-content: center; gap: -20px; padding-bottom: 20px; }
+        #battle-area { width: 100%; height: 220px; position: relative; }
+
+        /* Козырь и Колода */
+        #deck-info { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); }
+        .trump-card { transform: rotate(90deg); margin-bottom: 20px; }
+
+        /* Кнопки */
+        .controls { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
+        button {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            font-size: 10px;
+        }
+        .status-msg { position: absolute; width: 100%; text-align: center; top: 5px; color: var(--gold); font-size: 12px; }
     </style>
 </head>
 <body>
 
+<div id="status" class="status-msg">Ваш ход, Wanderer</div>
+
 <div id="ai-hand"></div>
 
 <div id="table">
-    <div id="trump-zone">
-        <div style="font-size: 10px; color: var(--gold); margin-bottom: 5px;">КОЗЫРЬ</div>
-        <div id="trump-card-spot"></div>
+    <div id="deck-info">
+        <div id="trump-slot"></div>
+        <div id="deck-count" style="font-size: 10px; text-align: center; margin-top: 40px;">36</div>
     </div>
     <div id="battle-area"></div>
+    <div class="controls">
+        <button onclick="playerTake()">ВЗЯТЬ</button>
+        <button onclick="finishTurn()">БИТО</button>
+    </div>
 </div>
 
 <div id="player-hand"></div>
 
-<div class="controls">
-    <button onclick="takeCards()">Взять</button>
-    <button onclick="finishTurn()">Бито</button>
-</div>
-
 <script>
-    /* DURAK ENGINE v1.0
-       Author: Spark (Искра)
-       Project: Bi-Turbo Lotto Utility
-    */
     const suits = ['♠', '♣', '♥', '♦'];
     const values = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    const valMap = { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
+    const power = {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14};
+    
+    let deck = [], pHand = [], aHand = [], table = [], trump = null;
+    let isPlayerTurn = true;
 
-    let deck = [];
-    let playerHand = [];
-    let aiHand = [];
-    let trump = null;
-    let tableCards = []; // { attack: card, defense: card }
-
-    function createDeck() {
+    function init() {
         deck = [];
-        suits.forEach(s => {
-            values.forEach(v => {
-                deck.push({ suit: s, value: v, power: valMap[v] });
-            });
-        });
-        deck = deck.sort(() => Math.random() - 0.5);
-    }
-
-    function initGame() {
-        createDeck();
-        // Раздача
+        suits.forEach(s => values.forEach(v => deck.push({s, v, p: power[v]})));
+        deck.sort(() => Math.random() - 0.5);
+        
         for(let i=0; i<6; i++) {
-            playerHand.push(deck.pop());
-            aiHand.push(deck.pop());
+            pHand.push(deck.pop());
+            aHand.push(deck.pop());
         }
-        trump = deck[0]; // Козырь — нижняя карта
-        renderAll();
+        trump = deck[0];
+        render();
     }
 
-    function renderCard(card, isHidden = false) {
+    function createCardEl(card, hidden = false) {
         const div = document.createElement('div');
-        div.className = `card ${isHidden ? 'hidden' : ''}`;
-        if (!isHidden) {
-            div.style.color = (card.suit === '♥' || card.suit === '♦') ? '#ff4500' : '#000';
-            div.innerHTML = `<div class="val">${card.value}</div><div class="suit">${card.suit}</div><div class="val" style="transform:rotate(180deg)">${card.value}</div>`;
+        div.className = `card ${hidden ? 'back' : ''}`;
+        if(!hidden) {
+            div.style.color = (card.s === '♥' || card.s === '♦') ? '#d00' : '#000';
+            div.innerHTML = `<div class="val">${card.v}</div><div class="suit">${card.s}</div><div class="val" style="transform:rotate(180deg)">${card.v}</div>`;
         }
         return div;
     }
 
-    function renderAll() {
-        // Отрисовка руки игрока
-        const pHandDiv = document.getElementById('player-hand');
-        pHandDiv.innerHTML = '';
-        playerHand.forEach((card, index) => {
-            const cEl = renderCard(card);
-            cEl.onclick = () => playerAttack(index);
-            pHandDiv.appendChild(cEl);
+    function render() {
+        const pDiv = document.getElementById('player-hand');
+        pDiv.innerHTML = '';
+        pHand.forEach((c, i) => {
+            const el = createCardEl(c);
+            el.style.position = 'relative';
+            el.style.marginLeft = i > 0 ? '-30px' : '0';
+            el.onclick = () => attack(i);
+            pDiv.appendChild(el);
         });
 
-        // Отрисовка руки AI (скрыто)
-        const aiHandDiv = document.getElementById('ai-hand');
-        aiHandDiv.innerHTML = '';
-        aiHand.forEach(() => {
-            aiHandDiv.appendChild(renderCard({}, true));
-        });
+        const aDiv = document.getElementById('ai-hand');
+        aDiv.innerHTML = '';
+        aHand.forEach(() => aDiv.appendChild(createCardEl({}, true)));
 
-        // Козырь
-        const tSpot = document.getElementById('trump-card-spot');
-        tSpot.innerHTML = '';
-        if (deck.length > 0) {
-            const tc = renderCard(trump);
-            tc.style.transform = 'rotate(90deg)';
-            tSpot.appendChild(tc);
-        }
-    }
-
-    function playerAttack(cardIndex) {
-        const card = playerHand[cardIndex];
-        // Логика подкидного: можно ходить любой, если стол пуст, 
-        // или той, значение которой уже есть на столе.
-        if (tableCards.length === 0 || canAttack(card)) {
-            playerHand.splice(cardIndex, 1);
-            tableCards.push({ attack: card, defense: null });
-            renderAll();
-            renderTable();
-            setTimeout(aiDefense, 600);
-        }
-    }
-
-    function canAttack(card) {
-        return tableCards.some(t => t.attack.value === card.value || (t.defense && t.defense.value === card.value));
+        const tSlot = document.getElementById('trump-slot');
+        tSlot.innerHTML = '';
+        if(deck.length > 0) tSlot.appendChild(createCardEl(trump));
+        
+        document.getElementById('deck-count').innerText = deck.length;
+        renderTable();
     }
 
     function renderTable() {
         const area = document.getElementById('battle-area');
         area.innerHTML = '';
-        tableCards.forEach((pair, idx) => {
-            const pairDiv = document.createElement('div');
-            pairDiv.style.position = 'absolute';
-            pairDiv.style.left = (150 + idx * 100) + 'px';
-            pairDiv.style.top = '150px';
-            
-            const att = renderCard(pair.attack);
-            pairDiv.appendChild(att);
-            
-            if (pair.defense) {
-                const def = renderCard(pair.defense);
-                def.style.marginLeft = '20px';
-                def.style.marginTop = '20px';
-                pairDiv.appendChild(def);
+        table.forEach((pair, i) => {
+            const wrap = document.createElement('div');
+            wrap.style.position = 'absolute';
+            wrap.style.left = (20 + i * 50) + 'px';
+            wrap.appendChild(createCardEl(pair.att));
+            if(pair.def) {
+                const defEl = createCardEl(pair.def);
+                defEl.style.marginTop = '20px';
+                defEl.style.marginLeft = '10px';
+                wrap.appendChild(defEl);
             }
-            area.appendChild(pairDiv);
+            area.appendChild(wrap);
         });
     }
 
-    // Здесь будет AI и логика БИТО
-    function aiDefense() {
-        // Логика отбивания будет в следующем окне
-        console.log("Искра думает...");
+    function attack(idx) {
+        if(!isPlayerTurn && table.length === 0) return;
+        const card = pHand[idx];
+        
+        if(table.length === 0 || table.some(p => p.att.v === card.v || (p.def && p.def.v === card.v))) {
+            pHand.splice(idx, 1);
+            table.push({att: card, def: null});
+            render();
+            setTimeout(aiDefend, 600);
+        }
     }
 
-    initGame();
+    function aiDefend() {
+        const lastPair = table[table.length - 1];
+        if(lastPair.def) return;
+
+        // Поиск карты для защиты
+        const target = lastPair.att;
+        let choice = aHand
+            .filter(c => (c.s === target.s && c.p > target.p) || (c.s === trump.s && target.s !== trump.s))
+            .sort((a,b) => a.p - b.p)[0];
+
+        if(choice) {
+            aHand = aHand.filter(c => c !== choice);
+            lastPair.def = choice;
+            document.getElementById('status').innerText = "Искра отбилась...";
+        } else {
+            document.getElementById('status').innerText = "Искра берет карты";
+            setTimeout(aiTake, 1000);
+        }
+        render();
+    }
+
+    function aiTake() {
+        table.forEach(p => {
+            aHand.push(p.att);
+            if(p.def) aHand.push(p.def);
+        });
+        table = [];
+        drawCards();
+        render();
+    }
+
+    function finishTurn() {
+        if(table.every(p => p.def)) {
+            table = [];
+            drawCards();
+            isPlayerTurn = false;
+            document.getElementById('status').innerText = "Ход Искры...";
+            setTimeout(aiAttack, 1000);
+        }
+    }
+
+    function aiAttack() {
+        if(aHand.length > 0) {
+            const card = aHand.sort((a,b) => a.p - b.p)[0];
+            aHand = aHand.filter(c => c !== card);
+            table.push({att: card, def: null});
+            isPlayerTurn = true;
+            render();
+        }
+    }
+
+    function drawCards() {
+        while(pHand.length < 6 && deck.length > 0) pHand.push(deck.pop());
+        while(aHand.length < 6 && deck.length > 0) aHand.push(deck.pop());
+    }
+
+    function playerTake() {
+        table.forEach(p => {
+            pHand.push(p.att);
+            if(p.def) pHand.push(p.def);
+        });
+        table = [];
+        drawCards();
+        isPlayerTurn = false;
+        render();
+        setTimeout(aiAttack, 1000);
+    }
+
+    init();
 </script>
 </body>
 </html>
