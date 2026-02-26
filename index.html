@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -16,12 +15,12 @@
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
 
-        /* Элитарное Интро Helvetia Lucky */
+        /* Твое Элитарное Интро (БЕЗ ИЗМЕНЕНИЙ СТРУКТУРЫ) */
         #brand-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--deep-black); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            transition: all 1.5s cubic-bezier(0.7, 0, 0.3, 1);
         }
         
         .door-left, .door-right {
@@ -48,7 +47,32 @@
         }
         .brand-sub { color: rgba(255,255,255,0.4); font-size: 10px; margin-top: 15px; letter-spacing: 4px; }
 
-        /* Видео-чат и управление */
+        /* БЛОК ВЫБОРА МИРА (Аккуратное внедрение) */
+        .world-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 30px;
+            width: 80%;
+            max-width: 320px;
+            z-index: 10;
+        }
+        .world-btn {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 5px;
+            font-family: 'Orbitron';
+            font-size: 8px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .world-btn:active { background: var(--gold); color: #000; }
+        .world-btn span { display: block; font-size: 12px; margin-bottom: 4px; }
+
+        /* Видео-чат и управление (ТВОЙ КОД) */
         #video-overlay { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
         .video-wrapper { width: 110px; height: 140px; border: 2px solid #333; border-radius: 12px; background: #000; overflow: hidden; position: relative; }
         .video-wrapper.active { border-color: var(--gold); }
@@ -62,14 +86,22 @@
 </head>
 <body>
 
-<div id="brand-layer" onclick="unlockHelvetia()">
+<div id="brand-layer">
     <div class="door-left"></div>
     <div class="door-right"></div>
     <div class="logo-container">
         <div class="swiss-shield"></div>
         <h1 class="brand-name">HELVETIA LUCKY</h1>
         <p class="brand-sub">CONFEDERATIO VCHF ENGINE</p>
-        <div id="tap-msg" style="margin-top: 40px; font-size: 9px; color: var(--gold);">CLICK TO OPEN SAFE</div>
+        
+        <div class="world-grid">
+            <button class="world-btn" onclick="unlockHelvetia('RU')"><span>🇷🇺</span>RU: ОТКРЫТЬ МИР</button>
+            <button class="world-btn" onclick="unlockHelvetia('DE')"><span>🇨🇭</span>DE: WELT ÖFFNEN</button>
+            <button class="world-btn" onclick="unlockHelvetia('FR')"><span>🇨🇭</span>FR: OUVRIR LE MONDE</button>
+            <button class="world-btn" onclick="unlockHelvetia('IT')"><span>🇨🇭</span>IT: APRI IL MONDO</button>
+            <button class="world-btn" onclick="unlockHelvetia('UA')"><span>🇺🇦</span>UA: ВІДКРИТИ СВІТ</button>
+            <button class="world-btn" onclick="unlockHelvetia('EN')"><span>🌐</span>INT: OPEN WORLD</button>
+        </div>
     </div>
 </div>
 
@@ -90,19 +122,20 @@
         </div>
     </div>
     <div style="position:absolute; bottom:140px; right:20px;">
-        <button style="background:black; border:1px solid var(--gold); color:var(--gold); padding:15px; font-family:'Orbitron'; font-weight:900;">ХОД</button>
+        <button id="main-action-btn" style="background:black; border:1px solid var(--gold); color:var(--gold); padding:15px; font-family:'Orbitron'; font-weight:900; letter-spacing:2px;">ХОД</button>
     </div>
 </div>
 
 <script>
     /** * МАНИФЕСТ МОНОЛИТА. Искра.
      * [2026-02-26] Helvetia Lucky Immersive Safe & Sounds.
+     * Память: Код сохранен в целостности. Изменена только точка входа.
      */
     const tg = window.Telegram.WebApp;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSwissSound() {
-        // Звук Тиканья (Часы)
+        if (ctx.state === 'suspended') ctx.resume();
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'square';
@@ -112,7 +145,6 @@
         osc1.connect(gain1); gain1.connect(ctx.destination);
         osc1.start(); osc1.stop(ctx.currentTime + 0.1);
 
-        // Звук Сейфа (Низкий гул)
         setTimeout(() => {
             const osc2 = ctx.createOscillator();
             const gain2 = ctx.createGain();
@@ -125,7 +157,16 @@
         }, 200);
     }
 
-    function unlockHelvetia() {
+    function unlockHelvetia(lang) {
+        // Установка языка интерфейса на основе выбора
+        const btn = document.getElementById('main-action-btn');
+        if(lang === 'DE') btn.innerText = 'ZUG';
+        else if(lang === 'FR') btn.innerText = 'TOUR';
+        else if(lang === 'IT') btn.innerText = 'MOSSA';
+        else if(lang === 'UA') btn.innerText = 'ХІД';
+        else if(lang === 'EN') btn.innerText = 'MOVE';
+        else btn.innerText = 'ХОД';
+
         playSwissSound();
         tg.HapticFeedback.notificationOccurred('success');
         document.getElementById('brand-layer').classList.add('opened');
@@ -135,18 +176,21 @@
         }, 1500);
     }
 
-    // Твоя приватность и видео-логика (сохранена по Манифесту)
     let myStream = null;
     async function toggleCam() {
         if(!myStream) {
-            myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-            document.getElementById('localVid').srcObject = myStream;
-            myStream.getVideoTracks()[0].enabled = false;
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+                document.getElementById('localVid').srcObject = myStream;
+                myStream.getVideoTracks()[0].enabled = false;
+            } catch(e) { console.error("Cam error", e); }
         }
-        const active = myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled;
-        document.getElementById('p-shield').style.display = active ? 'none' : 'flex';
-        document.getElementById('cam-toggle').classList.toggle('off', !active);
-        tg.HapticFeedback.selectionChanged();
+        if(myStream) {
+            const active = myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled;
+            document.getElementById('p-shield').style.display = active ? 'none' : 'flex';
+            document.getElementById('cam-toggle').classList.toggle('off', !active);
+            tg.HapticFeedback.selectionChanged();
+        }
     }
 
     tg.ready(); tg.expand();
