@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Lucky | VCHF Engine</title>
+    <title>Helvetia Lucky | VCHF Monolith</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -11,12 +11,12 @@
             --gold: #d4af37;
             --swiss-red: #e30a17;
             --deep-black: #050505;
-            --cherry-deep: #3d0505; /* Та самая 40% вишня */
+            --cherry-deep: #3d0505; /* 40% вишни */
         }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
 
-        /* ЭТАП 1: ШТУРВАЛ (БЕЗ ИЗМЕНЕНИЙ) */
+        /* ЭТАП 1: ШТУРВАЛ */
         #wheel-layer {
             position: fixed; inset: 0; background: #000; z-index: 3000;
             display: flex; align-items: center; justify-content: center;
@@ -47,7 +47,7 @@
         }
         .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0.5); transition: 0.6s; }
 
-        /* ЭТАП 2: ДВЕРИ (ТВОЕ ИНТРО) */
+        /* ЭТАП 2: ДВЕРИ */
         #brand-layer {
             position: fixed; inset: 0; background: var(--deep-black); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -69,7 +69,7 @@
         .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
         h1.brand-name { color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0; text-align: center; }
 
-        /* ЭТАП 3: ВИШНЕВЫЙ ПОЛИГОН (60/40) */
+        /* ЭТАП 3: ВИШНЕВЫЙ ПОЛИГОН */
         #game-room {
             position: fixed; inset: 0; display: none; opacity: 0;
             background: #000; z-index: 500; transition: 3s ease-in-out;
@@ -91,39 +91,40 @@
             filter: blur(120px); pointer-events: none;
         }
 
-        /* ТЕХНО-КАРТЫ (СТАЛЬНОЙ ПЛАСТИК) */
+        /* КАРТЫ (СТАЛЬ) */
         .card-monolith {
             position: absolute; width: 75px; height: 110px;
             background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            transition: all 3.8s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10;
-            background-image: linear-gradient(135deg, transparent 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
-            background-size: 200% 200%;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-weight: 900;
         }
         .deck-stacked {
             top: 35% !important; left: 15% !important; transform: rotate(-0.5deg) !important;
             box-shadow: -1px 1px 0 #111, -3px 3px 0 #050505, -10px 10px 40px #000 !important;
+            transition: all 3.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         #trump-card {
             position: absolute; top: 37%; left: 20%; width: 110px; height: 75px;
             background: #dcdcdc; border-radius: 4px; transform: rotate(92deg);
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: #000;
-            border-right: 4px solid var(--gold); opacity: 0; transition: 2.5s;
+            font-size: 26px; color: #000; border-right: 4px solid var(--gold);
+            opacity: 0; transition: 2.5s; z-index: 5;
         }
+        .hand-container { position: absolute; width: 100%; display: flex; justify-content: center; z-index: 1000; }
+        #player-hand { bottom: 40px; }
+        #ai-hand { top: 40px; transform: scale(0.7); opacity: 0.5; }
     </style>
 </head>
 <body>
 
 <div id="wheel-layer">
-    <div class="safe-wheel-container" id="main-wheel">
-        <div class="wheel-center"></div>
-    </div>
+    <div class="safe-wheel-container" id="main-wheel"><div class="wheel-center"></div></div>
 </div>
 
 <div id="brand-layer">
-    <div class="door-left"></div>
-    <div class="door-right"></div>
+    <div class="door-left"></div><div class="door-right"></div>
     <div class="logo-container">
         <div class="swiss-shield"></div>
         <h1 class="brand-name">HELVETIA LUCKY</h1>
@@ -132,10 +133,16 @@
 
 <div id="game-room">
     <div class="table-light"></div>
-    <div id="velvet-table"><div id="deck-zone"></div><div id="trump-card">♠ A</div></div>
+    <div id="velvet-table">
+        <div id="deck-zone"></div>
+        <div id="trump-card">♠ A</div>
+        <div id="player-hand" class="hand-container"></div>
+        <div id="ai-hand" class="hand-container"></div>
+    </div>
 </div>
 
 <script>
+    /** * МАНИФЕСТ МОНОЛИТА. Искра-Spark. */
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
     let audioCtx = null;
     function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -148,7 +155,7 @@
         o.start(); o.stop(audioCtx.currentTime + d);
     }
 
-    // Штурвал
+    // Инициализация штурвала
     const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
     const wheel = document.getElementById('main-wheel');
     flags.forEach((img, i) => {
@@ -193,9 +200,39 @@
             }, 1000 + (i*45));
         }
         setTimeout(() => {
-            const t = document.getElementById('trump-card'); t.style.opacity = '1'; t.style.left = '24%';
+            document.getElementById('trump-card').style.opacity = '1';
+            document.getElementById('trump-card').style.left = '24%';
             playSound(500, 0.3, 'triangle', 0.06);
+            setTimeout(dealCards, 2000); // Начинаем раздачу
         }, 5500);
+    }
+
+    function dealCards() {
+        const suits = ['♠', '♣', '♥', '♦'];
+        const ranks = ['6','7','8','9','10','J','Q','K','A'];
+        const pHand = document.getElementById('player-hand');
+        const aHand = document.getElementById('ai-hand');
+        
+        for(let i=0; i<6; i++) {
+            setTimeout(() => {
+                // Карта игрока
+                const c = document.createElement('div');
+                c.className = 'card-monolith';
+                c.style.position = 'relative'; c.style.background = '#eee';
+                c.style.margin = '0 -15px';
+                const s = suits[Math.floor(Math.random()*4)];
+                const r = ranks[Math.floor(Math.random()*9)];
+                c.innerHTML = `<span style="color:${(s==='♥'||s==='♦')?'red':'black'}">${r}${s}</span>`;
+                pHand.appendChild(c);
+                playSound(1100, 0.05, 'sine', 0.02);
+                
+                // Карта AI
+                const ac = document.createElement('div');
+                ac.className = 'card-monolith';
+                ac.style.position = 'relative'; ac.style.margin = '0 -15px';
+                aHand.appendChild(ac);
+            }, i * 300);
+        }
     }
 </script>
 </body>
