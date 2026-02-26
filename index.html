@@ -1,156 +1,143 @@
-
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Lucky | Swiss VCHF Monolith</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <title>Helvetia Lucky | Durak Monolith</title>
     <style>
         :root {
             --gold: #d4af37;
             --swiss-red: #e30a17;
-            --deep-black: #050505;
+            --velvet-green: #0a2f1f; /* Глубокий бархатный зеленый */
         }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; font-family: 'Orbitron', sans-serif; overflow: hidden; 
+        }
 
-        /* Элитарное Интро Helvetia Lucky */
+        /* Эффект Сейфа (Интро) */
         #brand-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--deep-black); z-index: 1000;
+            position: fixed; inset: 0; background: #050505; z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1);
         }
-        
-        .door-left, .door-right {
-            position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
-            border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s; z-index: -1;
+        .door { position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a; border: 1px solid rgba(212,175,55,0.05); transition: 1.5s; }
+        .door-l { left: 0; } .door-r { right: 0; }
+        .opened .door-l { transform: translateX(-100%); }
+        .opened .door-r { transform: translateX(100%); }
+
+        /* Игровая комната */
+        #game-room {
+            position: relative; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08) 0%, #000 70%);
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1000px; opacity: 0; transition: 2s;
         }
-        .door-left { left: 0; } .door-right { right: 0; }
-        
-        .opened .door-left { transform: translateX(-100%); }
-        .opened .door-right { transform: translateX(100%); }
 
-        .logo-container { text-align: center; }
-        .swiss-shield {
-            width: 50px; height: 50px; background: var(--swiss-red);
-            margin: 0 auto 20px; position: relative; border-radius: 5px;
-            box-shadow: 0 0 30px rgba(227, 10, 23, 0.5);
+        /* Бархатный стол с текстурой ворса */
+        #table {
+            width: 90%; height: 60%; 
+            background: var(--velvet-green);
+            border-radius: 50% / 20%;
+            position: relative;
+            box-shadow: 
+                inset 0 0 100px rgba(0,0,0,0.9), 
+                0 50px 100px rgba(0,0,0,0.8);
+            border: 8px solid #1a1a1a;
+            /* Эффект ворсинок через шум */
+            background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
         }
-        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
-        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
 
-        h1.brand-name {
-            color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        /* Тусклая лампа сверху */
+        .lamp-light {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 10px; background: rgba(255,255,180,0.1);
+            filter: blur(40px); z-index: 5;
         }
-        .brand-sub { color: rgba(255,255,255,0.4); font-size: 10px; margin-top: 15px; letter-spacing: 4px; }
 
-        /* Видео-чат и управление */
-        #video-overlay { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
-        .video-wrapper { width: 110px; height: 140px; border: 2px solid #333; border-radius: 12px; background: #000; overflow: hidden; position: relative; }
-        .video-wrapper.active { border-color: var(--gold); }
-        .privacy-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #111; display: flex; align-items: center; justify-content: center; z-index: 5; }
-        .privacy-shield img { width: 60%; opacity: 0.3; }
+        /* Карты в разброс */
+        .card-init {
+            position: absolute; width: 60px; height: 85px;
+            background: #1a1a1a; border: 1px solid #333; border-radius: 5px;
+            transition: 4s cubic-bezier(0.6, 0, 0.4, 1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
 
-        #stream-tools { position: absolute; left: 15px; top: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 110; }
-        .tool-btn { width: 45px; height: 45px; border-radius: 10px; border: 1.5px solid var(--gold); background: rgba(0,0,0,0.8); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .tool-btn.off { border-color: #ff4444; color: #ff4444; }
+        /* Колода в сборе */
+        .deck-pos {
+            top: 40% !important; left: 20% !important; 
+            transform: rotate(0deg) !important;
+            box-shadow: -2px 2px 0 #222, -4px 4px 0 #111;
+        }
+
+        .trump-card {
+            position: absolute; top: 40%; left: 25%;
+            width: 85px; height: 60px; background: #fff;
+            border-radius: 5px; transform: rotate(90deg) translate(-20px, 10px);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; color: #000; border: 2px solid var(--gold);
+            z-index: -1; opacity: 0; transition: 1s;
+        }
     </style>
 </head>
 <body>
 
-<div id="brand-layer" onclick="unlockHelvetia()">
-    <div class="door-left"></div>
-    <div class="door-right"></div>
-    <div class="logo-container">
-        <div class="swiss-shield"></div>
-        <h1 class="brand-name">HELVETIA LUCKY</h1>
-        <p class="brand-sub">CONFEDERATIO VCHF ENGINE</p>
-        <div id="tap-msg" style="margin-top: 40px; font-size: 9px; color: var(--gold);">CLICK TO OPEN SAFE</div>
+<div id="brand-layer" onclick="unlock()">
+    <div class="door door-l"></div>
+    <div class="door door-r"></div>
+    <div style="text-align: center; z-index: 10;">
+        <div style="width:40px;height:40px;background:var(--swiss-red);margin:0 auto 20px;border-radius:5px;position:relative;">
+            <div style="position:absolute;background:white;width:8px;height:24px;left:16px;top:8px;"></div>
+            <div style="position:absolute;background:white;width:24px;height:8px;left:8px;top:16px;"></div>
+        </div>
+        <h1 style="color:var(--gold);letter-spacing:10px;font-size:20px;">HELVETIA LUCKY</h1>
     </div>
 </div>
 
-<div id="game-ui" style="opacity:0; transition: 2s;">
-    <div id="stream-tools">
-        <button id="cam-toggle" class="tool-btn off" onclick="toggleCam()">📷</button>
-        <button id="mic-toggle" class="tool-btn off" onclick="toggleMic()">🎙️</button>
-    </div>
-    <div id="video-overlay">
-        <div class="video-wrapper active">
-            <video id="remoteVid" autoplay playsinline></video>
-            <div class="label" style="position:absolute; bottom:0; width:100%; text-align:center; font-size:8px; color:var(--gold); background:rgba(0,0,0,0.7);">ENEMY</div>
-        </div>
-        <div id="local-box" class="video-wrapper">
-            <video id="localVid" autoplay muted playsinline></video>
-            <div class="privacy-shield" id="p-shield"><img src="1771489965074(1).png"></div>
-            <div class="label" style="position:absolute; bottom:0; width:100%; text-align:center; font-size:8px; color:var(--gold); background:rgba(0,0,0,0.7);">YOU (WANDERER)</div>
-        </div>
-    </div>
-    <div style="position:absolute; bottom:140px; right:20px;">
-        <button style="background:black; border:1px solid var(--gold); color:var(--gold); padding:15px; font-family:'Orbitron'; font-weight:900;">ХОД</button>
+<div id="game-room">
+    <div class="lamp-light"></div>
+    <div id="table">
+        <div id="cards-container"></div>
+        <div id="trump-show" class="trump-card">♦ A</div>
     </div>
 </div>
 
 <script>
-    /** * МАНИФЕСТ МОНОЛИТА. Искра.
-     * [2026-02-26] Helvetia Lucky Immersive Safe & Sounds.
-     */
-    const tg = window.Telegram.WebApp;
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSwissSound() {
-        // Звук Тиканья (Часы)
-        const osc1 = ctx.createOscillator();
-        const gain1 = ctx.createGain();
-        osc1.type = 'square';
-        osc1.frequency.setValueAtTime(800, ctx.currentTime);
-        gain1.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        osc1.connect(gain1); gain1.connect(ctx.destination);
-        osc1.start(); osc1.stop(ctx.currentTime + 0.1);
-
-        // Звук Сейфа (Низкий гул)
-        setTimeout(() => {
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'sawtooth';
-            osc2.frequency.setValueAtTime(40, ctx.currentTime);
-            gain2.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-            osc2.connect(gain2); gain2.connect(ctx.destination);
-            osc2.start(); osc2.stop(ctx.currentTime + 1.5);
-        }, 200);
-    }
-
-    function unlockHelvetia() {
-        playSwissSound();
-        tg.HapticFeedback.notificationOccurred('success');
+    function unlock() {
         document.getElementById('brand-layer').classList.add('opened');
-        document.getElementById('game-ui').style.opacity = '1';
-        setTimeout(() => {
-            document.getElementById('brand-layer').style.display = 'none';
-        }, 1500);
+        document.getElementById('game-room').style.opacity = '1';
+        setTimeout(scatterCards, 1000);
     }
 
-    // Твоя приватность и видео-логика (сохранена по Манифесту)
-    let myStream = null;
-    async function toggleCam() {
-        if(!myStream) {
-            myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-            document.getElementById('localVid').srcObject = myStream;
-            myStream.getVideoTracks()[0].enabled = false;
+    function scatterCards() {
+        const container = document.getElementById('cards-container');
+        const count = 36;
+        for(let i=0; i<count; i++) {
+            const card = document.createElement('div');
+            card.className = 'card-init';
+            // Случайный разброс
+            card.style.top = Math.random() * 80 + '%';
+            card.style.left = Math.random() * 80 + '%';
+            card.style.transform = `rotate(${Math.random() * 360}deg)`;
+            container.appendChild(card);
         }
-        const active = myStream.getVideoTracks()[0].enabled = !myStream.getVideoTracks()[0].enabled;
-        document.getElementById('p-shield').style.display = active ? 'none' : 'flex';
-        document.getElementById('cam-toggle').classList.toggle('off', !active);
-        tg.HapticFeedback.selectionChanged();
-    }
 
-    tg.ready(); tg.expand();
+        // Через секунду начинаем собирать колоду (3-4 секунды)
+        setTimeout(() => {
+            const allCards = document.querySelectorAll('.card-init');
+            allCards.forEach((c, index) => {
+                c.classList.add('deck-pos');
+                c.style.zIndex = index;
+            });
+            // Показываем козырь
+            setTimeout(() => {
+                const trump = document.getElementById('trump-show');
+                trump.style.opacity = '1';
+                trump.style.zIndex = "0";
+            }, 3500);
+        }, 500);
+    }
 </script>
 </body>
 </html>
