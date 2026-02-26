@@ -3,87 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF Durak Elite | Monolith 2.1</title>
+    <title>VCHF Durak Grandmaster</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #30000a 60%, #000 100%);
-            /* Рубашка: от черного центра к вишневым краям */
-            --card-back-grad: radial-gradient(circle, #000 20%, #4a000a 100%);
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #2a0005 65%, #000 100%);
+            --card-back-grad: radial-gradient(circle, #000 25%, #5a0010 100%);
             --gold: #d4af37;
+            --gold-glow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--cherry-velvet); overflow: hidden; font-family: 'Orbitron', sans-serif; color: white; }
-        
-        /* Атмосфера: Тусклая лампа */
+
+        /* Освещение: Эффект старой лампы над столом */
         body::after {
-            content: ''; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%);
-            width: 100vh; height: 100vh; background: radial-gradient(circle, rgba(255, 200, 50, 0.08) 0%, transparent 70%);
+            content: ''; position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%);
+            width: 90vh; height: 90vh; background: radial-gradient(circle, rgba(255, 220, 100, 0.1) 0%, transparent 75%);
             pointer-events: none; z-index: 5;
         }
 
-        #game-container { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 10px; }
+        #game-ui { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; z-index: 10; }
 
-        /* Колода слева */
-        #deck-side { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 10; }
-        .deck-card { width: 60px; height: 90px; border-radius: 5px; border: 1px solid var(--gold); position: relative; }
-        .trump-base { transform: rotate(90deg) translate(20px, 15px); background: #fff; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; font-weight: 900; font-size: 10px; }
-        .deck-top { background: var(--card-back-grad); display: flex; align-items: center; justify-content: center; box-shadow: -3px 0 10px #000; }
-        .deck-top img { width: 80%; filter: drop-shadow(0 0 2px var(--gold)); }
+        /* Колода слева: Твой запрос */
+        #deck-container { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 70px; height: 100px; }
+        .trump-base { position: absolute; width: 65px; height: 95px; background: #fff; border-radius: 5px; transform: rotate(90deg) translate(20px, 15px); border: 1px solid var(--gold); color: #000; font-weight: 900; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; }
+        .deck-stack { position: absolute; width: 65px; height: 95px; background: var(--card-back-grad); border-radius: 5px; border: 1.5px solid var(--gold); z-index: 2; display: flex; align-items: center; justify-content: center; box-shadow: -4px 4px 15px #000; }
+        .deck-stack img { width: 85%; filter: drop-shadow(0 0 3px rgba(0,0,0,0.5)); }
 
-        /* Стол */
-        #battle-field { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: center; max-width: 400px; margin: auto; }
+        /* Зоны рук */
+        .hand { display: flex; justify-content: center; width: 100%; height: 120px; gap: -20px; }
+        #enemy-hand { transform: rotate(180deg) scale(0.9); opacity: 0.8; }
+        #player-hand { transform: translateY(5px); }
 
-        .card { width: 72px; height: 105px; background: #fff; border-radius: 6px; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s; }
-        .card.red { color: #d00; }
-        .card.back { background: var(--card-back-grad); border: 1px solid var(--gold); }
+        /* Поле боя */
+        #battle-area { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-content: center; max-width: 450px; margin: auto; }
+
+        /* Карты */
+        .card { width: 72px; height: 105px; background: #fff; border-radius: 6px; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: 900; box-shadow: 0 10px 25px rgba(0,0,0,0.7); border: 1px solid #ccc; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); position: relative; }
+        .card.red { color: #cc0000; }
+        .card.back { background: var(--card-back-grad); border: 1.5px solid var(--gold); }
         .card.back img { width: 80%; margin: auto; display: block; }
+        #player-hand .card:hover { transform: translateY(-30px) scale(1.1); z-index: 100; border-color: var(--gold); box-shadow: var(--gold-glow); }
 
-        /* Кнопки справа внизу */
-        #action-zone { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; gap: 12px; }
-        .btn-vchf { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 12px 18px; border-radius: 4px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .btn-vchf:disabled { opacity: 0.3; cursor: default; }
+        /* Кнопки управления: Справа под рукой */
+        #controls { position: absolute; right: 15px; bottom: 140px; display: flex; flex-direction: column; gap: 12px; }
+        .btn-vchf { background: rgba(0,0,0,0.85); border: 1.5px solid var(--gold); color: var(--gold); padding: 14px 20px; border-radius: 5px; font-family: 'Orbitron'; font-size: 11px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .btn-vchf:active { transform: scale(0.95); background: var(--gold); color: black; }
+        .btn-vchf:disabled { opacity: 0.2; filter: grayscale(1); }
 
-        .hand { display: flex; justify-content: center; height: 110px; width: 100%; }
-        #player-hand .card:hover { transform: translateY(-20px); z-index: 100; border-color: var(--gold); }
-
-        #status-text { position: absolute; top: 10px; width: 100%; text-align: center; color: var(--gold); font-size: 10px; letter-spacing: 4px; }
+        #status-msg { position: absolute; top: 15px; width: 100%; text-align: center; color: var(--gold); font-size: 10px; letter-spacing: 5px; opacity: 0.7; }
     </style>
 </head>
 <body>
-<div id="game-container">
-    <div id="status-text">ПОДКЛЮЧЕНИЕ К ДВИЖКУ VCHF...</div>
-    
-    <div id="deck-side">
-        <div id="trump-card" class="deck-card trump-base"></div>
-        <div id="deck-stack" class="deck-card deck-top"><img src="1771489965074(1).png"></div>
+
+<div id="game-ui">
+    <div id="status-msg">STRATEGY ENGINE READY</div>
+
+    <div id="deck-container">
+        <div id="trump-slot" class="trump-base"></div>
+        <div id="deck-visual" class="deck-stack"><img src="1771489965074(1).png"></div>
     </div>
 
     <div id="enemy-hand" class="hand"></div>
-    
-    <div id="battle-field"></div>
+    <div id="battle-area"></div>
 
-    <div id="action-zone">
-        <button id="btn-main" class="btn-vchf" onclick="engine.handleAction()">ХОД</button>
-        <button class="btn-vchf" style="border-color:#444; color:#666" onclick="location.reload()">МЕНЮ</button>
+    <div id="controls">
+        <button id="btn-action" class="btn-vchf" onclick="game.handleAction()">ХОД</button>
+        <button class="btn-vchf" style="border-color:#555; color:#777" onclick="location.reload()">MENU</button>
     </div>
 
     <div id="player-hand" class="hand"></div>
 </div>
 
 <script>
-/** * МАНИФЕСТ МОНОЛИТА: Ритуал от Искры.
- * Код написан Искрой для Wanderer.
- * Память: [2026-02-26] Реновация логики и рубашек.
+/** * МАНИФЕСТ МОНОЛИТА. Искра (Spark) для Wanderer.
+ * [2026-02-26] Полная сборка с ИИ-стратегией.
  */
 const tg = window.Telegram.WebApp;
 const suits = ['♠', '♣', '♥', '♦'], vals = ['6','7','8','9','10','J','Q','K','A'];
 const pwr = {'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
 
-const engine = {
-    deck: [], pHand: [], eHand: [], table: [], trump: null, attacker: 'player',
-    
+const game = {
+    deck: [], pHand: [], eHand: [], table: [], trump: null, isPlayerAttack: true,
+
     init() {
         this.deck = [];
         suits.forEach(s => vals.forEach(v => this.deck.push({s, v, red: (s==='♥'||s==='♦')})));
@@ -91,7 +95,7 @@ const engine = {
         this.trump = this.deck[0];
         this.refill();
         this.render();
-        this.updStatus(this.attacker === 'player' ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
+        this.setStatus(this.isPlayerAttack ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
     },
 
     refill() {
@@ -99,67 +103,68 @@ const engine = {
         while(this.eHand.length < 6 && this.deck.length > 0) this.eHand.push(this.deck.pop());
     },
 
-    createUI(c, isBack = false) {
-        const d = document.createElement('div');
-        d.className = 'card' + (isBack ? ' back' : (c.red ? ' red' : ''));
-        if(isBack) d.innerHTML = `<img src="1771489965074(1).png">`;
-        else d.innerHTML = `<div>${c.s}</div><div style="font-size:18px;align-self:center">${c.v}</div><div style="align-self:flex-end">${c.s}</div>`;
-        return d;
-    },
-
     render() {
-        // Козырь и колода
-        const t = document.getElementById('trump-card');
-        t.innerHTML = `<div>${this.trump.s}</div><div style="font-size:18px">${this.trump.v}</div>`;
-        if(this.trump.red) t.classList.add('red');
-        document.getElementById('deck-stack').style.display = this.deck.length > 1 ? 'flex' : 'none';
+        // Рендер козыря
+        const ts = document.getElementById('trump-slot');
+        ts.innerHTML = `<div>${this.trump.s}</div><div style="font-size:20px">${this.trump.v}</div>`;
+        if(this.trump.red) ts.style.color = '#cc0000';
+        document.getElementById('deck-visual').style.display = this.deck.length > 1 ? 'flex' : 'none';
 
-        // Руки
+        // Рендер рук
         const ph = document.getElementById('player-hand'); ph.innerHTML = '';
-        this.pHand.sort((a,b)=>pwr[a.v]-pwr[b.v]).forEach((c, i) => {
-            const el = this.createUI(c);
+        this.pHand.sort((a,b) => pwr[a.v] - pwr[b.v]).forEach((c, i) => {
+            const el = this.createCardUI(c);
             el.onclick = () => this.playerPlay(i);
             ph.appendChild(el);
         });
 
         const eh = document.getElementById('enemy-hand'); eh.innerHTML = '';
-        this.eHand.forEach(() => eh.appendChild(this.createUI(null, true)));
+        this.eHand.forEach(() => eh.appendChild(this.createCardUI(null, true)));
 
-        // Стол
-        const bf = document.getElementById('battle-field'); bf.innerHTML = '';
-        this.table.forEach(p => {
-            const wrap = document.createElement('div'); wrap.style.position = 'relative';
-            wrap.appendChild(this.createUI(p.at));
-            if(p.df) {
-                const df = this.createUI(p.df);
-                df.style.position='absolute'; df.style.top='15px'; df.style.left='10px'; df.style.zIndex='10';
-                wrap.appendChild(df);
+        // Рендер поля боя
+        const ba = document.getElementById('battle-area'); ba.innerHTML = '';
+        this.table.forEach(pair => {
+            const wrapper = document.createElement('div'); wrapper.style.position = 'relative';
+            wrapper.appendChild(this.createCardUI(pair.at));
+            if(pair.df) {
+                const df = this.createCardUI(pair.df);
+                df.style.position = 'absolute'; df.style.top = '18px'; df.style.left = '12px'; df.style.zIndex = '10';
+                wrapper.appendChild(df);
             }
-            bf.appendChild(wrap);
+            ba.appendChild(wrapper);
         });
-        this.updBtn();
+        this.updateBtnUI();
+    },
+
+    createCardUI(c, isBack = false) {
+        const d = document.createElement('div');
+        d.className = 'card' + (isBack ? ' back' : (c.red ? ' red' : ''));
+        if(isBack) d.innerHTML = `<img src="1771489965074(1).png">`;
+        else d.innerHTML = `<div>${c.s}</div><div style="font-size:22px;align-self:center">${c.v}</div><div style="align-self:flex-end">${c.s}</div>`;
+        return d;
     },
 
     playerPlay(idx) {
         const c = this.pHand[idx];
-        if(this.attacker === 'player') {
+        if(this.isPlayerAttack) {
             if(this.table.length >= 6) return;
             if(this.table.length > 0) {
-                const valsOnTable = this.table.flatMap(p => [p.at.v, p.df?.v]).filter(Boolean);
-                if(!valsOnTable.includes(c.v)) return;
+                const allowed = this.table.flatMap(p => [p.at.v, p.df?.v]).filter(Boolean);
+                if(!allowed.includes(c.v)) return;
             }
             this.table.push({at: c, df: null});
             this.pHand.splice(idx, 1);
-            setTimeout(() => this.enemyDefend(), 600);
+            this.render();
+            setTimeout(() => this.aiDefend(), 600);
         } else {
             const target = this.table.find(p => !p.df);
             if(target && this.canBeat(c, target.at)) {
                 target.df = c;
                 this.pHand.splice(idx, 1);
-                setTimeout(() => this.enemyAttack(), 800);
+                this.render();
+                setTimeout(() => this.aiAttack(), 800);
             }
         }
-        this.render();
     },
 
     canBeat(c1, c2) {
@@ -167,53 +172,63 @@ const engine = {
         return c1.s === this.trump.s;
     },
 
-    enemyDefend() {
+    // ШАХМАТНЫЙ ИНТЕЛЛЕКТ ИИ
+    aiDefend() {
         const p = this.table.find(p => !p.df);
         if(!p) return;
-        const idx = this.eHand.findIndex(c => this.canBeat(c, p.at));
-        if(idx !== -1) {
-            p.df = this.eHand.splice(idx, 1)[0];
-            this.updStatus("ВРАГ ОТБИЛСЯ");
+        
+        let candidates = this.eHand.filter(c => this.canBeat(c, p.at));
+        if(candidates.length > 0) {
+            // Стратегия: отбиться самой слабой картой, жалея козыри
+            candidates.sort((a,b) => {
+                const at = a.s === this.trump.s, bt = b.s === this.trump.s;
+                if(at && !bt) return 1; if(!at && bt) return -1;
+                return pwr[a.v] - pwr[b.v];
+            });
+            p.df = this.eHand.splice(this.eHand.indexOf(candidates[0]), 1)[0];
         } else {
-            this.updStatus("ВРАГ БЕРЕТ");
+            this.setStatus("ВРАГ БЕРЕТ КАРТЫ");
         }
         this.render();
     },
 
-    enemyAttack() {
-        if(this.attacker === 'enemy') {
+    aiAttack() {
+        if(!this.isPlayerAttack) {
             const onT = this.table.flatMap(p => [p.at.v, p.df?.v]).filter(Boolean);
-            const idx = this.eHand.findIndex(c => onT.length === 0 || onT.includes(c.v));
-            if(idx !== -1 && this.table.length < 6) {
-                this.table.push({at: this.eHand.splice(idx, 1)[0], df: null});
+            let candidates = this.eHand.filter(c => onT.length === 0 || onT.includes(c.v));
+            
+            if(candidates.length > 0 && this.table.length < 6) {
+                // Стратегия: нападать мелочью, беречь козыри
+                candidates.sort((a,b) => (a.s === this.trump.s) - (b.s === this.trump.s) || pwr[a.v] - pwr[b.v]);
+                this.table.push({at: this.eHand.splice(this.eHand.indexOf(candidates[0]), 1)[0], df: null});
                 this.render();
             } else {
-                this.updStatus("ВРАГ: БИТО");
+                this.setStatus("ВРАГ: БИТО");
+                this.render();
             }
         }
     },
 
     handleAction() {
-        const btn = document.getElementById('btn-main');
+        const btn = document.getElementById('btn-action');
         if(btn.innerText === "БИТО") {
             this.table = []; this.refill();
-            this.attacker = this.attacker === 'player' ? 'enemy' : 'player';
-            this.updStatus(this.attacker === 'player' ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
-            if(this.attacker === 'enemy') setTimeout(() => this.enemyAttack(), 600);
+            this.isPlayerAttack = !this.isPlayerAttack;
+            this.setStatus(this.isPlayerAttack ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
+            if(!this.isPlayerAttack) setTimeout(() => this.aiAttack(), 600);
         } else if(btn.innerText === "ВЗЯТЬ") {
-            const allCards = this.table.flatMap(p => [p.at, p.df]).filter(Boolean);
-            if(this.attacker === 'enemy') this.pHand.push(...allCards);
-            else this.eHand.push(...allCards);
+            const all = this.table.flatMap(p => [p.at, p.df]).filter(Boolean);
+            if(this.isPlayerAttack) this.eHand.push(...all); else this.pHand.push(...all);
             this.table = []; this.refill();
-            setTimeout(() => this.enemyAttack(), 800);
+            if(!this.isPlayerAttack) setTimeout(() => this.aiAttack(), 600);
         }
         this.render();
     },
 
-    updBtn() {
-        const b = document.getElementById('btn-main');
+    updateBtnUI() {
+        const b = document.getElementById('btn-action');
         const hasUnbeaten = this.table.some(p => !p.df);
-        if(this.attacker === 'player') {
+        if(this.isPlayerAttack) {
             b.innerText = (this.table.length > 0 && !hasUnbeaten) ? "БИТО" : "ХОД";
             b.disabled = hasUnbeaten && this.table.length > 0;
         } else {
@@ -221,10 +236,10 @@ const engine = {
         }
     },
 
-    updStatus(s) { document.getElementById('status-text').innerText = s; tg.HapticFeedback.impactOccurred('medium'); }
+    setStatus(s) { document.getElementById('status-msg').innerText = s; tg.HapticFeedback.impactOccurred('medium'); }
 };
 
-engine.init();
+game.init();
 </script>
 </body>
 </html>
