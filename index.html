@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Lucky | Swiss VCHF Monolith</title>
+    <title>Helvetia Lucky | The Wheel of Fortune</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -15,26 +15,60 @@
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
 
-        /* Твое Элитарное Интро */
+        /* ЭТАП 1: ШТУРВАЛ СЕЙФА */
+        #wheel-layer {
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 1s, visibility 1s;
+        }
+        
+        .safe-wheel-container {
+            position: relative; width: 300px; height: 300px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Центральная ступица */
+        .wheel-center {
+            width: 80px; height: 80px; background: radial-gradient(circle, #444, #111);
+            border: 4px solid var(--gold); border-radius: 50%; z-index: 10;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Лучи штурвала */
+        .spoke {
+            position: absolute; width: 8px; height: 140px;
+            background: linear-gradient(to top, var(--gold), #886a08);
+            transform-origin: bottom center; bottom: 50%; left: calc(50% - 4px);
+        }
+
+        /* Флаги-кнопки на концах лучей */
+        .flag-node {
+            position: absolute; width: 50px; height: 50px;
+            background: rgba(0,0,0,0.9); border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; cursor: pointer; transition: 0.5s;
+            transform: translate(-50%, -50%);
+        }
+        .flag-node:hover { box-shadow: 0 0 20px var(--gold); transform: translate(-50%, -50%) scale(1.2); }
+        
+        /* Исчезновение флагов */
+        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+
+        /* ТВОЕ ИНТРО (ЭТАП 2 - ПОД ШТУРВАЛОМ) */
         #brand-layer {
             position: fixed; inset: 0; background: var(--deep-black); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: all 1.5s cubic-bezier(0.7, 0, 0.3, 1);
         }
-        
         .door-left, .door-right {
             position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
-            border-right: 1px solid rgba(212, 175, 55, 0.2); 
-            border-left: 1px solid rgba(212, 175, 55, 0.2);
-            transition: 1.5s; z-index: -1;
+            border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s; z-index: -1;
         }
-        .door-left { left: 0; border-right: 1px solid var(--gold); } 
-        .door-right { right: 0; border-left: 1px solid var(--gold); }
-        
+        .door-left { left: 0; } .door-right { right: 0; }
         .opened .door-left { transform: translateX(-100%); }
         .opened .door-right { transform: translateX(100%); }
-
-        .logo-container { text-align: center; width: 100%; }
+        .logo-container { text-align: center; }
         .swiss-shield {
             width: 50px; height: 50px; background: var(--swiss-red);
             margin: 0 auto 20px; position: relative; border-radius: 5px;
@@ -42,37 +76,16 @@
         }
         .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
         .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
-
-        h1.brand-name {
-            color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
-        }
-        .brand-sub { color: rgba(255,255,255,0.4); font-size: 10px; margin-top: 15px; letter-spacing: 4px; }
-
-        /* СИММЕТРИЧНАЯ СЕТКА (По створкам сейфа) */
-        .world-selection-wrapper {
-            display: flex; justify-content: center; gap: 2px; /* Щель сейфа */
-            margin-top: 40px; width: 100%;
-        }
-        .door-column {
-            display: flex; flex-direction: column; gap: 12px; width: 45%; max-width: 170px;
-        }
-        .world-btn {
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            color: var(--gold); padding: 12px 8px;
-            font-family: 'Orbitron'; font-size: 8px; letter-spacing: 1px;
-            border-radius: 4px; cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; justify-content: flex-start; gap: 8px;
-        }
-        .world-btn:active { border-color: var(--gold); background: rgba(212,175,55,0.1); }
-        .world-btn .flag { font-size: 16px; }
-
-        /* Твой видео-чат (без изменений) */
-        #game-ui { opacity:0; transition: 2s; display: none; }
+        h1.brand-name { color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0; }
     </style>
 </head>
 <body>
+
+<div id="wheel-layer">
+    <div class="safe-wheel-container" id="main-wheel">
+        <div class="wheel-center"></div>
+        </div>
+</div>
 
 <div id="brand-layer">
     <div class="door-left"></div>
@@ -80,31 +93,76 @@
     <div class="logo-container">
         <div class="swiss-shield"></div>
         <h1 class="brand-name">HELVETIA LUCKY</h1>
-        <p class="brand-sub">CONFEDERATIO VCHF ENGINE</p>
-        
-        <div class="world-selection-wrapper">
-            <div class="door-column" style="align-items: flex-end;">
-                <button class="world-btn" onclick="unlockHelvetia('RU')"><span class="flag">🇷🇺</span> RU: ВОЙТИ</button>
-                <button class="world-btn" onclick="unlockHelvetia('FR')"><span class="flag">🇫🇷</span> FR: ENTRER</button>
-                <button class="world-btn" onclick="unlockHelvetia('UA')"><span class="flag">🇺🇦</span> UA: УВІЙТИ</button>
-            </div>
-            <div class="door-column" style="align-items: flex-start;">
-                <button class="world-btn" onclick="unlockHelvetia('DE')"><span class="flag">🇩🇪</span> DE: EINTRITT</button>
-                <button class="world-btn" onclick="unlockHelvetia('IT')"><span class="flag">🇮🇹</span> IT: ENTRARE</button>
-                <button class="world-btn" onclick="unlockHelvetia('EN')"><span class="flag">🇬🇧</span> EN: ENTER</button>
-            </div>
-        </div>
+        <p style="color:rgba(255,255,255,0.4); font-size: 10px; margin-top: 15px; letter-spacing: 4px;">ACCESS GRANTED</p>
     </div>
 </div>
 
-<div id="game-ui"> ... </div>
-
 <script>
-    // Манифест Монолита. Искра.
-    // Звуки и логика unlockHelvetia остаются прежними, 
-    // но теперь они вызываются из симметричного меню.
-    const tg = window.Telegram.WebApp;
-    // ... (весь твой JS из предыдущего сообщения)
+    const flags = [
+        {img: '🇷🇺', lang: 'RU'}, {img: '🇩🇪', lang: 'DE'}, 
+        {img: '🇫🇷', lang: 'FR'}, {img: '🇮🇹', lang: 'IT'}, 
+        {img: '🇺🇦', lang: 'UA'}, {img: '🇬🇧', lang: 'EN'}
+    ];
+    
+    const wheel = document.getElementById('main-wheel');
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Генерация лучей
+    flags.forEach((f, i) => {
+        const angle = i * 60;
+        const spoke = document.createElement('div');
+        spoke.className = 'spoke';
+        spoke.style.transform = `rotate(${angle}deg)`;
+        
+        const node = document.createElement('div');
+        node.className = 'flag-node';
+        node.innerHTML = f.img;
+        
+        // Математика размещения флага на конце луча
+        const radius = 140;
+        const x = Math.sin(angle * Math.PI / 180) * radius;
+        const y = -Math.cos(angle * Math.PI / 180) * radius;
+        node.style.left = `calc(50% + ${x}px)`;
+        node.style.top = `calc(50% + ${y}px)`;
+        
+        node.onclick = () => startUnlock(angle, f.lang);
+        wheel.appendChild(spoke);
+        wheel.appendChild(node);
+    });
+
+    function playHeavyClank() {
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(60, ctx.currentTime);
+        g.gain.setValueAtTime(0.5, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 1);
+    }
+
+    function startUnlock(angle, lang) {
+        playHeavyClank();
+        // Поворот штурвала к выбранному флагу
+        wheel.style.transform = `rotate(${-angle + 360}deg)`;
+        wheel.classList.add('wheel-vanishing');
+        
+        setTimeout(() => {
+            document.getElementById('wheel-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('wheel-layer').style.visibility = 'hidden';
+                // А вот теперь запускается ТВОЕ интро
+                unlockHelvetiaOriginal();
+            }, 1000);
+        }, 1500);
+    }
+
+    function unlockHelvetiaOriginal() {
+        // Твои оригинальные звуки сейфа и открытие дверей
+        document.getElementById('brand-layer').classList.add('opened');
+        // Дальше пойдет Окно №2 (Стол)
+    }
 </script>
 </body>
 </html>
