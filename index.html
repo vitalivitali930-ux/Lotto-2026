@@ -4,25 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Helvetia Lucky | Durak Monolith</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #d4af37;
             --swiss-red: #e30a17;
-            --velvet-green: #0a2f1f; /* Глубокий бархатный зеленый */
+            --velvet-green: #0a2f1f;
         }
-        
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; font-family: 'Orbitron', sans-serif; overflow: hidden; 
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Orbitron', sans-serif; overflow: hidden; }
 
-        /* Эффект Сейфа (Интро) */
+        /* Сейф (Интро) */
         #brand-layer {
             position: fixed; inset: 0; background: #050505; z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            cursor: pointer; visibility: visible;
         }
-        .door { position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a; border: 1px solid rgba(212,175,55,0.05); transition: 1.5s; }
+        .door { position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a; border: 1px solid rgba(212,175,55,0.1); transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1); }
         .door-l { left: 0; } .door-r { right: 0; }
         .opened .door-l { transform: translateX(-100%); }
         .opened .door-r { transform: translateX(100%); }
@@ -30,54 +28,42 @@
         /* Игровая комната */
         #game-room {
             position: relative; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08) 0%, #000 70%);
-            display: flex; justify-content: center; align-items: center;
-            perspective: 1000px; opacity: 0; transition: 2s;
+            background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.1) 0%, #000 80%);
+            display: none; opacity: 0; transition: 2s;
         }
 
-        /* Бархатный стол с текстурой ворса */
-        #table {
-            width: 90%; height: 60%; 
-            background: var(--velvet-green);
-            border-radius: 50% / 20%;
-            position: relative;
-            box-shadow: 
-                inset 0 0 100px rgba(0,0,0,0.9), 
-                0 50px 100px rgba(0,0,0,0.8);
-            border: 8px solid #1a1a1a;
-            /* Эффект ворсинок через шум */
+        /* Стол */
+        #table-area {
+            position: absolute; bottom: -10%; left: 50%; transform: translateX(-50%);
+            width: 120%; height: 70%; background: var(--velvet-green);
+            border-radius: 50% / 30%; border: 12px solid #1a1a1a;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.9), 0 20px 50px rgba(0,0,0,0.5);
             background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
         }
 
-        /* Тусклая лампа сверху */
-        .lamp-light {
+        .lamp {
             position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 10px; background: rgba(255,255,180,0.1);
-            filter: blur(40px); z-index: 5;
+            width: 300px; height: 20px; background: rgba(255,250,200,0.15);
+            filter: blur(50px); z-index: 10;
         }
 
-        /* Карты в разброс */
+        /* Карты */
         .card-init {
-            position: absolute; width: 60px; height: 85px;
-            background: #1a1a1a; border: 1px solid #333; border-radius: 5px;
-            transition: 4s cubic-bezier(0.6, 0, 0.4, 1);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            position: absolute; width: 55px; height: 80px;
+            background: #111; border: 1px solid #333; border-radius: 4px;
+            transition: 3.5s cubic-bezier(0.6, 0, 0.4, 1); z-index: 5;
         }
-
-        /* Колода в сборе */
-        .deck-pos {
-            top: 40% !important; left: 20% !important; 
-            transform: rotate(0deg) !important;
-            box-shadow: -2px 2px 0 #222, -4px 4px 0 #111;
+        .deck-pos { 
+            top: 45% !important; left: 20% !important; 
+            transform: rotate(0deg) !important; 
+            box-shadow: -1px 1px 0 #333, -3px 3px 0 #111;
         }
-
         .trump-card {
-            position: absolute; top: 40%; left: 25%;
-            width: 85px; height: 60px; background: #fff;
-            border-radius: 5px; transform: rotate(90deg) translate(-20px, 10px);
-            display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 45%; left: 24%;
+            width: 80px; height: 55px; background: #fff; border-radius: 4px;
+            transform: rotate(90deg); display: flex; align-items: center; justify-content: center;
             font-weight: 900; color: #000; border: 2px solid var(--gold);
-            z-index: -1; opacity: 0; transition: 1s;
+            opacity: 0; transition: 1s; z-index: 1;
         }
     </style>
 </head>
@@ -86,57 +72,76 @@
 <div id="brand-layer" onclick="unlock()">
     <div class="door door-l"></div>
     <div class="door door-r"></div>
-    <div style="text-align: center; z-index: 10;">
-        <div style="width:40px;height:40px;background:var(--swiss-red);margin:0 auto 20px;border-radius:5px;position:relative;">
-            <div style="position:absolute;background:white;width:8px;height:24px;left:16px;top:8px;"></div>
-            <div style="position:absolute;background:white;width:24px;height:8px;left:8px;top:16px;"></div>
+    <div style="z-index: 10; text-align: center;">
+        <div style="width:50px; height:50px; background:var(--swiss-red); margin:0 auto 20px; border-radius:5px; position:relative;">
+            <div style="position:absolute; background:white; width:10px; height:30px; left:20px; top:10px;"></div>
+            <div style="position:absolute; background:white; width:30px; height:10px; left:10px; top:20px;"></div>
         </div>
-        <h1 style="color:var(--gold);letter-spacing:10px;font-size:20px;">HELVETIA LUCKY</h1>
+        <h1 style="color:var(--gold); letter-spacing:8px; font-size:22px; margin:0;">HELVETIA LUCKY</h1>
+        <p style="color:rgba(212,175,55,0.5); font-size:10px; margin-top:15px;">CLICK TO OPEN SAFE</p>
     </div>
 </div>
 
 <div id="game-room">
-    <div class="lamp-light"></div>
-    <div id="table">
-        <div id="cards-container"></div>
-        <div id="trump-show" class="trump-card">♦ A</div>
+    <div class="lamp"></div>
+    <div id="table-area">
+        <div id="deck-container"></div>
+        <div id="trump-final" class="trump-card">♦ A</div>
     </div>
 </div>
 
 <script>
-    function unlock() {
-        document.getElementById('brand-layer').classList.add('opened');
-        document.getElementById('game-room').style.opacity = '1';
-        setTimeout(scatterCards, 1000);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, dur, type, vol) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        g.gain.setValueAtTime(vol, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + dur);
     }
 
-    function scatterCards() {
-        const container = document.getElementById('cards-container');
-        const count = 36;
-        for(let i=0; i<count; i++) {
-            const card = document.createElement('div');
-            card.className = 'card-init';
-            // Случайный разброс
-            card.style.top = Math.random() * 80 + '%';
-            card.style.left = Math.random() * 80 + '%';
-            card.style.transform = `rotate(${Math.random() * 360}deg)`;
-            container.appendChild(card);
-        }
+    function unlock() {
+        // Звуки
+        playSound(800, 0.1, 'square', 0.1); // Тик
+        setTimeout(() => playSound(40, 1.5, 'sawtooth', 0.2), 200); // Гул сейфа
 
-        // Через секунду начинаем собирать колоду (3-4 секунды)
+        document.getElementById('brand-layer').classList.add('opened');
+        const room = document.getElementById('game-room');
+        room.style.display = 'block';
+        setTimeout(() => { 
+            room.style.opacity = '1'; 
+            initCards();
+        }, 100);
+
         setTimeout(() => {
-            const allCards = document.querySelectorAll('.card-init');
-            allCards.forEach((c, index) => {
-                c.classList.add('deck-pos');
-                c.style.zIndex = index;
-            });
-            // Показываем козырь
+            document.getElementById('brand-layer').style.display = 'none';
+        }, 1500);
+    }
+
+    function initCards() {
+        const container = document.getElementById('deck-container');
+        for(let i=0; i<36; i++) {
+            const c = document.createElement('div');
+            c.className = 'card-init';
+            c.style.top = Math.random() * 60 + 10 + '%';
+            c.style.left = Math.random() * 60 + 20 + '%';
+            c.style.transform = `rotate(${Math.random() * 360}deg)`;
+            container.appendChild(c);
+            
             setTimeout(() => {
-                const trump = document.getElementById('trump-show');
-                trump.style.opacity = '1';
-                trump.style.zIndex = "0";
-            }, 3500);
-        }, 500);
+                c.classList.add('deck-pos');
+                c.style.zIndex = i;
+            }, 500 + (i * 20)); // Красивое стягивание
+        }
+        
+        setTimeout(() => {
+            const t = document.getElementById('trump-final');
+            t.style.opacity = '1';
+        }, 3800);
     }
 </script>
 </body>
