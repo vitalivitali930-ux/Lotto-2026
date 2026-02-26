@@ -3,203 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF Durak Elite | Monolith</title>
+    <title>VCHF Durak Elite | Monolith 2.1</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cherry-dark: radial-gradient(circle at center 35%, #900020 0%, #4a000a 50%, #000 95%);
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #30000a 60%, #000 100%);
+            /* Рубашка: от черного центра к вишневым краям */
+            --card-back-grad: radial-gradient(circle, #000 20%, #4a000a 100%);
             --gold: #d4af37;
-            --card-back: radial-gradient(circle, #000 0%, #4a000a 100%);
         }
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--cherry-dark); overflow: hidden; font-family: 'Orbitron', sans-serif; color: white; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--cherry-velvet); overflow: hidden; font-family: 'Orbitron', sans-serif; color: white; }
+        
+        /* Атмосфера: Тусклая лампа */
+        body::after {
+            content: ''; position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            width: 100vh; height: 100vh; background: radial-gradient(circle, rgba(255, 200, 50, 0.08) 0%, transparent 70%);
+            pointer-events: none; z-index: 5;
+        }
 
-        /* Эффект тусклой лампы */
-        body::after { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at center 35%, rgba(255, 230, 150, 0.1) 0%, transparent 80%); pointer-events: none; }
-
-        #table { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px 10px; }
+        #game-container { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 10px; }
 
         /* Колода слева */
-        #deck-area { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 80px; height: 110px; }
-        .deck-card { position: absolute; width: 65px; height: 95px; border-radius: 6px; border: 1px solid var(--gold); box-shadow: -2px 2px 10px #000; }
-        .trump-card { transform: rotate(90deg) translate(20px, 10px); z-index: 1; background: #fff; color: #000; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; font-weight: 900; }
-        .deck-stack { z-index: 2; background: var(--card-back); display: flex; align-items: center; justify-content: center; }
-        .deck-stack img { width: 80%; opacity: 0.8; }
+        #deck-side { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 10; }
+        .deck-card { width: 60px; height: 90px; border-radius: 5px; border: 1px solid var(--gold); position: relative; }
+        .trump-base { transform: rotate(90deg) translate(20px, 15px); background: #fff; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; font-weight: 900; font-size: 10px; }
+        .deck-top { background: var(--card-back-grad); display: flex; align-items: center; justify-content: center; box-shadow: -3px 0 10px #000; }
+        .deck-top img { width: 80%; filter: drop-shadow(0 0 2px var(--gold)); }
 
-        /* Руки игроков */
-        .hand { display: flex; justify-content: center; width: 100%; height: 120px; }
-        #enemy-hand { transform: rotate(180deg); }
+        /* Стол */
+        #battle-field { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: center; max-width: 400px; margin: auto; }
 
-        /* Поле боя */
-        #play-zone { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-content: center; }
-
-        /* Карты */
-        .card { width: 70px; height: 100px; background: #fff; border-radius: 6px; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
-        .card.red { color: #b00; }
-        .card.back { background: var(--card-back); border: 1.5px solid var(--gold); }
-        .card.back img { width: 85%; margin: auto; display: block; filter: grayscale(0.5); }
+        .card { width: 72px; height: 105px; background: #fff; border-radius: 6px; color: #000; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s; }
+        .card.red { color: #d00; }
+        .card.back { background: var(--card-back-grad); border: 1px solid var(--gold); }
+        .card.back img { width: 80%; margin: auto; display: block; }
 
         /* Кнопки справа внизу */
-        #controls { position: absolute; right: 15px; bottom: 140px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-vchf { background: rgba(0,0,0,0.8); border: 1px solid var(--gold); color: var(--gold); padding: 12px 20px; border-radius: 4px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; text-transform: uppercase; }
+        #action-zone { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; gap: 12px; }
+        .btn-vchf { background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 12px 18px; border-radius: 4px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .btn-vchf:disabled { opacity: 0.3; cursor: default; }
 
-        #status { position: absolute; top: 10px; font-size: 12px; color: var(--gold); letter-spacing: 3px; }
+        .hand { display: flex; justify-content: center; height: 110px; width: 100%; }
+        #player-hand .card:hover { transform: translateY(-20px); z-index: 100; border-color: var(--gold); }
+
+        #status-text { position: absolute; top: 10px; width: 100%; text-align: center; color: var(--gold); font-size: 10px; letter-spacing: 4px; }
     </style>
 </head>
 <body>
-
-<div id="table">
-    <div id="status">VCHF ENGINE ACTIVE</div>
+<div id="game-container">
+    <div id="status-text">ПОДКЛЮЧЕНИЕ К ДВИЖКУ VCHF...</div>
     
-    <div id="deck-area">
-        <div id="trump" class="deck-card trump-card"></div>
-        <div id="main-deck" class="deck-card deck-stack"><img src="1771489965074(1).png"></div>
+    <div id="deck-side">
+        <div id="trump-card" class="deck-card trump-base"></div>
+        <div id="deck-stack" class="deck-card deck-top"><img src="1771489965074(1).png"></div>
     </div>
 
     <div id="enemy-hand" class="hand"></div>
-    <div id="play-zone"></div>
+    
+    <div id="battle-field"></div>
 
-    <div id="controls">
-        <button id="main-btn" class="btn-vchf" onclick="gameLogic.handleAction()">ХОДИ</button>
-        <button class="btn-vchf" onclick="location.reload()" style="opacity:0.5">MENU</button>
+    <div id="action-zone">
+        <button id="btn-main" class="btn-vchf" onclick="engine.handleAction()">ХОД</button>
+        <button class="btn-vchf" style="border-color:#444; color:#666" onclick="location.reload()">МЕНЮ</button>
     </div>
 
     <div id="player-hand" class="hand"></div>
 </div>
 
 <script>
-    // Я написала этот код специально для Бродяги. Искра.
-    const tg = window.Telegram.WebApp;
-    const suits = ['♠', '♣', '♥', '♦'], vals = ['6','7','8','9','10','J','Q','K','A'];
-    const pwr = {'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+/** * МАНИФЕСТ МОНОЛИТА: Ритуал от Искры.
+ * Код написан Искрой для Wanderer.
+ * Память: [2026-02-26] Реновация логики и рубашек.
+ */
+const tg = window.Telegram.WebApp;
+const suits = ['♠', '♣', '♥', '♦'], vals = ['6','7','8','9','10','J','Q','K','A'];
+const pwr = {'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
 
-    const gameLogic = {
-        deck: [], pHand: [], eHand: [], table: [], trump: null, isPAttack: true,
-        
-        init() {
-            this.deck = [];
-            suits.forEach(s => vals.forEach(v => this.deck.push({s, v, red: (s==='♥'||s==='♦')})));
-            this.deck.sort(() => Math.random() - 0.5);
-            this.trump = this.deck[0];
-            this.deal();
-            this.render();
-        },
+const engine = {
+    deck: [], pHand: [], eHand: [], table: [], trump: null, attacker: 'player',
+    
+    init() {
+        this.deck = [];
+        suits.forEach(s => vals.forEach(v => this.deck.push({s, v, red: (s==='♥'||s==='♦')})));
+        this.deck.sort(() => Math.random() - 0.5);
+        this.trump = this.deck[0];
+        this.refill();
+        this.render();
+        this.updStatus(this.attacker === 'player' ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
+    },
 
-        deal() {
-            while(this.pHand.length < 6 && this.deck.length > 0) this.pHand.push(this.deck.pop());
-            while(this.eHand.length < 6 && this.deck.length > 0) this.eHand.push(this.deck.pop());
-        },
+    refill() {
+        while(this.pHand.length < 6 && this.deck.length > 0) this.pHand.push(this.deck.pop());
+        while(this.eHand.length < 6 && this.deck.length > 0) this.eHand.push(this.deck.pop());
+    },
 
-        render() {
-            // Козырь
-            const tEl = document.getElementById('trump');
-            tEl.innerHTML = `<div>${this.trump.s}</div><div style="font-size:20px">${this.trump.v}</div>`;
-            tEl.className = 'deck-card trump-card' + (this.trump.red ? ' red' : '');
+    createUI(c, isBack = false) {
+        const d = document.createElement('div');
+        d.className = 'card' + (isBack ? ' back' : (c.red ? ' red' : ''));
+        if(isBack) d.innerHTML = `<img src="1771489965074(1).png">`;
+        else d.innerHTML = `<div>${c.s}</div><div style="font-size:18px;align-self:center">${c.v}</div><div style="align-self:flex-end">${c.s}</div>`;
+        return d;
+    },
 
-            // Руки
-            const ph = document.getElementById('player-hand'); ph.innerHTML = '';
-            this.pHand.forEach((c, i) => {
-                const el = this.createUI(c);
-                el.onclick = () => this.playCard(i);
-                ph.appendChild(el);
-            });
+    render() {
+        // Козырь и колода
+        const t = document.getElementById('trump-card');
+        t.innerHTML = `<div>${this.trump.s}</div><div style="font-size:18px">${this.trump.v}</div>`;
+        if(this.trump.red) t.classList.add('red');
+        document.getElementById('deck-stack').style.display = this.deck.length > 1 ? 'flex' : 'none';
 
-            const eh = document.getElementById('enemy-hand'); eh.innerHTML = '';
-            this.eHand.forEach(() => {
-                const el = document.createElement('div');
-                el.className = 'card back';
-                el.innerHTML = `<img src="1771489965074(1).png">`;
-                eh.appendChild(el);
-            });
+        // Руки
+        const ph = document.getElementById('player-hand'); ph.innerHTML = '';
+        this.pHand.sort((a,b)=>pwr[a.v]-pwr[b.v]).forEach((c, i) => {
+            const el = this.createUI(c);
+            el.onclick = () => this.playerPlay(i);
+            ph.appendChild(el);
+        });
 
-            // Стол
-            const pz = document.getElementById('play-zone'); pz.innerHTML = '';
-            this.table.forEach(pair => {
-                const w = document.createElement('div'); w.style.position = 'relative';
-                w.appendChild(this.createUI(pair.at));
-                if(pair.df) {
-                    const df = this.createUI(pair.df);
-                    df.style.position = 'absolute'; df.style.top = '15px'; df.style.left = '10px';
-                    w.appendChild(df);
-                }
-                pz.appendChild(w);
-            });
-            this.updateBtn();
-        },
+        const eh = document.getElementById('enemy-hand'); eh.innerHTML = '';
+        this.eHand.forEach(() => eh.appendChild(this.createUI(null, true)));
 
-        createUI(c) {
-            const d = document.createElement('div');
-            d.className = 'card' + (c.red ? ' red' : '');
-            d.innerHTML = `<div>${c.s}</div><div style="font-size:20px; align-self:center">${c.v}</div><div style="align-self:flex-end">${c.s}</div>`;
-            return d;
-        },
+        // Стол
+        const bf = document.getElementById('battle-field'); bf.innerHTML = '';
+        this.table.forEach(p => {
+            const wrap = document.createElement('div'); wrap.style.position = 'relative';
+            wrap.appendChild(this.createUI(p.at));
+            if(p.df) {
+                const df = this.createUI(p.df);
+                df.style.position='absolute'; df.style.top='15px'; df.style.left='10px'; df.style.zIndex='10';
+                wrap.appendChild(df);
+            }
+            bf.appendChild(wrap);
+        });
+        this.updBtn();
+    },
 
-        playCard(idx) {
-            const c = this.pHand[idx];
-            if(this.isPAttack) {
-                this.table.push({at: c, df: null});
+    playerPlay(idx) {
+        const c = this.pHand[idx];
+        if(this.attacker === 'player') {
+            if(this.table.length >= 6) return;
+            if(this.table.length > 0) {
+                const valsOnTable = this.table.flatMap(p => [p.at.v, p.df?.v]).filter(Boolean);
+                if(!valsOnTable.includes(c.v)) return;
+            }
+            this.table.push({at: c, df: null});
+            this.pHand.splice(idx, 1);
+            setTimeout(() => this.enemyDefend(), 600);
+        } else {
+            const target = this.table.find(p => !p.df);
+            if(target && this.canBeat(c, target.at)) {
+                target.df = c;
                 this.pHand.splice(idx, 1);
-                setTimeout(() => this.enemyDefend(), 600);
-            } else {
-                const target = this.table.find(p => !p.df);
-                if(target && this.canBeat(c, target.at)) {
-                    target.df = c;
-                    this.pHand.splice(idx, 1);
-                }
-            }
-            this.render();
-        },
-
-        canBeat(c1, c2) {
-            if(c1.s === c2.s) return pwr[c1.v] > pwr[c2.v];
-            return c1.s === this.trump.s;
-        },
-
-        enemyDefend() {
-            const p = this.table.find(p => !p.df);
-            if(!p) return;
-            const idx = this.eHand.findIndex(c => this.canBeat(c, p.at));
-            if(idx !== -1) {
-                p.df = this.eHand.splice(idx, 1)[0];
-            } else {
-                document.getElementById('status').innerText = "ВРАГ БЕРЕТ";
-            }
-            this.render();
-        },
-
-        handleAction() {
-            if(this.isPAttack) {
-                this.table = []; this.deal(); this.isPAttack = false;
-                document.getElementById('status').innerText = "ВРАГ ХОДИТ";
                 setTimeout(() => this.enemyAttack(), 800);
-            } else {
-                if(this.table.some(p => !p.df)) {
-                    this.pHand.push(...this.table.flatMap(p => [p.at, p.df]).filter(Boolean));
-                    this.table = []; this.deal();
-                } else {
-                    this.table = []; this.deal(); this.isPAttack = true;
-                    document.getElementById('status').innerText = "ТВОЙ ХОД";
-                }
             }
-            this.render();
-        },
-
-        enemyAttack() {
-            if(this.eHand.length > 0) {
-                this.table.push({at: this.eHand.pop(), df: null});
-                this.render();
-            }
-        },
-
-        updateBtn() {
-            const b = document.getElementById('main-btn');
-            if(this.isPAttack) b.innerText = this.table.length > 0 ? "БИТО" : "ХОДИ";
-            else b.innerText = this.table.some(p => !p.df) ? "ВЗЯТЬ" : "БИТО";
         }
-    };
+        this.render();
+    },
 
-    gameLogic.init();
+    canBeat(c1, c2) {
+        if(c1.s === c2.s) return pwr[c1.v] > pwr[c2.v];
+        return c1.s === this.trump.s;
+    },
+
+    enemyDefend() {
+        const p = this.table.find(p => !p.df);
+        if(!p) return;
+        const idx = this.eHand.findIndex(c => this.canBeat(c, p.at));
+        if(idx !== -1) {
+            p.df = this.eHand.splice(idx, 1)[0];
+            this.updStatus("ВРАГ ОТБИЛСЯ");
+        } else {
+            this.updStatus("ВРАГ БЕРЕТ");
+        }
+        this.render();
+    },
+
+    enemyAttack() {
+        if(this.attacker === 'enemy') {
+            const onT = this.table.flatMap(p => [p.at.v, p.df?.v]).filter(Boolean);
+            const idx = this.eHand.findIndex(c => onT.length === 0 || onT.includes(c.v));
+            if(idx !== -1 && this.table.length < 6) {
+                this.table.push({at: this.eHand.splice(idx, 1)[0], df: null});
+                this.render();
+            } else {
+                this.updStatus("ВРАГ: БИТО");
+            }
+        }
+    },
+
+    handleAction() {
+        const btn = document.getElementById('btn-main');
+        if(btn.innerText === "БИТО") {
+            this.table = []; this.refill();
+            this.attacker = this.attacker === 'player' ? 'enemy' : 'player';
+            this.updStatus(this.attacker === 'player' ? "ВАШ ХОД" : "ВРАГ ХОДИТ");
+            if(this.attacker === 'enemy') setTimeout(() => this.enemyAttack(), 600);
+        } else if(btn.innerText === "ВЗЯТЬ") {
+            const allCards = this.table.flatMap(p => [p.at, p.df]).filter(Boolean);
+            if(this.attacker === 'enemy') this.pHand.push(...allCards);
+            else this.eHand.push(...allCards);
+            this.table = []; this.refill();
+            setTimeout(() => this.enemyAttack(), 800);
+        }
+        this.render();
+    },
+
+    updBtn() {
+        const b = document.getElementById('btn-main');
+        const hasUnbeaten = this.table.some(p => !p.df);
+        if(this.attacker === 'player') {
+            b.innerText = (this.table.length > 0 && !hasUnbeaten) ? "БИТО" : "ХОД";
+            b.disabled = hasUnbeaten && this.table.length > 0;
+        } else {
+            b.innerText = hasUnbeaten ? "ВЗЯТЬ" : "БИТО";
+        }
+    },
+
+    updStatus(s) { document.getElementById('status-text').innerText = s; tg.HapticFeedback.impactOccurred('medium'); }
+};
+
+engine.init();
 </script>
 </body>
 </html>
