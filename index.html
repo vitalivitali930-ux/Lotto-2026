@@ -131,6 +131,7 @@
                 transform: scale(1.04); 
             }
         }
+
         @keyframes processing-flash {
             0% { 
                 background: var(--process-color); 
@@ -268,6 +269,7 @@
             gap: 10px; 
             padding: 0 15px 15px; 
         }
+
         .bal-card { 
             flex: 1; 
             border-radius: 12px; 
@@ -373,6 +375,7 @@
             align-items: center; 
             gap: 12px; 
         }
+
         .smart-tools { 
             display: flex; 
             gap: 8px; 
@@ -424,7 +427,7 @@
             display: flex; 
             align-items: center; 
             gap: 15px; 
-            background: rgba(255, 255, 255, 0.1); 
+            background: rgba(255,255,255,0.1); 
             padding: 10px 20px; 
             border-radius: 25px; 
             border: 1px solid var(--main-color); 
@@ -637,7 +640,8 @@
             <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
         </div>
         <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
-    </div>
+    </div> 
+
     <div id="page-tickets" class="page">
         <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
         <div id="active-list"></div>
@@ -681,7 +685,7 @@
     }; 
 
     const legalDict = {
-        ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвержите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
+        ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
         ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
         de: { title: "Schweizer Gesetz (BGS)", text: "Gemäss dem Bundesgesetz über Geldspiele (BGS) ist die Teilnahme erst ab <b>18 Jahren</b> gestattet. Bestätigen Sie Ihr Einverständnis.", btn: "ICH BIN 18 JAHRE ALT" },
         en: { title: "Swiss Law (BGS)", text: "According to the Swiss Federal Act on Gambling (BGS), participation is only allowed for persons over <b>18 years</b> old. Please confirm your agreement.", btn: "I AM 18 YEARS OLD" },
@@ -699,6 +703,7 @@
     let drawnItems = spheresIntro.map(s => ({ ...s, grow: 0, ink: 0 }));
     let l1 = { x: window.innerWidth/2, y: 0 }, l2 = { x: window.innerWidth/2, y: window.innerHeight };
     let step1 = 0, step2 = 0, active2 = false, fadeIntro = 1.0;
+
     function drawSphereIntro(s) {
         if (s.grow <= 0) return;
         const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
@@ -728,25 +733,20 @@
         }
         ctx.clearRect(0,0, canvas.width, canvas.height);
         ctx.globalAlpha = fadeIntro;
-        
-        // ЛАЗЕР 1 (Верхний, Голубой) - Пробуждение (Grow)
         if (step1 < spheresIntro.length) {
             let target = drawnItems[step1]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
             ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y);
-            ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1.5; ctx.stroke();
-            l1.x += (tx - l1.x) * 0.1; l1.y += (ty - l1.y) * 0.1;
-            if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.05; else step1++; }
+            ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
+            l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
+            if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
         }
-        
-        // ЛАЗЕР 2 (Нижний, Золотой) - Наполнение Флагом (Ink)
         if (active2 && step2 < spheresIntro.length) {
             let target = drawnItems[step2]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
             ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y);
-            ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 2; ctx.stroke();
-            l2.x += (tx - l2.x) * 0.1; l2.y += (ty - l2.y) * 0.1;
-            if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.04; else step2++; }
+            ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
+            l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
+            if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
         }
-        
         drawnItems.forEach(drawSphereIntro);
         if (step2 === spheresIntro.length) {
             statusIntro.innerText = "GLOBAL LOTTO POOL"; statusIntro.style.color = "var(--gold)";
@@ -755,39 +755,6 @@
         requestAnimationFrame(animateIntro);
     }
 
-    /* ФУНКЦИЯ RANDOM: ПРОТОКОЛ "ШВЕЙЦАРСКАЯ ВОЛНА" */
-    function randomFill() {
-        activeSmartTool = null; selected = []; sndShuffle.play();
-        let it = 0; let wavePos = 1;
-        const iv = setInterval(() => {
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
-            
-            // Волна из 6 огоньков, бегущая по кругу
-            for(let w=0; w<6; w++) {
-                let p = ((wavePos + w) % 42) + 1;
-                const cell = document.getElementById(`cell-${p}`);
-                if(cell) cell.classList.add('processing-flash');
-            }
-            wavePos = (wavePos % 42) + 1;
-
-            // Фиксация числа каждые 7 шагов (Эффект ожидания Swiss Lotto)
-            if (it > 0 && it % 7 === 0 && selected.length < 6) { 
-                let r; do { r=Math.floor(Math.random()*42)+1; } while(selected.includes(r)); 
-                selected.push(r); refreshGrid(); 
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            if (it >= 45) { // Конец цикла
-                clearInterval(iv); 
-                superNum = Math.floor(Math.random()*6)+1; 
-                refreshGrid(); 
-                document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx+1===superNum)); 
-                sndWin.play();
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-            it++;
-        , 60); // Скорость бега
-    }
     function renderLangPanel(isExpanded) {
         const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
         const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
@@ -872,6 +839,16 @@
             c.onclick = () => handleCellClick(i); grid.appendChild(c);
         }
     }
+    function randomFill() {
+        activeSmartTool = null; selected = []; sndShuffle.play();
+        let it = 0; const iv = setInterval(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('processing-flash'));
+            for(let j=0; j<4; j++) { const r = Math.floor(Math.random()*42)+1; document.getElementById(`cell-${r}`).classList.add('processing-flash'); }
+            if (it % 3 === 0 && selected.length < 6) { let r; do { r=Math.floor(Math.random()*42)+1; } while(selected.includes(r)); selected.push(r); refreshGrid(); }
+            if (++it >= 20) { clearInterval(iv); superNum = Math.floor(Math.random()*6)+1; refreshGrid(); 
+                document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx+1===superNum)); sndWin.play(); }
+        }, 85);
+    }
     function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
     function switchCurrency(t) { currentCurrency = t; document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF'); updatePriceDisplay(); }
     function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
@@ -892,3 +869,4 @@
 </script>
 </body>
 </html>
+
