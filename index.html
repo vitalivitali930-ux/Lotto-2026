@@ -2,87 +2,128 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>VCHF - Rainbow Wave Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VCHF - Rainbow Engine 2.0</title>
     <style>
         :root {
-            /* Те самые 5 цветов из твоего Монолита */
             --gold: #d4af37;
             --lime: #32CD32;
             --cyan: #00ffff;
             --cherry: #C511A4;
             --silver: #c0c0c0;
-            --bg: #000;
+            --bg: #050505;
         }
 
         body { 
             background: var(--bg); 
             color: #fff; 
-            font-family: 'Orbitron', sans-serif; 
+            font-family: -apple-system, sans-serif; 
             text-align: center; 
-            margin: 0; padding: 20px;
+            margin: 0; 
+            padding: 20px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 { 
+            color: var(--gold); 
+            font-size: 18px; 
+            letter-spacing: 2px; 
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .status-info {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 20px;
         }
 
         .grid { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            gap: 12px; 
-            max-width: 380px; 
-            margin: 30px auto; 
+            gap: 10px; 
+            max-width: 350px; 
+            width: 100%;
         }
 
         .cell { 
             aspect-ratio: 1/1; 
             border-radius: 50%; 
-            background: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
-            display: flex; align-items: center; justify-content: center; 
-            border: 1px solid rgba(255,255,255,0.1);
-            font-weight: bold; font-size: 16px;
+            background: radial-gradient(circle at 35% 35%, #333 0%, #111 40%, #000 100%);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 1px solid rgba(255,255,255,0.05);
+            font-weight: bold; 
+            font-size: 14px;
             transition: all 0.15s ease;
+            color: #555;
         }
 
-        /* Классы для вспышек разными цветами */
+        /* Анимационные классы вспышек */
         .cell.flash-gold { background: var(--gold); box-shadow: 0 0 15px var(--gold); color: #000; border-color: #fff; }
         .cell.flash-lime { background: var(--lime); box-shadow: 0 0 15px var(--lime); color: #000; border-color: #fff; }
         .cell.flash-cyan { background: var(--cyan); box-shadow: 0 0 15px var(--cyan); color: #000; border-color: #fff; }
         .cell.flash-cherry { background: var(--cherry); box-shadow: 0 0 15px var(--cherry); color: #000; border-color: #fff; }
         .cell.flash-silver { background: var(--silver); box-shadow: 0 0 15px var(--silver); color: #000; border-color: #fff; }
 
-        /* Финальная фиксация (Золото по умолчанию) */
+        /* Финальная золотая фиксация */
         .cell.fixed { 
             background: linear-gradient(145deg, #f9e27d, #d4af37); 
             color: #000; 
-            box-shadow: 0 0 25px var(--gold); 
-            transform: scale(1.15); 
-            border: 2px solid #fff;
+            box-shadow: 0 0 20px var(--gold); 
+            transform: scale(1.1); 
+            border: 1.5px solid #fff;
             z-index: 10;
         }
 
+        .controls {
+            margin-top: 30px;
+            width: 100%;
+        }
+
         button { 
-            padding: 18px 40px; 
+            padding: 20px 50px; 
             font-size: 16px; 
-            font-weight: 800;
+            font-weight: bold;
             cursor: pointer; 
             background: linear-gradient(145deg, #f9e27d, #d4af37); 
             border: none; 
-            border-radius: 15px; 
+            border-radius: 50px; 
             color: #000;
             text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s active;
+        }
+
+        button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
 <body>
-    <h2 style="color: var(--gold); letter-spacing: 3px;">VCHF BI-TURBO RAINBOW</h2>
+
+    <h2>VCHF BI-TURBO</h2>
+    <div class="status-info">PROTOCOL 1.1 | МОНОЛИТ | RANDOM ACTIVE</div>
+
     <div class="grid" id="main-grid"></div>
-    <button onclick="startRainbowWave()">Start Random Wave</button>
+
+    <div class="controls">
+        <button onclick="startRainbowWave()">Start Wave</button>
+    </div>
 
     <script>
         const grid = document.getElementById('main-grid');
         const colors = ['flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver'];
         const delay = ms => new Promise(res => setTimeout(res, ms));
+        let selected = [];
+        let isProcessing = false;
 
-        // Отрисовка поля
+        // Генерация сетки 42 сферы
         for (let i = 1; i <= 42; i++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
@@ -92,37 +133,44 @@
         }
 
         async function startRainbowWave() {
+            if (isProcessing) return; // Защита от двойного клика
+            isProcessing = true;
+
             const allCells = document.querySelectorAll('.cell');
             
-            // Сброс
+            // --- ПРАВИЛО МОНОЛИТА: Сброс всего старого ---
+            selected = [];
             allCells.forEach(c => {
-                c.className = 'cell';
+                c.className = 'cell'; // Очищаем классы Hot/Cold и старый выбор
             });
 
-            // 1. ВСПЫШКА (Все цвета вперемешку)
+            // 1. ВСПЫШКА (0.8 сек - Цветная энергия)
             allCells.forEach((c, i) => {
                 c.classList.add(colors[i % colors.length]);
             });
             await delay(800);
-            allCells.forEach(c => c.className = 'cell');
-
-            // 2. РАЗГОН (Цветной хаос 2 сек)
+            
+            // 2. РАЗГОН (Хаос 2 сек - Бегающие огни)
             let startTime = Date.now();
             while (Date.now() - startTime < 2000) {
-                // Очищаем предыдущий кадр хаоса
-                allCells.forEach(c => c.className = 'cell');
+                // Очищаем только не зафиксированные
+                allCells.forEach(c => {
+                    if (!c.classList.contains('fixed')) c.className = 'cell';
+                });
                 
-                // Подсвечиваем 8 случайных шаров случайными цветами
+                // Подсвечиваем 8 случайных сфер разными цветами
                 for(let i=0; i<8; i++) {
                     let r = Math.floor(Math.random() * 42) + 1;
-                    let col = colors[Math.floor(Math.random() * colors.length)];
-                    document.getElementById('cell-' + r).classList.add(col);
+                    let target = document.getElementById('cell-' + r);
+                    if (!target.classList.contains('fixed')) {
+                        let col = colors[Math.floor(Math.random() * colors.length)];
+                        target.classList.add(col);
+                    }
                 }
                 await delay(70);
             }
 
-            // 3. ЗАМЕДЛЕНИЕ И ФИКСАЦИЯ (В золоте)
-            let selected = [];
+            // 3. ЗАМЕДЛЕНИЕ И ФИКСАЦИЯ (По одному в Золоте)
             allCells.forEach(c => c.className = 'cell');
             
             while (selected.length < 6) {
@@ -130,13 +178,15 @@
                 if (!selected.includes(r)) {
                     selected.push(r);
                     const target = document.getElementById('cell-' + r);
-                    target.classList.add('fixed'); // Фиксируем в золотом
+                    target.className = 'cell fixed'; 
                     
-                    // Драматическое замедление
-                    await delay(400 + (selected.length * 200));
+                    // Замедление такта для драматизма
+                    await delay(300 + (selected.length * 200));
                 }
             }
-            console.log("Движок VCHF: Волна завершена успешно.");
+
+            isProcessing = false;
+            console.log("Движок VCHF: Волна завершена. Манифест Монолита соблюден.");
         }
     </script>
 </body>
