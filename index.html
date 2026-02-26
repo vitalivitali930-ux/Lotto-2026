@@ -11,84 +11,115 @@
             --gold: #d4af37;
             --swiss-red: #e30a17;
             --deep-black: #050505;
-            --velvet-green: #072a1a;
+            --cherry-deep: #3d0505; /* Та самая 40% вишня */
         }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
 
-        /* ИНТРО (ТВОЯ ГОРДОСТЬ) */
+        /* ЭТАП 1: ШТУРВАЛ (БЕЗ ИЗМЕНЕНИЙ) */
+        #wheel-layer {
+            position: fixed; inset: 0; background: #000; z-index: 3000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+        .safe-wheel-container {
+            position: relative; width: 320px; height: 320px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wheel-center {
+            width: 70px; height: 70px; background: radial-gradient(circle, #333, #000);
+            border: 3px solid var(--gold); border-radius: 50%; z-index: 10;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+        }
+        .spoke {
+            position: absolute; width: 6px; height: 130px;
+            background: linear-gradient(to top, var(--gold), transparent);
+            transform-origin: bottom center; bottom: 50%; left: calc(50% - 3px);
+        }
+        .flag-node {
+            position: absolute; width: 55px; height: 55px;
+            background: #0a0a0a; border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 26px; cursor: pointer; z-index: 20;
+            transform: translate(-50%, -50%); transition: 0.4s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+        }
+        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0.5); transition: 0.6s; }
+
+        /* ЭТАП 2: ДВЕРИ (ТВОЕ ИНТРО) */
         #brand-layer {
             position: fixed; inset: 0; background: var(--deep-black); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 1s ease-in-out;
         }
         .door-left, .door-right {
             position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
             border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1);
-            z-index: 1100;
         }
         .door-left { left: 0; border-right: 2px solid var(--gold); }
         .door-right { right: 0; border-left: 2px solid var(--gold); }
-        
         .opened .door-left { transform: translateX(-100%); }
         .opened .door-right { transform: translateX(100%); }
-        .opened .logo-container { opacity: 0; filter: blur(10px); }
-
-        .logo-container { transition: 1s; z-index: 1200; text-align: center; }
         .swiss-shield {
-            width: 60px; height: 60px; background: var(--swiss-red);
-            margin: 0 auto 20px; position: relative; border-radius: 8px;
-            box-shadow: 0 0 40px rgba(227, 10, 23, 0.6);
+            width: 50px; height: 50px; background: var(--swiss-red);
+            margin: 0 auto 20px; position: relative; border-radius: 5px;
+            box-shadow: 0 0 30px rgba(227, 10, 23, 0.5);
         }
-        .swiss-shield::after { content: ''; position: absolute; background: white; width: 12px; height: 36px; left: 24px; top: 12px; }
-        .swiss-shield::before { content: ''; position: absolute; background: white; width: 36px; height: 12px; left: 12px; top: 24px; }
-        h1.brand-name { color: var(--gold); font-size: 26px; letter-spacing: 6px; margin: 0; }
+        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
+        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
+        h1.brand-name { color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0; text-align: center; }
 
-        /* СИММЕТРИЧНЫЕ КНОПКИ (ИЗ ВИДЕО) */
-        .lang-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 40px;
-            width: 90%; max-width: 400px;
-        }
-        .lang-btn {
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(212,175,55,0.3);
-            color: #ccc; padding: 12px; border-radius: 4px; font-size: 10px;
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-            transition: 0.3s;
-        }
-        .lang-btn:active { border-color: var(--gold); color: #fff; }
-
-        /* СТОЛ (ТО, ЧТО МЫ ОТКРЫВАЕМ) */
+        /* ЭТАП 3: ВИШНЕВЫЙ ПОЛИГОН (60/40) */
         #game-room {
             position: fixed; inset: 0; display: none; opacity: 0;
-            background: radial-gradient(circle at 50% 20%, rgba(212,175,55,0.1) 0%, #000 90%);
-            z-index: 500;
+            background: #000; z-index: 500; transition: 3s ease-in-out;
         }
         #velvet-table {
-            position: absolute; bottom: -25%; left: 50%; transform: translateX(-50%);
-            width: 160%; height: 85%; background: var(--velvet-green);
-            border-radius: 50% / 35%; border: 20px solid #111;
-            box-shadow: inset 0 0 250px #000, 0 50px 100px #000;
-            background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+            position: absolute; bottom: -35%; left: 50%; transform: translateX(-50%);
+            width: 170%; height: 95%; 
+            background: radial-gradient(circle at 50% 0%, var(--cherry-deep) 0%, #000 65%);
+            border-radius: 50% / 45%; border: 22px solid #0a0a0a;
+            box-shadow: inset 0 10px 100px #000, 0 0 150px rgba(61, 5, 5, 0.3);
+            background-image: 
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px),
+                repeating-linear-gradient(-45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
         }
         .table-light {
             position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-            width: 600px; height: 200px; background: rgba(255,255,255,0.02);
-            filter: blur(100px); pointer-events: none;
+            width: 800px; height: 400px; 
+            background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+            filter: blur(120px); pointer-events: none;
         }
+
+        /* ТЕХНО-КАРТЫ (СТАЛЬНОЙ ПЛАСТИК) */
         .card-monolith {
-            position: absolute; width: 70px; height: 105px;
-            background: linear-gradient(135deg, #222, #000);
-            border: 1px solid #333; border-radius: 6px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
-            transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+            position: absolute; width: 75px; height: 110px;
+            background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            transition: all 3.8s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10;
+            background-image: linear-gradient(135deg, transparent 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+            background-size: 200% 200%;
         }
         .deck-stacked {
-            top: 40% !important; left: 15% !important; transform: rotate(-2deg) !important;
-            box-shadow: -2px 2px 0 #333, -8px 8px 30px #000 !important;
+            top: 35% !important; left: 15% !important; transform: rotate(-0.5deg) !important;
+            box-shadow: -1px 1px 0 #111, -3px 3px 0 #050505, -10px 10px 40px #000 !important;
+        }
+        #trump-card {
+            position: absolute; top: 37%; left: 20%; width: 110px; height: 75px;
+            background: #dcdcdc; border-radius: 4px; transform: rotate(92deg);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: #000;
+            border-right: 4px solid var(--gold); opacity: 0; transition: 2.5s;
         }
     </style>
 </head>
 <body>
+
+<div id="wheel-layer">
+    <div class="safe-wheel-container" id="main-wheel">
+        <div class="wheel-center"></div>
+    </div>
+</div>
 
 <div id="brand-layer">
     <div class="door-left"></div>
@@ -96,34 +127,20 @@
     <div class="logo-container">
         <div class="swiss-shield"></div>
         <h1 class="brand-name">HELVETIA LUCKY</h1>
-        <div class="lang-grid">
-            <div class="lang-btn" onclick="openSafe()">🇷🇺 RU: ВОЙТИ</div>
-            <div class="lang-btn" onclick="openSafe()">🇩🇪 DE: EINTRITT</div>
-            <div class="lang-btn" onclick="openSafe()">🇫🇷 FR: ENTRER</div>
-            <div class="lang-btn" onclick="openSafe()">🇮🇹 IT: ENTRARE</div>
-            <div class="lang-btn" onclick="openSafe()">🇺🇦 UA: УВІЙТИ</div>
-            <div class="lang-btn" onclick="openSafe()">🇬🇧 EN: ENTER</div>
-        </div>
     </div>
 </div>
 
 <div id="game-room">
     <div class="table-light"></div>
-    <div id="velvet-table">
-        <div id="deck-zone"></div>
-    </div>
+    <div id="velvet-table"><div id="deck-zone"></div><div id="trump-card">♠ A</div></div>
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
-
+    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
     let audioCtx = null;
     function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    
     function playSound(f, d, t, v) {
-        initAudio();
-        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        initAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
         o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
         g.gain.setValueAtTime(v, audioCtx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
@@ -131,38 +148,54 @@
         o.start(); o.stop(audioCtx.currentTime + d);
     }
 
-    // ТА САМАЯ МАГИЯ ОТКРЫТИЯ
-    function openSafe() {
-        playSound(400, 0.5, 'triangle', 0.2); // Звук затвора
+    // Штурвал
+    const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
+    const wheel = document.getElementById('main-wheel');
+    flags.forEach((img, i) => {
+        const angle = i * 60;
+        const node = document.createElement('div');
+        node.className = 'flag-node'; node.innerHTML = img;
+        const r = 145;
+        node.style.left = `calc(50% + ${Math.sin(angle*Math.PI/180)*r}px)`;
+        node.style.top = `calc(50% + ${-Math.cos(angle*Math.PI/180)*r}px)`;
+        node.onclick = () => {
+            playSound(60, 1.2, 'triangle', 0.4);
+            wheel.style.transform = `rotate(${-angle + 720}deg)`;
+            wheel.classList.add('wheel-vanishing');
+            setTimeout(() => {
+                document.getElementById('wheel-layer').style.opacity = '0';
+                setTimeout(() => { document.getElementById('wheel-layer').style.display = 'none'; openDoors(); }, 800);
+            }, 1200);
+        };
+        const spoke = document.createElement('div'); spoke.className = 'spoke';
+        spoke.style.transform = `rotate(${angle}deg)`; wheel.appendChild(spoke); wheel.appendChild(node);
+    });
+
+    function openDoors() {
+        playSound(800, 0.1, 'square', 0.1);
+        setTimeout(() => playSound(40, 1.5, 'sawtooth', 0.3), 150);
         document.getElementById('brand-layer').classList.add('opened');
-        
-        // Через 1.2 сек, когда двери разъехались, показываем стол
-        setTimeout(() => {
-            const room = document.getElementById('game-room');
-            room.style.display = 'block';
-            setTimeout(() => { 
-                room.style.opacity = '1'; 
-                startDealing(); // Начинаем магию карт
-            }, 100);
-        }, 1200);
+        setTimeout(startVCHFTable, 1500);
     }
 
-    function startDealing() {
+    function startVCHFTable() {
+        const room = document.getElementById('game-room');
+        room.style.display = 'block'; setTimeout(() => room.style.opacity = '1', 100);
         const zone = document.getElementById('deck-zone');
         for(let i=0; i<36; i++) {
-            const c = document.createElement('div');
-            c.className = 'card-monolith';
-            c.style.top = Math.random()*50+20+'%'; 
-            c.style.left = Math.random()*60+20+'%';
+            const c = document.createElement('div'); c.className = 'card-monolith';
+            c.style.top = Math.random()*40+20+'%'; c.style.left = Math.random()*50+25+'%';
             c.style.transform = `rotate(${Math.random()*720}deg)`;
             zone.appendChild(c);
-            
             setTimeout(() => {
-                c.classList.add('deck-stacked');
-                c.style.zIndex = i;
-                if(i%5 === 0) playSound(1200, 0.05, 'sine', 0.02);
-            }, 500 + (i*40));
+                c.classList.add('deck-stacked'); c.style.zIndex = i;
+                if(i%5===0) playSound(1400, 0.04, 'sine', 0.015);
+            }, 1000 + (i*45));
         }
+        setTimeout(() => {
+            const t = document.getElementById('trump-card'); t.style.opacity = '1'; t.style.left = '24%';
+            playSound(500, 0.3, 'triangle', 0.06);
+        }, 5500);
     }
 </script>
 </body>
