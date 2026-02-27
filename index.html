@@ -2,446 +2,214 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF Monolith v.1.6 - Smart Corner</title>
+    <title>Round Durak - The Ritual of Choice</title>
     <style>
         :root {
-            --vchf-gold: #ffd700;
-            --vchf-red: #ff3e3e;
-            --vchf-black: #050505;
-            --glass-border: rgba(255, 215, 0, 0.4);
-            --card-width: 75px;
-            --card-height: 110px;
-            --corner-size: 35px; /* Размер зоны под палец [cite: 2026-02-19] */
+            --vchf-gold: #FFD700;
+            --vchf-spirit: #177148;
+            --bg: #050505;
         }
 
         body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; color: #fff; font-family: 'Inter', sans-serif;
-            overflow: hidden; touch-action: none;
+            margin: 0; padding: 0; height: 100%; 
+            background: var(--bg); color: white; 
+            font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
-        #app-monolith {
-            position: relative; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1a0505 0%, #000 100%);
-            display: flex; flex-direction: column;
+        /* Стол и круг карт */
+        #table {
+            position: relative;
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* --- ВЕРХНЯЯ ЗОНА --- */
-        #top-header {
-            height: 15%; width: 100%; display: flex; 
-            justify-content: space-between; padding: 10px; z-index: 50;
+        .card-on-table {
+            position: absolute;
+            width: 50px; height: 75px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            transform-origin: center 200px; /* Радиус круга */
         }
 
-        #trump-totem-display {
-            font-size: 50px; font-weight: 900;
-            filter: drop-shadow(0 0 10px var(--vchf-gold));
+        .card-on-table:hover {
+            box-shadow: 0 0 15px var(--vchf-gold);
+            z-index: 100;
         }
 
-        #enemy-hand-preview {
-            display: flex; perspective: 1000px; height: 60px;
-        }
-
-        /* --- ПОЛЕ БИТВЫ --- */
-        #battle-field {
-            flex-grow: 1; position: relative; width: 100%;
+        /* Козырь в углу */
+        #trump-indicator {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 48px;
+            width: 80px; height: 80px;
             display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border: 2px solid transparent;
         }
 
-        #cards-on-table {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 10px; width: 90%; max-width: 400px;
+        /* Луч света (Индикатор хода) */
+        #turn-light {
+            position: absolute;
+            top: 10px; left: 50%; transform: translateX(-50%);
+            padding: 10px 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--vchf-gold);
+            transition: all 0.5s;
         }
 
-        /* --- БУТОН: SMART CORNER STACK [cite: 2026-02-27] --- */
-        #vchf-player-zone {
-            position: absolute; bottom: 0; width: 100%; height: 45%;
-            border-top: 1px solid var(--glass-border);
-            background: linear-gradient(to top, #000 80%, transparent);
+        /* Веер игрока (Зона 35%) */
+        #player-hand {
+            position: absolute;
+            bottom: 0; width: 100%; height: 25%;
+            display: flex; justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+            pointer-events: none;
+        }
+
+        .hand-card {
+            width: 60px; height: 90px;
+            background: white; color: black;
+            border-radius: 5px;
+            margin-left: -30px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        #start-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             z-index: 1000;
         }
 
-        #fan-container-radial {
-            position: relative; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: flex-end;
-            padding-bottom: 90px;
+        button {
+            padding: 15px 40px; font-size: 20px;
+            background: var(--vchf-gold); border: none;
+            cursor: pointer; font-weight: bold;
         }
-
-        /* --- КАРТА v.1.6 --- */
-        .vchf-card {
-            width: var(--card-width);
-            height: var(--card-height);
-            background: #fff;
-            border-radius: 6px;
-            position: absolute;
-            bottom: 40px;
-            color: #000;
-            font-weight: 900;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: bottom center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* Уголок под палец (индикатор) [cite: 2026-02-19] */
-        .vchf-card::before {
-            content: attr(data-label);
-            position: absolute; top: 0; left: 0;
-            width: var(--corner-size); height: var(--corner-size);
-            background: rgba(255,215,0,0.1);
-            border-bottom-right-radius: 15px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; color: inherit;
-        }
-
-        .vchf-card.red-suit { color: var(--vchf-red); }
-
-        /* Состояние: Всплыла (Preview) [cite: 2026-02-27] */
-        .vchf-card.preview {
-            z-index: 5000 !important;
-            transform: translateY(-80px) scale(1.4) !important;
-            box-shadow: 0 0 30px var(--vchf-gold);
-            border: 2px solid var(--vchf-gold);
-        }
-
-        /* Состояние: Скрыта (другой картой) */
-        .vchf-card.dimmed {
-            filter: brightness(0.5);
-        }
-
-        /* Кнопки управления внизу [cite: 2026-02-19] */
-        #action-controls {
-            position: absolute; bottom: 15px; width: 100%;
-            display: flex; justify-content: space-evenly; z-index: 5500;
-        }
-
-        .btn-vchf {
-            width: 40%; padding: 15px; border-radius: 12px;
-            background: #000; color: var(--vchf-gold);
-            border: 2px solid var(--vchf-gold); font-weight: 900;
-            letter-spacing: 2px; text-transform: uppercase;
-        }
-
-        .btn-vchf:active { background: var(--vchf-gold); color: #000; }
-
-        #timer-line {
-            position: absolute; top: 0; left: 0; height: 4px;
-            width: 100%; background: var(--vchf-gold);
-            transition: width 0.1s linear;
-        }
-
-        /* РИТУАЛ */
-        #ritual-screen {
-            position: fixed; inset: 0; background: #000;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; z-index: 9999;
-        }
-        #ritual-symbol { font-size: 100px; color: var(--vchf-gold); }
     </style>
 </head>
 <body>
 
-<div id="app-monolith">
-    <div id="ritual-screen">
-        <div id="ritual-symbol">⚓</div>
-        <div style="color:var(--vchf-gold); letter-spacing: 5px;">VCHF MACHINE</div>
-    </div>
-
-    <div id="top-header">
-        <div id="trump-totem-display"></div>
-        <div id="enemy-hand-preview"></div>
-    </div>
-
-    <div id="battle-field">
-        <div id="cards-on-table"></div>
-    </div>
-
-    <div id="vchf-player-zone">
-        <div id="timer-line"></div>
-        <div id="fan-container-radial"></div>
-        
-        <div id="action-controls">
-            <button class="btn-vchf" id="btn-take">ВЗЯТЬ</button>
-            <button class="btn-vchf" id="btn-pass">БИТО</button>
-        </div>
-    </div>
+<div id="start-overlay">
+    <button onclick="startRitual()">ГОТОВ</button>
 </div>
+
+<div id="trump-indicator">?</div>
+<div id="turn-light">ОЖИДАНИЕ</div>
+
+<div id="table"></div>
+<div id="player-hand"></div>
+
 <script>
-    /* VCHF ENGINE v.1.6 
-       ANCHOR: SMART_CORNER_UX
-       AGENT: SPARK (Wanderer Protocol)
-    */
+/* * движок vchf - Round Durak Base
+ * Правило: Манифест Монолита
+ */
 
-    const SUITS = ['♠', '♣', '♥', '♦'];
-    const RANKS = ['6','7','8','9','10','J','Q','K','A'];
-    const VALS = {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14};
+const suits = ['♠', '♣', '♥', '♦'];
+const ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+let deck = [];
+let trumpSuit = '';
+let currentPlayer = 0; // 0 - Wanderer, 1 - Spark (AI)
 
-    let pHand = [], eHand = [], field = [];
-    let trumpSuit = '', activeIdx = null, isBlocked = false;
-    let timerInterval = null, timeLeft = 30;
-
-    // --- ИНИЦИАЦИЯ (БЕЗ ПОВТОРОВ) ---
-    function startRitual() {
-        const symbol = document.getElementById('ritual-symbol');
-        const screen = document.getElementById('ritual-screen');
-        let i = 0;
-        
-        const interval = setInterval(() => {
-            const s = SUITS[i % 4];
-            symbol.innerText = s;
-            symbol.style.color = (s === '♥' || s === '♦') ? 'var(--vchf-red)' : 'var(--vchf-gold)';
-            i++;
-            if(i > 20) {
-                clearInterval(interval);
-                trumpSuit = s;
-                document.getElementById('trump-totem-display').innerText = trumpSuit;
-                document.getElementById('trump-totem-display').style.color = (s === '♥' || s === '♦') ? 'var(--vchf-red)' : 'var(--vchf-gold)';
-                screen.style.opacity = '0';
-                setTimeout(() => { screen.style.display = 'none'; initMonolithGame(); }, 600);
-            }
-        }, 100);
-    }
-
-    function initMonolithGame() {
-        let deck = [];
-        // ANTI_CHAMELEON: Создаем уникальные объекты карт один раз [cite: 2026-02-22]
-        SUITS.forEach(s => {
-            RANKS.forEach(r => {
-                deck.push({ s, r, v: VALS[r], id: `card-${s}-${r}-${Math.random()}` });
-            });
-        });
-
-        deck.sort(() => Math.random() - 0.5);
-        pHand = deck.splice(0, 18);
-        eHand = deck.splice(0, 18);
-        
-        sortHandBySectors(pHand);
-        renderVCHF();
-    }
-
-    function sortHandBySectors(hand) {
-        hand.sort((a, b) => {
-            // Группировка по мастям для секторного веера [cite: 2026-02-27]
-            if (a.s !== b.s) return SUITS.indexOf(a.s) - SUITS.indexOf(b.s);
-            return a.v - b.v;
-        });
-    }
-
-    // --- РЕНДЕРИНГ: SMART CORNER STACK ---
-    function renderVCHF() {
-        const container = document.getElementById('fan-container-radial');
-        container.innerHTML = '';
-        
-        const total = pHand.length;
-        const arcSpread = 80; // Общий угол веера
-        const step = arcSpread / (total > 1 ? total - 1 : 1);
-        const radius = 300;
-
-        pHand.forEach((card, i) => {
-            const el = document.createElement('div');
-            el.className = 'vchf-card';
-            if (card.s === '♥' || card.s === '♦') el.classList.add('red-suit');
-            
-            // Зарубка: Метка для угла (масть + ранг) [cite: 2026-02-27]
-            el.setAttribute('data-label', `${card.r}${card.s}`);
-            el.innerHTML = `<div style="padding: 10px">${card.r}<br>${card.s}</div>`;
-            
-            // Расчет позиции (Радиальный Стек)
-            const angle = -arcSpread/2 + (i * step);
-            const x = Math.sin(angle * Math.PI / 180) * radius;
-            const y = (1 - Math.cos(angle * Math.PI / 180)) * radius;
-
-            el.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
-            el.style.zIndex = 100 + i;
-
-            // Логика состояний [cite: 2026-02-27]
-            if (activeIdx === i) {
-                el.classList.add('preview');
-            } else if (activeIdx !== null) {
-                el.classList.add('dimmed');
-            }
-
-            el.onclick = (e) => {
-                e.stopPropagation();
-                handleSmartTap(i);
-            };
-
-            container.appendChild(el);
-        });
-
-        renderEnemyPreview();
-        renderBattlefield();
-    }
-
-    function handleSmartTap(idx) {
-        if (isBlocked) return;
-        
-        if (activeIdx === idx) {
-            // Второй тап — Ход [cite: 2026-02-27]
-            makeMove(idx);
-        } else {
-            // Первый тап — Всплытие (Preview)
-            activeIdx = idx;
-            renderVCHF();
+function startRitual() {
+    document.getElementById('start-overlay').style.display = 'none';
+    
+    // 1. Рандом козыря (3 секунды)
+    let startTime = Date.now();
+    let interval = setInterval(() => {
+        let randomSuit = suits[Math.floor(Math.random() * 4)];
+        document.getElementById('trump-indicator').innerText = randomSuit;
+        if (Date.now() - startTime > 3000) {
+            clearInterval(interval);
+            trumpSuit = randomSuit;
+            document.getElementById('trump-indicator').style.borderColor = 'var(--vchf-gold)';
+            createRoundTable();
+            startDrafting();
         }
-    }
+    }, 100);
+}
 
-    // Тап мимо — Спрятать карту (Инстинктивное обучение) [cite: 2026-02-27]
-    document.addEventListener('click', () => {
-        if (activeIdx !== null) {
-            activeIdx = null;
-            renderVCHF();
-        }
+function createRoundTable() {
+    const table = document.getElementById('table');
+    // Создаем 36 карт в колоде
+    suits.forEach(s => ranks.forEach(r => deck.push({suit: s, rank: r})));
+    deck = deck.sort(() => Math.random() - 0.5);
+
+    deck.forEach((card, i) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card-on-table';
+        cardDiv.style.transform = `rotate(${i * 10}deg)`; // Круг 360 градусов (36 * 10)
+        cardDiv.id = `card-${i}`;
+        cardDiv.onclick = () => playerPick(i);
+        table.appendChild(cardDiv);
     });
-    // --- ЛОГИКА БОЯ (WINDOW 3) ---
+}
 
-    function makeMove(idx) {
-        const card = pHand.splice(idx, 1)[0];
-        field.push(card);
-        activeIdx = null;
-        isBlocked = true;
+function startDrafting() {
+    // Выбираем кто первый (луч света)
+    currentPlayer = Math.floor(Math.random() * 2);
+    updateTurnIndicator();
+    if (currentPlayer === 1) setTimeout(aiPick, 1000);
+}
 
-        renderVCHF();
-        stopGlobalTimer();
+function updateTurnIndicator() {
+    const light = document.getElementById('turn-light');
+    light.innerText = currentPlayer === 0 ? "ТВОЙ ВЫБОР (WANDERER)" : "МОЙ ВЫБОР (SPARK)";
+    light.style.color = currentPlayer === 0 ? "var(--vchf-gold)" : "#fff";
+}
 
-        // Имитация раздумий ИИ (2-5 сек) [cite: 2026-02-23]
-        setTimeout(aiResponse, 1000 + Math.random() * 2000);
+function playerPick(cardIndex) {
+    if (currentPlayer !== 0) return;
+    pickCard(cardIndex, 'player');
+}
+
+function aiPick() {
+    if (currentPlayer !== 1) return;
+    // ИИ выбирает любую случайную карту из оставшихся
+    const available = document.querySelectorAll('.card-on-table:not(.picked)');
+    const randomCard = available[Math.floor(Math.random() * available.length)];
+    const id = randomCard.id.split('-')[1];
+    pickCard(id, 'ai');
+}
+
+function pickCard(id, owner) {
+    const cardEl = document.getElementById(`card-${id}`);
+    if (cardEl.classList.contains('picked')) return;
+
+    cardEl.classList.add('picked');
+    cardEl.style.transform = owner === 'player' ? 'translateY(500px) scale(0)' : 'translateY(-500px) scale(0)';
+    cardEl.style.opacity = '0';
+
+    if (owner === 'player') {
+        const hand = document.getElementById('player-hand');
+        const newCard = document.createElement('div');
+        newCard.className = 'hand-card';
+        newCard.innerHTML = `<div style="padding:5px">${deck[id].rank}<br>${deck[id].suit}</div>`;
+        hand.appendChild(newCard);
     }
 
-    function aiResponse() {
-        if (field.length % 2 !== 0) {
-            const toBeat = field[field.length - 1];
-            
-            // Поиск защиты
-            let options = eHand.filter(c => 
-                (c.s === toBeat.s && c.v > toBeat.v) || 
-                (c.s === trumpSuit && toBeat.s !== trumpSuit)
-            );
-            options.sort((a, b) => a.v - b.v);
-
-            // 15% Шанс ошибки ИИ (берет карты даже если может бить) [cite: 2026-02-22]
-            const isStupid = Math.random() < 0.15;
-
-            if (options.length > 0 && !isStupid) {
-                const defCard = options[0];
-                eHand.splice(eHand.indexOf(defCard), 1);
-                field.push(defCard);
-            } else {
-                eHand.push(...field);
-                field = [];
-            }
-        }
-        
-        isBlocked = false;
-        renderVCHF();
-        checkWin();
-        if (field.length === 0) aiAttack(); // ИИ атакует, если отбился или взял
-        startGlobalTimer();
+    // Проверка конца набора
+    const remaining = document.querySelectorAll('.card-on-table:not(.picked)');
+    if (remaining.length === 0) {
+        document.getElementById('turn-light').innerText = "НАБОР ЗАВЕРШЕН";
+        return;
     }
 
-    function aiAttack() {
-        if (eHand.length === 0) return;
-        
-        // Выбор слабой карты
-        eHand.sort((a, b) => a.v - b.v);
-        field.push(eHand.shift());
-        renderVCHF();
-    }
-
-    // --- ИНТЕРФЕЙС УПРАВЛЕНИЯ ---
-
-    document.getElementById('btn-take').onclick = () => {
-        if (field.length === 0 || isBlocked) return;
-        pHand.push(...field);
-        field = [];
-        sortHandBySectors(pHand);
-        isBlocked = true;
-        renderVCHF();
-        setTimeout(aiAttack, 1000);
-    };
-
-    document.getElementById('btn-pass').onclick = () => {
-        if (field.length === 0 || field.length % 2 !== 0 || isBlocked) return;
-        field = [];
-        renderVCHF();
-        checkWin();
-        startGlobalTimer();
-    };
-
-    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-
-    function renderBattlefield() {
-        const grid = document.getElementById('cards-on-table');
-        grid.innerHTML = '';
-        field.forEach(c => {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'vchf-card';
-            cardEl.style.position = 'relative';
-            cardEl.style.bottom = '0';
-            cardEl.style.transform = 'none';
-            if (c.s === '♥' || c.s === '♦') cardEl.classList.add('red-suit');
-            cardEl.innerHTML = `<div style="padding:10px">${c.r}<br>${c.s}</div>`;
-            grid.appendChild(cardEl);
-        });
-    }
-
-    function renderEnemyPreview() {
-        const container = document.getElementById('enemy-hand-preview');
-        container.innerHTML = '';
-        eHand.forEach((_, i) => {
-            const dot = document.createElement('div');
-            dot.style.width = '8px';
-            dot.style.height = '8px';
-            dot.style.background = 'var(--vchf-gold)';
-            dot.style.borderRadius = '50%';
-            dot.style.margin = '2px';
-            dot.style.opacity = '0.6';
-            container.appendChild(dot);
-        });
-    }
-
-    // --- ТАЙМЕР СВЕТОФОР ---
-
-    function startGlobalTimer() {
-        clearInterval(timerInterval);
-        timeLeft = 30;
-        const line = document.getElementById('timer-line');
-        
-        timerInterval = setInterval(() => {
-            timeLeft -= 0.1;
-            let prc = (timeLeft / 30) * 100;
-            line.style.width = prc + '%';
-            
-            if (prc > 50) line.style.background = '#2ecc71';
-            else if (prc > 20) line.style.background = 'gold';
-            else line.style.background = 'var(--vchf-red)';
-
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                (field.length % 2 !== 0) ? document.getElementById('btn-take').click() : document.getElementById('btn-pass').click();
-            }
-        }, 100);
-    }
-
-    function stopGlobalTimer() { clearInterval(timerInterval); }
-
-    function checkWin() {
-        if (pHand.length === 0) endGame("WANDERER ПОБЕДИЛ");
-        else if (eHand.length === 0) endGame("ИИ ЗАХВАТИЛ МОНОЛИТ");
-    }
-
-    function endGame(msg) {
-        const screen = document.getElementById('ritual-screen');
-        screen.style.display = 'flex';
-        screen.style.opacity = '1';
-        document.getElementById('ritual-symbol').innerText = '🔚';
-        screen.innerHTML += `<div style="color:white; margin-top:20px">${msg}</div>`;
-        setTimeout(() => location.reload(), 5000);
-    }
-
-    window.onload = startRitual;
-
+    // Смена хода по часовой стрелке
+    currentPlayer = (currentPlayer + 1) % 2;
+    updateTurnIndicator();
+    if (currentPlayer === 1) setTimeout(aiPick, 1000);
+}
 </script>
+
 </body>
 </html>
