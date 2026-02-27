@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 60%, #000000 100%);
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 70%, #000000 100%);
             --cherry-table: radial-gradient(circle, #800020 0%, #2a000a 100%);
             --gold-swiss: #d4af37;
             --red-genius: #FF0000;
@@ -21,50 +21,44 @@
             background: var(--bg-deep); 
             color: var(--gold-swiss);
             font-family: 'JetBrains Mono', monospace;
-            overflow-y: auto;
+            overflow-x: hidden;
+            perspective: 1000px; /* Глубина для зала */
         }
 
-        /* Хедер: Золотое сечение и симметрия */
         header {
-            padding: 25px 10px;
+            padding: 20px 10px;
             text-align: center;
-            background: rgba(0,0,0,0.95);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+            background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
             position: sticky; top: 0; z-index: 1000;
-            display: flex; flex-direction: column; align-items: center;
         }
-        .brand-main { 
-            font-family: 'Orbitron'; 
-            font-size: 26px; 
-            letter-spacing: 8px; 
-            line-height: 1.2;
-            text-transform: uppercase;
-        }
+        .brand-main { font-family: 'Orbitron'; font-size: 24px; letter-spacing: 6px; }
         .brand-sub { 
-            font-family: 'Orbitron'; 
-            font-size: 11px; 
-            letter-spacing: 4.8px; /* Выровнено под ширину верхнего текста */
-            color: var(--gold-swiss);
-            opacity: 0.7;
-            text-transform: uppercase;
-            margin-top: 5px;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            padding-top: 4px;
-            width: fit-content;
+            font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4.2px; 
+            opacity: 0.6; padding-top: 4px; border-top: 1px solid rgba(212, 175, 55, 0.2);
+            width: fit-content; margin: 5px auto 0;
         }
 
-        .lobby-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-            gap: 45px; padding: 40px 20px;
-            justify-items: center;
+        /* Эффект игрового зала */
+        .casino-floor {
+            position: relative;
+            width: 100%; min-height: 100vh;
+            padding: 60px 20px;
+            display: flex; flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 60px 20px;
         }
 
         .table-wrap {
-            position: relative; width: 150px; height: 150px;
-            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; width: 130px; height: 130px;
+            cursor: pointer; transition: 0.4s;
         }
-        .table-wrap:hover { transform: scale(1.08); }
+        
+        /* Асимметрия: каждый четный стол чуть выше, нечетный ниже */
+        .table-wrap:nth-child(even) { transform: translateY(30px); }
+        .table-wrap:nth-child(3n) { transform: translateY(-20px) scale(0.95); opacity: 0.9; }
+
+        .table-wrap:hover { transform: scale(1.1) translateY(0) !important; z-index: 100; }
 
         .table-surface {
             width: 100%; height: 100%;
@@ -72,33 +66,29 @@
             border: 2px solid #1a0005;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6);
             position: relative;
         }
 
         .table-logo {
-            width: 55%; opacity: 0.9;
-            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
-            z-index: 2;
+            width: 50%; opacity: 0.85;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
         }
 
-        /* Лампы */
-        .lamp {
-            position: absolute; width: 9px; height: 9px;
-            border-radius: 50%; z-index: 5;
-        }
-        .l-t { top: 12px; left: 50%; transform: translateX(-50%); }
-        .l-b { bottom: 12px; left: 50%; transform: translateX(-50%); }
-        .l-l { left: 12px; top: 50%; transform: translateY(-50%); }
-        .l-r { right: 12px; top: 50%; transform: translateY(-50%); }
+        /* Лампы - Психология: Красный "спит", Зеленый "манит" */
+        .lamp { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
+        .l-t { top: 10px; left: 50%; transform: translateX(-50%); }
+        .l-b { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .l-l { left: 10px; top: 50%; transform: translateY(-50%); }
+        .l-r { right: 10px; top: 50%; transform: translateY(-50%); }
 
         .active { background: var(--green-active); box-shadow: 0 0 12px var(--green-active); }
-        .waiting { background: var(--red-genius); box-shadow: 0 0 8px var(--red-genius); opacity: 0.5; }
+        .waiting { background: var(--red-genius); box-shadow: 0 0 6px var(--red-genius); opacity: 0.4; }
 
         .table-id {
-            position: absolute; bottom: -28px; width: 100%;
-            text-align: center; font-family: 'Orbitron'; font-size: 9px;
-            color: rgba(212, 175, 55, 0.6); letter-spacing: 2px;
+            position: absolute; bottom: -25px; width: 100%;
+            text-align: center; font-family: 'Orbitron'; font-size: 8px;
+            color: rgba(212, 175, 55, 0.5); letter-spacing: 1px;
         }
     </style>
 </head>
@@ -109,26 +99,32 @@
     <div class="brand-sub">GLOBAL LOTTO POOL</div>
 </header>
 
-<div class="lobby-grid" id="main-hall"></div>
+<div class="casino-floor" id="floor"></div>
 
 <script>
-    const hall = document.getElementById('main-hall');
-    for(let i=1; i<=12; i++) {
+    const floor = document.getElementById('floor');
+    // Генерируем 10 столов для "Игрового дома"
+    for(let i=1; i<=10; i++) {
         const wrap = document.createElement('div');
         wrap.className = 'table-wrap';
-        // Пока лампы горят для теста [cite: 2026-02-23]
+        
+        // Статусы: нижняя лампа всегда активна (ты заходишь), остальные - по ситуации
+        const lTop = i % 3 === 0 ? 'active' : 'waiting';
+        const lLeft = i % 2 === 0 ? 'active' : 'waiting';
+
         wrap.innerHTML = `
             <div class="table-surface">
-                <div class="lamp l-t waiting"></div>
-                <div class="lamp l-b waiting"></div>
-                <div class="lamp l-l active"></div>
+                <div class="lamp l-t ${lTop}"></div>
+                <div class="lamp l-b active"></div>
+                <div class="lamp l-l ${lLeft}"></div>
                 <div class="lamp l-r waiting"></div>
                 <img src="1771489965074(1).png" class="table-logo" alt="Logo">
             </div>
             <div class="table-id">UNIT VCHF-${i}</div>
         `;
-        hall.appendChild(wrap);
+        floor.appendChild(wrap);
     }
+    
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
 </script>
