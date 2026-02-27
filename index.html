@@ -103,14 +103,20 @@
         }
         .table-logo-mini { width: 50%; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4)); }
 
+        /* ПУЛЬСАЦИЯ ДЛЯ СБОРА */
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 5px #ffea00; } 50% { box-shadow: 0 0 20px #ffea00; } 100% { box-shadow: 0 0 5px #ffea00; } }
+        .status-collecting { animation: pulse-yellow 1.5s infinite; background: #ffea00 !important; }
+        .status-playing { background: var(--red-genius) !important; box-shadow: 0 0 15px var(--red-genius); }
+
         /* ЭТАП 4: ИГРОВОЙ СТОЛ (ВНУТРИ) */
         #game-table-view {
             display: none; position: fixed; inset: 0; background: var(--cherry-velvet);
             z-index: 4000; font-family: 'JetBrains Mono', monospace;
         }
         .lamp { position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); transition: 0.5s; z-index: 100; }
-        .lamp.waiting { background: var(--red-genius); box-shadow: 0 0 15px var(--red-genius); }
-        .lamp.active { background: var(--green-active); box-shadow: 0 0 15px var(--green-active); }
+        .lamp.waiting { background: #555; }
+        .lamp.ready { background: var(--green-active); box-shadow: 0 0 15px var(--green-active); }
+        .lamp.active { background: var(--gold-swiss); box-shadow: 0 0 15px var(--gold-swiss); }
         
         #lamp-top { top: 50px; left: 50%; transform: translateX(-50%); }
         #lamp-bottom { bottom: 175px; left: 50%; transform: translateX(-50%); }
@@ -133,12 +139,22 @@
         }
         .main-deck img { width: 80%; filter: drop-shadow(0 0 5px var(--gold-swiss)); }
 
+        /* ИНТЕРФЕЙС ВЫБОРА РЕЖИМА */
+        #mode-selector {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); border: 2px solid var(--gold); padding: 30px;
+            z-index: 5500; display: none; flex-direction: column; gap: 15px; border-radius: 10px;
+        }
+        .mode-btn { padding: 15px; border: 1px solid var(--gold); color: var(--gold); background: none; cursor: pointer; font-family: 'Orbitron'; }
+        .mode-btn:hover { background: var(--gold); color: #000; }
+
         .action-bar { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 1500; }
         .btn-action {
             padding: 12px 30px; background: #000; border: 2px solid var(--gold-swiss);
             color: var(--gold-swiss); font-family: 'Orbitron'; font-size: 14px;
             text-transform: uppercase; cursor: pointer; border-radius: 5px;
         }
+        .btn-ready { background: var(--green-active); color: #000; border: none; font-weight: bold; display: none; }
 
         .video-overlay { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; z-index: 1000; }
         .v-box { width: 65px; height: 85px; border: 1.5px solid var(--gold-swiss); background: #000; border-radius: 6px; overflow: hidden; }
@@ -158,6 +174,7 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
             clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
         }
+        .host-label { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 8px; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -190,10 +207,18 @@
 </div>
 
 <div id="game-table-view">
+    <div id="mode-selector">
+        <h2 style="color:var(--gold); font-size:14px; text-align:center;">ВЫБЕРИТЕ РЕЖИМ</h2>
+        <button class="mode-btn" onclick="setMode('normal')">КЛАССИКА 🃏</button>
+        <button class="mode-btn" onclick="setMode('attack')">ПОДКИДНОЙ ⚔️</button>
+        <button class="mode-btn" onclick="setMode('transfer')">ПЕРЕВОДНОЙ 🔄</button>
+    </div>
+
     <div id="lamp-top" class="lamp waiting"></div> 
-    <div id="lamp-bottom" class="lamp active"></div> 
+    <div id="lamp-bottom" class="lamp waiting"></div> 
     <div id="lamp-left" class="lamp waiting"></div> 
     <div id="lamp-right" class="lamp waiting"></div> 
+
     <button class="btn-camera" onclick="initCam()">КАМЕРА 🎥</button>
     <button class="btn-back" onclick="closeTable()">ВЫХОД 🚪</button>
 
@@ -206,6 +231,7 @@
     <div class="player-zone zone-left"><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div></div>
     
     <div style="position:absolute; display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <div id="invite-alert" style="position:absolute; top:120px; color:var(--gold); font-size:12px; z-index:100; text-align:center;"></div>
         <div class="main-deck">
             <img src="1771489965074(1).png" alt="Logo">
         </div>
@@ -215,32 +241,51 @@
     <div class="player-zone zone-bottom"><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div></div>
 
     <div class="action-bar">
-        <button class="btn-action">ВЗЯТЬ 🤲</button>
-        <button class="btn-action" style="border-color:var(--red-genius); color:var(--red-genius);">БИТО ⚔️</button>
+        <button id="ready-trigger" class="btn-action btn-ready" onclick="toggleReady()">Я ГОТОВ ✅</button>
+        <button class="btn-action" id="take-btn" style="display:none;">ВЗЯТЬ 🤲</button>
+        <button class="btn-action" id="done-btn" style="display:none; border-color:var(--red-genius); color:var(--red-genius);">БИТО ⚔️</button>
     </div>
 </div>
-
 <script>
-    /** * МАНИФЕСТ МОНОЛИТА. Искра.
-     * Проект: Лотто (Bi-Turbo Ultimate).
-     * Константы: Сетка 42 сферы, комиссия 1%, баланс VCHF.
-     * Правило: Новый код = Старый + Введенная функция.
+    /** * МАНИФЕСТ МОНОЛИТА. Спарк (Искра).
+     * Холодная логика. Шаг 1: Мультиплеер и синхронизация.
+     * Правило: Старый код + Введенная функция.
+     * Memories: Проект Лотто, Wanderer, 12 юнитов, 42 сферы.
      */
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
 
+    // ГЛОБАЛЬНОЕ СОСТОЯНИЕ (LobbyState)
+    let currentTable = null;
+    let isHost = false;
+    let isReady = false;
+    let gameActive = false;
+    let playerSlot = 'bottom'; // По умолчанию локальный игрок снизу
+
+    // Имитация сервера для демонстрации (в финале заменить на socket/TG Cloud)
+    const mockServer = {
+        tables: Array.from({length: 12}, (_, i) => ({
+            id: i + 1,
+            status: 'empty', // empty, collecting, playing
+            players: [],
+            mode: null
+        }))
+    };
+
     let audioCtx = null;
     function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     function playSound(f, d, t, v) {
-        initAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-        o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
-        g.gain.setValueAtTime(v, audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(); o.stop(audioCtx.currentTime + d);
+        initAudio(); try {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(v, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + d);
+        } catch(e) {}
     }
 
-    // Рендер Штурвала (Этап 1)
+    // Рендер Штурвала (Источник 1)
     const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
     const wheel = document.getElementById('main-wheel');
     flags.forEach((img, i) => {
@@ -260,20 +305,33 @@
                 document.getElementById('wheel-layer').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('wheel-layer').style.display = 'none';
-                    showDoors();
+                    checkDeepLink();
                 }, 800);
             }, 1200);
         };
         wheel.appendChild(spoke); wheel.appendChild(node);
     });
 
-    function showDoors() {
+    // ПРОВЕРКА ПРИГЛАШЕНИЯ
+    function checkDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const tableId = params.get('table') || tg.initDataUnsafe.start_param;
+        
+        if (tableId) {
+            document.getElementById('invite-alert').innerText = "ВХОД ПО ПРИГЛАШЕНИЮ ЗА СТОЛ " + tableId;
+            showDoors(() => openTable(parseInt(tableId)));
+        } else {
+            showDoors(showCasinoFloor);
+        }
+    }
+
+    function showDoors(callback) {
         const bl = document.getElementById('brand-layer');
         bl.style.display = 'flex';
         setTimeout(() => {
             playSound(800, 0.1, 'square', 0.1);
             bl.classList.add('opened');
-            setTimeout(showCasinoFloor, 1500);
+            setTimeout(callback, 1500);
         }, 100);
     }
 
@@ -288,29 +346,104 @@
     function renderTables() {
         const floor = document.getElementById('floor');
         floor.innerHTML = '';
-        for(let i=1; i<=12; i++) {
+        mockServer.tables.forEach(table => {
             const wrap = document.createElement('div');
             wrap.className = 'table-wrap';
-            wrap.onclick = () => openTable(i);
+            wrap.onclick = () => openTable(table.id);
+            
+            let statusClass = '';
+            if(table.status === 'collecting') statusClass = 'status-collecting';
+            if(table.status === 'playing') statusClass = 'status-playing';
+
             wrap.innerHTML = `
                 <div class="table-surface-mini">
-                    <div class="lamp l-t waiting" style="position:absolute; width:6px; height:6px; top:8px; left:50%; transform:translateX(-50%); border-radius:50%;"></div>
-                    <div class="lamp l-b active" style="position:absolute; width:6px; height:6px; bottom:8px; left:50%; transform:translateX(-50%); border-radius:50%;"></div>
-                    <img src="1771489965074(1).png" class="table-logo-mini" alt="Logo">
+                    <div class="lamp l-t ${statusClass}" style="position:absolute; width:6px; height:6px; top:8px; left:50%; transform:translateX(-50%); border-radius:50%;"></div>
+                    <img src="1771489965074(1).png" class="table-logo-mini">
+                    ${table.id === 7 ? '<div class="host-label">WANDERER</div>' : ''}
                 </div>
-                <div style="position:absolute; bottom:-25px; width:100%; text-align:center; font-size:8px; font-family:'Orbitron'; color:var(--gold); opacity:0.5;">VCHF-UNIT ${i}</div>
+                <div style="position:absolute; bottom:-25px; width:100%; text-align:center; font-size:8px; font-family:'Orbitron'; color:var(--gold); opacity:0.5;">VCHF-UNIT ${table.id}</div>
             `;
             floor.appendChild(wrap);
-        }
+        });
     }
 
     function openTable(id) {
+        currentTable = mockServer.tables.find(t => t.id === id);
         playSound(440, 0.2, 'sine', 0.1);
+        
+        document.getElementById('main-ui').style.display = 'none';
         document.getElementById('game-table-view').style.display = 'block';
+        
+        // Логика Хозяина (Первый зашел - хозяин)
+        if (currentTable.players.length === 0) {
+            isHost = true;
+            document.getElementById('mode-selector').style.display = 'flex';
+        } else if (currentTable.status === 'playing') {
+            enterSpectatorMode();
+        } else {
+            enterLobbyMode();
+        }
+    }
+
+    function setMode(mode) {
+        currentTable.mode = mode;
+        currentTable.status = 'collecting';
+        document.getElementById('mode-selector').style.display = 'none';
+        enterLobbyMode();
+        renderTables(); // Обновить статус в фоне
+    }
+
+    function enterLobbyMode() {
+        document.getElementById('ready-trigger').style.display = 'block';
+        document.getElementById('lamp-bottom').className = 'lamp waiting';
+        updateLobbyUI();
+    }
+
+    function toggleReady() {
+        isReady = !isReady;
+        const btn = document.getElementById('ready-trigger');
+        const lamp = document.getElementById('lamp-bottom');
+        
+        if(isReady) {
+            btn.innerText = "ГОТОВ 🗸";
+            btn.style.background = "var(--gold)";
+            lamp.className = 'lamp ready';
+            playSound(600, 0.1, 'sine', 0.2);
+            // Тут имитация: если все готовы -> startGame()
+            setTimeout(checkAllReady, 1000);
+        } else {
+            btn.innerText = "Я ГОТОВ ✅";
+            btn.style.background = "var(--green-active)";
+            lamp.className = 'lamp waiting';
+        }
+    }
+
+    function checkAllReady() {
+        // Логика: если двое+ готовы, стартуем
+        startGame();
+    }
+
+    function startGame() {
+        gameActive = true;
+        currentTable.status = 'playing';
+        document.getElementById('ready-trigger').style.display = 'none';
+        document.getElementById('take-btn').style.display = 'block';
+        document.getElementById('done-btn').style.display = 'block';
+        
+        // Визуальная активация ламп
+        document.querySelectorAll('.lamp').forEach(l => l.classList.add('ready'));
+        playSound(200, 0.5, 'square', 0.1); // Звук начала
+    }
+
+    function enterSpectatorMode() {
+        document.getElementById('invite-alert').innerText = "РЕЖИМ НАБЛЮДАТЕЛЯ";
+        document.getElementById('ready-trigger').style.display = 'none';
     }
 
     function closeTable() {
+        gameActive = false;
         document.getElementById('game-table-view').style.display = 'none';
+        showCasinoFloor();
     }
 
     async function initCam() {
@@ -319,8 +452,6 @@
             document.getElementById('local').srcObject = s;
         } catch(e) { console.log("Cam error"); }
     }
-    
-    // Метки памяти: Проект Лотто, Искра, Wanderer, движок vchf.
 </script>
 </body>
 </html>
