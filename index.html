@@ -2,214 +2,207 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Round Durak - The Ritual of Choice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Round Durak - Chaos Ritual</title>
     <style>
         :root {
             --vchf-gold: #FFD700;
-            --vchf-spirit: #177148;
-            --bg: #050505;
+            --card-w: 70px; /* Увеличил масштаб */
+            --card-h: 105px;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; 
-            background: var(--bg); color: white; 
+            background: #020202; color: white; 
             font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
-        /* Стол и круг карт */
         #table {
             position: relative;
             width: 100vw; height: 100vh;
             display: flex; justify-content: center; align-items: center;
+            perspective: 1000px;
         }
 
+        /* Карты на столе - Хаотичный круг */
         .card-on-table {
             position: absolute;
-            width: 50px; height: 75px;
-            background: #222;
-            border: 1px solid #444;
-            border-radius: 5px;
+            width: var(--card-w);
+            height: var(--card-h);
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            transform-origin: center 200px; /* Радиус круга */
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            /* Центрирование для вращения */
+            left: calc(50% - var(--card-w)/2);
+            top: calc(50% - var(--card-h)/2);
         }
 
         .card-on-table:hover {
-            box-shadow: 0 0 15px var(--vchf-gold);
-            z-index: 100;
+            border-color: var(--vchf-gold);
+            z-index: 500 !important;
+            transform: scale(1.1) !important;
         }
 
-        /* Козырь в углу */
+        /* Индикаторы */
         #trump-indicator {
             position: absolute;
-            top: 20px; right: 20px;
-            font-size: 48px;
-            width: 80px; height: 80px;
+            top: 25px; right: 25px;
+            font-size: 56px; /* Крупнее */
+            width: 90px; height: 90px;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            border: 2px solid transparent;
-        }
-
-        /* Луч света (Индикатор хода) */
-        #turn-light {
-            position: absolute;
-            top: 10px; left: 50%; transform: translateX(-50%);
-            padding: 10px 30px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 2px solid var(--vchf-gold);
-            transition: all 0.5s;
-        }
-
-        /* Веер игрока (Зона 35%) */
-        #player-hand {
-            position: absolute;
-            bottom: 0; width: 100%; height: 25%;
-            display: flex; justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 20px;
-            pointer-events: none;
-        }
-
-        .hand-card {
-            width: 60px; height: 90px;
-            background: white; color: black;
-            border-radius: 5px;
-            margin-left: -30px;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        #start-overlay {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(255,215,0,0.2);
+            border-radius: 15px;
             z-index: 1000;
         }
 
-        button {
-            padding: 15px 40px; font-size: 20px;
-            background: var(--vchf-gold); border: none;
-            cursor: pointer; font-weight: bold;
+        #turn-light {
+            position: absolute;
+            top: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 14px; font-weight: 900;
+            padding: 8px 20px;
+            border: 1px solid var(--vchf-gold);
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        /* Веер внизу (Зона 35%) */
+        #player-hand {
+            position: absolute;
+            bottom: 0; width: 100%; height: 30%;
+            display: flex; justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 30px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            pointer-events: none;
+            z-index: 1100;
+        }
+
+        .hand-card {
+            width: var(--card-w); height: var(--card-h);
+            background: #eee; color: #000;
+            border-radius: 6px;
+            margin-left: -35px; /* Чешуя */
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            padding: 5px; box-sizing: border-box;
+            font-weight: bold; font-size: 18px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            border: 1px solid #999;
+        }
+
+        .picked { pointer-events: none; opacity: 0; transform: scale(0) !important; }
+        
+        button#ready-btn {
+            padding: 20px 60px; font-size: 24px;
+            background: var(--vchf-gold); color: black;
+            border: none; font-weight: 900; cursor: pointer;
+            box-shadow: 0 0 30px rgba(255,215,0,0.4);
         }
     </style>
 </head>
 <body>
 
-<div id="start-overlay">
-    <button onclick="startRitual()">ГОТОВ</button>
+<div id="start-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; display:flex; justify-content:center; align-items:center;">
+    <button id="ready-btn" onclick="startRitual()">ГОТОВ</button>
 </div>
 
+<div id="turn-light">ИНИЦИАЦИЯ...</div>
 <div id="trump-indicator">?</div>
-<div id="turn-light">ОЖИДАНИЕ</div>
-
 <div id="table"></div>
 <div id="player-hand"></div>
 
 <script>
-/* * движок vchf - Round Durak Base
- * Правило: Манифест Монолита
- */
-
 const suits = ['♠', '♣', '♥', '♦'];
 const ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 let deck = [];
-let trumpSuit = '';
-let currentPlayer = 0; // 0 - Wanderer, 1 - Spark (AI)
+let currentPlayer = 0;
 
 function startRitual() {
     document.getElementById('start-overlay').style.display = 'none';
-    
-    // 1. Рандом козыря (3 секунды)
-    let startTime = Date.now();
-    let interval = setInterval(() => {
-        let randomSuit = suits[Math.floor(Math.random() * 4)];
-        document.getElementById('trump-indicator').innerText = randomSuit;
-        if (Date.now() - startTime > 3000) {
-            clearInterval(interval);
-            trumpSuit = randomSuit;
-            document.getElementById('trump-indicator').style.borderColor = 'var(--vchf-gold)';
-            createRoundTable();
-            startDrafting();
+    let count = 0;
+    let timer = setInterval(() => {
+        document.getElementById('trump-indicator').innerText = suits[count % 4];
+        count++;
+        if (count > 20) {
+            clearInterval(timer);
+            const finalSuit = suits[Math.floor(Math.random()*4)];
+            document.getElementById('trump-indicator').innerText = finalSuit;
+            document.getElementById('trump-indicator').style.color = (finalSuit==='♥'||finalSuit==='♦') ? '#ff4444' : '#fff';
+            createChaosTable();
         }
     }, 100);
 }
 
-function createRoundTable() {
+function createChaosTable() {
     const table = document.getElementById('table');
-    // Создаем 36 карт в колоде
+    // 9 карт каждой масти
     suits.forEach(s => ranks.forEach(r => deck.push({suit: s, rank: r})));
+    // Перемешиваем
     deck = deck.sort(() => Math.random() - 0.5);
+
+    const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
 
     deck.forEach((card, i) => {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'card-on-table';
-        cardDiv.style.transform = `rotate(${i * 10}deg)`; // Круг 360 градусов (36 * 10)
+        
+        // Математика хаотичного круга
+        const angle = (i * 10) * (Math.PI / 180);
+        const randomScatter = (Math.random() - 0.5) * 25; // Случайный сдвиг +-12px
+        const randomRotate = (Math.random() - 0.5) * 15; // Случайный наклон
+        
+        const x = Math.cos(angle) * radius + randomScatter;
+        const y = Math.sin(angle) * radius + randomScatter;
+
+        cardDiv.style.transform = `translate(${x}px, ${y}px) rotate(${(i * 10) + randomRotate}deg)`;
         cardDiv.id = `card-${i}`;
         cardDiv.onclick = () => playerPick(i);
         table.appendChild(cardDiv);
     });
-}
-
-function startDrafting() {
-    // Выбираем кто первый (луч света)
+    
     currentPlayer = Math.floor(Math.random() * 2);
-    updateTurnIndicator();
-    if (currentPlayer === 1) setTimeout(aiPick, 1000);
+    updateUI();
 }
 
-function updateTurnIndicator() {
+function updateUI() {
     const light = document.getElementById('turn-light');
-    light.innerText = currentPlayer === 0 ? "ТВОЙ ВЫБОР (WANDERER)" : "МОЙ ВЫБОР (SPARK)";
-    light.style.color = currentPlayer === 0 ? "var(--vchf-gold)" : "#fff";
+    light.innerText = currentPlayer === 0 ? "ТВОЙ ХОД" : "ХОД ИСКРЫ";
+    if (currentPlayer === 1) setTimeout(aiPick, 800);
 }
 
-function playerPick(cardIndex) {
+function playerPick(idx) {
     if (currentPlayer !== 0) return;
-    pickCard(cardIndex, 'player');
+    pick(idx, 'player');
 }
 
 function aiPick() {
-    if (currentPlayer !== 1) return;
-    // ИИ выбирает любую случайную карту из оставшихся
-    const available = document.querySelectorAll('.card-on-table:not(.picked)');
-    const randomCard = available[Math.floor(Math.random() * available.length)];
-    const id = randomCard.id.split('-')[1];
-    pickCard(id, 'ai');
+    const avail = document.querySelectorAll('.card-on-table:not(.picked)');
+    if (!avail.length) return;
+    const target = avail[Math.floor(Math.random() * avail.length)];
+    pick(target.id.split('-')[1], 'ai');
 }
 
-function pickCard(id, owner) {
-    const cardEl = document.getElementById(`card-${id}`);
-    if (cardEl.classList.contains('picked')) return;
-
-    cardEl.classList.add('picked');
-    cardEl.style.transform = owner === 'player' ? 'translateY(500px) scale(0)' : 'translateY(-500px) scale(0)';
-    cardEl.style.opacity = '0';
+function pick(id, owner) {
+    const el = document.getElementById(`card-${id}`);
+    if (el.classList.contains('picked')) return;
+    el.classList.add('picked');
 
     if (owner === 'player') {
         const hand = document.getElementById('player-hand');
-        const newCard = document.createElement('div');
-        newCard.className = 'hand-card';
-        newCard.innerHTML = `<div style="padding:5px">${deck[id].rank}<br>${deck[id].suit}</div>`;
-        hand.appendChild(newCard);
+        const c = document.createElement('div');
+        c.className = 'hand-card';
+        const color = (deck[id].suit==='♥'||deck[id].suit==='♦') ? 'red' : 'black';
+        c.innerHTML = `<div style="color:${color}">${deck[id].rank}</div><div style="align-self:flex-end; color:${color}">${deck[id].suit}</div>`;
+        hand.appendChild(c);
     }
 
-    // Проверка конца набора
-    const remaining = document.querySelectorAll('.card-on-table:not(.picked)');
-    if (remaining.length === 0) {
-        document.getElementById('turn-light').innerText = "НАБОР ЗАВЕРШЕН";
-        return;
-    }
-
-    // Смена хода по часовой стрелке
     currentPlayer = (currentPlayer + 1) % 2;
-    updateTurnIndicator();
-    if (currentPlayer === 1) setTimeout(aiPick, 1000);
+    updateUI();
 }
 </script>
-
 </body>
 </html>
