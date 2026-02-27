@@ -1,104 +1,485 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bi-Turbo Durak Monolith</title>
     <style>
-        body { background: #1a0005; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .table { width: 350px; height: 500px; border: 2px solid gold; position: relative; margin-top: 20px; border-radius: 20px; }
-        .hand { display: flex; gap: 5px; justify-content: center; position: absolute; width: 100%; }
-        .player-hand { bottom: 10px; }
-        .enemy-hand { top: 10px; }
-        .card { width: 45px; height: 65px; border: 1px solid white; border-radius: 5px; display: flex; 
-                align-items: center; justify-content: center; font-weight: bold; cursor: pointer; background: #000; }
-        .battlefield { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
-        .trump { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 30px; border: 1px solid gold; padding: 5px; }
-        .controls { margin-top: 20px; display: flex; gap: 10px; }
-        button { padding: 10px 20px; cursor: pointer; }
+        :root {
+            --vchf-gold: #ffd700;
+            --vchf-red: #ff4d4d;
+            --vchf-green: #2ecc71;
+            --vchf-black: #0a0a0a;
+            --vchf-shadow: rgba(0, 0, 0, 0.8);
+            --glass-bg: rgba(26, 0, 5, 0.9);
+        }
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #1a0005; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; touch-action: none;
+        }
+
+        #game-canvas {
+            position: relative; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #2c0008 0%, #050000 100%);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* --- ВЕРХНЯЯ ЗОНА: ПРОТИВНИК --- */
+        #enemy-zone {
+            height: 15%; width: 100%; display: flex; justify-content: center; 
+            align-items: center; gap: 8px; padding-top: 15px; z-index: 10;
+        }
+
+        /* --- ЦЕНТРАЛЬНАЯ ЗОНА: ПОЛЕ БОЯ --- */
+        #battlefield {
+            position: relative; flex-grow: 1; width: 90%; 
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr); gap: 15px; 
+            align-content: center; justify-items: center;
+        }
+
+        /* --- ПРАВАЯ ЗОНА: КОЛОДА И КОЗЫРЬ --- */
+        #deck-area {
+            position: absolute; right: 20px; top: 45%; transform: translateY(-50%);
+            width: 70px; height: 100px; z-index: 5;
+        }
+
+        .deck-visual {
+            width: 60px; height: 90px; background: var(--vchf-black);
+            border: 2px solid #333; border-radius: 8px;
+            box-shadow: 2px 2px 10px var(--vchf-black);
+            background-image: url('1771489965074(1).png');
+            background-size: cover; position: relative;
+        }
+
+        .trump-card-visual {
+            position: absolute; bottom: -15px; right: -15px;
+            width: 50px; height: 75px; background: white;
+            border-radius: 4px; transform: rotate(90deg);
+            z-index: -1; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 20px; color: black;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* --- НИЖНЯЯ ЗОНА: БУТОН (35%) --- */
+        #player-bud-container {
+            position: absolute; bottom: 0; width: 100%; height: 35%;
+            background: linear-gradient(to top, var(--glass-bg) 60%, rgba(26, 0, 5, 0) 100%);
+            border-top: 1px solid rgba(255, 215, 0, 0.15);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding-bottom: 20px; z-index: 100; transition: transform 0.4s ease-out;
+        }
+
+        .suit-row {
+            display: flex; gap: -10px; justify-content: center; height: 20%; margin-bottom: 4px;
+        }
+
+        /* --- ТАЙМЕР-СВЕТОФОР --- */
+        #timer-bar {
+            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--vchf-green); transform-origin: left;
+            box-shadow: 0 0 10px var(--vchf-green);
+        }
+
+        /* --- КАРТЫ (VCHF STYLE) --- */
+        .card {
+            width: 55px; height: 85px; background: #fff; color: #000;
+            border-radius: 6px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-weight: 900;
+            font-size: 20px; cursor: pointer; position: relative;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none; border: 1px solid #ccc;
+        }
+
+        .card.enemy { 
+            background: #000 url('1771489965074(1).png') center/cover; 
+            border: 1px solid #444; color: transparent;
+        }
+
+        .card.selected { 
+            transform: translateY(-25px) scale(1.1); 
+            border: 2px solid var(--vchf-gold);
+            box-shadow: 0 0 20px var(--vchf-gold);
+            z-index: 1001;
+        }
+
+        .card.dimmed { opacity: 0.4; filter: grayscale(0.5); }
+
+        .card-suit-top { position: absolute; top: 5px; left: 5px; font-size: 14px; }
+        .card-val { font-size: 22px; }
+
+        /* --- ЭЛЕМЕНТЫ УПРАВЛЕНИЯ --- */
+        #ui-controls {
+            position: absolute; right: 15px; bottom: 38%; 
+            display: flex; flex-direction: column; gap: 12px; z-index: 150;
+        }
+
+        .vchf-btn {
+            background: rgba(0,0,0,0.8); color: var(--vchf-gold);
+            border: 1px solid var(--vchf-gold); padding: 12px 20px;
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .vchf-btn:active { transform: scale(0.95); background: var(--vchf-gold); color: black; }
+
+        /* --- АНИМАЦИИ --- */
+        #overlay-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        #trump-selector { font-size: 120px; animation: pulse 0.5s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
-    <h2>ТЕСТ ДВИЖКА (v.0.5)</h2>
-    <div class="table">
-        <div id="enemy-zone" class="hand enemy-hand"></div>
-        <div id="field" class="battlefield"></div>
-        <div id="trump-suit" class="trump"></div>
-        <div id="player-zone" class="hand player-hand"></div>
+
+<div id="game-canvas">
+    <div id="enemy-zone"></div>
+    
+    <div id="battlefield"></div>
+
+    <div id="deck-area">
+        <div class="deck-visual" id="main-deck"></div>
+        <div id="trump-layer" class="trump-card-visual"></div>
     </div>
-    <div class="controls">
-        <button onclick="takeCards()">ВЗЯТЬ</button>
-        <button onclick="passCards()">БИТО</button>
-        <button onclick="initGame()" style="background: green; color: white;">РЕСТАРТ</button>
+
+    <div id="ui-controls">
+        <button class="vchf-btn" onclick="actionTake()">ВЗЯТЬ</button>
+        <button class="vchf-btn" onclick="actionPass()">БИТО</button>
     </div>
+
+    <div id="player-bud-container">
+        <div id="timer-bar"></div>
+        <div id="row-trump" class="suit-row"></div>
+        <div id="row-1" class="suit-row"></div>
+        <div id="row-2" class="suit-row"></div>
+        <div id="row-3" class="suit-row"></div>
+    </div>
+</div>
+
+<div id="overlay-screen">
+    <h2 id="status-text">ИНИЦИАЦИЯ VCHF...</h2>
+    <div id="trump-selector">♠</div>
+</div>
 
 <script>
-    let deck = [], pHand = [], eHand = [], field = [], trump = '';
-    const suits = ['♠', '♣', '♥', '♦'], ranks = ['6','7','8','9','10','J','Q','K','A'];
+    // --- GLOBAL CONSTANTS ---
+    const SUITS = ['♠', '♣', '♥', '♦'];
+    const RANKS = [
+        {r: '6', v: 6}, {r: '7', v: 7}, {r: '8', v: 8}, 
+        {r: '9', v: 9}, {r: '10', v: 10}, {r: 'J', v: 11}, 
+        {r: 'Q', v: 12}, {r: 'K', v: 13}, {r: 'A', v: 14}
+    ];
 
-    function initGame() {
-        deck = []; field = [];
-        suits.forEach(s => ranks.forEach((r, i) => deck.push({s, r, v: i})));
-        deck.sort(() => Math.random() - 0.5);
-        trump = deck[0].s;
-        document.getElementById('trump-suit').innerText = trump;
+    // --- GAME STATE ---
+    let deck = [], pHand = [], eHand = [], field = [], bito = [];
+    let trumpSuit = '', activeIdx = null, isBlocked = false;
+    let turnTimer = null, timeLeft = 30;
+
+    // --- INITIALIZATION ---
+    function init() {
+        console.log("Protocol 1.1 Active. Ritual Started.");
+        resetState();
+        buildDeck();
+        runTrumpRitual();
+    }
+
+    function resetState() {
+        deck = []; pHand = []; eHand = []; field = []; bito = [];
+        activeIdx = null; isBlocked = false;
+        document.getElementById('battlefield').innerHTML = '';
+    }
+
+    function buildDeck() {
+        SUITS.forEach(s => {
+            RANKS.forEach(r => {
+                deck.push({ s, r: r.r, v: r.v });
+            });
+        });
+        shuffle(deck);
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    }
+
+    function runTrumpRitual() {
+        const overlay = document.getElementById('overlay-screen');
+        const selector = document.getElementById('trump-selector');
+        const status = document.getElementById('status-text');
+        overlay.style.display = 'flex';
+        status.innerText = "ВЫБОР КОЗЫРЯ...";
+
+        let cycles = 0;
+        const interval = setInterval(() => {
+            selector.innerText = SUITS[cycles % 4];
+            selector.style.color = (SUITS[cycles % 4] === '♥' || SUITS[cycles % 4] === '♦') ? 'red' : 'white';
+            cycles++;
+            if (cycles > 15) {
+                clearInterval(interval);
+                trumpSuit = selector.innerText;
+                document.getElementById('trump-layer').innerText = trumpSuit;
+                document.getElementById('trump-layer').style.color = selector.style.color;
+                status.innerText = "РАЗДАЧА...";
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    dealInitial();
+                }, 1000);
+            }
+        }, 150);
+    }
+
+    function dealInitial() {
         pHand = deck.splice(0, 6);
         eHand = deck.splice(0, 6);
         render();
+        startGlobalTimer();
     }
 
+    // --- RENDERING CORE ---
     function render() {
-        const pZone = document.getElementById('player-zone');
-        const eZone = document.getElementById('enemy-zone');
-        const fZone = document.getElementById('field');
-        
-        pZone.innerHTML = ''; eZone.innerHTML = ''; fZone.innerHTML = '';
-        
-        pHand.forEach((c, i) => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.style.color = (c.s === '♥' || c.s === '♦') ? 'red' : 'white';
-            div.innerText = c.r + c.s;
-            div.onclick = () => attack(i);
-            pZone.appendChild(div);
-        });
+        renderEnemy();
+        renderField();
+        renderBud();
+        updateDeckUI();
+    }
 
+    function renderEnemy() {
+        const zone = document.getElementById('enemy-zone');
+        zone.innerHTML = '';
+        // FOG OF WAR: No count, just visual existence
         eHand.forEach(() => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerText = '??';
-            eZone.appendChild(div);
+            const c = document.createElement('div');
+            c.className = 'card enemy';
+            zone.appendChild(c);
         });
+    }
 
+    function renderField() {
+        const zone = document.getElementById('battlefield');
+        zone.innerHTML = '';
         field.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerText = c.r + c.s;
-            fZone.appendChild(div);
+            const cardEl = createCardUI(c);
+            zone.appendChild(cardEl);
         });
     }
 
-    function attack(idx) {
-        const card = pHand[idx];
-        field.push(pHand.splice(idx, 1)[0]);
-        render();
-        setTimeout(enemyDefend, 600);
-    }
+    function renderBud() {
+        const containers = {
+            trump: document.getElementById('row-trump'),
+            r1: document.getElementById('row-1'),
+            r2: document.getElementById('row-2'),
+            r3: document.getElementById('row-3')
+        };
+        Object.values(containers).forEach(c => c.innerHTML = '');
 
-    function enemyDefend() {
-        // Простая логика: найти карту той же масти выше или козырь
-        const attackCard = field[field.length - 1];
-        let found = eHand.findIndex(c => (c.s === attackCard.s && c.v > attackCard.v) || (c.s === trump && attackCard.s !== trump));
+        const groups = { [trumpSuit]: [] };
+        SUITS.filter(s => s !== trumpSuit).forEach((s, i) => groups[s] = []);
         
-        if (found !== -1) {
-            field.push(eHand.splice(found, 1)[0]);
-        } else {
-            console.log("Враг берет карты");
-        }
-        render();
+        pHand.forEach(c => groups[c.s].push(c));
+
+        // Trump row first
+        groups[trumpSuit].forEach(c => containers.trump.appendChild(createCardUI(c, true)));
+        
+        // Other rows
+        const otherSuits = SUITS.filter(s => s !== trumpSuit);
+        otherSuits.forEach((s, i) => {
+            groups[s].forEach(c => containers['r'+(i+1)].appendChild(createCardUI(c, true)));
+        });
     }
 
-    function takeCards() { pHand.push(...field); field = []; render(); }
-    function passCards() { field = []; render(); if(pHand.length < 6) pHand.push(...deck.splice(0, 6 - pHand.length)); render(); }
+    function createCardUI(card, isInteractive = false) {
+        const div = document.createElement('div');
+        div.className = 'card';
+        if (card.s === '♥' || card.s === '♦') div.style.color = 'var(--vchf-red)';
+        
+        // Staggered layout helper
+        div.innerHTML = `
+            <span class="card-suit-top">${card.s}</span>
+            <span class="card-val">${card.r}</span>
+        `;
 
-    initGame();
+        if (isInteractive) {
+            const idx = pHand.indexOf(card);
+            if (activeIdx === idx) div.classList.add('selected');
+            div.onclick = () => handleInput(idx);
+        }
+        return div;
+    }
+
+    function updateDeckUI() {
+        const deckEl = document.getElementById('main-deck');
+        // NO COUNTER: Visual thickness only
+        deckEl.style.boxShadow = deck.length > 0 ? `2px 2px 0px #333, 4px 4px 0px #222` : 'none';
+        deckEl.style.display = deck.length > 0 ? 'block' : 'none';
+    }
+    // --- ИГРОВАЯ ЛОГИКА (WINDOW 2) ---
+
+    function handleInput(idx) {
+        if (isBlocked) return;
+
+        // Механика двойного тапа (Double-Tap Confirm) [cite: 2026-02-23]
+        if (activeIdx === idx) {
+            playPlayerCard(idx);
+        } else {
+            activeIdx = idx;
+            // Звуковой эффект выбора можно добавить здесь [cite: 2026-02-24]
+            render();
+        }
+    }
+
+    function playPlayerCard(idx) {
+        const card = pHand.splice(idx, 1)[0];
+        field.push(card);
+        activeIdx = null;
+        isBlocked = true; // Блокируем ввод, пока ИИ "думает"
+        
+        render();
+        stopGlobalTimer();
+
+        // Имитация раздумий противника [cite: 2026-02-26]
+        const thinkTime = 800 + Math.random() * 1500;
+        setTimeout(enemyResponse, thinkTime);
+    }
+
+    function enemyResponse() {
+        if (field.length % 2 === 0) {
+            // Если на столе четное кол-во карт, значит ИИ должен атаковать
+            // Но в нашей версии v.1.2.2 мы пока фокусируемся на защите ИИ
+            isBlocked = false;
+            startGlobalTimer();
+            return;
+        }
+
+        const attackCard = field[field.length - 1];
+        
+        // Поиск карты для защиты
+        // Логика: найти минимальную карту той же масти выше ИЛИ козырь [cite: 2026-02-23]
+        let candidates = eHand.filter(c => 
+            (c.s === attackCard.s && c.v > attackCard.v) || 
+            (c.s === trumpSuit && attackCard.s !== trumpSuit)
+        );
+
+        // Сортируем, чтобы ИИ не кидал сразу Тузов (если он не в ярости)
+        candidates.sort((a, b) => a.v - b.v);
+
+        // ПСИХОЛОГИЯ 15%: ИИ может "тупануть" и не увидеть карту [cite: 2026-02-26]
+        const willDefend = (candidates.length > 0) && (Math.random() > 0.15);
+
+        if (willDefend) {
+            const defenseCard = candidates[0];
+            const eIdx = eHand.indexOf(defenseCard);
+            field.push(eHand.splice(eIdx, 1)[0]);
+            console.log("ИИ отбился");
+        } else {
+            // ИИ забирает карты (Silent Penalty) [cite: 2026-02-23]
+            console.log("ИИ берет карты");
+            eHand.push(...field);
+            field = [];
+        }
+
+        isBlocked = false;
+        render();
+        refillHands();
+        startGlobalTimer();
+    }
+
+    // --- СИСТЕМА ТАЙМЕРА (СВЕТОФОР) --- [cite: 2026-02-23]
+
+    function startGlobalTimer() {
+        stopGlobalTimer();
+        timeLeft = 30;
+        const bar = document.getElementById('timer-bar');
+        
+        turnTimer = setInterval(() => {
+            timeLeft -= 0.1;
+            const percent = (timeLeft / 30) * 100;
+            bar.style.width = percent + '%';
+
+            // Смена цветов "Зеленый -> Желтый -> Красный" [cite: 2026-02-23]
+            if (percent > 50) {
+                bar.style.background = 'var(--vchf-green)';
+                bar.style.boxShadow = '0 0 10px var(--vchf-green)';
+            } else if (percent > 20) {
+                bar.style.background = 'orange';
+                bar.style.boxShadow = '0 0 10px orange';
+            } else {
+                bar.style.background = 'var(--vchf-red)';
+                bar.style.boxShadow = '0 0 15px var(--vchf-red)';
+                // Здесь можно запустить звук "тик-так" [cite: 2026-02-24]
+            }
+
+            if (timeLeft <= 0) {
+                applyTimeoutPenalty();
+            }
+        }, 100);
+    }
+
+    function stopGlobalTimer() {
+        if (turnTimer) clearInterval(turnTimer);
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = '100%';
+        bar.style.background = 'var(--vchf-green)';
+    }
+
+    function applyTimeoutPenalty() {
+        stopGlobalTimer();
+        console.log("Время вышло: Авто-забор карт");
+        // В режиме защиты - забираем, в режиме атаки - пасс [cite: 2026-02-23]
+        actionTake(); 
+    }
+
+    // --- УПРАВЛЕНИЕ ХОДОМ ---
+
+    function actionTake() {
+        if (field.length === 0) return;
+        pHand.push(...field);
+        field = [];
+        activeIdx = null;
+        render();
+        refillHands();
+        startGlobalTimer();
+    }
+
+    function actionPass() {
+        if (field.length === 0 || field.length % 2 !== 0) return; 
+        // Бить можно только когда на столе четное кол-во карт (атака отбита)
+        bito.push(...field);
+        field = [];
+        activeIdx = null;
+        render();
+        refillHands();
+        startGlobalTimer();
+    }
+
+    function refillHands() {
+        // Добор до 6 карт [cite: 2026-02-23]
+        while (pHand.length < 6 && deck.length > 0) {
+            pHand.push(deck.pop());
+        }
+        while (eHand.length < 6 && deck.length > 0) {
+            eHand.push(deck.pop());
+        }
+        updateDeckUI();
+    }
+
+    // Запуск инициализации при загрузке
+    window.onload = init;
+
 </script>
 </body>
 </html>
