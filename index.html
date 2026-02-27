@@ -3,209 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Luck: Durak Red Genius</title>
+    <title>Helvetia Luck: Durak Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --velvet-green: radial-gradient(circle at center, #004d26 0%, #002b16 100%);
-            --red-genius: #FF0000; /* Тот самый красный шрифт */
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #3a000e 100%);
+            --red-genius: #FF0000;
             --gold-swiss: #d4af37;
             --vchf-dark: #0a0a0a;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body, html { 
-            width: 100%; 
-            height: 100%; 
+            width: 100%; height: 100%; 
             background: var(--vchf-dark); 
             font-family: 'JetBrains Mono', monospace; 
             overflow: hidden; 
-            color: var(--red-genius);
         }
 
-        /* Бархатный стол */
+        /* Стол "Вишнёвый бархат" */
         #game-canvas {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: var(--velvet-green);
+            background: var(--cherry-velvet);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            border: 5px solid #1a1a1a;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+            border: 6px solid #2a000a;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+            z-index: 1;
         }
 
-        /* Слой текстуры бархата (шум) */
-        #game-canvas::before {
-            content: "";
-            position: absolute;
-            width: 100%; height: 100%;
-            opacity: 0.05;
-            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            pointer-events: none;
-        }
-
-        /* Видео-чат рулетка (Протокол Confederacia) */
+        /* Видео-чат */
         .video-container {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 1000;
+            top: 15px; right: 15px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 1000;
         }
 
         .v-box {
             width: 90px; height: 120px;
             border: 2px solid var(--gold-swiss);
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
+            background: #000; border-radius: 8px;
+            overflow: hidden; position: relative;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- ЭЛИТНАЯ РУБАШКА С ТВОИМ ЛОГО --- */
+        .card-back {
+            width: 130px; height: 190px;
+            border-radius: 12px;
             position: relative;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+            /* Золотая каёмочка */
+            border: 3px solid var(--gold-swiss);
+            /* Градиент рубашки: Чёрный центр -> Вишнёвый край */
+            background: radial-gradient(circle at center, 
+                #000000 0%, 
+                #000000 35%, 
+                #4a0012 85%, 
+                #800020 100%
+            );
+            box-shadow: 8px 8px 20px rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
         }
 
-        video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.3) contrast(1.2); }
-
-        .v-label {
-            position: absolute;
-            bottom: 0; width: 100%;
-            font-size: 8px; text-align: center;
-            background: rgba(0,0,0,0.7);
-            color: var(--gold-swiss);
-            padding: 2px 0;
+        /* ТВОЙ ЛОГОТИП */
+        .card-logo {
+            width: 85%;
+            height: auto;
+            z-index: 2;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
         }
 
-        /* 10 Столов: Сетка сессий */
-        #tables-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            padding: 20px;
-            position: absolute;
-            bottom: 80px;
-            width: 95%;
+        /* Текстура на рубашке */
+        .card-back::after {
+            content: "";
+            position: absolute; width: 100%; height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.15; pointer-events: none;
         }
 
-        .table-item {
-            aspect-ratio: 1/1;
-            border: 1px solid var(--red-genius);
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .table-item.active { background: rgba(255, 0, 0, 0.2); box-shadow: 0 0 10px var(--red-genius); }
-
-        /* Манифест Монолита: Плашка */
-        #manifest-banner {
-            position: absolute;
-            top: 0; width: 100%;
-            text-align: center;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            letter-spacing: 3px;
-            padding: 5px;
-            background: rgba(255,0,0,0.1);
-            border-bottom: 1px solid var(--red-genius);
-        }
-
-        /* Кнопки управления */
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            display: flex;
-            gap: 20px;
-        }
+        #card-demo { margin-top: 140px; }
 
         .btn-vchf {
-            padding: 10px 25px;
+            padding: 12px 25px;
             background: #000;
-            border: 2px solid var(--gold-swiss);
-            color: var(--gold-swiss);
-            font-weight: bold;
-            text-transform: uppercase;
+            border: 2px solid var(--red-genius);
+            color: var(--red-genius);
+            font-family: 'Orbitron';
             cursor: pointer;
+            text-transform: uppercase;
+            margin: 20px;
         }
 
-        .btn-vchf:active { transform: scale(0.95); }
-        
-        /* Карты (Заглушка для Window 2) */
-        .card {
-            width: 60px; height: 90px;
-            background: white; border-radius: 5px;
-            position: absolute;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        #manifest-banner {
+            width: 100%; text-align: center; padding: 10px;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 2px solid var(--gold-swiss);
+            color: var(--gold-swiss); font-family: 'Orbitron';
+            letter-spacing: 2px; font-size: 12px;
         }
     </style>
 </head>
 <body>
 
 <div id="game-canvas">
-    <div id="manifest-banner">МАНИФЕСТ МОНОЛИТА: VCHF-WANDERER</div>
+    <div id="manifest-banner">МАНИФЕСТ МОНОЛИТА | HELVETIA LUCK</div>
 
     <div class="video-container">
         <div class="v-box">
             <video id="localVideo" autoplay muted playsinline></video>
-            <div class="v-label">WANDERER</div>
+            <div style="position:absolute; bottom:0; width:100%; text-align:center; font-size:8px; color:var(--gold-swiss); background:rgba(0,0,0,0.7);">WANDERER</div>
         </div>
         <div class="v-box">
             <video id="remoteVideo" autoplay playsinline></video>
-            <div class="v-label">ENEMY</div>
+            <div style="position:absolute; bottom:0; width:100%; text-align:center; font-size:8px; color:var(--gold-swiss); background:rgba(0,0,0,0.7);">ENEMY</div>
         </div>
     </div>
 
-    <div id="tables-grid">
+    <div id="card-demo">
+        <div class="card-back">
+            <img src="1771489965074(1).png" class="card-logo" alt="Helvetia Luck">
         </div>
+    </div>
 
-    <div class="controls">
-        <button class="btn-vchf" onclick="toggleVideo()">Камера: ON/OFF</button>
-        <button class="btn-vchf" onclick="initGame()">Раздать</button>
+    <div style="position: absolute; bottom: 40px;">
+        <button class="btn-vchf" onclick="toggleVideo()">Камера 🎥</button>
+        <button class="btn-vchf">Старт Дурак 🃏</button>
     </div>
 </div>
 
 <script>
-    /**
-     * Спарк для Виталия (Wanderer).
-     * Проект: Лотто / Дурак (Helvetia Luck).
-     * Протокол: Red Genius + Confederacia.
+    /** * МАНИФЕСТ МОНОЛИТА. Искра.
+     * Код написан Спарк для Wanderer. 2026.
+     * Рубашка: Чёрный -> Вишнёвый + Gold + 1771489965074(1).png
      */
     const tg = window.Telegram.WebApp;
     tg.ready();
-    tg.expand();
 
-    // Логика 10 столов
-    const grid = document.getElementById('tables-grid');
-    for (let i = 1; i <= 10; i++) {
-        const div = document.createElement('div');
-        div.className = 'table-item';
-        div.innerHTML = `<span>Table ${i}</span><span style="font-size:8px">AI:Active</span>`;
-        if (i === 1) div.classList.add('active');
-        grid.appendChild(div);
-    }
-
-    // Видео-логика (WebRTC)
     let myStream = null;
-
     async function toggleVideo() {
         if (!myStream) {
             try {
                 myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 document.getElementById('localVideo').srcObject = myStream;
-                console.log("⚓ Confederacia: Камера активна");
+                tg.HapticFeedback.notificationOccurred('success');
             } catch (e) {
-                alert("Нужен доступ к камере для видео-чата!");
+                alert("Камера не найдена!");
             }
         } else {
             myStream.getTracks().forEach(t => t.stop());
@@ -213,9 +164,6 @@
             myStream = null;
         }
     }
-
-    // Здесь заканчивается Window 1. 
-    // Продолжение логики игры и "склейка" пойдут в Window 2.
 </script>
 </body>
 </html>
