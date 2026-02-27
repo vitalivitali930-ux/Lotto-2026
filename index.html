@@ -1,828 +1,123 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto - Движок VCHF Bi-Turbo Ultimate 2.0</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { 
-            /* Константы Монолита [cite: 2026-02-24] */
-            --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37);
-            --theme-glow: rgba(212, 175, 55, 0.35); 
-            --sphere-base: #1a1a1a;
-            --white-sphere: radial-gradient(circle at 35% 35%, #444 0%, #1a1a1a 40%, #000 100%);
-            --gold-sphere: radial-gradient(circle at 35% 35%, #fff9d6 0%, #f9e27d 30%, #d4af37 60%, #8a6d1c 100%);
-            --cell-text: #ffffff; 
-            --hot-color: #ff4500;
-            --cold-color: #1e90ff;
-            --process-color: #00ffff;
-            --neon-blue: #00a3ff;
-            /* Константы Интро */
-            --gold: #ffcc00;
-            --onyx: #050505;
-            --neon: #00f3ff;
-            /* Радужные акценты Rainbow Wave */
-            --lime: #32CD32;
-            --cyan: #00ffff;
-            --cherry: #C511A4;
-            --silver: #c0c0c0;
-        } 
-
-        body, html { 
-            background: #000; 
-            color: #fff; 
-            font-family: -apple-system, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 0;
-            overflow: hidden; 
-            transition: background 0.5s ease;
-            width: 100%; 
-            height: 100%;
-        } 
-
-        /* Стили Интро (Canvas Engine) */
-        #introCanvas { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            z-index: 20001; 
-            pointer-events: none; 
-        } 
-
-        #ui-layer {
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            z-index: 20002; 
-            display: flex; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
-            pointer-events: none; 
-            transition: opacity 1s ease;
-        } 
-
-        .logo-box-intro {
-            width: 130px; 
-            height: 130px; 
-            opacity: 0;
-            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 25px;
-        } 
-
-        .logo-box-intro img { 
-            width: 100%; 
-            filter: drop-shadow(0 0 20px var(--gold)); 
-        } 
-
-        .status-label-intro {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--neon); 
-            font-size: 10px;
-            letter-spacing: 6px; 
-            text-transform: uppercase;
-            text-align: center; 
-            height: 20px;
-            text-shadow: 0 0 10px var(--neon);
-        } 
-
-        /* Темы интерфейса - Протокол Эдельвейс */
-        body.theme-cherry { 
-            --main-color: #C511A4; 
-            --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); 
-            --theme-glow: rgba(197, 17, 164, 0.35); 
-        } 
-
-        body.theme-silver { 
-            --main-color: #c0c0c0; 
-            --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); 
-            --theme-glow: rgba(192, 192, 192, 0.35); 
-        } 
-
-        body.theme-lime { 
-            --main-color: #32CD32; 
-            --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); 
-            --theme-glow: rgba(50, 205, 50, 0.35); 
-        } 
-
-        body.theme-cyan { 
-            --main-color: #00ffff; 
-            --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); 
-            --theme-glow: rgba(0, 255, 255, 0.35); 
-        } 
-
-        body.theme-gold { 
-            --main-color: #d4af37; 
-            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
-            --theme-glow: rgba(212, 175, 55, 0.35); 
-        }
-        /* Оптимизированное ЦВЕТНОЕ Дыхание [cite: 2026-02-23] */
-        @keyframes sphere-breathe {
-            0%, 100% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color);
-                border-color: rgba(255, 255, 255, 0.1); 
-                transform: scale(1);
-            }
-            50% { 
-                box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 22px rgba(0,0,0,0.4), 0 0 20px var(--main-color); 
-                border-color: var(--main-color); 
-                transform: scale(1.04); 
-            }
-        } 
-
-        /* Анимационные классы вспышек для Rainbow Wave */
-        .cell.flash-gold { background: var(--gold); box-shadow: 0 0 15px var(--gold); color: #000; border-color: #fff; transform: scale(1.1); }
-        .cell.flash-lime { background: var(--lime); box-shadow: 0 0 15px var(--lime); color: #000; border-color: #fff; transform: scale(1.1); }
-        .cell.flash-cyan { background: var(--cyan); box-shadow: 0 0 15px var(--cyan); color: #000; border-color: #fff; transform: scale(1.1); }
-        .cell.flash-cherry { background: var(--cherry); box-shadow: 0 0 15px var(--cherry); color: #000; border-color: #fff; transform: scale(1.1); }
-        .cell.flash-silver { background: var(--silver); box-shadow: 0 0 15px var(--silver); color: #000; border-color: #fff; transform: scale(1.1); }
-
-        @keyframes processing-flash {
-            0% { background: var(--process-color); box-shadow: 0 0 25px var(--process-color); transform: scale(1.15); }
-            100% { background: var(--white-sphere); box-shadow: none; transform: scale(1); }
-        } 
-
-        .cell.processing-flash { animation: processing-flash 0.15s ease-out; z-index: 5; } 
-
-        /* СЕТКА 24 СЛОТОВ (Shadow Matrix) [cite: 2026-02-26] */
-        #slots-area {
-            margin: 15px auto;
-            max-width: 400px;
-            padding: 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.1);
-        }
-
-        #slots-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-        }
-
-        .slot-cell {
-            aspect-ratio: 1/1;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #555;
-            transition: 0.3s;
-        }
-
-        .slot-cell.active-slot {
-            border-color: var(--main-color);
-            color: #fff;
-            box-shadow: 0 0 10px var(--theme-glow);
-        }
-
-        /* Навигация и Кошелек */
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
-            background: rgba(10,10,10,0.98); display: flex; 
-            justify-content: space-around; align-items: center; 
-            border-top: 1.5px solid var(--main-color); z-index: 1000;
-        } 
-
-        .nav-item { color: #666; font-size: 10px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; } 
-        .nav-item.active { color: var(--main-color); text-shadow: 0 0 10px var(--theme-glow); } 
-        .nav-item span { display: block; font-size: 24px; margin-bottom: 4px; } 
-
-        .balance-container { display: flex; gap: 10px; padding: 10px 15px; } 
-        .bal-card { 
-            flex: 1; border-radius: 12px; padding: 12px; 
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
-            border: 1.5px solid #444; transition: 0.4s; cursor: pointer;
-            opacity: 0.6; filter: grayscale(0.5);
-        } 
-
-        .bal-card.active-wallet { 
-            opacity: 1; filter: grayscale(0); border-color: var(--main-color); 
-            box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.02);
-            background: rgba(212, 175, 55, 0.05);
-        } 
-
-        .bal-val { font-size: 18px; font-weight: bold; color: var(--lime); font-family: 'Orbitron'; } 
-
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 10px; 
-            padding: 0 15px; 
-            max-width: 400px; 
-            margin: 0 auto; 
-        } 
-
-        .cell { 
-            aspect-ratio: 1/1; 
-            background: var(--white-sphere); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            font-weight: 800; 
-            color: var(--cell-text); 
-            font-size: 19px; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            cursor: pointer; 
-            position: relative; 
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: sphere-breathe 4s infinite ease-in-out;
-        } 
-
-        .cell.selected { 
-            background: var(--main-gradient); 
-            color: #000; 
-            transform: scale(1.1) translateY(-5px); 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); 
-            border: 2px solid #fff; 
-            z-index: 10; 
-            animation: none; 
-        }
-
-        .btn-main { 
-            width: 85%; padding: 18px; border-radius: 15px; font-size: 18px; 
-            background: var(--main-gradient); color: #000; border: none; 
-            font-weight: 800; cursor: pointer; margin: 20px 0;
-            font-family: 'Orbitron'; text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Helvetia Lucky | Bi-Turbo Ultimate</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d4af37;--swiss-red:#e30a17;--deep-black:#050505;--cherry-velvet:radial-gradient(circle at center,#800020 0%,#2a000a 100%);--red-genius:#FF0000;--green-active:#00FF41;--bg-deep:radial-gradient(circle at center,#2a000a 0%,#050505 70%,#000000 100%);}
+* {-webkit-tap-highlight-color:transparent;box-sizing:border-box;margin:0;padding:0;}
+body,html{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Orbitron',sans-serif;}
+#wheel-layer{position:fixed;inset:0;background:#000;z-index:3000;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s ease-out;}
+.safe-wheel-container{position:relative;width:320px;height:320px;display:flex;align-items:center;justify-content:center;transition:transform 1.2s cubic-bezier(0.4,0,0.2,1);}
+.wheel-center{width:70px;height:70px;background:radial-gradient(circle,#333,#000);border:3px solid var(--gold);border-radius:50%;z-index:10;box-shadow:0 0 25px rgba(212,175,55,0.5);}
+.spoke{position:absolute;width:6px;height:130px;background:linear-gradient(to top,var(--gold),transparent);transform-origin:bottom center;bottom:50%;left:calc(50% - 3px);}
+.flag-node{position:absolute;width:55px;height:55px;background:#0a0a0a;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;z-index:20;transform:translate(-50%,-50%);transition:0.4s;box-shadow:0 4px 10px rgba(0,0,0,0.8);}
+#main-ui{display:none;opacity:0;width:100%;height:100%;background:var(--bg-deep);overflow-y:auto;transition:opacity 2s ease;padding-bottom:100px;position:relative;z-index:500;}
+.casino-floor{display:flex;flex-wrap:wrap;justify-content:space-around;gap:60px 20px;padding:60px 20px;}
+.table-wrap{position:relative;width:130px;height:130px;cursor:pointer;}
+.table-surface-mini{width:100%;height:100%;background:var(--cherry-velvet);border:2px solid #1a0005;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 40px rgba(0,0,0,0.8);}
+#game-table-view{display:none;position:fixed;inset:0;background:var(--cherry-velvet);z-index:4000;font-family:'JetBrains Mono',monospace;}
+.lamp{position:absolute;width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);transition:0.5s;}
+.lamp.waiting{background:#555;} .lamp.ready{background:var(--green-active);box-shadow:0 0 15px var(--green-active);}
+#lamp-bottom{bottom:175px;left:50%;transform:translateX(-50%);}
+.control-panel{position:fixed;bottom:0;width:100%;height:160px;background:rgba(0,0,0,0.9);border-top:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding-bottom:20px;}
+.btn-main{width:80%;padding:15px;border:none;border-radius:8px;font-family:'Orbitron';font-weight:900;font-size:18px;color:#000;cursor:pointer;}
+</style>
 </head>
 <body>
-
-<div id="soul-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index: 40000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-    <div class="soul-box" style="background: #111; border: 2px solid var(--main-color); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px;">
-        <h2 style="color:var(--main-color); font-family:'Orbitron'; margin-top:0;">IDENTITY BRIDGE</h2>
-        <div id="soul-content" style="font-size: 12px; text-align:left; max-height: 250px; overflow-y: auto; margin-bottom: 15px; color:#ccc; line-height:1.5;">
-            <p style="color:var(--main-color); font-weight:bold;">MANIFEST MONOLITH V.2.0</p>
-            <p>1. Вы подтверждаете роль "Цифрового Курьера" для проекта Лотто.</p>
-            <p>2. Месячный лимит на операции: <span style="color:#fff;">50.00 CHF</span>.</p>
-            <p>3. Комиссия сервиса: 1% на инфраструктуру + 1% движок.</p>
-            <p>4. Налог 35% удерживается автоматически при выигрыше > 1.2 млн.</p>
-            <p>5. Ваше кодовое слово является ключом к выводу средств.</p>
-        </div>
-        <input type="password" id="soul-pass" placeholder="Password" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#000; color:#fff; box-sizing:border-box;">
-        <input type="text" id="soul-code" placeholder="Code Word (vchf...)" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #333; background:#000; color:#fff; box-sizing:border-box;">
-        <button class="btn-main" onclick="confirmIdentity()" style="width:100%; margin:0; padding:15px;">MANIFEST AKZEPTIEREN</button>
+<div id="wheel-layer"><div class="safe-wheel-container" id="safe-wheel"><div class="wheel-center"></div></div></div>
+<div id="main-ui">
+    <header><div class="brand-main">HELVETIA</div></header>
+    <div class="casino-floor" id="floor"></div>
+</div>
+<div id="game-table-view">
+    <div id="lamp-bottom" class="lamp waiting"></div>
+    <div class="control-panel">
+        <button id="ready-trigger" class="btn-main" style="background:var(--green-active)" onclick="toggleReady()">Я ГОТОВ ✅</button>
+        <button id="take-btn" class="btn-main" style="display:none;background:var(--gold)" onclick="takeTicket()">ВЗЯТЬ БИЛЕТ</button>
+        <button onclick="closeTable()" style="color:white;background:none;border:none;">ВЫЙТИ</button>
     </div>
 </div>
-
-<canvas id="introCanvas"></canvas>
-<div id="ui-layer">
-    <div id="mainLogoIntro" class="logo-box-intro">
-        <img src="1771489965074(1).png" alt="Logo">
-    </div>
-    <div id="mainStatusIntro" class="status-label-intro">INITIALIZING ENGINE...</div>
-</div>
-
-<div id="app-content">
-    <div id="page-play" class="page active">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0 15px;">
-            <div class="lang-panel" id="dynamic-langs" style="height:40px; width:40px;"></div>
-            <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')" style="font-size:24px; cursor:pointer;">🎨</div>
-        </div>
-        
-        <div class="theme-panel" style="position: fixed; top: 65px; right: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 25px; border: 1px solid var(--main-color); transition: 0.3s; transform: translateX(120px);">
-            <div class="dot" style="width:30px; height:30px; border-radius:50%; background: #d4af37; border:1px solid #fff;" onclick="setTheme('gold')"></div>
-            <div class="dot" style="width:30px; height:30px; border-radius:50%; background: #32CD32; border:1px solid #fff;" onclick="setTheme('lime')"></div>
-            <div class="dot" style="width:30px; height:30px; border-radius:50%; background: #00ffff; border:1px solid #fff;" onclick="setTheme('cyan')"></div>
-            <div class="dot" style="width:30px; height:30px; border-radius:50%; background: #C511A4; border:1px solid #fff;" onclick="setTheme('cherry')"></div>
-            <div class="dot" style="width:30px; height:30px; border-radius:50%; background: #c0c0c0; border:1px solid #fff;" onclick="setTheme('silver')"></div>
-        </div>
-
-        <div class="balance-container">
-            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-                <div style="font-size:9px; color:#888;">VIRTUAL VCHF</div>
-                <div class="bal-val" id="vchf-val">100.00</div>
-            </div>
-            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:9px; color:#888;">REAL CHF (TOP-UP)</div>
-                <div class="bal-val" id="chf-val">0.00</div>
-            </div>
-        </div>
-
-        <div class="smart-tools" style="display:flex; gap:8px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
-            <button class="tool-btn" style="padding:8px 12px; border-radius:20px; border:1px solid var(--main-color); background:none; color:#fff; font-size:10px;" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
-            <button class="tool-btn" style="padding:8px 12px; border-radius:20px; border:1px solid var(--main-color); background:none; color:#fff; font-size:10px;" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
-            <button class="tool-btn" style="padding:8px 12px; border-radius:20px; border:1px solid var(--main-color); background:none; color:#fff; font-size:10px;" onclick="randomFill()">🎲 RAINBOW</button>
-        </div>
-
-        <div id="slots-area">
-            <div style="font-size:10px; color:var(--main-color); margin-bottom:8px; font-family:'Orbitron';">MATRIX SELECTION (24 SLOTS)</div>
-            <div id="slots-grid">
-                </div>
-        </div>
-
-        <div class="grid" id="main-grid"></div>
-        <button class="btn-main" id="play-btn" onclick="startRainbowWave()">JETZT SPIELEN</button>
-        <div id="selected-info" style="font-size: 14px; color: #888; margin-top: -10px; margin-bottom: 80px;">
-            WÄHLEN: <span id="count-display" style="color:var(--main-color); font-weight:bold;">0</span> / 6
-        </div>
-    </div>
-
-    <div id="page-history" class="page" style="display:none; padding:20px;">
-        <h2 style="font-family:'Orbitron'; color:var(--main-color);">STATISTIK</h2>
-        <div id="stats-list" style="text-align:left; font-size:12px; color:#ccc;">Keine Daten...</div>
-    </div>
-    
-    <div id="page-wallet" class="page" style="display:none; padding:20px;">
-        <h2 style="font-family:'Orbitron'; color:var(--main-color);">WALLET</h2>
-        <p>Auszahlung ab 50.00 CHF</p>
-    </div>
-</div>
-
-<div class="nav-bar">
-    <div class="nav-item active" onclick="showPage('play', this)"><span>🎯</span>PLAY</div>
-    <div class="nav-item" onclick="showPage('history', this)"><span>📊</span>STATS</div>
-    <div class="nav-item" onclick="showPage('wallet', this)"><span>💳</span>WALLET</div>
-</div>
-
-<div id="toast" style="position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:var(--main-color); padding:10px 20px; border-radius:20px; border:1px solid var(--main-color); display:none; z-index:5000; font-size:12px; white-space:nowrap;"></div>
-
 <script>
-/* ENGINE: VCHF BI-TURBO ULTIMATE 2.0 
-   AUTHOR: GEMINI AI (MONOLITH PROTOCOL)
-   MEMORIES: [2026-02-23, 2026-02-25, 2026-02-26] 
-   [cite: 2026-02-23] "Код не писать заново, а резать как колбасу"
-*/
+    /* Автор: Gemini Spark для Wanderer | Память: Монолит 2.0 */
+    let isReady = false; let gameActive = false;
+    const tables = Array.from({length:12},(_,i)=>({id:i+1,status:'collecting',players:Math.floor(Math.random()*3)}));
 
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-// CONFIGURATION & MEMORY ANCHORS (warten/erwarten)
-const CONFIG = {
-    totalNumbers: 42,
-    requiredPicks: 6,
-    maxSlots: 24,
-    vchfBalance: 100.00,
-    chfBalance: 0.00,
-    ticketPrice: 2.50,
-    taxThreshold: 1200000,
-    taxRate: 0.35,
-    langs: ['DE', 'FR', 'IT', 'EN'],
-    currentLang: 'DE'
-};
-
-const i18n = {
-    DE: { play: "JETZT SPIELEN", pick: "WÄHLEN", win: "GEWINN!", low: "Guthaben niedrig", soul: "Identität bestätigt" },
-    FR: { play: "JOUER", pick: "CHOISIR", win: "GAGNÉ!", low: "Solde insuffisant", soul: "Identité confirmée" },
-    IT: { play: "GIOCA", pick: "SCEGLI", win: "VINTO!", low: "Saldo insufficiente", soul: "Identità confermata" },
-    EN: { play: "PLAY NOW", pick: "SELECT", win: "WINNER!", low: "Low balance", soul: "Identity confirmed" }
-};
-
-let state = {
-    selected: [],
-    slots: Array(24).fill(null),
-    currentWallet: 'VCHF',
-    vchf: 100.00,
-    chf: 0.00,
-    isProcessing: false,
-    activeHot: false,
-    activeCold: false,
-    soulVerified: false
-};
-
-// INITIALIZATION
-function initApp() {
-    createGrid();
-    createSlots();
-    renderLangs();
-    updateDisplays();
-    startIntro();
-    
-    // Авто-проверка Identity Bridge при запуске
-    setTimeout(() => {
-        if(!state.soulVerified) document.getElementById('soul-overlay').style.display = 'flex';
-    }, 5000);
-}
-
-function createGrid() {
-    const grid = document.getElementById('main-grid');
-    grid.innerHTML = '';
-    for (let i = 1; i <= CONFIG.totalNumbers; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.textContent = i;
-        cell.onclick = () => toggleNumber(i, cell);
-        grid.appendChild(cell);
-    }
-}
-
-function createSlots() {
-    const sGrid = document.getElementById('slots-grid');
-    sGrid.innerHTML = '';
-    for (let i = 0; i < CONFIG.maxSlots; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'slot-cell';
-        slot.textContent = i + 1;
-        slot.id = `slot-${i}`;
-        sGrid.appendChild(slot);
-    }
-}
-
-function renderLangs() {
-    const container = document.getElementById('dynamic-langs');
-    const lang = CONFIG.langs[Math.floor(Math.random() * CONFIG.langs.length)]; 
-    container.innerHTML = `<div style="border:1px solid var(--main-color); border-radius:50%; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;" onclick="cycleLang()">${lang}</div>`;
-}
-// INTRO ENGINE: Эффект «Фотографии костра» [cite: 2026-02-19]
-function startIntro() {
-    const canvas = document.getElementById('introCanvas');
-    const ctx = canvas.getContext('2d');
-    const ui = document.getElementById('ui-layer');
-    const logo = document.getElementById('mainLogoIntro');
-    
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let particles = [];
-    class Particle {
-        constructor() {
-            this.x = canvas.width / 2;
-            this.y = canvas.height + 10;
-            this.size = Math.random() * 5 + 2;
-            this.speedY = Math.random() * 3 + 1;
-            this.color = Math.random() > 0.5 ? '#ffcc00' : '#ff4500';
-            this.opacity = 1;
-        }
-        update() {
-            this.y -= this.speedY;
-            this.opacity -= 0.01;
-            if (this.size > 0.1) this.size -= 0.05;
-        }
-        draw() {
-            ctx.globalAlpha = this.opacity;
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
+    function initWheel(){
+        const container = document.getElementById('safe-wheel');
+        const flags = ['🇨🇭','🇪🇺','🌐','💰'];
+        flags.forEach((f,i)=>{
+            const node = document.createElement('div');
+            node.className='flag-node'; node.innerText=f;
+            const angle = i*(360/flags.length);
+            const x = 160 + 130*Math.cos(angle*Math.PI/180);
+            const y = 160 + 130*Math.sin(angle*Math.PI/180);
+            node.style.left=x+'px'; node.style.top=y+'px';
+            node.onclick=()=>unlockSafe();
+            container.appendChild(node);
+        });
     }
 
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (particles.length < 100) particles.push(new Particle());
-        for (let i = 0; i < particles.length; i++) {
-            particles[i].update();
-            particles[i].draw();
-            if (particles[i].opacity <= 0) {
-                particles.splice(i, 1);
-                i--;
-            }
-        }
-        if (ui.style.opacity !== '0') requestAnimationFrame(animate);
+    function unlockSafe(){
+        document.getElementById('wheel-layer').style.opacity='0';
+        setTimeout(()=>{
+            document.getElementById('wheel-layer').style.display='none';
+            document.getElementById('main-ui').style.display='block';
+            setTimeout(()=>document.getElementById('main-ui').style.opacity='1',50);
+            renderFloor();
+        },800);
     }
 
-    animate();
-    setTimeout(() => { logo.style.opacity = '1'; }, 500);
-    setTimeout(() => { 
-        ui.style.opacity = '0';
-        setTimeout(() => { 
-            ui.style.display = 'none'; 
-            canvas.style.display = 'none';
-        }, 1000);
-    }, 4500);
-}
+    function renderFloor(){
+        const floor = document.getElementById('floor');
+        floor.innerHTML = tables.map(t=>`
+            <div class="table-wrap" onclick="joinTable(${t.id})">
+                <div class="table-surface-mini ${t.status==='playing'?'status-playing':'status-collecting'}">
+                    <span style="color:white">T-${t.id}</span>
+                </div>
+            </div>`).join('');
+    }
 
-// LOGIC: Селектор чисел
-function toggleNumber(num, el) {
-    if (state.isProcessing) return;
-    
-    const index = state.selected.indexOf(num);
-    if (index > -1) {
-        state.selected.splice(index, 1);
-        el.classList.remove('selected');
-    } else {
-        if (state.selected.length < CONFIG.requiredPicks) {
-            state.selected.push(num);
-            el.classList.add('selected');
-            tg.HapticFeedback.impactOccurred('light');
+    function joinTable(id){
+        document.getElementById('game-table-view').style.display='block';
+        enterLobbyMode();
+    }
+
+    function enterLobbyMode() {
+        document.getElementById('ready-trigger').style.display = 'block';
+        document.getElementById('lamp-bottom').className = 'lamp waiting';
+    }
+
+    function toggleReady() {
+        isReady = !isReady;
+        const btn = document.getElementById('ready-trigger');
+        const lamp = document.getElementById('lamp-bottom');
+        if(isReady) {
+            btn.innerText = "ГОТОВ 🗸"; btn.style.background = "var(--gold)";
+            lamp.className = 'lamp ready';
+            setTimeout(startGame, 1000);
         } else {
-            showToast("Maximum 6 Zahlen");
-        }
-    }
-    updateDisplays();
-}
-
-function updateDisplays() {
-    document.getElementById('count-display').textContent = state.selected.length;
-    document.getElementById('vchf-val').textContent = state.vchf.toFixed(2);
-    document.getElementById('chf-val').textContent = state.chf.toFixed(2);
-    
-    const btn = document.getElementById('play-btn');
-    if (state.selected.length === CONFIG.requiredPicks) {
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-    } else {
-        btn.style.opacity = '0.5';
-        btn.style.pointerEvents = 'none';
-    }
-}
-
-// WALLET SYSTEM
-function switchCurrency(type) {
-    state.currentWallet = type;
-    document.querySelectorAll('.bal-card').forEach(c => c.classList.remove('active-wallet'));
-    document.getElementById(`card-${type.toLowerCase()}`).classList.add('active-wallet');
-    tg.HapticFeedback.selectionChanged();
-}
-
-function cycleLang() {
-    const idx = CONFIG.langs.indexOf(CONFIG.currentLang);
-    CONFIG.currentLang = CONFIG.langs[(idx + 1) % CONFIG.langs.length];
-    renderLangs();
-    applyLang();
-}
-
-function applyLang() {
-    const l = i18n[CONFIG.currentLang];
-    document.getElementById('play-btn').textContent = l.play;
-    // Обновление остальных меток...
-}
-
-function showPage(pageId, navEl) {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    document.getElementById(`page-${pageId}`).style.display = 'block';
-    
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    navEl.classList.add('active');
-    tg.HapticFeedback.impactOccurred('medium');
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 2500);
-}
-// SMART TOOLS: Алгоритмы фильтрации
-function togglePick(type) {
-    if (state.isProcessing) return;
-    
-    // Сброс текущего выделения для чистоты фильтра
-    state.selected = [];
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-
-    if (type === 'hot') {
-        // Симуляция горячих чисел (наиболее частые)
-        const hotNumbers = [7, 13, 22, 31, 38, 42];
-        hotNumbers.forEach(n => {
-            const cell = document.querySelectorAll('.cell')[n-1];
-            toggleNumber(n, cell);
-        });
-        showToast("HOT NUMBERS LOADED");
-    } else if (type === 'cold') {
-        // Симуляция холодных чисел (давно не выпадали)
-        const coldNumbers = [2, 10, 19, 25, 33, 40];
-        coldNumbers.forEach(n => {
-            const cell = document.querySelectorAll('.cell')[n-1];
-            toggleNumber(n, cell);
-        });
-        showToast("COLD NUMBERS LOADED");
-    }
-}
-
-// RAINBOW WAVE: Визуальный движок «Радужной Волны» [cite: 2026-02-23]
-async function startRainbowWave() {
-    if (state.selected.length < CONFIG.requiredPicks) return;
-    
-    // Проверка баланса
-    const balance = state.currentWallet === 'VCHF' ? state.vchf : state.chf;
-    if (balance < CONFIG.ticketPrice) {
-        showToast(i18n[CONFIG.currentLang].low);
-        return;
-    }
-
-    state.isProcessing = true;
-    document.getElementById('play-btn').disabled = true;
-    
-    // Списание (Виртуальное или Реальное)
-    if (state.currentWallet === 'VCHF') state.vchf -= CONFIG.ticketPrice;
-    else state.chf -= CONFIG.ticketPrice;
-    updateDisplays();
-
-    const cells = document.querySelectorAll('.cell');
-    const colors = ['flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver'];
-
-    // Эффект Волны (Сканирование сетки)
-    for (let i = 0; i < 3; i++) { // 3 прохода волны
-        for (let j = 0; j < cells.length; j++) {
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            cells[j].classList.add(randomColor);
-            if (j % 5 === 0) await new Promise(r => setTimeout(r, 10)); // Скорость волны
-            setTimeout(() => cells[j].classList.remove(randomColor), 200);
+            btn.innerText = "Я ГОТОВ ✅"; btn.style.background = "var(--green-active)";
+            lamp.className = 'lamp waiting';
         }
     }
 
-    // Процесс «Прожига» финальной комбинации
-    generateFinalResult();
-}
-
-function generateFinalResult() {
-    const result = [];
-    while(result.length < 6) {
-        let n = Math.floor(Math.random() * 42) + 1;
-        if(!result.includes(n)) result.push(n);
+    function startGame() {
+        gameActive = true;
+        document.getElementById('ready-trigger').style.display = 'none';
+        document.getElementById('take-btn').style.display = 'block';
+        document.querySelectorAll('.lamp').forEach(l => l.classList.add('ready'));
     }
-    
-    // Анимация выпадения шаров
-    result.forEach((num, index) => {
-        setTimeout(() => {
-            const cell = document.querySelectorAll('.cell')[num-1];
-            cell.classList.add('processing-flash');
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Заполнение 24 слотов (Matrix)
-            const slot = document.getElementById(`slot-${index}`);
-            slot.textContent = num;
-            slot.classList.add('active-slot');
-            
-            if (index === 5) {
-                checkWin(result);
-            }
-        }, index * 400);
-    });
-}
 
-function checkWin(drawResult) {
-    const matches = state.selected.filter(n => drawResult.includes(n)).length;
-    state.isProcessing = false;
-    document.getElementById('play-btn').disabled = false;
-
-    if (matches >= 3) {
-        const prize = calculatePrize(matches);
-        showToast(`GEWINN: ${matches} Zahlen! +${prize} ${state.currentWallet}`);
-        if (state.currentWallet === 'VCHF') state.vchf += prize;
-        else state.chf += prize;
-        
-        // Налоговый протокол 35% [cite: 2026-02-23]
-        if (prize > CONFIG.taxThreshold) {
-            applyTax(prize);
-        }
-    } else {
-        showToast("Keн Glück diesmal");
+    function closeTable() {
+        gameActive = false;
+        document.getElementById('game-table-view').style.display = 'none';
     }
-    updateDisplays();
-}
-// IDENTITY BRIDGE: Протокол подтверждения личности [cite: 2026-02-23]
-function confirmIdentity() {
-    const pass = document.getElementById('soul-pass').value;
-    const code = document.getElementById('soul-code').value;
 
-    if (pass.length >= 4 && code.startsWith('vchf')) {
-        state.soulVerified = true;
-        document.getElementById('soul-overlay').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('soul-overlay').style.display = 'none';
-        }, 500);
-        showToast(i18n[CONFIG.currentLang].soul);
-        tg.HapticFeedback.notificationOccurred('success');
-    } else {
-        tg.HapticFeedback.notificationOccurred('error');
-        showToast("INVALID CREDENTIALS");
-        // Эффект тряски окна
-        const box = document.querySelector('.soul-box');
-        box.style.animation = 'shake 0.5s';
-        setTimeout(() => box.style.animation = '', 500);
-    }
-}
-
-// TAX PROTOCOL: Налоговый фильтр 35% [cite: 2026-02-23]
-function applyTax(amount) {
-    if (amount >= CONFIG.taxThreshold) {
-        const tax = amount * CONFIG.taxRate;
-        const net = amount - tax;
-        showToast(`TAX 35% APPLIED: -${tax.toFixed(2)} CHF`);
-        return net;
-    }
-    return amount;
-}
-
-// PRIZE ENGINE: Математика выигрышей
-function calculatePrize(matches) {
-    const table = {
-        3: 15.00,
-        4: 120.00,
-        5: 2500.00,
-        6: 1500000.00
-    };
-    return table[matches] || 0;
-}
-
-// MATRIX CONTROL: Очистка и обновление 24 слотов
-function resetSlots() {
-    for (let i = 0; i < CONFIG.maxSlots; i++) {
-        const slot = document.getElementById(`slot-${i}`);
-        slot.textContent = i + 1;
-        slot.classList.remove('active-slot');
-    }
-}
-
-// Дополнительная логика для случайного заполнения (Rainbow Fill)
-function randomFill() {
-    if (state.isProcessing) return;
-    
-    // Сброс старых
-    state.selected = [];
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
-    
-    while(state.selected.length < CONFIG.requiredPicks) {
-        let n = Math.floor(Math.random() * 42) + 1;
-        if(!state.selected.includes(n)) {
-            state.selected.push(n);
-            document.querySelectorAll('.cell')[n-1].classList.add('selected');
-        }
-    }
-    tg.HapticFeedback.impactOccurred('medium');
-    updateDisplays();
-}
-
-// Обработка системных ошибок и Reminders [cite: 2026-02-19]
-window.onerror = function(msg, url, line) {
-    console.error(`Monolith Error: ${msg} at line ${line}`);
-    // Здесь можно добавить лог в Telegram
-    return true; 
-};
-
-/* ANCHOR: warten (ждать) & erwarten (ожидать) 
-   Мы ждем завершения анимации, но ожидаем (erwarten) только успех.
-   [cite: 2026-02-26]
-*/
-// THEME ENGINE: Динамическое переключение визуальных слоев
-function setTheme(themeName) {
-    // Снимаем все предыдущие темы
-    document.body.classList.remove('theme-gold', 'theme-lime', 'theme-cyan', 'theme-cherry', 'theme-silver');
-    
-    // Применяем выбранную
-    document.body.classList.add(`theme-${themeName}`);
-    
-    // Сохраняем выбор в Mini App Storage (имитация)
-    localStorage.setItem('lotto_theme', themeName);
-    
-    // Визуальный фидбек
-    tg.HapticFeedback.impactOccurred('medium');
-    
-    // Закрываем панель тем
-    document.querySelector('.theme-panel').classList.remove('open');
-    
-    showToast(`THEME: ${themeName.toUpperCase()}`);
-}
-
-// ПРОВЕРКА СОСТОЯНИЯ ПРИ ЗАГРУЗКЕ
-window.onload = () => {
-    // Загружаем сохраненную тему
-    const savedTheme = localStorage.getItem('lotto_theme') || 'gold';
-    setTheme(savedTheme);
-    
-    // Инициализация движка VCHF
-    initApp();
-    
-    // Настройка кнопки Telegram "Закрыть"
-    tg.BackButton.hide();
-    
-    console.log("Монолит Лотто v.2.0: Система запущена.");
-    console.log("Memory Anchor: [2026-02-26] warten и erwarten записаны.");
-};
-
-// CSS-ДОПОЛНЕНИЕ ДЛЯ АНИМАЦИЙ (вставка через JS для чистоты)
-const extraStyles = document.createElement('style');
-extraStyles.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        75% { transform: translateX(10px); }
-    }
-    .theme-panel.open {
-        transform: translateX(0) !important;
-    }
-    .page {
-        animation: fadeIn 0.4s ease-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(extraStyles);
-
-/* ФИНАЛЬНЫЙ КОММЕНТАРИЙ МОНОЛИТА: 
-   Виталий, этот код является цельным организмом. 
-   Разделение на 8 окон выполнено по твоей формуле «Салями». 
-   Целостность функций сохранена на стыках. 
-   Сгенерировано: Gemini AI. 
-   [cite: 2026-02-23]
-*/
+    initWheel();
 </script>
 </body>
 </html>
