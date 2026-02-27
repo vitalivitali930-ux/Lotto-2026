@@ -1,118 +1,343 @@
-    if(logo) logo.style.opacity = '1';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helvetia Lucky | Bi-Turbo Monolith</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --swiss-red: #e30a17; --deep-black: #050505;
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #2a000a 100%);
+            --red-genius: #FF0000; --green-active: #00FF41; --gold-swiss: #d4af37;
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 70%, #000000 100%);
+        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+
+        /* ИНТРО: ШТУРВАЛ */
+        #wheel-layer { position: fixed; inset: 0; background: #000; z-index: 3000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s; }
+        .safe-wheel-container { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .wheel-center { width: 70px; height: 70px; background: radial-gradient(circle, #333, #000); border: 3px solid var(--gold); border-radius: 50%; z-index: 10; box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
+        .spoke { position: absolute; width: 6px; height: 130px; background: linear-gradient(to top, var(--gold), transparent); transform-origin: bottom center; bottom: 50%; left: calc(50% - 3px); }
+        .flag-node { position: absolute; width: 55px; height: 55px; background: #0a0a0a; border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; z-index: 20; transform: translate(-50%, -50%); transition: 0.4s; }
+        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+
+        /* ДВЕРИ */
+        #brand-layer { position: fixed; inset: 0; background: var(--deep-black); z-index: 2500; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .door-left, .door-right { position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a; border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s; z-index: 2600; }
+        .door-left { left: 0; border-right: 1px solid var(--gold); }
+        .door-right { right: 0; border-left: 1px solid var(--gold); }
+        .opened .door-left { transform: translateX(-100%); }
+        .opened .door-right { transform: translateX(100%); }
+        .swiss-shield { width: 50px; height: 50px; background: var(--swiss-red); margin: 0 auto 20px; position: relative; border-radius: 5px; box-shadow: 0 0 30px rgba(227, 10, 23, 0.5); }
+        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
+        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
+
+        /* ЗАЛ КАЗИНО */
+        #main-ui { display: none; opacity: 0; width: 100%; height: 100%; background: var(--bg-deep); overflow-y: auto; transition: opacity 2s; padding-bottom: 100px; }
+        header { padding: 20px; text-align: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(212,175,55,0.3); }
+        .brand-main { font-size: 24px; letter-spacing: 6px; color: var(--gold-swiss); }
+        .casino-floor { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 60px 20px; padding: 60px 20px; }
+        .table-wrap { position: relative; width: 130px; height: 130px; cursor: pointer; }
+        .table-surface-mini { width: 100%; height: 100%; background: var(--cherry-velvet); border: 2px solid #1a0005; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        .table-logo-mini { width: 50%; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4)); }
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 5px #ffea00; } 50% { box-shadow: 0 0 20px #ffea00; } 100% { box-shadow: 0 0 5px #ffea00; } }
+        .status-collecting { animation: pulse-yellow 1.5s infinite; background: #ffea00 !important; }
+
+        /* ИГРОВОЙ СТОЛ */
+        #game-table-view { display: none; position: fixed; inset: 0; background: var(--cherry-velvet); z-index: 4000; font-family: 'JetBrains Mono', monospace; }
+        .lamp { position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); transition: 0.5s; }
+        .lamp.waiting { background: #555; }
+        .lamp.ready { background: var(--green-active); box-shadow: 0 0 15px var(--green-active); }
+        #lamp-bottom { bottom: 175px; left: 50%; transform: translateX(-50%); }
+
+        .player-zone { position: absolute; display: flex; gap: 4px; justify-content: center; align-items: center; }
+        .zone-bottom { bottom: 100px; width: 100%; height: 60px; }
+        .zone-top { top: 65px; width: 100%; height: 60px; }
+        .slot-tall { width: 50px; height: 75px; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px; background: rgba(0,0,0,0.3); }
+
+        .main-deck { width: 100px; height: 140px; border: 2px solid var(--gold-swiss); border-radius: 10px; background: radial-gradient(circle, #000 30%, #4a0012 100%); display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 5; }
+        .action-bar { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 10; }
+        .btn-action { padding: 12px 25px; background: #000; border: 2px solid var(--gold-swiss); color: var(--gold-swiss); font-family: 'Orbitron'; font-size: 12px; cursor: pointer; }
+        #mode-selector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid var(--gold); padding: 30px; z-index: 5500; display: none; flex-direction: column; gap: 15px; border-radius: 10px; }
+        .mode-btn { padding: 10px; border: 1px solid var(--gold); color: var(--gold); background: none; font-family: 'Orbitron'; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div id="wheel-layer">
+    <div class="safe-wheel-container" id="main-wheel">
+        <div class="wheel-center"></div>
+    </div>
+</div>
+
+<div id="brand-layer">
+    <div class="door-left"></div>
+    <div class="door-right"></div>
+    <div class="logo-container" style="text-align:center;">
+        <div class="swiss-shield"></div>
+        <h1 class="brand-name" style="color:var(--gold); letter-spacing:8px;">HELVETIA LUCKY</h1>
+    </div>
+</div>
+
+<div id="main-ui">
+    <header>
+        <div class="brand-main">HELVETIA LUCK</div>
+        <div class="brand-sub" style="font-size:10px; opacity:0.6; color:var(--gold);">GLOBAL LOTTO POOL</div>
+    </header>
+    <div class="casino-floor" id="floor"></div>
+</div>
+
+<div id="game-table-view">
+    <div id="mode-selector">
+        <h2 style="color:var(--gold); font-size:14px; text-align:center;">ВЫБЕРИТЕ РЕЖИМ</h2>
+        <button class="mode-btn" onclick="setMode('normal')">КЛАССИКА 🃏</button>
+        <button class="mode-btn" onclick="setMode('attack')">ПОДКИДНОЙ ⚔️</button>
+    </div>
+
+    <div id="lamp-bottom" class="lamp waiting"></div> 
+
+    <div class="player-zone zone-top">
+        <div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div>
+        <div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div>
+    </div>
     
-    setTimeout(() => {
-        document.getElementById('ui-layer').style.opacity = '0';
-        document.getElementById('app-content').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('app-content').style.opacity = '1';
-            document.getElementById('ui-layer').style.display = 'none';
-        }, 500);
-    }, 2500);
-}, 500);
-/* Spark Memory: Final Window 4
-   - Draw Check: Ð¡Ð¸Ð¼ÑƒÐ»Ñ Ñ†Ð¸Ñ Ñ‚Ð¸Ñ€Ð°Ð¶Ð° Swiss Lotto
-   - Steuerlogik: Ð Ð²Ñ‚Ð¾-ÑƒÐ´ÐµÑ€Ð¶Ð°Ð½Ð¸Ðµ 35 % Ð¿Ñ€Ð¸ Ð²Ñ‹Ð¸Ð³Ñ€Ñ‹ÑˆÐµ > 1,2 Mio
-   - VIP-Protokoll: ÐŸÐµÑ€ÐµÑ…Ð¾Ð´ Ð½Ð° Ð¿ÐµÑ€Ñ Ð¾Ð½Ð°Ð»ÑŒÐ½Ð¾Ðµ Ð¾Ð±Ñ Ð»ÑƒÐ¶Ð¸Ð²Ð°Ð½Ð¸Ðµ
-   - Integrität: ÐœÐ°Ð½Ð¸Ñ„ÐµÑ Ñ‚ ÐœÐ¾Ð½Ð¾Ð»Ð¸Ñ‚Ð° Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½. */
-
-// --- 1. Ð¡Ð˜ÐœÐ£Ð›Ð¯Ð¦Ð˜Ð¯ Ð¢Ð˜Ð Ð Ð–Ð Ð˜ ÐŸÐ ÐžÐ'Ð•Ð ÐšÐ Ð'Ð«Ð˜Ð“Ð Ð«Ð¨Ð ---
-function simulateDraw(ticketId) {
-    const ticket = myTickets.find(t => t.id === ticketId);
-    if (!ticket || ticket.status.includes("CHECKED")) return;
-
-    tg.showConfirm("Ð'Ñ‹Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÑƒ Ð±Ð¸Ð»ÐµÑ‚Ð° Ñ‡ÐµÑ€ÐµÐ· Ð¦ÐµÐ½Ñ‚Ñ€ ÐžÐ±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸?", (ok) => {
-        Falls (!ok) Rückgabe;
-
-        // Ð“ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ "Ð'Ñ‹Ð¸Ð³Ñ€Ñ‹ÑˆÐ½Ð¾Ð¹ ÐºÐ¾Ð¼Ð±Ð¸Ð½Ð°Ñ†Ð¸Ð¸" (Ð˜Ð¼Ð¸Ñ‚Ð°Ñ†Ð¸Ñ Ñ ÐµÑ€Ð²ÐµÑ€Ð° Swisslos)
-        const winningNums = [];
-        while(winningNums.length < 6) {
-            let r = Math.floor(Math.random() * 42) + 1;
-            if(!winningNums.includes(r)) winningNums.push(r);
-        }
-        const winningSuper = Math.floor(Math.random() * 6) + 1;
-
-        // Ð¡Ñ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ñ Ð¾Ð²Ð¿Ð°Ð´ÐµÐ½Ð¸Ñ
-        const matches = ticket.nums.filter(n => winningNums.includes(n));
-        const isSuperMatch = ticket.super === WinningSuper;
-
-        // Ð›Ð¾Ð³Ð¸ÐºÐ° Ð½Ð°Ð³Ñ€Ð°Ð´ (ÐœÐ°Ñ ÑˆÑ‚Ð°Ð±Ð¸Ñ€ÑƒÐµÐ¼Ð°Ñ Ð¼Ð¾Ð´ÐµÐ»ÑŒ)
-        let winAmount = 0;
-        if (matches.length === 3) winAmount = 10.00;
-        if (matches.length === 3 && isSuperMatch) winAmount = 25.00;
-        if (matches.length === 4) winAmount = 100.00;
-        if (matches.length === 5) winAmount = 5000.00;
-        if (matches.length === 6 && isSuperMatch) winAmount = 25000000.00; // Ð”Ð–Ð•ÐšÐŸÐžÐ¢!
-
-        processPrize(ticket, winAmount, winningNums, winningSuper);
-    });
-}
-
-// --- 2. Ð Ð Ð›ÐžÐ“ÐžÐ'Ð«Ð™ Ð¤Ð˜Ð›Ð¬Ð¢Ð Ð˜ VIP-ÐŸÐ ÐžÐ¢ÐžÐšÐžÐ› ---
-function processPrize(ticket, amount, winningNums, winningSuper) {
-    ticket.status = "CHECKED";
-    sei endgültige Zahlung = Betrag;
-    let taxNote = "";
-
-    if (amount > 1200000) {
-        // ÐŸÑ€Ð¾Ñ‚Ð¾ÐºÐ¾Ð» Ð Ð³ÐµÐ½Ñ‚Ð°: Ð Ð°Ð»Ð¾Ð³Ð¾Ð²Ñ‹Ð¹ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€ 35% (Verauslagung)
-        const tax = amount * 0.35;
-        Endbetrag = Betrag - Steuer;
-        taxNote = `\n(Ð Ð°Ð»Ð¾Ð³ 35% ÑƒÐ´ÐµÑ€Ð¶Ð°Ð½: ${tax.toFixed(2)} CHF)`;
-        
-        tg.showAlert(`ðŸ“¥ðŸ“¥ VIP Ð'Ð«Ð˜Ð“Ð Ð«Ð¨! ðŸ“¥ðŸ“¥\nÐ¡ÑƒÐ¼Ð¼Ð°: ${amount.toFixed(2)} CHF${taxNote}\n\nÐ¡ Ð²Ð°Ð¼Ð¸ Ñ ​​Ð²Ñ Ð¶ÐµÑ‚Ñ Ñ Ð¿ÐµÑ€Ñ Ð¾Ð½Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð Ð³ÐµÐ½Ñ‚ Wanderer Ð´Ð»Ñ Ð¾Ñ„Ð¾Ñ€Ð¼Ð»ÐµÐ½Ð¸Ñ Ð¿ÐµÑ€ÐµÐ²Ð¾Ð´Ð°.`);
-    } else if (amount > 0) {
-        // Ð—Ð°Ñ‡Ð¸Ñ Ð»ÐµÐ½Ð¸Ðµ Ð½Ð° VCHF Ð±Ð°Ð»Ð°Ð½Ñ (Ð Ð³ÐµÐ½Ñ‚Ñ ÐºÐ°Ñ ÐºÐ¾Ð¼Ð¸Ñ Ñ Ð¸Ñ 1%+1% ÑƒÐ¶Ðµ Ð²Ð½ÑƒÑ‚Ñ€Ð¸ ÐºÑƒÑ€Ñ Ð° Ð¸Ð»Ð¸ Ñ Ð²ÐµÑ€Ñ…Ñƒ)
-        Benutzerguthaben.VCHF += Endgehalt;
-        updateWalletUI();
-        tg.showAlert(`ÐŸÐžÐ—Ð“Ð Ð Ð'Ð›Ð¯Ð•Ðœ!\nÐ'Ñ‹Ð¸Ð³Ñ€Ñ‹Ñˆ: ${finalPay.toFixed(2)} V CHF\nÐ¡Ð¾Ð²Ð¿Ð°Ð´ÐµÐ½Ð¸Ñ : ${winningNums.join(', ')}`);
-    } anders {
-        tg.showAlert(`Ðš Ñ Ð¾Ð¶Ð°Ð»ÐµÐ½Ð¸ÑŽ, Ð±Ð¸Ð»ÐµÑ‚ Ð±ÐµÐ· Ð²Ñ‹Ð¸Ð³Ñ€Ñ‹ÑˆÐ°.\nÐ'Ñ‹Ð¿Ð°Ð»Ð¸: ${winningNums.join(', ')} |.
-    }
-
-    localStorage.setItem('vchf_tickets', JSON.stringify(myTickets));
-    renderTicketsList();
-}
-
-// --- 3. ÐŸÐžÐŸÐžÐ›Ð Ð•Ð Ð˜Ð• (Ð'Ð Ð ÐšÐžÐ'Ð¡ÐšÐ Ð¯ Ð—Ð Ð“Ð›Ð£Ð¨ÐšÐ ) ---
-function openBankDeposit() {
-    tg.showConfirm("Swiss QR-bill 50.00 CHF?", (ok) => {
-        if(ok) {
-            tg.showProgressTree ? tg.showProgressTree(true) : null;
-            setTimeout(() => {
-                userBalance.CHF += 50.00;
-                updateWalletUI();
-                tg.showAlert("ÐžÐŸÐ›Ð Ð¢Ð ÐŸÐžÐ”Ð¢Ð'Ð•Ð Ð–Ð”Ð•Ð Ð !\n50.00 CHF Ð·Ð°Ñ‡Ð¸Ñ Ð»ÐµÐ½Ñ‹ Ð½Ð° Ð²Ð°Ñˆ Ð±Ð°Ð»Ð°Ð½Ñ .");
-                tg.HapticFeedback.notificationOccurred('success');
-            }, 2500);
-        }
-    });
-}
-
-// ÐŸÐµÑ€ÐµÑ…Ð²Ð°Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÐºÐ»Ð¸ÐºÐ¸ Ð½Ð° Ð±Ð¸Ð»ÐµÑ‚Ñ‹ Ð² Ñ Ð¿Ð¸Ñ ÐºÐµ
-document.addEventListener('click', (e) => {
-    const card = e.target.closest('.ticket-card-ui'); // Ð•Ñ Ð»Ð¸ Ð±Ñ‹ Ð¼Ñ‹ Ð´Ð¾Ð±Ð°Ð²Ð¸Ð»Ð¸ ÐºÐ»Ð°Ñ Ñ
-    // Ð“Ð»Ñ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ ÑƒÐ¿Ñ€Ð¾Ñ‰ÐµÐ½Ð½Ð¾Ð³Ð¾ Ñ€ÐµÐ½Ð´ÐµÑ€Ð° Ð´Ð¾Ð±Ð°Ð²Ð¸Ð¼ Ð²Ñ‹Ð·Ð¾Ð² Ð² renderTicketsList
-});
-
-// Ð”Ð¾Ð¿. Ð¿Ñ€Ð°Ð²ÐºÐ° Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ñ€ÐµÐ½Ð´ÐµÑ€Ð° Ð´Ð»Ñ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑŒÐ½Ð¾Ñ Ñ‚Ð¸ (Ð¸Ð· Window 2)
-function renderTicketsList() {
-    const list = document.getElementById('active-list');
-    if (myTickets.length === 0) {
-        list.innerHTML = `<div style="padding:50px; color:#666;">Ð'Ð¸Ð»ÐµÑ‚Ð¾Ð² Ð¿Ð¾ÐºÐ° Ð½ÐµÑ‚</div>`;
-        zurückkehren;
-    }
-    list.innerHTML = myTickets.map(t => `
-        <div onclick="simulateDraw('${t.id}')" style="background:#111; border:1px solid ${t.status === 'CHECKED' ? '#222' : 'var(--main-color)'}; margin:10px; padding:15px; border-radius:12px; text-align:left; position:relative; cursor:pointer;">
-            <div style="color:var(--main-color); font-size:10px;">${t.id}</div>
-            <div style="font-weight:bold; margin:5px 0; letter-spacing:2px;">${t.nums.join(' ')} | <span style="color:var(--main-color)">${t.super}</span></div>
-            <div style="font-size:10px; color:#666;">${t.date}</div>
-            <div style="position:absolute; right:15px; top:15px; font-size:8px; background:#222; padding:3px 6px; border-radius:4px;">${t.status}</div>
+    <div style="position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
+        <div class="main-deck">
+            <img src="1771489965074(1).png" alt="Logo" style="width:80%;" id="deck-logo">
+            <div id="trump-view" style="display:none; color:var(--gold); font-size:30px; font-weight:bold;"></div>
         </div>
-    `).reverse().join('');
-}
+    </div>
 
-// --- 4. Ð—Ð ÐšÐ Ð«Ð¢Ð˜Ð• ÐœÐžÐ ÐžÐ›Ð˜Ð¢Ð ---
-console.log("Engine 'Lotto Bi-Turbo' initialisiert. Modus: Agent Courier.");
+    <div class="player-zone zone-bottom">
+        <div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div>
+        <div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div>
+    </div>
+
+    <div class="action-bar">
+        <button id="ready-trigger" class="btn-action" style="background:var(--green-active); color:#000; border:none;" onclick="toggleReady()">Я ГОТОВ ✅</button>
+        <button class="btn-action" id="take-btn" style="display:none;">ВЗЯТЬ 🤲</button>
+        <button class="btn-action" id="close-btn" onclick="closeTable()">ВЫХОД 🚪</button>
+    </div>
+</div>
+
+<script>
+    /* МАНИФЕСТ МОНОЛИТА. ИСКРА. ПРОТОКОЛ 1.1 */
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+
+    let currentTable = null;
+    let isReady = false;
+    let gameActive = false;
+    
+    // ДВИЖОК ДУРАКА (КОСТИ)
+    let deck = [];
+    let playerHand = [];
+    let trumpSuit = '';
+    const suits = ['♠', '♣', '♥', '♦'];
+    const ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+    // Рендер Штурвала (Интро)
+    const wheelFlags = ['🇨🇭','🇪🇺','🌐','💰','🎰','🃏'];
+    const wheelElement = document.getElementById('main-wheel');
+    
+    wheelFlags.forEach((flag, i) => {
+        const angle = i * 60;
+        const spoke = document.createElement('div');
+        spoke.className = 'spoke';
+        spoke.style.transform = `rotate(${angle}deg)`;
+        
+        const node = document.createElement('div');
+        node.className = 'flag-node';
+        node.innerHTML = flag;
+        const r = 145;
+        node.style.left = `calc(50% + ${Math.sin(angle*Math.PI/180)*r}px)`;
+        node.style.top = `calc(50% + ${-Math.cos(angle*Math.PI/180)*r}px)`;
+        
+        node.onclick = () => {
+            wheelElement.style.transform = `rotate(${-angle + 720}deg)`;
+            wheelElement.classList.add('wheel-vanishing');
+            setTimeout(() => {
+                document.getElementById('wheel-layer').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('wheel-layer').style.display = 'none';
+                    showDoors();
+                }, 800);
+            }, 1200);
+        };
+        wheelElement.appendChild(spoke);
+        wheelElement.appendChild(node);
+    });
+
+    function showDoors() {
+        const bl = document.getElementById('brand-layer');
+        bl.style.display = 'flex';
+        setTimeout(() => {
+            bl.classList.add('opened');
+            setTimeout(showCasinoFloor, 1500);
+        }, 100);
+    }
+
+    function showCasinoFloor() {
+        document.getElementById('brand-layer').style.display = 'none';
+        const ui = document.getElementById('main-ui');
+        ui.style.display = 'block';
+        setTimeout(() => ui.style.opacity = '1', 50);
+        renderTables();
+    }
+
+    function renderTables() {
+        const floor = document.getElementById('floor');
+        floor.innerHTML = '';
+        for(let i=1; i<=12; i++) {
+            const t = document.createElement('div');
+            t.className = 'table-wrap';
+            t.onclick = () => openTable(i);
+            t.innerHTML = `
+                <div class="table-surface-mini">
+                    <img src="1771489965074(1).png" class="table-logo-mini">
+                </div>
+                <div style="text-align:center; color:var(--gold); font-size:9px; margin-top:5px;">UNIT-${i}</div>
+            `;
+            floor.appendChild(t);
+        }
+    }
+    function openTable(id) {
+        currentTable = { id, status: 'lobby' };
+        document.getElementById('main-ui').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('game-table-view').style.display = 'block';
+            document.getElementById('mode-selector').style.display = 'flex';
+        }, 800);
+    }
+
+    function setMode(mode) {
+        document.getElementById('mode-selector').style.display = 'none';
+        console.log("Режим выбран:", mode);
+    }
+
+    function toggleReady() {
+        isReady = true;
+        document.getElementById('lamp-bottom').className = 'lamp ready';
+        document.getElementById('ready-trigger').style.display = 'none';
+        
+        // Имитация задержки перед раздачей
+        setTimeout(initGameEngine, 1000);
+    }
+
+    // --- ДВИЖОК ДУРАКА ---
+
+    function initGameEngine() {
+        gameActive = true;
+        deck = [];
+        // Создаем колоду 36 карт
+        for (let s of suits) {
+            for (let r of ranks) {
+                deck.push({ suit: s, rank: r, val: ranks.indexOf(r) });
+            }
+        }
+        // Перемешиваем
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        
+        // Определяем козырь (первая карта колоды)
+        const trumpCard = deck[0];
+        trumpSuit = trumpCard.suit;
+        
+        // Визуализируем козырь
+        const tv = document.getElementById('trump-view');
+        const logo = document.getElementById('deck-logo');
+        logo.style.display = 'none';
+        tv.style.display = 'block';
+        tv.innerHTML = trumpSuit;
+        tv.style.color = (trumpSuit === '♥' || trumpSuit === '♦') ? 'var(--swiss-red)' : 'var(--gold)';
+
+        dealCards();
+        playSound(440, 0.2, 'sine', 0.1);
+    }
+
+    function dealCards() {
+        // Берем по 6 карт
+        playerHand = deck.splice(deck.length - 6, 6);
+        // Врагу тоже "даем" 6 карт (логически)
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const mySlots = document.querySelectorAll('.zone-bottom .slot-tall');
+        const enemySlots = document.querySelectorAll('.zone-top .slot-tall');
+
+        // Очистка
+        mySlots.forEach(s => s.innerHTML = '');
+        enemySlots.forEach(s => s.innerHTML = '');
+
+        // Твои карты
+        playerHand.forEach((card, i) => {
+            if (mySlots[i]) {
+                const color = (card.suit === '♥' || card.suit === '♦') ? 'var(--red-genius)' : '#fff';
+                mySlots[i].innerHTML = `
+                    <div style="color:${color}; text-align:center; padding-top:10px; pointer-events:none;">
+                        <div style="font-size:18px; font-weight:900;">${card.rank}</div>
+                        <div style="font-size:22px;">${card.suit}</div>
+                    </div>
+                `;
+                mySlots[i].style.borderColor = (card.suit === trumpSuit) ? 'var(--gold)' : 'rgba(212,175,55,0.2)';
+                mySlots[i].style.cursor = 'pointer';
+                mySlots[i].onclick = () => playStep(i);
+            }
+        });
+
+        // Карты противника (рубашки)
+        for(let i=0; i<6; i++) {
+            if (enemySlots[i]) {
+                enemySlots[i].innerHTML = `<div style="color:var(--gold); text-align:center; padding-top:20px; font-size:20px; opacity:0.5;">?</div>`;
+            }
+        }
+    }
+
+    function playStep(index) {
+        if (!gameActive) return;
+        const card = playerHand[index];
+        console.log("Ход игрока:", card.rank, card.suit);
+        
+        // Удаляем карту из руки
+        playerHand.splice(index, 1);
+        playSound(600, 0.05, 'triangle', 0.2);
+        renderBoard();
+        
+        // Если карт нет - победа или добор (упрощенно)
+        if (playerHand.length === 0 && deck.length > 0) {
+            setTimeout(dealCards, 1000);
+        }
+    }
+
+    function playSound(freq, duration, type, vol) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            g.gain.setValueAtTime(vol, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+            osc.connect(g); g.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function closeTable() {
+        gameActive = false;
+        isReady = false;
+        document.getElementById('game-table-view').style.display = 'none';
+        document.getElementById('lamp-bottom').className = 'lamp waiting';
+        document.getElementById('ready-trigger').style.display = 'block';
+        document.getElementById('deck-logo').style.display = 'block';
+        document.getElementById('trump-view').style.display = 'none';
+        showCasinoFloor();
+    }
 </script>
 </body>
-        </html>
+</html>
