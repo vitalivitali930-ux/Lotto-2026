@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HELVETIA LUCK | GLOBAL POOL</title>
+    <title>HELVETIA LUCK | VCHF ENGINE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -17,116 +17,139 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
-            width: 100%; height: 100%; 
-            background: var(--bg-deep); 
-            color: var(--gold-swiss);
-            font-family: 'JetBrains Mono', monospace;
-            overflow-x: hidden;
-            perspective: 1000px; /* Глубина для зала */
+            width: 100%; height: 100%; background: #000; 
+            color: var(--gold-swiss); font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+        }
+
+        /* ИНТРО (без изменений) */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+        .intro-logo { width: 120px; filter: drop-shadow(0 0 20px var(--gold-swiss)); animation: intro-anim 3s forwards; }
+        @keyframes intro-anim { 0% { opacity:0; transform:scale(0.8); } 100% { opacity:1; transform:scale(1); } }
+
+        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        #main-ui {
+            display: none; opacity: 0; width: 100%; height: 100%; 
+            background: var(--bg-deep); overflow-y: auto; transition: opacity 2s ease;
+            padding-bottom: 100px; /* Место под статичные кнопки */
         }
 
         header {
-            padding: 20px 10px;
-            text-align: center;
-            background: rgba(0,0,0,0.9);
+            padding: 20px 10px; text-align: center; background: rgba(0,0,0,0.9);
             border-bottom: 1px solid rgba(212, 175, 55, 0.3);
             position: sticky; top: 0; z-index: 1000;
         }
         .brand-main { font-family: 'Orbitron'; font-size: 24px; letter-spacing: 6px; }
-        .brand-sub { 
-            font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4.2px; 
-            opacity: 0.6; padding-top: 4px; border-top: 1px solid rgba(212, 175, 55, 0.2);
-            width: fit-content; margin: 5px auto 0;
-        }
+        .brand-sub { font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4.2px; opacity: 0.6; margin-top: 5px; }
 
-        /* Эффект игрового зала */
+        /* ЗАЛ СО СТОЛАМИ */
         .casino-floor {
-            position: relative;
-            width: 100%; min-height: 100vh;
-            padding: 60px 20px;
-            display: flex; flex-wrap: wrap;
-            justify-content: space-around;
-            gap: 60px 20px;
+            display: flex; flex-wrap: wrap; justify-content: space-around;
+            gap: 60px 20px; padding: 60px 20px;
         }
-
-        .table-wrap {
-            position: relative; width: 130px; height: 130px;
-            cursor: pointer; transition: 0.4s;
-        }
-        
-        /* Асимметрия: каждый четный стол чуть выше, нечетный ниже */
+        .table-wrap { position: relative; width: 130px; height: 130px; cursor: pointer; transition: 0.4s; }
         .table-wrap:nth-child(even) { transform: translateY(30px); }
-        .table-wrap:nth-child(3n) { transform: translateY(-20px) scale(0.95); opacity: 0.9; }
-
-        .table-wrap:hover { transform: scale(1.1) translateY(0) !important; z-index: 100; }
+        .table-wrap:hover { transform: scale(1.1) translateY(0) !important; }
 
         .table-surface {
-            width: 100%; height: 100%;
-            background: var(--cherry-table);
-            border: 2px solid #1a0005;
-            border-radius: 50%;
+            width: 100%; height: 100%; background: var(--cherry-table);
+            border: 2px solid #1a0005; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6);
-            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative;
         }
+        .table-logo { width: 50%; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4)); }
 
-        .table-logo {
-            width: 50%; opacity: 0.85;
-            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
-        }
-
-        /* Лампы - Психология: Красный "спит", Зеленый "манит" */
+        /* ИНДИКАТОРЫ */
         .lamp { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
         .l-t { top: 10px; left: 50%; transform: translateX(-50%); }
         .l-b { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .l-l { left: 10px; top: 50%; transform: translateY(-50%); }
         .l-r { right: 10px; top: 50%; transform: translateY(-50%); }
-
         .active { background: var(--green-active); box-shadow: 0 0 12px var(--green-active); }
         .waiting { background: var(--red-genius); box-shadow: 0 0 6px var(--red-genius); opacity: 0.4; }
 
-        .table-id {
-            position: absolute; bottom: -25px; width: 100%;
-            text-align: center; font-family: 'Orbitron'; font-size: 8px;
-            color: rgba(212, 175, 55, 0.5); letter-spacing: 1px;
+        /* СТАТИЧНАЯ ПАНЕЛЬ (NAV BAR) */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: 85px; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px); /* Эффект размытия столов под кнопками */
+            border-top: 1px solid var(--gold-swiss);
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; z-index: 2000; padding-bottom: 10px;
         }
+        .nav-btn {
+            width: 160px; height: 45px;
+            background: #000; border: 1.5px solid var(--gold-swiss);
+            color: var(--gold-swiss); font-family: 'Orbitron';
+            font-size: 11px; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); /* Психология: агрессивный наклон */
+        }
+        .nav-btn:active { transform: scale(0.95); background: var(--gold-swiss); color: #000; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="brand-main">HELVETIA LUCK</div>
-    <div class="brand-sub">GLOBAL LOTTO POOL</div>
-</header>
+<div id="intro-screen">
+    <img src="1771489965074(1).png" class="intro-logo" alt="Logo">
+    <div style="margin-top:20px; letter-spacing:5px; font-family:'Orbitron'; font-size:12px;">VCHF ULTIMATE</div>
+</div>
 
-<div class="casino-floor" id="floor"></div>
+<div id="main-ui">
+    <header>
+        <div class="brand-main">HELVETIA LUCK</div>
+        <div class="brand-sub">GLOBAL LOTTO POOL</div>
+    </header>
+
+    <div class="casino-floor" id="floor"></div>
+
+    <div class="nav-bar">
+        <div class="nav-btn">БАР (CHAT) 🍷</div>
+        <div class="nav-btn">ДРУГИЕ ИГРЫ 🃏</div>
+    </div>
+</div>
 
 <script>
+    /** * МАНИФЕСТ МОНОЛИТА. [cite: 2026-02-23]
+     * Статичная навигация внедрена. Эффект "пробегающего пола" активен.
+     */
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('intro-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro-screen').style.display = 'none';
+                const main = document.getElementById('main-ui');
+                main.style.display = 'block';
+                setTimeout(() => { main.style.opacity = '1'; }, 50);
+            }, 1500);
+        }, 3000);
+    };
+
     const floor = document.getElementById('floor');
-    // Генерируем 10 столов для "Игрового дома"
-    for(let i=1; i<=10; i++) {
+    for(let i=1; i<=12; i++) {
         const wrap = document.createElement('div');
         wrap.className = 'table-wrap';
-        
-        // Статусы: нижняя лампа всегда активна (ты заходишь), остальные - по ситуации
-        const lTop = i % 3 === 0 ? 'active' : 'waiting';
-        const lLeft = i % 2 === 0 ? 'active' : 'waiting';
-
         wrap.innerHTML = `
             <div class="table-surface">
-                <div class="lamp l-t ${lTop}"></div>
+                <div class="lamp l-t waiting"></div>
                 <div class="lamp l-b active"></div>
-                <div class="lamp l-l ${lLeft}"></div>
+                <div class="lamp l-l waiting"></div>
                 <div class="lamp l-r waiting"></div>
                 <img src="1771489965074(1).png" class="table-logo" alt="Logo">
             </div>
-            <div class="table-id">UNIT VCHF-${i}</div>
+            <div style="position:absolute; bottom:-25px; width:100%; text-align:center; font-size:8px; font-family:'Orbitron'; opacity:0.5;">VCHF-UNIT ${i}</div>
         `;
         floor.appendChild(wrap);
     }
-    
-    const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
 </script>
 </body>
 </html>
