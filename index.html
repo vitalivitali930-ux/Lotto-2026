@@ -3,409 +3,588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF Durak Round Monolith</title>
+    <title>VCHF Bi-Turbo Monolith 1.4</title>
     <style>
         :root {
             --vchf-gold: #ffd700;
-            --vchf-red: #ff4d4d;
-            --vchf-green: #2ecc71;
-            --vchf-black: #050000;
-            --glass-border: rgba(255, 215, 0, 0.2);
-            --bud-bg: rgba(15, 0, 5, 0.92);
+            --vchf-gold-bright: #fff3a0;
+            --vchf-red: #ff3e3e;
+            --vchf-black: #050505;
+            --glass-bg: rgba(10, 10, 10, 0.85);
+            --glass-border: rgba(255, 215, 0, 0.3);
+            --burning-line-shadow: 0 0 15px;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--vchf-black); color: white; 
-            font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: none;
+            background: #000; color: #fff; font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow: hidden; touch-action: none;
         }
 
-        #monolith-engine {
+        #app-monolith {
             position: relative; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1a0005 0%, #000 100%);
-            display: flex; flex-direction: column; align-items: center;
+            background: radial-gradient(circle at center, #1e0004 0%, #000 100%);
+            display: flex; flex-direction: column;
         }
 
-        /* --- ТОТЕМ МАСТИ (КОЗЫРЬ) --- */
-        #trump-totem {
-            position: absolute; top: 20px; left: 20px;
-            font-size: 60px; font-weight: bold;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            z-index: 10; opacity: 0.8;
+        /* --- ВЕРХ: ТОТЕМ И ПРОТИВНИК --- */
+        #top-header {
+            height: 15%; width: 100%; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 20px; z-index: 50;
         }
 
-        /* --- ЗОНА ПРОТИВНИКА (ТУМАН ВОЙНЫ) --- */
-        #enemy-hand {
-            height: 12%; width: 100%; display: flex; justify-content: center; 
-            align-items: center; gap: 4px; padding-top: 10px;
+        #trump-totem-display {
+            font-size: 55px; font-weight: 900;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+            transition: transform 0.3s ease;
         }
 
-        /* --- ПОЛЕ БИТВЫ --- */
-        #battle-zone {
-            flex-grow: 1; width: 95%; display: grid; 
-            grid-template-columns: repeat(3, 1fr);
+        #enemy-hand-container {
+            flex-grow: 1; display: flex; justify-content: center;
+            gap: -25px; /* Плотное перекрытие карт ИИ */
+            perspective: 500px;
+        }
+
+        /* --- ЦЕНТР: ПОЛЕ БОЯ --- */
+        #battlefield-core {
+            flex-grow: 1; width: 100%; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; z-index: 10;
+        }
+
+        #battle-grid {
+            width: 100%; max-width: 500px; height: 60%;
+            display: grid; grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr); gap: 10px;
-            align-content: center; justify-items: center;
-            perspective: 1000px;
         }
 
-        /* --- БУТОН (НИЖНИЕ 35%) --- */
-        #vchf-bud {
+        /* --- БУТОН: НИЖНИЕ 35% (GLASSMORPHISM) --- */
+        #vchf-bud-container {
             position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: linear-gradient(to top, var(--bud-bg) 70%, rgba(5, 0, 0, 0) 100%);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(to top, #000 60%, rgba(0,0,0,0) 100%);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border-top: 1px solid var(--glass-border);
             display: flex; flex-direction: column; justify-content: flex-end;
-            padding-bottom: 15px; z-index: 100;
+            padding-bottom: 10px; z-index: 100;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .suit-lane {
-            display: flex; gap: -12px; justify-content: center; height: 22%; margin-bottom: 2px;
+        .suit-row-fan {
+            width: 100%; height: 23%; display: flex; justify-content: center;
+            position: relative; margin-bottom: 2px;
         }
 
-        /* --- КАРТЫ (MONOLITH DESIGN) --- */
-        .v-card {
-            width: 52px; height: 80px; background: white; color: black;
-            border-radius: 5px; position: relative; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 18px; cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
-            user-select: none;
+        /* --- КАРТЫ: ТЕКСТУРА И ЛОГИКА --- */
+        .card-monolith {
+            width: 58px; height: 88px; background: #fff; border-radius: 6px;
+            color: #000; position: absolute; /* Для эффекта гармошки */
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; font-weight: 900; font-size: 19px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; border: 1px solid #ddd;
         }
 
-        .v-card.back { 
-            background: #000 url('1771489965074(1).png') center/cover; 
-            border: 1px solid #333; color: transparent;
+        .card-monolith.enemy-back {
+            background: #000 url('1771489965074(1).png') center/cover;
+            border: 1px solid #333; box-shadow: 2px 2px 8px #000;
         }
 
-        .v-card.selected { 
-            transform: translateY(-30px) scale(1.15); 
+        /* Эффект выделения VCHF Gold */
+        .card-monolith.selected {
+            z-index: 500 !important;
+            transform: translateY(-40px) scale(1.2) !important;
+            box-shadow: 0 0 30px var(--vchf-gold);
             border: 2px solid var(--vchf-gold);
-            box-shadow: 0 0 25px var(--vchf-gold);
-            z-index: 1001;
         }
 
-        .v-card.red { color: var(--vchf-red); }
-
-        .v-suit-mini { position: absolute; top: 4px; left: 4px; font-size: 12px; }
-
-        /* --- ТАЙМЕР-СВЕТОФОР --- */
-        #burning-line {
-            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--vchf-green); box-shadow: 0 0 10px var(--vchf-green);
-            transition: background 0.5s, box-shadow 0.5s;
+        .card-monolith.dimmed {
+            filter: brightness(0.4) grayscale(0.8);
+            opacity: 0.6;
         }
 
-        /* --- КОНТРОЛЫ --- */
-        #hud-actions {
-            position: absolute; right: 15px; bottom: 37%;
-            display: flex; flex-direction: column; gap: 10px; z-index: 150;
+        .suit-indicator { position: absolute; top: 4px; left: 6px; font-size: 13px; }
+        .rank-indicator { font-size: 24px; }
+        .red-suit { color: var(--vchf-red); }
+
+        /* --- ТАЙМЕР-СВЕТОФОР (ЛИНИЯ ГРАНИЦЫ) --- */
+        #burning-timer-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+            background: var(--vchf-green);
+            box-shadow: var(--burning-line-shadow) var(--vchf-green);
+            z-index: 110;
         }
 
-        .vchf-btn {
-            background: rgba(0,0,0,0.85); color: var(--vchf-gold);
-            border: 1px solid var(--vchf-gold); padding: 10px 18px;
-            border-radius: 6px; font-size: 13px; font-weight: bold;
-            cursor: pointer; text-transform: uppercase;
+        /* --- КНОПКИ УПРАВЛЕНИЯ --- */
+        #action-hub {
+            position: absolute; right: 10px; bottom: 38%;
+            display: flex; flex-direction: column; gap: 15px; z-index: 150;
         }
+
+        .vchf-action-btn {
+            background: rgba(0,0,0,0.9); color: var(--vchf-gold);
+            border: 2px solid var(--vchf-gold); padding: 15px 20px;
+            border-radius: 12px; font-weight: 900; font-size: 14px;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+            transition: 0.2s;
+        }
+
+        .vchf-action-btn:active { transform: scale(0.9); background: var(--vchf-gold); color: #000; }
 
         /* --- ИНИЦИАЦИЯ --- */
-        #init-overlay {
+        #ritual-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; z-index: 2000; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
+            background: var(--vchf-black); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+
+        .ritual-text {
+            color: var(--vchf-gold); font-size: 24px; letter-spacing: 8px;
+            margin-bottom: 40px; text-shadow: 0 0 20px var(--vchf-gold);
+        }
+
+        #ritual-suit-spinner { font-size: 120px; }
+
+        /* Магнитные зоны для HITBOX */
+        .magnetic-zone { position: absolute; width: 100%; height: 100%; z-index: 1; }
     </style>
 </head>
 <body>
 
-<div id="monolith-engine">
-    <div id="trump-totem"></div>
-    <div id="enemy-hand"></div>
-    
-    <div id="battle-zone"></div>
-
-    <div id="hud-actions">
-        <button class="vchf-btn" onclick="takeAll()">ВЗЯТЬ</button>
-        <button class="vchf-btn" onclick="bitTurn()">БИТО</button>
+<div id="app-monolith">
+    <div id="top-header">
+        <div id="trump-totem-display"></div>
+        <div id="enemy-hand-container"></div>
     </div>
 
-    <div id="vchf-bud">
-        <div id="burning-line"></div>
-        <div id="lane-trump" class="suit-lane"></div>
-        <div id="lane-1" class="suit-lane"></div>
-        <div id="lane-2" class="suit-lane"></div>
-        <div id="lane-3" class="suit-lane"></div>
+    <div id="battlefield-core">
+        <div id="battle-grid"></div>
+    </div>
+
+    <div id="action-hub">
+        <button class="vchf-action-btn" id="btn-take" onclick="vchfTake()">ВЗЯТЬ</button>
+        <button class="vchf-action-btn" id="btn-pass" onclick="vchfPass()">БИТО</button>
+    </div>
+
+    <div id="vchf-bud-container">
+        <div id="burning-timer-line"></div>
+        <div id="row-trump" class="suit-row-fan"></div>
+        <div id="row-suit-1" class="suit-row-fan"></div>
+        <div id="row-suit-2" class="suit-row-fan"></div>
+        <div id="row-suit-3" class="suit-row-fan"></div>
     </div>
 </div>
 
-<div id="init-overlay">
-    <h1 style="color:var(--vchf-gold); letter-spacing: 5px;">VCHF ROUND</h1>
-    <div id="totem-spin" style="font-size: 100px;">♠</div>
+<div id="ritual-overlay">
+    <div class="ritual-text">IN VCHF WE TRUST</div>
+    <div id="ritual-suit-spinner">♠</div>
 </div>
-
 <script>
-    /* MACHINE_MEMORY_CORE [v.1.3] 
-       Wanderer Agent Protocol 1.1
+    /* MACHINE_LOGIC_CORE [v.1.4] 
+       Wanderer Agent Protocol 1.1 - Round Edition
     */
+
     const SUITS = ['♠', '♣', '♥', '♦'];
     const RANKS = ['6','7','8','9','10','J','Q','K','A'];
     const VALS = {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14};
 
     let pHand = [], eHand = [], field = [];
-    let trumpSuit = '', activeIdx = null, isWait = false;
-    let timerInt = null, timeLeft = 30;
+    let trumpSuit = '', activeIdx = null, isBlocked = false;
+    let timerInterval = null, timeLeft = 30;
 
-    function startRitual() {
-        const overlay = document.getElementById('init-overlay');
-        const spinner = document.getElementById('totem-spin');
-        let count = 0;
+    // --- РИТУАЛ ИНИЦИАЦИИ (Dynamic Run 3-5s) --- [cite: 2026-02-23]
+    function initRitual() {
+        const spinner = document.getElementById('ritual-suit-spinner');
+        const overlay = document.getElementById('ritual-overlay');
+        let rotations = 0;
         
         const spin = setInterval(() => {
-            spinner.innerText = SUITS[count % 4];
-            spinner.style.color = (SUITS[count % 4] === '♥' || SUITS[count % 4] === '♦') ? 'red' : 'white';
-            count++;
-            if(count > 15) {
+            const s = SUITS[rotations % 4];
+            spinner.innerText = s;
+            spinner.style.color = (s === '♥' || s === '♦') ? 'var(--vchf-red)' : 'white';
+            rotations++;
+
+            if (rotations > 20) {
                 clearInterval(spin);
                 trumpSuit = spinner.innerText;
-                document.getElementById('trump-totem').innerText = trumpSuit;
-                document.getElementById('trump-totem').style.color = spinner.style.color;
-                overlay.style.display = 'none';
-                dealRound();
-            }
-        }, 120);
-    }
-
-    function dealRound() {
-        // КРУГЛЫЙ ДУРАК: Сразу по 18 карт (36 / 2)
-        let fullDeck = [];
-        SUITS.forEach(s => RANKS.forEach(r => fullDeck.push({s, r, v: VALS[r]})));
-        shuffle(fullDeck);
-        
-        pHand = fullDeck.splice(0, 18);
-        eHand = fullDeck.splice(0, 18);
-        
-        renderState();
-        startTimer();
-    }
-
-    function shuffle(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-    }
-
-    function renderState() {
-        renderEnemy();
-        renderField();
-        renderBud();
-    }
-
-    function renderEnemy() {
-        const container = document.getElementById('enemy-hand');
-        container.innerHTML = '';
-        // Туман войны: количество карт видно, но номиналы скрыты
-        eHand.forEach(() => {
-            const c = document.createElement('div');
-            c.className = 'v-card back';
-            container.appendChild(c);
-        });
-    }
-
-    function renderField() {
-        const zone = document.getElementById('battle-zone');
-        zone.innerHTML = '';
-        field.forEach(c => {
-            zone.appendChild(createCardUI(c));
-        });
-    }
-
-    function renderBud() {
-        const lanes = {
-            trump: document.getElementById('lane-trump'),
-            l1: document.getElementById('lane-1'),
-            l2: document.getElementById('lane-2'),
-            l3: document.getElementById('lane-3')
-        };
-        Object.values(lanes).forEach(l => l.innerHTML = '');
-
-        const groups = { [trumpSuit]: [] };
-        SUITS.filter(s => s !== trumpSuit).forEach((s, i) => groups[s] = []);
-        pHand.forEach(c => groups[c.s].push(c));
-
-        // Sort each group by value
-        Object.keys(groups).forEach(s => groups[s].sort((a,b) => a.v - b.v));
-
-        groups[trumpSuit].forEach(c => lanes.trump.appendChild(createCardUI(c, true)));
-        
-        const others = SUITS.filter(s => s !== trumpSuit);
-        others.forEach((s, i) => {
-            groups[s].forEach(c => lanes['l' + (i+1)].appendChild(createCardUI(c, true)));
-        });
-    }
-
-    function createCardUI(card, interactive = false) {
-        const div = document.createElement('div');
-        div.className = 'v-card';
-        if (card.s === '♥' || card.s === '♦') div.classList.add('red');
-        
-        div.innerHTML = `<span class="v-suit-mini">${card.s}</span><span>${card.r}</span>`;
-
-        if (interactive) {
-            const idx = pHand.indexOf(card);
-            if (activeIdx === idx) div.classList.add('selected');
-            div.onclick = () => handleTap(idx);
-        }
-        return div;
-    }
-    // --- ИГРОВАЯ МЕХАНИКА (WINDOW 2) ---
-
-    function handleTap(idx) {
-        if (isWait) return;
-
-        // DOUBLE_TAP_CONFIRM: Защита от случайного хода [cite: 2026-02-23]
-        if (activeIdx === idx) {
-            confirmMove(idx);
-        } else {
-            activeIdx = idx;
-            // Визуальный отклик - золотое свечение (Highlight_Golden_VCHF)
-            renderState();
-        }
-    }
-
-    function confirmMove(idx) {
-        const card = pHand.splice(idx, 1)[0];
-        field.push(card);
-        activeIdx = null;
-        isWait = true; // Блокировка на время раздумий ИИ
-
-        renderState();
-        stopTimer();
-
-        // Имитация "человеческого" мышления ИИ (2s to 28s) [cite: 2026-02-23]
-        const thoughtDelay = 1000 + Math.random() * 2000; 
-        setTimeout(enemyLogic, thoughtDelay);
-    }
-
-    function enemyLogic() {
-        if (field.length % 2 === 0) {
-            // ИИ в режиме атаки (если поле чистое)
-            isWait = false;
-            startTimer();
-            return;
-        }
-
-        const attackCard = field[field.length - 1];
-        
-        // Поиск карт для защиты
-        let defenseOptions = eHand.filter(c => 
-            (c.s === attackCard.s && c.v > attackCard.v) || 
-            (c.s === trumpSuit && attackCard.s !== trumpSuit)
-        );
-
-        // Сортировка по возрастанию, чтобы не тратить Тузов зря
-        defenseOptions.sort((a,b) => a.v - b.v);
-
-        // ПСИХОЛОГИЯ 15% ОШИБКИ: ИИ может "не заметить" карту [cite: 2026-02-22]
-        const hasBrainFade = Math.random() < 0.15;
-
-        if (defenseOptions.length > 0 && !hasBrainFade) {
-            const defCard = defenseOptions[0];
-            const eIdx = eHand.indexOf(defCard);
-            field.push(eHand.splice(eIdx, 1)[0]);
-            console.log("ИИ успешно защитился");
-        } else {
-            // ИИ забирает карты (Silent Action Flow) [cite: 2026-02-23]
-            console.log("ИИ берет карты: ошибка или нет карт");
-            eHand.push(...field);
-            field = [];
-        }
-
-        isWait = false;
-        renderState();
-        checkVictory();
-        startTimer();
-    }
-
-    // --- СИСТЕМА ТАЙМЕРА (BURNING LINE) ---
-
-    function startTimer() {
-        stopTimer();
-        timeLeft = 30;
-        const line = document.getElementById('burning-line');
-        
-        timerInt = setInterval(() => {
-            timeLeft -= 0.1;
-            const percent = (timeLeft / 30) * 100;
-            line.style.width = percent + '%';
-
-            // Transition: Green -> Yellow -> Red [cite: 2026-02-23]
-            if (percent > 50) {
-                line.style.background = 'var(--vchf-green)';
-                line.style.boxShadow = '0 0 10px var(--vchf-green)';
-            } else if (percent > 20) {
-                line.style.background = 'gold';
-                line.style.boxShadow = '0 0 10px gold';
-            } else {
-                line.style.background = 'var(--vchf-red)';
-                line.style.boxShadow = '0 0 15px var(--vchf-red)';
-            }
-
-            if (timeLeft <= 0) {
-                autoPenalty();
+                
+                // Фиксация Тотема Масти [cite: 2026-02-27]
+                const totem = document.getElementById('trump-totem-display');
+                totem.innerText = trumpSuit;
+                totem.style.color = spinner.style.color;
+                
+                overlay.style.opacity = '0';
+                setTimeout(() => { 
+                    overlay.style.display = 'none'; 
+                    generateRoundDeck();
+                }, 500);
             }
         }, 100);
     }
 
-    function stopTimer() {
-        if (timerInt) clearInterval(timerInt);
-        const line = document.getElementById('burning-line');
-        line.style.width = '100%';
-        line.style.background = 'var(--vchf-green)';
+    function generateRoundDeck() {
+        // КРУГЛЫЙ ДУРАК: ZERO_ABSENT (Колоды нет) [cite: 2026-02-27]
+        let deck = [];
+        SUITS.forEach(s => {
+            RANKS.forEach(r => {
+                deck.push({ s, r, v: VALS[r], id: Math.random() });
+            });
+        });
+
+        // Тасовка по алгоритму Фишера-Йейтса
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+
+        // Раздача "Веером" (Fan Spread 36 cards) [cite: 2026-02-23]
+        pHand = deck.splice(0, 18);
+        eHand = deck.splice(0, 18);
+
+        renderAll();
+        startVCHFTimer();
     }
 
-    function autoPenalty() {
-        // Critical Action Defense: Auto Take [cite: 2026-02-23]
-        console.log("Таймер истек: Принудительный забор");
-        takeAll();
+    // --- ГЛОБАЛЬНЫЙ РЕНДЕР (ГАРМОШКА) --- [cite: 2026-02-26]
+    function renderAll() {
+        renderEnemyHand();
+        renderBattlefield();
+        renderPlayerBud();
     }
 
-    // --- ГЛОБАЛЬНЫЕ ДЕЙСТВИЯ ---
-
-    function takeAll() {
-        if (field.length === 0) return;
-        pHand.push(...field);
-        field = [];
-        activeIdx = null;
-        renderState();
-        startTimer();
+    function renderEnemyHand() {
+        const container = document.getElementById('enemy-hand-container');
+        container.innerHTML = '';
+        // Туман войны: Скрываем количество и номинал, оставляя только "вес" руки
+        eHand.forEach((_, i) => {
+            const card = document.createElement('div');
+            card.className = 'card-monolith enemy-back';
+            // Эффект плотного перекрытия
+            card.style.left = (i * 12) + 'px'; 
+            card.style.position = 'absolute';
+            container.appendChild(card);
+        });
     }
 
-    function bitTurn() {
-        // "Бито" возможно только если на столе четное кол-во карт
-        if (field.length === 0 || field.length % 2 !== 0) return;
+    function renderBattlefield() {
+        const grid = document.getElementById('battle-grid');
+        grid.innerHTML = '';
+        field.forEach(c => {
+            grid.appendChild(createCardElement(c, false));
+        });
+    }
+
+    function renderPlayerBud() {
+        const rows = {
+            trump: document.getElementById('row-trump'),
+            s1: document.getElementById('row-suit-1'),
+            s2: document.getElementById('row-suit-2'),
+            s3: document.getElementById('row-suit-3')
+        };
+        // Очистка всех рядов
+        Object.values(rows).forEach(r => r.innerHTML = '');
+
+        // Группировка по мастям [cite: 2026-02-21]
+        let groups = { [trumpSuit]: [] };
+        const otherSuits = SUITS.filter(s => s !== trumpSuit);
+        otherSuits.forEach(s => groups[s] = []);
+
+        pHand.forEach(c => groups[c.s].push(c));
+
+        // Отрисовка каждого ряда с эффектом наложения (Staggered headers)
+        drawRow(rows.trump, groups[trumpSuit]);
+        otherSuits.forEach((s, idx) => {
+            drawRow(rows['s' + (idx + 1)], groups[s]);
+        });
+    }
+
+    function drawRow(container, cards) {
+        // Сортировка внутри ряда: от меньшего к большему [cite: 2026-02-23]
+        cards.sort((a, b) => a.v - b.v);
         
-        field = []; // В Круглом Дураке бито просто уходит из игры
-        activeIdx = null;
-        renderState();
-        checkVictory();
-        startTimer();
+        cards.forEach((c, i) => {
+            const el = createCardElement(c, true);
+            // ХИТРАЯ ЛОГИКА ГАРМОШКИ: 
+            // При 18 картах шаг между ними должен быть минимальным (например 25px)
+            // Но мы используем процентное смещение для адаптивности
+            const offset = i * 30; 
+            el.style.left = `calc(50% - ${(cards.length * 15)}px + ${offset}px)`;
+            el.style.zIndex = i;
+            
+            // Если есть активная карта, остальные затемняем (Visual Effect Dim) [cite: 2026-02-23]
+            const pIdx = pHand.findIndex(pc => pc.id === c.id);
+            if (activeIdx !== null && activeIdx !== pIdx) {
+                el.classList.add('dimmed');
+            }
+            if (activeIdx === pIdx) {
+                el.classList.add('selected');
+            }
+
+            container.appendChild(el);
+        });
     }
 
-    function checkVictory() {
-        if (pHand.length === 0) {
-            alert("Wanderer победил! Ритуал завершен.");
-            location.reload();
-        } else if (eHand.length === 0) {
-            alert("ИИ победил. Попробуй еще раз.");
-            location.reload();
+    function createCardElement(card, isInteractive) {
+        const div = document.createElement('div');
+        div.className = 'card-monolith';
+        if (card.s === '♥' || card.s === '♦') div.classList.add('red-suit');
+        
+        div.innerHTML = `
+            <span class="suit-indicator">${card.s}</span>
+            <span class="rank-indicator">${card.r}</span>
+        `;
+
+        if (isInteractive) {
+            div.onclick = () => handleCardTap(card);
+        }
+        return div;
+    }
+    // --- ВЗАИМОДЕЙСТВИЕ И ЛОГИКА БОЯ (WINDOW 3) ---
+
+    function handleCardTap(card) {
+        if (isBlocked) return;
+
+        const clickedIdx = pHand.findIndex(c => c.id === card.id);
+
+        // DOUBLE_TAP_CONFIRM [cite: 2026-02-23]
+        if (activeIdx === clickedIdx) {
+            // Второй тап по той же карте — подтверждение хода
+            executePlayerMove(clickedIdx);
+        } else {
+            // Первый тап — выделение (Golden VCHF Highlight)
+            activeIdx = clickedIdx;
+            renderAll();
+            // Сброс выделения, если тапнули по другой карте — реализовано через renderAll
         }
     }
 
-    // Запуск Ритуала
-    window.onload = startRitual;
+    function executePlayerMove(idx) {
+        const card = pHand.splice(idx, 1)[0];
+        field.push(card);
+        activeIdx = null;
+        isBlocked = true; // Блокируем ввод, пока ИИ "думает"
+        
+        renderAll();
+        stopVCHFTimer();
+
+        // Имитация раздумий (Variable speed 2s-28s) [cite: 2026-02-23]
+        const thoughtTime = 1200 + Math.random() * 2500;
+        setTimeout(aiResponseAction, thoughtTime);
+    }
+
+    function aiResponseAction() {
+        if (field.length === 0) {
+            isBlocked = false;
+            startVCHFTimer();
+            return;
+        }
+
+        // Если карт нечетное количество — ИИ должен защищаться
+        if (field.length % 2 !== 0) {
+            const attackCard = field[field.length - 1];
+            
+            // Поиск карт для защиты (той же масти выше или козырь)
+            let defenders = eHand.filter(c => 
+                (c.s === attackCard.s && c.v > attackCard.v) || 
+                (c.s === trumpSuit && attackCard.s !== trumpSuit)
+            );
+
+            // Сортировка: ИИ старается отдать минимально возможную карту
+            defenders.sort((a, b) => a.v - b.v);
+
+            // ПСИХОЛОГИЯ 15% ОШИБКИ [cite: 2026-02-22, 2026-02-26]
+            // ИИ может "проглядеть" защиту или побояться кинуть козырь
+            const aiBrainFade = Math.random() < 0.15;
+
+            if (defenders.length > 0 && !aiBrainFade) {
+                const defCard = defenders[0];
+                const eIdx = eHand.indexOf(defCard);
+                field.push(eHand.splice(eIdx, 1)[0]);
+                console.log("VCHF_AI: Защита успешна.");
+            } else {
+                // ИИ забирает всё (Silent Action Flow)
+                console.log("VCHF_AI: Ошибка или нет карт. Забираю.");
+                eHand.push(...field);
+                field = [];
+            }
+        }
+
+        isBlocked = false;
+        renderAll();
+        checkGameStatus();
+        startVCHFTimer();
+    }
+
+    // --- УПРАВЛЕНИЕ ХОДОМ ---
+
+    function vchfTake() {
+        if (field.length === 0 || isBlocked) return;
+        
+        // Игрок забирает все карты со стола
+        pHand.push(...field);
+        field = [];
+        activeIdx = null;
+        
+        renderAll();
+        // В Круглом Дураке ход переходит к ИИ после того как игрок взял
+        isBlocked = true;
+        setTimeout(aiAttackStart, 1500);
+    }
+
+    function vchfPass() {
+        if (field.length === 0 || field.length % 2 !== 0 || isBlocked) return;
+        
+        // БИТО: Карты уходят в небытие (Only Top Card Visible logic ignored as they leave)
+        field = [];
+        activeIdx = null;
+        
+        renderAll();
+        checkGameStatus();
+        startVCHFTimer();
+    }
+
+    function aiAttackStart() {
+        // Простая логика атаки ИИ: кидает самую мелкую не козырную карту
+        if (eHand.length === 0) return;
+
+        let attackers = eHand.filter(c => c.s !== trumpSuit);
+        attackers.sort((a, b) => a.v - b.v);
+        
+        let cardToAttack;
+        if (attackers.length > 0) {
+            cardToAttack = attackers[0];
+        } else {
+            eHand.sort((a, b) => a.v - b.v);
+            cardToAttack = eHand[0];
+        }
+
+        const eIdx = eHand.indexOf(cardToAttack);
+        field.push(eHand.splice(eIdx, 1)[0]);
+        
+        isBlocked = false;
+        renderAll();
+        startVCHFTimer();
+    }
+
+    function checkGameStatus() {
+        if (pHand.length === 0 && eHand.length === 0) {
+            showEndScreen("НИЧЬЯ. РИТУАЛ ЗАЦИКЛЕН.");
+        } else if (pHand.length === 0) {
+            showEndScreen("WANDERER ПОБЕДИЛ. МАНИФЕСТ ВЫПОЛНЕН.");
+        } else if (eHand.length === 0) {
+            showEndScreen("ИИ ОДЕРЖАЛ ВЕРХ. ТРЕНИРУЙСЯ, БРОДЯГА.");
+        }
+    }
+
+    function showEndScreen(msg) {
+        stopVCHFTimer();
+        const overlay = document.getElementById('ritual-overlay');
+        const text = document.querySelector('.ritual-text');
+        const spinner = document.getElementById('ritual-suit-spinner');
+        
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+        text.innerText = msg;
+        spinner.innerText = "◈";
+        
+        setTimeout(() => location.reload(), 5000);
+    }
+    // --- СИСТЕМА КОНТРОЛЯ ВРЕМЕНИ (WINDOW 4) ---
+
+    function startVCHFTimer() {
+        stopVCHFTimer();
+        timeLeft = 30; // 30 секунд по регламенту [cite: 2026-02-23]
+        const line = document.getElementById('burning-timer-line');
+        
+        timerInterval = setInterval(() => {
+            timeLeft -= 0.1;
+            const percent = (timeLeft / 30) * 100;
+            line.style.width = percent + '%';
+
+            // Визуальный градиент (Зеленый -> Желтый -> Красный) [cite: 2026-02-23]
+            if (percent > 50) {
+                line.style.background = 'var(--vchf-green)';
+                line.style.boxShadow = '0 0 15px var(--vchf-green)';
+            } else if (percent > 20) {
+                line.style.background = 'orange';
+                line.style.boxShadow = '0 0 15px orange';
+            } else {
+                line.style.background = 'var(--vchf-red)';
+                line.style.boxShadow = '0 0 20px var(--vchf-red)';
+                // Здесь можно интегрировать пульсацию или звук тиканья [cite: 2026-02-24]
+            }
+
+            if (timeLeft <= 0) {
+                applyTimeoutPunishment();
+            }
+        }, 100);
+    }
+
+    function stopVCHFTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        const line = document.getElementById('burning-timer-line');
+        if (line) {
+            line.style.width = '100%';
+            line.style.background = 'var(--vchf-green)';
+        }
+    }
+
+    function applyTimeoutPunishment() {
+        stopVCHFTimer();
+        console.log("ВРЕМЯ ИСТЕКЛО. ПРОТОКОЛ НАКАЗАНИЯ.");
+        
+        // По регламенту: защита - Force Take, атака - Force Pass [cite: 2026-02-23]
+        if (field.length % 2 !== 0) {
+            vchfTake(); // Если не отбился вовремя — забираешь всё
+        } else {
+            vchfPass(); // Если не походил вовремя — теряешь ход
+        }
+        
+        // Опционально: Тяжелый низкочастотный звук наказания [cite: 2026-02-23]
+        playPunishSound();
+    }
+
+    function playPunishSound() {
+        // Создаем синтетический звук, если аудио-контекст разрешен
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(50, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 0.5);
+            
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
+        } catch(e) { console.log("Audio not supported yet"); }
+    }
+
+    // --- ФИНАЛЬНАЯ СБОРКА И ЗАПУСК ---
+
+    // Функция смены активной карты (отмена выбора)
+    document.addEventListener('touchstart', (e) => {
+        // Если тап мимо карты — сбрасываем выделение
+        if (!e.target.closest('.card-monolith') && !e.target.closest('.vchf-action-btn')) {
+            activeIdx = null;
+            renderAll();
+        }
+    }, {passive: true});
+
+    // Инициализация при полной загрузке страницы
+    window.onload = () => {
+        console.log("VCHF ENGINE v.1.4: LOADED.");
+        initRitual(); // Запуск анимированного выбора козыря [cite: 2026-02-23]
+    };
 
 </script>
 </body>
