@@ -8,101 +8,131 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cherry-velvet: #4a0012;
+            /* 60% Чёрного, 40% Вишнёвого */
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 60%, #000000 100%);
+            --cherry-table: radial-gradient(circle, #800020 0%, #2a000a 100%);
             --gold-swiss: #d4af37;
             --red-genius: #FF0000;
             --green-active: #00FF41;
-            --vchf-dark: #050505;
         }
 
-        body { 
-            background: var(--vchf-dark); 
-            color: var(--gold-swiss); 
-            font-family: 'JetBrains Mono', monospace; 
-            margin: 0; padding: 0; 
-            overflow-x: hidden;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; height: 100%; 
+            background: var(--bg-deep); 
+            color: var(--gold-swiss);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-y: auto;
         }
 
-        /* Зал со столами */
-        .casino-hall {
+        header {
+            padding: 30px; text-align: center;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(0,0,0,0.9);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        header h1 { font-family: 'Orbitron'; letter-spacing: 6px; font-size: 22px; }
+
+        .lobby-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 40px; padding: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 40px; padding: 50px 20px;
             justify-items: center;
         }
 
-        /* Стол как объект */
-        .table-obj {
-            width: 140px; height: 140px;
-            background: radial-gradient(circle, var(--cherry-velvet) 0%, #1a0005 100%);
-            border: 3px solid #2a000a;
+        /* Стол VIP-класса */
+        .table-wrap {
+            position: relative; width: 150px; height: 150px;
+            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .table-wrap:hover { transform: scale(1.1); }
+
+        .table-surface {
+            width: 100%; height: 100%;
+            background: var(--cherry-table);
+            border: 3px solid #1a0005;
             border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.5);
             position: relative;
-            cursor: pointer;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-            transition: 0.2s;
+            overflow: hidden;
         }
 
-        .table-obj:hover {
-            border-color: var(--gold-swiss);
-            transform: translateY(-5px);
+        /* Логотип в центре стола */
+        .table-logo {
+            width: 55%; opacity: 0.8;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+            z-index: 2;
         }
 
-        /* Лампы статуса - жесткая позиция по 4 углам */
-        .status-lamp {
+        /* Магические лампы - Психология свечения */
+        .lamp {
             position: absolute; width: 10px; height: 10px;
-            border-radius: 50%;
+            border-radius: 50%; z-index: 5;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .lamp-t { top: 8px; left: 50%; transform: translateX(-50%); }
-        .lamp-b { bottom: 8px; left: 50%; transform: translateX(-50%); }
-        .lamp-l { left: 8px; top: 50%; transform: translateY(-50%); }
-        .lamp-r { right: 8px; top: 50%; transform: translateY(-50%); }
+        .l-t { top: 12px; left: 50%; transform: translateX(-50%); }
+        .l-b { bottom: 12px; left: 50%; transform: translateX(-50%); }
+        .l-l { left: 12px; top: 50%; transform: translateY(-50%); }
+        .l-r { right: 12px; top: 50%; transform: translateY(-50%); }
 
-        .active { background: var(--green-active); box-shadow: 0 0 10px var(--green-active); }
-        .waiting { background: var(--red-genius); box-shadow: 0 0 10px var(--red-genius); }
+        .active { background: var(--green-active); box-shadow: 0 0 15px var(--green-active), 0 0 5px #fff; }
+        .waiting { background: var(--red-genius); box-shadow: 0 0 10px var(--red-genius); opacity: 0.6; }
 
-        .table-label {
-            position: absolute; width: 100%; text-align: center;
-            top: 50%; transform: translateY(-50%);
-            font-family: 'Orbitron'; font-size: 12px;
-            color: rgba(212, 175, 55, 0.5);
+        .table-id {
+            position: absolute; bottom: -25px; width: 100%;
+            text-align: center; font-family: 'Orbitron'; font-size: 10px;
+            color: var(--gold-swiss); letter-spacing: 2px;
         }
-
-        /* Хедер в стиле Манифеста */
-        header {
-            padding: 25px; border-bottom: 2px solid var(--gold-swiss);
-            text-align: center; background: #000;
-        }
-        header h1 { margin: 0; letter-spacing: 5px; font-size: 20px; font-family: 'Orbitron'; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>HELVETIA LUCK | CLUB</h1>
+    <h1>CONFEDERACIA CLUB</h1>
 </header>
 
-<div class="casino-hall" id="hall">
+<div class="lobby-grid" id="main-hall">
     </div>
 
 <script>
-    // Монолитный протокол 1.1 — без нирваны! [cite: 2026-02-24]
-    const hall = document.getElementById('hall');
+    const hall = document.getElementById('main-hall');
     
+    // Генерируем 12 элитных столов
     for(let i=1; i<=12; i++) {
-        const t = document.createElement('div');
-        t.className = 'table-obj';
-        // Имитация статуса ламп (будет заменено на реальный лог)
-        t.innerHTML = `
-            <div class="status-lamp lamp-t active"></div>
-            <div class="status-lamp lamp-b waiting"></div>
-            <div class="status-lamp lamp-l waiting"></div>
-            <div class="status-lamp lamp-r waiting"></div>
-            <div class="table-label">VCHF-${i}</div>
+        const wrap = document.createElement('div');
+        wrap.className = 'table-wrap';
+        
+        // Рандомная инициализация для теста (потом будет привязка к серверу)
+        const lamps = [
+            Math.random() > 0.3 ? 'active' : 'waiting',
+            Math.random() > 0.7 ? 'active' : 'waiting',
+            Math.random() > 0.5 ? 'active' : 'waiting',
+            Math.random() > 0.9 ? 'active' : 'waiting'
+        ];
+
+        wrap.innerHTML = `
+            <div class="table-surface">
+                <div class="lamp l-t ${lamps[0]}"></div>
+                <div class="lamp l-b ${lamps[1]}"></div>
+                <div class="lamp l-l ${lamps[2]}"></div>
+                <div class="lamp l-r ${lamps[3]}"></div>
+                <img src="1771489965074(1).png" class="table-logo" alt="Logo">
+            </div>
+            <div class="table-id">VCHF-UNIT ${i}</div>
         `;
-        hall.appendChild(t);
+        
+        wrap.onclick = () => {
+            console.log(`Инициация протокола Святой Грааль для юнита ${i}`);
+            // Переход к коду стола
+        };
+
+        hall.appendChild(wrap);
     }
+
+    // Манифест Монолита: Проверка пройдена. [2026-02-23]
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
 </script>
 </body>
 </html>
