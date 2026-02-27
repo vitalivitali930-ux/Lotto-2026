@@ -1,234 +1,156 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HELVETIA LUCK | BI-TURBO ULTIMATE</title>
+    <title>HELVETIA LUCK | VCHF ENGINE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #d4af37;
-            --swiss-red: #e30a17;
-            --deep-black: #050505;
-            --velvet-green: #072a1a;
-            --cherry-table: radial-gradient(circle at center, #800020 0%, #2a000a 100%);
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 70%, #000000 100%);
+            --cherry-table: radial-gradient(circle, #800020 0%, #2a000a 100%);
+            --gold-swiss: #d4af37;
             --red-genius: #FF0000;
             --green-active: #00FF41;
         }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--gold); }
 
-        /* ЭКРАН 1: ШТУРВАЛ */
-        #wheel-layer { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; align-items: center; justify-content: center; transition: 0.8s; }
-        .safe-wheel-container { position: relative; width: 340px; height: 340px; transition: 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75px; height: 75px; background: radial-gradient(circle, #333, #000); border: 3px solid var(--gold); border-radius: 50%; z-index: 10; box-shadow: 0 0 20px var(--gold); }
-        .spoke { position: absolute; width: 6px; height: 140px; background: linear-gradient(to top, var(--gold), transparent); transform-origin: bottom center; bottom: 50%; left: calc(50% - 3px); }
-        .flag-node { position: absolute; width: 60px; height: 60px; background: #0a0a0a; border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; z-index: 20; transform: translate(-50%, -50%); transition: 0.4s; }
-        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; height: 100%; background: #000; 
+            color: var(--gold-swiss); font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+        }
 
-        /* ЭКРАН 2: ДВЕРИ */
-        #brand-layer { position: fixed; inset: 0; background: #000; z-index: 4000; display: none; align-items: center; justify-content: center; }
-        .door { position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a; border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1); }
-        .door-left { left: 0; border-right: 1px solid var(--gold); }
-        .door-right { right: 0; border-left: 1px solid var(--gold); }
-        .opened .door-left { transform: translateX(-100%); }
-        .opened .door-right { transform: translateX(100%); }
-        .swiss-shield { width: 50px; height: 50px; background: var(--swiss-red); border-radius: 6px; position: relative; margin: 0 auto 20px; box-shadow: 0 0 30px var(--swiss-red); }
-        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
-        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
+        /* ИНТРО (без изменений) */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+        .intro-logo { width: 120px; filter: drop-shadow(0 0 20px var(--gold-swiss)); animation: intro-anim 3s forwards; }
+        @keyframes intro-anim { 0% { opacity:0; transform:scale(0.8); } 100% { opacity:1; transform:scale(1); } }
 
-        /* ЭКРАН 3: ЛОББИ */
-        #main-ui { display: none; opacity: 0; position: fixed; inset: 0; background: radial-gradient(circle, #1a0005 0%, #000 90%); overflow-y: auto; z-index: 1000; transition: 1.5s; padding-bottom: 100px; }
-        header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.2); background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 10; }
-        .casino-floor { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; padding: 40px 20px; }
-        .table-wrap { width: 140px; height: 140px; position: relative; cursor: pointer; transition: 0.3s; }
-        .table-surface { width: 100%; height: 100%; background: var(--cherry-table); border: 3px solid #1a0005; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 15px 35px #000; }
-        .table-logo { width: 50%; filter: drop-shadow(0 0 5px var(--gold)); }
+        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        #main-ui {
+            display: none; opacity: 0; width: 100%; height: 100%; 
+            background: var(--bg-deep); overflow-y: auto; transition: opacity 2s ease;
+            padding-bottom: 100px; /* Место под статичные кнопки */
+        }
+
+        header {
+            padding: 20px 10px; text-align: center; background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .brand-main { font-family: 'Orbitron'; font-size: 24px; letter-spacing: 6px; }
+        .brand-sub { font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4.2px; opacity: 0.6; margin-top: 5px; }
+
+        /* ЗАЛ СО СТОЛАМИ */
+        .casino-floor {
+            display: flex; flex-wrap: wrap; justify-content: space-around;
+            gap: 60px 20px; padding: 60px 20px;
+        }
+        .table-wrap { position: relative; width: 130px; height: 130px; cursor: pointer; transition: 0.4s; }
+        .table-wrap:nth-child(even) { transform: translateY(30px); }
+        .table-wrap:hover { transform: scale(1.1) translateY(0) !important; }
+
+        .table-surface {
+            width: 100%; height: 100%; background: var(--cherry-table);
+            border: 2px solid #1a0005; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative;
+        }
+        .table-logo { width: 50%; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4)); }
+
+        /* ИНДИКАТОРЫ */
         .lamp { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
-        .lamp.active { background: var(--green-active); box-shadow: 0 0 10px var(--green-active); }
-        .lamp.waiting { background: var(--red-genius); box-shadow: 0 0 5px var(--red-genius); opacity: 0.4; }
+        .l-t { top: 10px; left: 50%; transform: translateX(-50%); }
+        .l-b { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .l-l { left: 10px; top: 50%; transform: translateY(-50%); }
+        .l-r { right: 10px; top: 50%; transform: translateY(-50%); }
+        .active { background: var(--green-active); box-shadow: 0 0 12px var(--green-active); }
+        .waiting { background: var(--red-genius); box-shadow: 0 0 6px var(--red-genius); opacity: 0.4; }
 
-        /* ЭКРАН 4: ИГРОВОЙ СТОЛ */
-        #game-room { position: fixed; inset: 0; display: none; opacity: 0; z-index: 3000; transition: 1s; background: #000; }
-        #table-main { position: absolute; inset: 0; background: var(--cherry-table); border: 10px solid #111; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 100px #000; }
-        .player-zone { position: absolute; display: flex; gap: 5px; }
-        .zone-bottom { bottom: 110px; }
-        .zone-top { top: 20px; }
-        .card-monolith { position: absolute; width: 65px; height: 95px; background: #1a1a1a; border: 1px solid var(--gold); border-radius: 5px; transition: 1s cubic-bezier(0.19, 1, 0.22, 1); }
-        
-        /* УПРАВЛЕНИЕ */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 85px; background: rgba(0,0,0,0.9); border-top: 1px solid var(--gold); display: none; justify-content: center; align-items: center; gap: 20px; z-index: 6000; }
-        .nav-btn { width: 150px; height: 45px; border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Orbitron'; font-size: 11px; display: flex; align-items: center; justify-content: center; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); cursor: pointer; }
-
-        .video-box { position: absolute; top: 10px; right: 10px; width: 70px; height: 90px; border: 1px solid var(--gold); background: #000; overflow: hidden; z-index: 100; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        /* СТАТИЧНАЯ ПАНЕЛЬ (NAV BAR) */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: 85px; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px); /* Эффект размытия столов под кнопками */
+            border-top: 1px solid var(--gold-swiss);
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; z-index: 2000; padding-bottom: 10px;
+        }
+        .nav-btn {
+            width: 160px; height: 45px;
+            background: #000; border: 1.5px solid var(--gold-swiss);
+            color: var(--gold-swiss); font-family: 'Orbitron';
+            font-size: 11px; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); /* Психология: агрессивный наклон */
+        }
+        .nav-btn:active { transform: scale(0.95); background: var(--gold-swiss); color: #000; }
     </style>
 </head>
 <body>
-    <div id="wheel-layer"><div class="safe-wheel-container" id="main-wheel"><div class="wheel-center"></div></div></div>
-    <div id="brand-layer"><div class="door door-left"></div><div class="door door-right"></div><div style="z-index:10;text-align:center;"><div class="swiss-shield"></div><h1 style="color:var(--gold);letter-spacing:10px;font-family:'Orbitron';">HELVETIA</h1></div></div>
-    <div id="main-ui"><header><div style="font-family:'Orbitron';
-        /** [AUDIO ENGINE] 
-         * Чистый синтез звука VCHF.
-         */
-        function playSound(f, d, t, v) {
-            if(!window.VCHF_CORE.audioCtx) window.VCHF_CORE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const ctx = window.VCHF_CORE.audioCtx;
-            const o = ctx.createOscillator(); 
-            const g = ctx.createGain();
-            o.type = t; 
-            o.frequency.setValueAtTime(f, ctx.currentTime);
-            g.gain.setValueAtTime(v, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + d);
-            o.connect(g); g.connect(ctx.destination);
-            o.start(); o.stop(ctx.currentTime + d);
-        }
 
-        const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
-        const wheel = document.getElementById('main-wheel');
+<div id="intro-screen">
+    <img src="1771489965074(1).png" class="intro-logo" alt="Logo">
+    <div style="margin-top:20px; letter-spacing:5px; font-family:'Orbitron'; font-size:12px;">VCHF ULTIMATE</div>
+</div>
 
-        flags.forEach((img, i) => {
-            const angle = i * 60;
-            const spoke = document.createElement('div');
-            spoke.className = 'spoke';
-            spoke.style.transform = `rotate(${angle}deg)`;
-            const node = document.createElement('div');
-            node.className = 'flag-node';
-            node.innerHTML = img;
-            const r = 145;
-            node.style.left = `calc(50% + ${Math.sin(angle * Math.PI / 180) * r}px)`;
-            node.style.top = `calc(50% + ${-Math.cos(angle * Math.PI / 180) * r}px)`;
-            node.onclick = () => {
-                window.VCHF_CORE.lang = img;
-                playSound(150, 0.8, 'triangle', 0.4);
-                wheel.style.transform = `rotate(${-angle + 720}deg)`;
-                wheel.classList.add('wheel-vanishing');
-                setTimeout(() => {
-                    document.getElementById('wheel-layer').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('wheel-layer').style.display = 'none';
-                        showDoors();
-                    }, 800);
-                }, 1000);
-            };
-            wheel.appendChild(spoke);
-            wheel.appendChild(node);
-        });
-        function showDoors() {
-            const dl = document.getElementById('brand-layer');
-            dl.style.display = 'flex';
+<div id="main-ui">
+    <header>
+        <div class="brand-main">HELVETIA LUCK</div>
+        <div class="brand-sub">GLOBAL LOTTO POOL</div>
+    </header>
+
+    <div class="casino-floor" id="floor"></div>
+
+    <div class="nav-bar">
+        <div class="nav-btn">БАР (CHAT) 🍷</div>
+        <div class="nav-btn">ДРУГИЕ ИГРЫ 🃏</div>
+    </div>
+</div>
+
+<script>
+    /** * МАНИФЕСТ МОНОЛИТА. [cite: 2026-02-23]
+     * Статичная навигация внедрена. Эффект "пробегающего пола" активен.
+     */
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('intro-screen').style.opacity = '0';
             setTimeout(() => {
-                playSound(50, 1.2, 'sawtooth', 0.2);
-                dl.classList.add('opened');
-                setTimeout(initFloor, 1500);
-            }, 500);
-        }
+                document.getElementById('intro-screen').style.display = 'none';
+                const main = document.getElementById('main-ui');
+                main.style.display = 'block';
+                setTimeout(() => { main.style.opacity = '1'; }, 50);
+            }, 1500);
+        }, 3000);
+    };
 
-        function initFloor() {
-            const ui = document.getElementById('main-ui');
-            const nav = document.getElementById('global-nav');
-            const floor = document.getElementById('floor');
-            ui.style.display = 'block';
-            nav.style.display = 'flex';
-            setTimeout(() => ui.style.opacity = '1', 100);
-            for(let i = 1; i <= 12; i++) {
-                const table = document.createElement('div');
-                table.className = 'table-wrap';
-                const isHot = Math.random() > 0.6;
-                table.innerHTML = `
-                    <div class="table-surface">
-                        <div class="lamp active" style="top:10px;left:50%;transform:translateX(-50%)"></div>
-                        <div class="lamp ${isHot ? 'active' : 'waiting'}" style="bottom:10px;left:50%;transform:translateX(-50%)"></div>
-                        <img src="1771489965074(1).png" class="table-logo">
-                    </div>
-                    <div style="text-align:center;margin-top:10px;font-size:10px;letter-spacing:2px;">UNIT-${i}00</div>
-                `;
-                table.onclick = () => {
-                    window.VCHF_CORE.unitId = i;
-                    playSound(800, 0.1, 'sine', 0.3);
-                    launchGame();
-                };
-                floor.appendChild(table);
-            }
-        }
-        function launchGame() {
-            document.getElementById('main-ui').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('main-ui').style.display = 'none';
-                const gr = document.getElementById('game-room');
-                gr.style.display = 'block';
-                setTimeout(() => {
-                    gr.style.opacity = '1';
-                    startCamera();
-                }, 100);
-            }, 800);
-        }
-
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                document.getElementById('local').srcObject = stream;
-            } catch(e) { console.log("Camera blocked"); }
-        }
-        /** [DECK ENGINE] 
-         * Создание колоды 36 карт и логика мастей.
-         */
-        const suits = ['♠','♣','♥','♦'];
-        const ranks = ['6','7','8','9','10','J','Q','K','A'];
-        let deck = [];
-
-        function createDeck() {
-            deck = [];
-            for (let s of suits) {
-                for (let r of ranks) {
-                    deck.push({ suit: s, rank: r, color: (s==='♥'||s==='♦') ? '#ff4d4d' : '#fff' });
-                }
-            }
-            // Перемешивание Фишера-Йейтса
-            for (let i = deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deck[i], deck[j]] = [deck[j], deck[i]];
-            }
-            renderDeck();
-        }
-
-        function renderDeck() {
-            const container = document.getElementById('deck-zone');
-            container.innerHTML = '';
-            deck.forEach((card, i) => {
-                const cardEl = document.createElement('div');
-                cardEl.className = 'card-monolith';
-                cardEl.style.left = `${i * 2}px`;
-                cardEl.style.top = `${i * 0.5}px`;
-                cardEl.innerHTML = `
-                    <div style="padding:5px; color:${card.color}">
-                        ${card.rank}<br>${card.suit}
-                    </div>
-                `;
-                // Анимация раздачи первой карты игроку
-                setTimeout(() => {
-                    if(i > deck.length - 7) {
-                        cardEl.style.transform = `translateY(250px) rotate(${i*2}deg)`;
-                        playSound(440 + (i*10), 0.05, 'sine', 0.1);
-                    }
-                }, 1000 + (i * 50));
-                container.appendChild(cardEl);
-            });
-        }
-        // Переопределяем функцию запуска, чтобы она создавала карты
-        const originalLaunchGame = launchGame;
-        launchGame = function() {
-            originalLaunchGame();
-            setTimeout(createDeck, 1500);
-        };
-
-        // Обработка кнопки выхода
-        document.querySelector('.nav-btn[style*="red"]').onclick = () => {
-            if(confirm("Выйти из системы VCHF?")) {
-                location.reload();
-            }
-        };
-    </script>
+    const floor = document.getElementById('floor');
+    for(let i=1; i<=12; i++) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-wrap';
+        wrap.innerHTML = `
+            <div class="table-surface">
+                <div class="lamp l-t waiting"></div>
+                <div class="lamp l-b active"></div>
+                <div class="lamp l-l waiting"></div>
+                <div class="lamp l-r waiting"></div>
+                <img src="1771489965074(1).png" class="table-logo" alt="Logo">
+            </div>
+            <div style="position:absolute; bottom:-25px; width:100%; text-align:center; font-size:8px; font-family:'Orbitron'; opacity:0.5;">VCHF-UNIT ${i}</div>
+        `;
+        floor.appendChild(wrap);
+    }
+</script>
 </body>
 </html>
