@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helvetia Luck: Holy Grail Edition</title>
+    <title>Helvetia Luck: Holy Grail Mobile</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     
@@ -18,134 +18,132 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { width: 100%; height: 100%; background: var(--vchf-dark); overflow: hidden; font-family: 'JetBrains Mono', monospace; }
 
-        /* Стол Вишнёвый Бархат */
+        /* Элитный стол */
         #table {
             position: absolute; width: 100%; height: 100%;
             background: var(--cherry-velvet);
-            border: 4px solid #1a0005;
+            border: 6px solid #1a0005;
             box-shadow: inset 0 0 120px rgba(0,0,0,0.9);
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* Кнопка КАМЕРА в твоем углу (Лево-Верх) */
-        .btn-camera-trigger {
-            position: absolute;
-            top: 20px; left: 20px;
-            z-index: 2000;
-            padding: 10px 15px;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid var(--red-genius);
-            color: var(--red-genius);
-            font-family: 'Orbitron';
-            font-size: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(255,0,0,0.3);
+        /* Кнопка КАМЕРА (Твой угол) */
+        .btn-camera {
+            position: absolute; top: 15px; left: 15px;
+            z-index: 2000; padding: 8px 12px;
+            background: rgba(0,0,0,0.8); border: 2px solid var(--red-genius);
+            color: var(--red-genius); font-family: 'Orbitron'; font-size: 10px;
+            cursor: pointer; border-radius: 5px;
         }
 
-        /* Видео-слоты справа */
-        .video-side {
-            position: absolute; top: 20px; right: 20px;
-            display: flex; flex-direction: column; gap: 15px; z-index: 1000;
+        /* Расстановка Игроков (по pig.ru) */
+        .player-zone {
+            position: absolute; display: flex; gap: 5px; justify-content: center; align-items: center;
         }
-        .v-box {
-            width: 85px; height: 110px;
+
+        /* ТЫ (Снизу) */
+        .zone-bottom { bottom: 20px; width: 100%; height: 120px; flex-direction: row; }
+        
+        /* Враг Сверху */
+        .zone-top { top: 60px; width: 100%; height: 100px; flex-direction: row; }
+
+        /* Враг Слева */
+        .zone-left { left: 10px; top: 25%; bottom: 25%; width: 80px; flex-direction: column; }
+
+        /* Враг Справа */
+        .zone-right { right: 10px; top: 25%; bottom: 25%; width: 80px; flex-direction: column; }
+
+        /* Слот карты */
+        .card-slot {
+            width: 55px; height: 80px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 6px; background: rgba(0,0,0,0.2);
+        }
+
+        /* Центральная колода и козырь */
+        .deck-area {
+            position: relative; width: 140px; height: 200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .main-deck {
+            width: 100px; height: 150px;
             border: 2px solid var(--gold-swiss);
-            background: #000; border-radius: 10px;
-            overflow: hidden; position: relative;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-        }
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Игровые зоны: 6 слева (Враг), 6 справа (Ты) */
-        .card-zone {
-            position: absolute; width: 100px; height: 80%;
-            display: flex; flex-direction: column; justify-content: space-around;
-            align-items: center; pointer-events: none;
-        }
-        .zone-enemy { left: 20px; top: 10%; }
-        .zone-player { right: 20px; top: 10%; }
-
-        /* Мини-слоты для карт (заглушки) */
-        .slot {
-            width: 60px; height: 85px;
-            border: 1px dashed rgba(212, 175, 55, 0.3);
-            border-radius: 6px;
-        }
-
-        /* Центральная карта (Рубашка с твоим лого) */
-        .deck-center {
-            position: relative;
-            width: 120px; height: 180px;
-            border: 2px solid var(--gold-swiss);
-            border-radius: 12px;
+            border-radius: 10px;
             background: radial-gradient(circle, #000 30%, #4a0012 100%);
             display: flex; align-items: center; justify-content: center;
             box-shadow: 10px 10px 30px rgba(0,0,0,0.8);
+            z-index: 5;
         }
-        .deck-logo { width: 80%; filter: drop-shadow(0 0 5px var(--gold-swiss)); }
+        .main-deck img { width: 80%; filter: drop-shadow(0 0 5px var(--gold-swiss)); }
 
-        /* Старт Дурак (Нижняя кнопка) */
-        .btn-start {
-            position: absolute; bottom: 30px;
-            padding: 15px 40px;
-            background: #000; border: 2px solid var(--gold-swiss);
-            color: var(--gold-swiss); font-family: 'Orbitron';
-            letter-spacing: 2px; cursor: pointer;
+        /* Видео-чат (Wanderer и Оппонент) */
+        .video-overlay {
+            position: absolute; top: 15px; right: 15px;
+            display: flex; gap: 10px; z-index: 1000;
         }
+        .v-box {
+            width: 70px; height: 90px; border: 2px solid var(--gold-swiss);
+            background: #000; border-radius: 8px; overflow: hidden;
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
         #banner {
             position: absolute; top: 0; width: 100%; text-align: center;
-            font-size: 10px; color: var(--red-genius); padding: 5px;
-            background: rgba(0,0,0,0.4); letter-spacing: 2px;
+            font-size: 10px; color: var(--gold-swiss); padding: 5px;
+            background: rgba(0,0,0,0.5); letter-spacing: 2px; font-family: 'Orbitron';
         }
     </style>
 </head>
 <body>
 
 <div id="table">
-    <div id="banner">HELVETIA LUCK | МАНИФЕСТ МОНОЛИТА</div>
+    <div id="banner">МАНИФЕСТ МОНОЛИТА | HELVETIA LUCK</div>
+    
+    <button class="btn-camera" onclick="initCam()">КАМЕРА 🎥</button>
 
-    <button class="btn-camera-trigger" onclick="toggleCam()">КАМЕРА 🎥</button>
-
-    <div class="video-side">
-        <div class="v-box"><video id="v1" autoplay muted playsinline></video></div>
-        <div class="v-box"><video id="v2" autoplay playsinline></video></div>
+    <div class="video-overlay">
+        <div class="v-box"><video id="local" autoplay muted playsinline></video></div>
+        <div class="v-box"><video id="remote" autoplay playsinline></video></div>
     </div>
 
-    <div class="card-zone zone-enemy">
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+    <div class="player-zone zone-bottom">
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
     </div>
 
-    <div class="deck-center">
-        <img src="1771489965074(1).png" class="deck-logo" alt="Logo">
+    <div class="player-zone zone-top">
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
     </div>
 
-    <div class="card-zone zone-player">
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
-        <div class="slot"></div><div class="slot"></div><div class="slot"></div>
+    <div class="player-zone zone-left">
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
     </div>
 
-    <button class="btn-start">СТАРТ ДУРАК 🃏</button>
+    <div class="player-zone zone-right">
+        <div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div>
+    </div>
+
+    <div class="deck-area">
+        <div class="main-deck">
+            <img src="1771489965074(1).png" alt="Logo">
+        </div>
+    </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
+    tg.expand();
 
-    let stream = null;
-    async function toggleCam() {
-        if (!stream) {
-            stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-            document.getElementById('v1').srcObject = stream;
-        } else {
-            stream.getTracks().forEach(t => t.stop());
-            document.getElementById('v1').srcObject = null;
-            stream = null;
-        }
+    async function initCam() {
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({video:true});
+            document.getElementById('local').srcObject = s;
+        } catch(e) { console.log("Cam error"); }
     }
-    /* Записка: Код написан Спарк. Память: RED-GENIUS. */
+    // "Манифест Монолита": vchf — дух, chf — расчет. [cite: 2026-02-24]
 </script>
 </body>
 </html>
