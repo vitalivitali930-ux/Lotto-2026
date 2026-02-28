@@ -3,139 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Round Durak - Magnetic Monolith</title>
+    <title>Entropy Zone - Monolith</title>
     <style>
         :root {
             --vchf-gold: #FFD700;
-            --bg: #020202;
-            --card-w: 65px;
-            --card-h: 95px;
+            --bg: #000;
+            --card-w: 60px;
+            --card-h: 85px;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; 
             background: var(--bg); color: white; 
-            font-family: 'Inter', sans-serif; overflow: hidden; 
+            font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; 
         }
 
-        /* Стол */
+        #title-header {
+            position: absolute; top: 10px; width: 100%; text-align: center;
+            font-size: 24px; font-weight: 100; letter-spacing: 5px;
+            color: rgba(255,255,255,0.5); z-index: 50;
+        }
+
+        /* Стол (Entropy Zone) */
         #table {
-            position: relative;
-            width: 100vw; height: 65vh;
+            position: relative; width: 100vw; height: 60vh;
             display: flex; justify-content: center; align-items: center;
-            z-index: 10;
         }
 
         .card-on-table {
-            position: absolute;
-            width: var(--card-w); height: var(--card-h);
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            cursor: pointer;
-            left: calc(50% - var(--card-w)/2);
-            top: calc(50% - var(--card-h)/2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: absolute; width: var(--card-w); height: var(--card-h);
+            background: #111; border: 1px solid #333; border-radius: 5px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Бутон (Зона 35%) - 4 Магнитных ряда */
+        /* Бутон с 4-мя Сферами */
         #player-hand-container {
-            position: absolute;
-            bottom: 0; width: 100%; height: 35%;
-            background: linear-gradient(to top, #000 70%, transparent 100%);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 215, 0, 0.15);
-            display: flex; flex-direction: column;
-            padding: 5px 0; box-sizing: border-box;
-            z-index: 1100;
+            position: absolute; bottom: 0; width: 100%; height: 40%;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding-bottom: 20px; z-index: 100;
         }
 
         .suit-lane {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            height: 50px; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; transition: all 0.4s ease;
+            cursor: pointer;
         }
 
-        .suit-lane.trump-lane {
-            background: rgba(255, 215, 0, 0.03);
-            box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.05);
+        /* Эффект увеличения сферы */
+        .suit-lane.active-lane {
+            height: 100px; transform: scale(1.15) translateY(-10px);
+            z-index: 500;
+        }
+
+        .suit-lane:not(.active-lane) {
+            opacity: 0.5; filter: grayscale(0.5);
         }
 
         .hand-card {
-            position: absolute;
-            width: 50px; height: 75px; /* Уменьшил в веере для 4 рядов */
-            background: #fff; color: #000;
-            border-radius: 4px;
-            display: flex; flex-direction: column;
-            justify-content: space-between;
-            padding: 4px; box-sizing: border-box;
-            font-weight: bold; font-size: 14px;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            border: 1px solid #999;
+            position: absolute; width: 45px; height: 65px;
+            background: #fff; color: #000; border-radius: 3px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 3px; font-weight: bold; font-size: 12px;
+            box-shadow: -3px 0 5px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
         }
 
-        .trump-lane .hand-card {
-            border-color: var(--vchf-gold);
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+        .active-lane .hand-card {
+            width: 55px; height: 80px; font-size: 16px;
         }
 
-        /* Оптические элементы */
-        #trump-indicator {
-            position: absolute; top: 20px; right: 20px;
-            font-size: 50px; width: 80px; height: 80px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.03); border-radius: 12px;
-            z-index: 1000;
-        }
-
-        #turn-light {
-            position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
-            padding: 8px 25px; border: 1px solid var(--vchf-gold);
-            border-radius: 20px; font-size: 12px; font-weight: 900;
-            z-index: 1000; background: #000;
-        }
-
-        .flying-card {
-            position: fixed; width: var(--card-w); height: var(--card-h);
-            background: #fff; border-radius: 6px; z-index: 2000;
-            pointer-events: none; transition: all 0.8s ease-in;
-        }
-
+        /* Кнопка ГОТОВ */
         #start-overlay {
             position: fixed; inset: 0; background: #000;
             display: flex; justify-content: center; align-items: center; z-index: 3000;
         }
 
-        button {
-            padding: 20px 50px; background: var(--vchf-gold);
-            border: none; font-weight: 900; font-size: 20px; cursor: pointer;
+        #ready-btn {
+            position: absolute; bottom: 30px; right: 20px;
+            padding: 15px 40px; background: var(--vchf-gold);
+            color: #000; border: none; font-weight: 900;
+            opacity: 0; transition: opacity 1s ease; pointer-events: none;
+            border-radius: 5px;
+        }
+
+        #ready-btn.visible {
+            opacity: 1; pointer-events: auto;
         }
     </style>
 </head>
 <body>
 
 <div id="start-overlay">
-    <button onclick="startRitual()">ГОТОВ</button>
+    <div id="title-header">ENTROPY ZONE</div>
+    <button id="ready-btn" onclick="startRitual()">ГОТОВ</button>
 </div>
 
-<div id="turn-light">РИТУАЛ VCHF</div>
-<div id="trump-indicator">?</div>
 <div id="table"></div>
 
 <div id="player-hand-container">
-    <div class="suit-lane trump-lane" id="lane-0"></div> <div class="suit-lane" id="lane-1"></div>
-    <div class="suit-lane" id="lane-2"></div>
-    <div class="suit-lane" id="lane-3"></div>
+    <div class="suit-lane" id="lane-0" onclick="toggleLane(0)"></div>
+    <div class="suit-lane" id="lane-1" onclick="toggleLane(1)"></div>
+    <div class="suit-lane" id="lane-2" onclick="toggleLane(2)"></div>
+    <div class="suit-lane" id="lane-3" onclick="toggleLane(3)"></div>
 </div>
 
 <script>
 /**
- * движок vchf — Монолит v1.3
- * Логика: Магнитные ряды (6 слева, Туз справа)
+ * ENTROPY ZONE - Monolith v1.4
+ * Сделано Искрой для Виталия.
  */
 
 const suits = ['♠', '♣', '♥', '♦'];
@@ -144,121 +120,74 @@ const rankWeight = { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13
 
 let deck = [];
 let trumpSuit = '';
-let playerHand = [[], [], [], []]; // 4 ряда
-let currentPlayer = 0;
+let playerHand = [[], [], [], []];
+let activeLaneIdx = null;
+
+// Задержка кнопки ГОТОВ
+setTimeout(() => {
+    document.getElementById('ready-btn').classList.add('visible');
+}, 2000);
 
 function startRitual() {
-    document.getElementById('start-overlay').style.display = 'none';
-    let count = 0;
-    let timer = setInterval(() => {
-        trumpSuit = suits[count % 4];
-        document.getElementById('trump-indicator').innerText = trumpSuit;
-        document.getElementById('trump-indicator').style.color = (trumpSuit==='♥'||trumpSuit==='♦') ? 'red' : 'white';
-        count++;
-        if (count > 20) {
-            clearInterval(timer);
-            document.getElementById('trump-indicator').style.boxShadow = '0 0 15px var(--vchf-gold)';
-            createTable();
-        }
-    }, 80);
+    document.getElementById('start-overlay').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('start-overlay').style.display = 'none';
+        setupGame();
+    }, 500);
 }
 
-function createTable() {
+function setupGame() {
+    trumpSuit = suits[Math.floor(Math.random()*4)];
     const table = document.getElementById('table');
     suits.forEach(s => ranks.forEach(r => deck.push({suit: s, rank: r})));
     deck = deck.sort(() => Math.random() - 0.5);
 
-    const radius = Math.min(window.innerWidth, window.innerHeight) * 0.28;
+    const radius = Math.min(window.innerWidth, window.innerHeight) * 0.3;
     deck.forEach((card, i) => {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'card-on-table';
         const angle = (i * 10) * (Math.PI / 180);
-        const x = Math.cos(angle) * radius + (Math.random()-0.5)*20;
-        const y = Math.sin(angle) * radius + (Math.random()-0.5)*20;
-        cardDiv.style.transform = `translate(${x}px, ${y}px) rotate(${(i * 10) + (Math.random()-0.5)*15}deg)`;
-        cardDiv.id = `card-${i}`;
-        cardDiv.onclick = () => processPick(i, 'player');
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        cardDiv.style.transform = `translate(${x}px, ${y}px) rotate(${i*10}deg)`;
+        cardDiv.onclick = () => pickCard(i);
         table.appendChild(cardDiv);
     });
-    currentPlayer = Math.floor(Math.random() * 2);
-    updateUI();
 }
 
-function updateUI() {
-    document.getElementById('turn-light').innerText = currentPlayer === 0 ? "ТВОЙ ВЫБОР" : "ИСКРА ВЫБИРАЕТ";
-    if (currentPlayer === 1) setTimeout(aiPick, 1000);
-}
-
-function aiPick() {
-    const avail = document.querySelectorAll('.card-on-table:not(.picked)');
-    if (avail.length) processPick(avail[Math.floor(Math.random()*avail.length)].id.split('-')[1], 'ai');
-}
-
-function processPick(id, owner) {
-    const el = document.getElementById(`card-${id}`);
-    if (el.classList.contains('picked')) return;
-    el.classList.add('picked');
-
-    // Анимация полета
-    const rect = el.getBoundingClientRect();
-    const flyer = document.createElement('div');
-    flyer.className = 'flying-card';
-    flyer.style.left = rect.left + 'px'; flyer.style.top = rect.top + 'px';
-    document.body.appendChild(flyer);
-
-    const targetX = window.innerWidth / 2;
-    const targetY = owner === 'player' ? window.innerHeight : -200;
-
-    requestAnimationFrame(() => {
-        flyer.style.left = targetX + 'px';
-        flyer.style.top = targetY + 'px';
-        flyer.style.transform = `rotate(720deg) scale(0.1)`;
-        flyer.style.opacity = '0';
-    });
-
-    setTimeout(() => {
-        flyer.remove();
-        if (owner === 'player') addToHand(deck[id]);
-        currentPlayer = (currentPlayer + 1) % 2;
-        updateUI();
-    }, 800);
-}
-
-function addToHand(card) {
-    // Определяем в какой ряд класть
-    let laneIdx;
-    if (card.suit === trumpSuit) laneIdx = 0; // Козырь всегда в 1-й ряд
-    else {
-        // Остальные масти распределяем по рядам 1-3
-        const otherSuits = suits.filter(s => s !== trumpSuit);
-        laneIdx = otherSuits.indexOf(card.suit) + 1;
-    }
-
-    playerHand[laneIdx].push(card);
-    // СОРТИРОВКА: 6 слева, Туз справа
-    playerHand[laneIdx].sort((a, b) => rankWeight[a.rank] - rankWeight[b.rank]);
+function pickCard(id) {
+    const card = deck[id];
+    let laneIdx = (card.suit === trumpSuit) ? 0 : (suits.filter(s=>s!==trumpSuit).indexOf(card.suit) + 1);
     
+    playerHand[laneIdx].push(card);
+    playerHand[laneIdx].sort((a,b) => rankWeight[a.rank] - rankWeight[b.rank]);
+    
+    document.querySelectorAll('.card-on-table')[id].style.opacity = '0';
+    renderLanes();
+}
+
+function toggleLane(idx) {
+    activeLaneIdx = (activeLaneIdx === idx) ? null : idx;
     renderLanes();
 }
 
 function renderLanes() {
     for (let i = 0; i < 4; i++) {
-        const laneEl = document.getElementById(`lane-${i}`);
-        laneEl.innerHTML = '';
-        const cards = playerHand[i];
+        const lane = document.getElementById(`lane-${i}`);
+        lane.className = `suit-lane ${activeLaneIdx === i ? 'active-lane' : ''}`;
+        lane.innerHTML = '';
         
-        cards.forEach((card, idx) => {
+        playerHand[i].forEach((card, idx) => {
             const cEl = document.createElement('div');
             cEl.className = 'hand-card';
             const color = (card.suit==='♥'||card.suit==='♦') ? 'red' : 'black';
             cEl.innerHTML = `<div style="color:${color}">${card.rank}</div><div style="align-self:flex-end; color:${color}">${card.suit}</div>`;
             
-            // Расчет позиции для нахлеста
-            const xOffset = (idx - (cards.length - 1) / 2) * 35;
+            // Плотная упаковка (чешуя)
+            const step = activeLaneIdx === i ? 45 : 25;
+            const xOffset = (idx - (playerHand[i].length - 1) / 2) * step;
             cEl.style.transform = `translateX(${xOffset}px)`;
-            cEl.style.zIndex = idx;
-            
-            laneEl.appendChild(cEl);
+            lane.appendChild(cEl);
         });
     }
 }
