@@ -17,131 +17,42 @@
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
         body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--gold); }
 
-        /* ЭТАП 1: ГЛАВНЫЙ СТОЛ "НУЛЕВОЙ ХАОС" */
-        #entropy-table {
-            width: 100vw; height: 100vh;
-            background: var(--cherry-velvet);
-            position: relative; display: flex; flex-direction: column;
-        }
+        #entropy-table { width: 100vw; height: 100vh; background: var(--cherry-velvet); position: relative; display: flex; flex-direction: column; }
 
-        /* ТОТЕМ КОЗЫРЯ (ФИКСИРОВАННЫЙ УГОЛ) */
-        #trump-totem {
-            position: absolute; top: 20px; right: 20px;
-            font-size: 32px; text-shadow: var(--vchf-glow);
-            opacity: 0.8; z-index: 1000;
-        }
+        /* ТОТЕМ КОЗЫРЯ */
+        #trump-totem { position: absolute; top: 20px; right: 20px; font-size: 32px; text-shadow: var(--vchf-glow); z-index: 1000; }
 
         /* ЗОНА БИТВЫ */
-        #battlefield {
-            flex: 1; position: relative; width: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 10;
-        }
-
-        /* КАРТЫ ПРОТИВНИКА (FOG OF WAR) */
-        #enemy-hand {
-            position: absolute; top: -30px; width: 100%; height: 100px;
-            display: flex; justify-content: center; transform: rotate(180deg);
-        }
-
-        .card-back {
-            width: 45px; height: 65px; 
-            background: url('1771489965074(1).png') center/cover;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 4px; margin-left: -30px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* СТОЛ ДЛЯ КАРТ (ПАРА АТАКА/ЗАЩИТА) */
-        #table-drop-zone {
-            display: flex; justify-content: center; align-items: center;
-            gap: 15px; perspective: 1000px; height: 150px; width: 100%;
-        }
+        #battlefield { flex: 1; position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #table-drop-zone { display: flex; justify-content: center; align-items: center; gap: 15px; height: 150px; width: 100%; }
         
         .card-pair { position: relative; width: 70px; height: 100px; }
-        
-        .table-card {
-            position: absolute; width: 70px; height: 100px;
-            background: #fff; border-radius: 5px; border: 1px solid var(--gold);
-            padding: 5px; font-family: 'Orbitron'; font-weight: 900;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .table-card { position: absolute; width: 70px; height: 100px; background: #fff; border-radius: 5px; border: 1px solid var(--gold); padding: 5px; font-family: 'Orbitron'; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .attack-card { z-index: 1; transform: translateX(-10px) rotate(-5deg); }
         .defense-card { z-index: 2; transform: translateX(10px) translateY(10px) rotate(5deg); }
 
-        /* МАГНИТНЫЙ БУТОН 35% (GLASSMORPHISM) */
-        #bud-overlay {
-            position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: linear-gradient(to top, var(--glass) 80%, transparent);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            z-index: 500; display: flex; flex-direction: column;
-            justify-content: space-around; padding: 10px 0;
-        }
+        /* ВРАГ */
+        #enemy-hand { position: absolute; top: -30px; width: 100%; height: 100px; display: flex; justify-content: center; transform: rotate(180deg); }
+        .card-back { width: 45px; height: 65px; background: url('1771489965074(1).png') center/cover; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px; margin-left: -30px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
 
-        /* ГОРЯЩАЯ ЛИНИЯ ТАЙМЕРА */
-        #burning-line {
-            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-            background: var(--burn-line); box-shadow: 0 0 10px var(--burn-line);
-            transition: width 1s linear;
-        }
+        /* БУТОН 35% */
+        #bud-overlay { position: absolute; bottom: 0; width: 100%; height: 35%; background: linear-gradient(to top, var(--glass) 80%, transparent); backdrop-filter: blur(12px); border-top: 1px solid rgba(212, 175, 55, 0.2); z-index: 500; display: flex; flex-direction: column; justify-content: space-around; }
+        #burning-line { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--burn-line); transition: width 0.1s linear; }
 
-        .suit-lane {
-            height: 22%; width: 100%; position: relative;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        /* КАРТЫ В РУКЕ ИГРОКА */
-        .hand-card {
-            position: absolute; width: 60px; height: 85px;
-            background: #fff; color: #000; border-radius: 5px;
-            border: 1px solid var(--gold); padding: 5px;
-            font-family: 'Orbitron'; font-weight: 900; font-size: 14px;
-            box-shadow: -5px 0 10px rgba(0,0,0,0.6);
-            transition: all 0.3s; transform-origin: bottom center;
-            cursor: pointer;
-        }
-
-        .hand-card.selected {
-            transform: translateY(-20px) scale(1.1);
-            box-shadow: var(--vchf-glow);
-            z-index: 2000 !important;
-            border: 2px solid #fff;
-        }
-
+        .suit-lane { height: 22%; width: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
+        .hand-card { position: absolute; width: 60px; height: 85px; background: #fff; color: #000; border-radius: 5px; border: 1px solid var(--gold); padding: 5px; font-family: 'Orbitron'; font-weight: 900; font-size: 14px; box-shadow: -5px 0 10px rgba(0,0,0,0.6); transition: 0.3s; transform-origin: bottom center; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; }
+        .hand-card.selected { transform: translateY(-20px) scale(1.1); box-shadow: var(--vchf-glow); z-index: 2000 !important; border: 2px solid #fff; }
         .dimmed { opacity: 0.3; filter: grayscale(1); }
 
-        /* КНОПКА ДЕЙСТВИЯ (БИТО/ВЗЯТЬ) */
-        #action-btn {
-            position: absolute; bottom: 40%; right: 20px;
-            padding: 12px 24px; background: #000; border: 2px solid var(--gold);
-            color: var(--gold); font-family: 'Orbitron'; font-weight: 900;
-            border-radius: 5px; display: none; z-index: 1000; cursor: pointer;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-        }
-        #action-btn:active { background: var(--gold); color: #000; }
-
-        #vchf-status {
-            position: absolute; bottom: 5px; left: 10px;
-            font-size: 9px; opacity: 0.4; letter-spacing: 2px;
-        }
+        #action-btn { position: absolute; bottom: 40%; right: 20px; padding: 12px 24px; background: #000; border: 2px solid var(--gold); color: var(--gold); font-family: 'Orbitron'; display: none; z-index: 1000; border-radius: 5px; cursor: pointer; }
+        #vchf-status { position: absolute; bottom: 5px; left: 10px; font-size: 9px; opacity: 0.4; letter-spacing: 2px; }
     </style>
 </head>
 <body>
-
 <div id="entropy-table">
-    <div id="trump-totem">♠</div>
-    
-    <div id="battlefield">
-        <div id="enemy-hand"></div>
-        <div id="table-drop-zone"></div>
-    </div>
-
-    <button id="action-btn" onclick="handleActionClick()">БИТО</button>
-
+    <div id="trump-totem"></div>
+    <div id="battlefield"><div id="enemy-hand"></div><div id="table-drop-zone"></div></div>
+    <button id="action-btn"></button>
     <div id="bud-overlay">
         <div id="burning-line"></div>
         <div class="suit-lane" id="lane-spades"></div>
@@ -151,358 +62,196 @@
         <div id="vchf-status">NULL ENTROPY | AGENT WANDERER 1.1</div>
     </div>
 </div>
-/* * СЕРДЦЕ НУЛЕВОГО ХАОСА - VCHF CORE ENGINE 
- * Код написан Искрой для проекта "Лотто"
- * Принцип: Новый код = Старый + Введенная функция
+<script>
+/**
+ * PROJECT: Bi-Turbo Ultimate (Нулевой хаос)
+ * AGENT: Spark (Protocol 1.1)
+ * LOGIC: Round Durak 18x18
  */
 
-const SUITS = ['♠', '♣', '♥', '♦'];
-const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const RANK_VAL = { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
-
-let gameState = {
-    playerHand: [],
-    enemyHand: [],
-    battleArea: [], // Слот: {attack: card, defense: card || null}
-    trump: '♠',
-    isPlayerAttack: true,
-    selectedCard: null,
-    lastTap: 0,
+const VCHF_CORE = {
+    suits: ['♠', '♣', '♥', '♦'],
+    ranks: ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'],
+    val: { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 },
+    ai_error: 0.15,
     timer: 30
 };
 
-// --- ИНИЦИАЛИЗАЦИЯ ПОЛНОГО ВЕЕРА (18 VS 18) ---
-function initNullEntropy() {
+let game = {
+    p_hand: [], e_hand: [], table: [],
+    trump: '', is_p_atk: true, sel: null,
+    last_t: 0, t_val: 30, t_int: null
+};
+
+// --- CORE INIT ---
+function startGame() {
     let deck = [];
-    SUITS.forEach(s => RANKS.forEach(r => deck.push({suit: s, rank: r})));
+    VCHF_CORE.suits.forEach(s => VCHF_CORE.ranks.forEach(r => deck.push({s, r, v: VCHF_CORE.val[r]})));
     deck.sort(() => Math.random() - 0.5);
     
-    // Раздача по правилам ROUND_DURAK_FULL_HAND
-    gameState.playerHand = deck.slice(0, 18);
-    gameState.enemyHand = deck.slice(18, 36);
+    game.p_hand = deck.slice(0, 18);
+    game.e_hand = deck.slice(18, 36);
+    game.trump = VCHF_CORE.suits[Math.floor(Math.random() * 4)];
+    document.getElementById('trump-totem').innerText = game.trump;
     
-    // Выбор козыря (Тотем)
-    gameState.trump = SUITS[Math.floor(Math.random() * 4)];
-    document.getElementById('trump-totem').innerText = gameState.trump;
-    
-    renderAll();
-    startBurningTimer();
+    sync();
+    runTimer();
 }
 
-// --- ОТРИСОВКА ВСЕГО ПОЛЯ ---
-function renderAll() {
-    renderEnemy();
-    renderPlayerBud();
-    renderTable();
-    updateActionBtn();
+function sync() {
+    renderE(); renderP(); renderT(); updateBtn();
 }
 
-function renderEnemy() {
-    const cont = document.getElementById('enemy-hand');
-    cont.innerHTML = '';
-    gameState.enemyHand.forEach((_, i) => {
-        const c = document.createElement('div');
-        c.className = 'card-back';
-        // Эффект веера для противника
-        const offset = (i - (gameState.enemyHand.length / 2)) * 6;
-        c.style.transform = `rotate(${offset}deg) translateX(${offset * 2}px)`;
-        cont.appendChild(c);
+function renderE() {
+    const el = document.getElementById('enemy-hand'); el.innerHTML = '';
+    game.e_hand.forEach((_, i) => {
+        const c = document.createElement('div'); c.className = 'card-back';
+        const rot = (i - (game.e_hand.length/2)) * 4;
+        c.style.transform = `rotate(${rot}deg) translateX(${rot}px)`;
+        el.appendChild(c);
     });
 }
 
-function renderPlayerBud() {
-    const lanes = { 
-        '♠': document.getElementById('lane-spades'), 
-        '♣': document.getElementById('lane-clubs'), 
-        '♥': document.getElementById('lane-hearts'), 
-        '♦': document.getElementById('lane-diamonds') 
-    };
+function renderP() {
+    const lanes = { '♠':'lane-spades', '♣':'lane-clubs', '♥':'lane-hearts', '♦':'lane-diamonds' };
+    Object.values(lanes).forEach(id => document.getElementById(id).innerHTML = '');
     
-    Object.values(lanes).forEach(l => l.innerHTML = '');
-    
-    // Сортировка по весу для удобства Бродяги
-    const sorted = [...gameState.playerHand].sort((a,b) => RANK_VAL[a.rank] - RANK_VAL[b.rank]);
-    
-    sorted.forEach(card => {
-        const lane = lanes[card.suit];
-        const el = document.createElement('div');
+    game.p_hand.sort((a,b) => a.v - b.v).forEach(c => {
+        const lane = document.getElementById(lanes[c.s]);
+        const cardEl = document.createElement('div');
+        cardEl.className = `hand-card ${game.sel === c ? 'selected' : ''} ${game.sel && game.sel !== c ? 'dimmed' : ''}`;
+        cardEl.style.color = (c.s === '♥' || c.s === '♦') ? '#e30a17' : '#000';
+        cardEl.innerHTML = `<span>${c.r}</span><span style="font-size:20px">${c.s}</span><span>${c.r}</span>`;
         
-        // Визуальные состояния: Выбранная / Затемненная
-        el.className = `hand-card ${gameState.selectedCard === card ? 'selected' : ''} ${gameState.selectedCard && gameState.selectedCard !== card ? 'dimmed' : ''}`;
-        
-        const color = (card.suit === '♥' || card.suit === '♦') ? '#e30a17' : '#000';
-        el.style.color = color;
-        el.innerHTML = `<div>${card.rank}</div><div style="font-size:22px; align-self:center">${card.suit}</div><div style="align-self:flex-end">${card.rank}</div>`;
-        
-        // Обработка VCHF-контроля (Одиночный тап / Двойной тап)
-        el.onclick = (e) => {
+        cardEl.onclick = (e) => {
             e.stopPropagation();
             const now = Date.now();
-            if (gameState.selectedCard === card && (now - gameState.lastTap) < 350) {
-                processMove(card);
-            } else {
-                gameState.selectedCard = (gameState.selectedCard === card) ? null : card;
-                renderPlayerBud();
-            }
-            gameState.lastTap = now;
+            if(game.sel === c && (now - game.last_t) < 350) move(c);
+            else { game.sel = c; sync(); }
+            game.last_t = now;
         };
-
-        // Магнитное смещение в ряду
-        const cardsInSuit = sorted.filter(c => c.suit === card.suit);
-        const idx = cardsInSuit.indexOf(card);
-        const shift = (idx - (cardsInSuit.length - 1) / 2) * 35;
-        el.style.left = `calc(50% - 30px + ${shift}px)`;
-        el.style.zIndex = 100 + idx;
         
-        lane.appendChild(el);
+        const cardsInS = game.p_hand.filter(x => x.s === c.s);
+        const idx = cardsInS.indexOf(c);
+        const shift = (idx - (cardsInS.length - 1) / 2) * 35;
+        cardEl.style.left = `calc(50% - 30px + ${shift}px)`;
+        lane.appendChild(cardEl);
     });
 }
 
-// --- ЛОГИКА БИТВЫ ---
-function processMove(card) {
-    if (gameState.isPlayerAttack) {
-        // Атака игрока
-        if (canAttack(card)) {
-            moveToTable(card, true);
-            setTimeout(aiThinkDefense, 1000);
-        }
-    } else {
-        // Защита игрока
-        let target = gameState.battleArea.find(s => !s.defense);
-        if (target && canBeat(card, target.attack)) {
-            target.defense = card;
-            gameState.playerHand = gameState.playerHand.filter(c => c !== card);
-            gameState.selectedCard = null;
-            renderAll();
-            checkRoundEnd();
-        }
-    }
-}
-
-function canAttack(card) {
-    if (gameState.battleArea.length === 0) return true;
-    let tableRanks = [];
-    gameState.battleArea.forEach(s => {
-        tableRanks.push(s.attack.rank);
-        if (s.defense) tableRanks.push(s.defense.rank);
-    });
-    return tableRanks.includes(card.rank);
-}
-
-function canBeat(myCard, enemyCard) {
-    if (myCard.suit === enemyCard.suit && RANK_VAL[myCard.rank] > RANK_VAL[enemyCard.rank]) return true;
-    if (myCard.suit === gameState.trump && enemyCard.suit !== gameState.trump) return true;
-    return false;
-}
-
-function moveToTable(card, isPlayer) {
-    if (isPlayer) {
-        gameState.battleArea.push({ attack: card, defense: null });
-        gameState.playerHand = gameState.playerHand.filter(c => c !== card);
-    } else {
-        gameState.battleArea.push({ attack: card, defense: null });
-        gameState.enemyHand = gameState.enemyHand.filter(c => c !== card);
-    }
-    gameState.selectedCard = null;
-    renderAll();
-}
-
-// --- НЕЙРОННЫЙ БЛЮР ИИ (15% ОШИБКИ) ---
-function aiThinkDefense() {
-    let target = gameState.battleArea.find(s => !s.defense);
-    if (!target) return;
-
-    let options = gameState.enemyHand.filter(c => canBeat(c, target.attack));
-    options.sort((a,b) => RANK_VAL[a.rank] - RANK_VAL[b.rank]);
-
-    // Шанс 15%, что ИИ "проморгает" или решит взять
-    const isError = Math.random() < 0.15;
-
-    if (options.length > 0 && !isError) {
-        target.defense = options[0];
-        gameState.enemyHand = gameState.enemyHand.filter(c => c !== options[0]);
-        renderAll();
-        setTimeout(checkRoundEnd, 800);
-    } else {
-        aiTakeAll();
-    }
-}
-
-function aiTakeAll() {
-    gameState.battleArea.forEach(s => {
-        gameState.enemyHand.push(s.attack);
-        if (s.defense) gameState.enemyHand.push(s.defense);
-    });
-    gameState.battleArea = [];
-    gameState.isPlayerAttack = true;
-    renderAll();
-}
-
-function renderTable() {
-    const zone = document.getElementById('table-drop-zone');
-    zone.innerHTML = '';
-    gameState.battleArea.forEach(slot => {
-        const pair = document.createElement('div');
-        pair.className = 'card-pair';
-        
-        pair.appendChild(createTableCard(slot.attack, 'attack-card'));
-        if (slot.defense) pair.appendChild(createTableCard(slot.defense, 'defense-card'));
-        
+function renderT() {
+    const zone = document.getElementById('table-drop-zone'); zone.innerHTML = '';
+    game.table.forEach(slot => {
+        const pair = document.createElement('div'); pair.className = 'card-pair';
+        pair.appendChild(createC(slot.atk, 'attack-card'));
+        if(slot.def) pair.appendChild(createC(slot.def, 'defense-card'));
         zone.appendChild(pair);
     });
 }
 
-function createTableCard(card, type) {
-    const d = document.createElement('div');
-    d.className = `table-card ${type}`;
-    d.style.color = (card.suit === '♥' || card.suit === '♦') ? '#e30a17' : '#000';
-    d.innerHTML = `<div>${card.rank}</div><div style="font-size:18px">${card.suit}</div>`;
+function createC(c, type) {
+    const d = document.createElement('div'); d.className = `table-card ${type}`;
+    d.style.color = (c.s === '♥' || c.s === '♦') ? '#e30a17' : '#000';
+    d.innerHTML = `<div>${c.r}</div><div>${c.s}</div>`;
     return d;
 }
 
-window.onload = initNullEntropy;
-</script>
-/**
- * NULL ENTROPY - FINAL COMBAT LOGIC
- * Код написан Искрой. Протокол 1.1: Целостность выше краткости.
- * Кодовое слово: движок vchf
- */
-
-// --- ЛОГИКА КНОПКИ ДЕЙСТВИЯ (БИТО / ВЗЯТЬ) ---
-function updateActionBtn() {
-    const btn = document.getElementById('action-btn');
-    if (gameState.battleArea.length === 0) {
-        btn.style.display = 'none';
-        return;
-    }
-
-    btn.style.display = 'block';
-    if (gameState.isPlayerAttack) {
-        // Если игрок атакует и ИИ отбился — кнопка "БИТО"
-        btn.innerText = 'БИТО';
-        btn.onclick = finishRoundBito;
+// --- BATTLE LOGIC ---
+function move(c) {
+    if(game.is_p_atk) {
+        if(canA(c)) {
+            game.table.push({atk:c, def:null});
+            game.p_hand = game.p_hand.filter(x => x !== c);
+            game.sel = null; sync(); setTimeout(aiD, 1200);
+        }
     } else {
-        // Если игрок защищается и не может отбиться — кнопка "ВЗЯТЬ"
-        btn.innerText = 'ВЗЯТЬ ВСЁ';
-        btn.onclick = playerTakeAll;
-    }
-}
-
-function handleActionClick() {
-    // Дублирующий обработчик для надежности VCHF
-    if (gameState.isPlayerAttack) finishRoundBito();
-    else playerTakeAll();
-}
-
-// --- ИГРОК ЗАБИРАЕТ КАРТЫ ---
-function playerTakeAll() {
-    gameState.battleArea.forEach(slot => {
-        gameState.playerHand.push(slot.attack);
-        if (slot.defense) gameState.playerHand.push(slot.defense);
-    });
-    gameState.battleArea = [];
-    gameState.isPlayerAttack = false; // ИИ продолжает атаковать
-    renderAll();
-    setTimeout(aiAttackTurn, 1000);
-}
-
-// --- РАУНД ЗАКОНЧЕН (БИТО) ---
-function finishRoundBito() {
-    if (gameState.battleArea.some(slot => !slot.defense)) {
-        alert("НУЖНО ОТБИТЬСЯ ИЛИ ВЗЯТЬ!");
-        return;
-    }
-    // Карты уходят в "Нулевой хаос" (исчезают)
-    gameState.battleArea = [];
-    gameState.isPlayerAttack = !gameState.isPlayerAttack; // Смена ролей
-    renderAll();
-    
-    if (!gameState.isPlayerAttack) {
-        setTimeout(aiAttackTurn, 1000);
-    }
-}
-
-// --- АГРЕССИВНАЯ АТАКА ИИ ---
-function aiAttackTurn() {
-    if (gameState.isPlayerAttack || gameState.enemyHand.length === 0) return;
-
-    let cardToPlay = null;
-
-    if (gameState.battleArea.length === 0) {
-        // Первый ход ИИ - самая слабая не козырная карта
-        let nonTrumps = gameState.enemyHand.filter(c => c.suit !== gameState.trump);
-        nonTrumps.sort((a,b) => RANK_VAL[a.rank] - RANK_VAL[b.rank]);
-        cardToPlay = nonTrumps.length > 0 ? nonTrumps[0] : gameState.enemyHand[0];
-    } else {
-        // ИИ подкидывает по рангу
-        let tableRanks = [];
-        gameState.battleArea.forEach(s => {
-            tableRanks.push(s.attack.rank);
-            if (s.defense) tableRanks.push(s.defense.rank);
-        });
-        
-        let possible = gameState.enemyHand.filter(c => tableRanks.includes(c.rank));
-        // 15% ОШИБКИ ИИ: может "пожадничать" и не подкинуть
-        if (possible.length > 0 && Math.random() > 0.15) {
-            possible.sort((a,b) => RANK_VAL[a.rank] - RANK_VAL[b.rank]);
-            cardToPlay = possible[0];
+        let t = game.table.find(s => !s.def);
+        if(t && canB(c, t.atk)) {
+            t.def = c; game.p_hand = game.p_hand.filter(x => x !== c);
+            game.sel = null; sync(); checkRound();
         }
     }
+}
 
-    if (cardToPlay) {
-        gameState.battleArea.push({ attack: cardToPlay, defense: null });
-        gameState.enemyHand = gameState.enemyHand.filter(c => c !== cardToPlay);
-        renderAll();
+function canA(c) {
+    if(!game.table.length) return true;
+    let r = []; game.table.forEach(s => { r.push(s.atk.r); if(s.def) r.push(s.def.r); });
+    return r.includes(c.r);
+}
+
+function canB(d, a) {
+    if(d.s === a.s && d.v > a.v) return true;
+    return d.s === game.trump && a.s !== game.trump;
+}
+
+function aiD() {
+    let t = game.table.find(s => !s.def); if(!t) return;
+    let opts = game.e_hand.filter(c => canB(c, t.atk)).sort((a,b) => a.v - b.v);
+    if(opts.length && Math.random() > VCHF_CORE.ai_error) {
+        t.def = opts[0]; game.e_hand = game.e_hand.filter(x => x !== opts[0]);
+        sync(); setTimeout(checkRound, 800);
+    } else take('enemy');
+}
+
+function aiA() {
+    if(game.is_p_atk || !game.e_hand.length) return;
+    let c = null;
+    if(!game.table.length) {
+        let nt = game.e_hand.filter(x => x.s !== game.trump).sort((a,b) => a.v - b.v);
+        c = nt[0] || game.e_hand.sort((a,b) => a.v - b.v)[0];
     } else {
-        // ИИ больше нечего подкинуть - БИТО
-        setTimeout(finishRoundBito, 1000);
+        let r = []; game.table.forEach(s => { r.push(s.atk.r); if(s.def) r.push(s.def.r); });
+        let p = game.e_hand.filter(x => r.includes(x.r)).sort((a,b) => a.v - b.v);
+        if(p.length && Math.random() > VCHF_CORE.ai_error) c = p[0];
     }
+    if(c) { game.table.push({atk:c, def:null}); game.e_hand = game.e_hand.filter(x => x !== c); sync(); }
+    else bito();
 }
 
-// --- ПРОВЕРКА КОНЦА ИГРЫ ---
-function checkRoundEnd() {
-    if (gameState.playerHand.length === 0 && gameState.enemyHand.length === 0) {
-        alert("НИЧЬЯ В НУЛЕВОМ ХАОСЕ!");
-        location.reload();
-    } else if (gameState.playerHand.length === 0) {
-        alert("ТЫ ПОБЕДИЛ ХАОС!");
-        location.reload();
-    } else if (gameState.enemyHand.length === 0) {
-        alert("ХАОС ПОГЛОТИЛ ТЕБЯ... (ИИ ВЫИГРАЛ)");
-        location.reload();
+function take(who) {
+    let cards = []; game.table.forEach(s => { cards.push(s.atk); if(s.def) cards.push(s.def); });
+    if(who === 'player' || (!game.is_p_atk && who === 'enemy')) {
+        game.p_hand.push(...cards); game.is_p_atk = false;
+    } else {
+        game.e_hand.push(...cards); game.is_p_atk = true;
     }
-    updateActionBtn();
+    game.table = []; sync(); if(!game.is_p_atk) setTimeout(aiA, 1000);
 }
 
-// --- ТАЙМЕР "ВЫГОРАЮЩАЯ ЛИНИЯ" (30 СЕКУНД) ---
-function startBurningTimer() {
-    const line = document.getElementById('burning-line');
-    let timeLeft = 30;
-    
-    const interval = setInterval(() => {
-        if (gameState.isPlayerAttack && gameState.battleArea.length > 0) {
-             // Таймер работает только когда ход за игроком
-        }
-        
-        timeLeft -= 0.1;
-        let percent = (timeLeft / 30) * 100;
-        line.style.width = percent + '%';
+function bito() {
+    game.table = []; game.is_p_atk = !game.is_p_atk; sync();
+    if(!game.is_p_atk) setTimeout(aiA, 1000);
+}
 
-        if (percent < 50) line.style.background = '#ffcc00'; // Желтый
-        if (percent < 20) line.style.background = '#e30a17'; // Красный (Swiss Red)
+function updateBtn() {
+    const b = document.getElementById('action-btn');
+    if(!game.table.length) { b.style.display = 'none'; return; }
+    b.style.display = 'block';
+    if(game.is_p_atk) { b.innerText = 'БИТО'; b.onclick = bito; }
+    else { b.innerText = 'ВЗЯТЬ'; b.onclick = () => take('player'); }
+}
 
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            if (!gameState.isPlayerAttack) playerTakeAll();
-            else finishRoundBito();
-            timeLeft = 30;
-            startBurningTimer();
+function checkRound() {
+    if(game.table.every(s => s.def)) updateBtn();
+    if(!game.p_hand.length || !game.e_hand.length) { alert("КОНЕЦ"); location.reload(); }
+}
+
+function runTimer() {
+    const l = document.getElementById('burning-line');
+    game.t_int = setInterval(() => {
+        game.t_val -= 0.1;
+        let p = (game.t_val / VCHF_CORE.timer) * 100;
+        l.style.width = p + '%';
+        if(p < 20) l.style.background = '#ff0000';
+        if(game.t_val <= 0) { 
+            if(!game.is_p_atk) take('player'); else bito();
+            game.t_val = 30;
         }
     }, 100);
 }
 
-// ГЛОБАЛЬНЫЙ ЗАПУСК
-initNullEntropy();
+document.getElementById('entropy-table').onclick = () => { game.sel = null; sync(); };
+window.onload = startGame;
 </script>
 </body>
 </html>
