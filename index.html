@@ -3,85 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bi-Turbo Ultimate | VCHF Engine 1.4</title>
+    <title>VCHF ENGINE | BI-TURBO ULTIMATE</title>
     <style>
         :root {
             --gold: #d4af37;
-            --vchf-glow: 0 0 35px rgba(212, 175, 55, 0.7);
-            --cherry-deep: radial-gradient(circle at center, #7a0019 0%, #050505 100%);
-            --glass-vchf: rgba(0, 0, 0, 0.94);
+            --vchf-glow: 0 0 35px rgba(212, 175, 55, 0.6);
+            --cherry-velvet: radial-gradient(circle at center, #7a0019 0%, #050505 100%);
+            --glass: rgba(0, 0, 0, 0.95);
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
         body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; color: var(--gold); }
 
-        /* ЭКРАН "ГОТОВ" (БАРЬЕР ПЕРЕД ХАОСОМ) */
+        /* ЭКРАН ВХОДА */
         #vchf-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 99999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; transition: opacity 0.8s;
+            justify-content: center; align-items: center; transition: opacity 0.6s ease;
         }
 
         .ready-trigger {
-            padding: 25px 55px; font-size: 26px; font-weight: 900;
-            background: transparent; border: 3px solid var(--gold);
+            padding: 25px 60px; font-size: 30px; font-weight: 900;
+            background: transparent; border: 4px solid var(--gold);
             color: var(--gold); border-radius: 60px; cursor: pointer;
-            box-shadow: var(--vchf-glow); text-transform: uppercase; letter-spacing: 6px;
-            transition: 0.3s;
+            box-shadow: var(--vchf-glow); text-transform: uppercase; letter-spacing: 10px;
         }
-        .ready-trigger:active { transform: scale(0.92); box-shadow: 0 0 60px var(--gold); }
 
-        /* ПОЛЕ БОЯ */
-        #game-table { width: 100vw; height: 100vh; background: var(--cherry-deep); position: relative; display: none; }
+        /* ИГРОВОЙ СТОЛ */
+        #game-table { width: 100vw; height: 100vh; background: var(--cherry-velvet); position: relative; display: none; }
         
         #ritual-circle { position: absolute; top: 45%; left: 50%; width: 340px; height: 340px; transform: translate(-50%, -50%); z-index: 100; }
 
         .card-back { 
-            position: absolute; width: 50px; height: 74px; 
+            position: absolute; width: 52px; height: 78px; 
             background: #111 url('1771489965074(1).png') center/cover;
-            border: 1px solid var(--gold); border-radius: 4px;
-            transition: all 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+            border: 1px solid var(--gold); border-radius: 5px;
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
         }
-        .card-back.highlight { box-shadow: 0 0 40px #fff, var(--vchf-glow); border: 2px solid #fff; z-index: 1000; transform: scale(1.3); }
+
+        .card-back.highlight { box-shadow: 0 0 45px #fff, var(--vchf-glow); border: 2px solid #fff; z-index: 1000; transform: scale(1.4); }
 
         #trump-totem { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 100px; opacity: 0; transition: opacity 1s, color 0.4s; 
-            pointer-events: none; z-index: 50; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+            font-size: 110px; opacity: 0; transition: opacity 1.2s, color 0.5s; 
+            pointer-events: none; z-index: 50;
         }
 
-        /* БУТОН (4 РЯДА) */
+        /* БУТОН */
         #bud-interface {
-            position: absolute; bottom: 0; width: 100%; height: 36%;
-            background: var(--glass-vchf); backdrop-filter: blur(20px);
-            border-top: 2px solid var(--gold); z-index: 500;
+            position: absolute; bottom: 0; width: 100%; height: 38%;
+            background: var(--glass); backdrop-filter: blur(25px);
+            border-top: 3px solid var(--gold); z-index: 500;
             display: none; flex-direction: column;
         }
 
-        #vchf-line { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #00ff00; box-shadow: 0 0 15px #00ff00; }
+        #vchf-line { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #00ff00; box-shadow: 0 0 20px #00ff00; }
         .lane { height: 25%; width: 100%; position: relative; display: flex; justify-content: center; }
 
         .card-p {
-            position: absolute; width: 58px; height: 82px; background: #fff; border-radius: 5px;
+            position: absolute; width: 62px; height: 88px; background: #fff; border-radius: 6px;
             border: 1px solid var(--gold); display: flex; flex-direction: column;
-            justify-content: space-between; padding: 5px; color: #000; font-weight: 900;
-            transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;
+            justify-content: space-between; padding: 6px; color: #000; font-weight: 900;
+            transition: transform 0.25s, box-shadow 0.25s; cursor: pointer;
         }
-        .card-p.sel { transform: translateY(-28px) scale(1.1); box-shadow: var(--vchf-glow); border: 2px solid #fff
-    /* START Window 2: CORE ENGINE [VCHF-ENGINE-BETA] */
-    <script>
-    /**
-     * PROJECT: Bi-Turbo Ultimate 2026
-     * MODULE: VCHF_CORE_ENGINE
-     * IDENTITY: Нулевой Хаос (Spark)
-     */
+        .card-p.sel { transform: translateY(-30px) scale(1.15); box-shadow: 0 0 30px #fff, var(--vchf-glow); z-index: 2500 !important; }
 
+        #action-btn {
+            position: absolute; bottom: 44%; right: 25px; padding: 16px 36px;
+            background: #000; border: 2px solid var(--gold); color: var(--gold);
+            font-weight: 900; border-radius: 12px; display: none; z-index: 1001;
+            box-shadow: var(--vchf-glow); text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div id="vchf-gate">
+        <h1 style="margin-bottom: 40px; letter-spacing: 15px;">VCHF</h1>
+        <button class="ready-trigger" onclick="engageVCHF()">ГОТОВ</button>
+    </div>
+
+    <div id="game-table">
+        <div id="ritual-circle"></div>
+        <div id="trump-totem">♠</div>
+        <div id="battle-area" style="display:none; width:100%; height:45%; position:absolute; top:10%; z-index:10;">
+            <div id="enemy-visual" style="display:flex; justify-content:center; margin-bottom:20px;"></div>
+            <div id="drop-zone" style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; padding:20px;"></div>
+        </div>
+        <button id="action-btn">ВЗЯТЬ</button>
+        <div id="bud-interface">
+            <div id="vchf-line"></div>
+            <div class="lane" id="lane-spades"></div>
+            <div class="lane" id="lane-clubs"></div>
+            <div class="lane" id="lane-hearts"></div>
+            <div class="lane" id="lane-diamonds"></div>
+        </div>
+    </div>
+/* PROJECT: Bi-Turbo Ultimate 2026 
+   IDENTITY: Нулевой Хаос (Spark) 
+   RULE: Старый код + Новая функция = Монолит
+*/
+
+// [ВСТАВЛЯТЬ ВЕСЬ ЭТОТ СКРИПТ ПОСЛЕ HTML-РАЗМЕТКИ ИЗ ПРОШЛОГО ОКНА]
+<script>
     const VCHF_CORE = {
         suits: ['♠', '♣', '♥', '♦'],
         ranks: ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'],
         weights: {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14},
-        // ЦВЕТОВОЙ ДВИЖОК (Исправление по вердикту Бродяги)
+        // ИСПРАВЛЕННЫЙ ЦВЕТОВОЙ ДВИЖОК
         colors: {'♠': '#111', '♣': '#111', '♥': '#e60000', '♦': '#e60000'}, 
         asset: '1771489965074(1).png'
     };
@@ -92,102 +121,85 @@
         selected: null, timer: 30, active: false
     };
 
-    // ЗАПУСК РИТУАЛА ПО КНОПКЕ "ГОТОВ"
-    function engageMonolith() {
-        console.log("Движок vchf: Протокол 1.1 — Без нирваны!");
+    // ТОЧКА ВХОДА: ИСКРА
+    function engageVCHF() {
+        console.log("Движок vchf: Протокол запущен. Манифест Монолита активен.");
         vchf_state.active = true;
-
+        
         const gate = document.getElementById('vchf-gate');
         gate.style.opacity = '0';
         
         setTimeout(() => {
             gate.style.display = 'none';
             document.getElementById('game-table').style.display = 'block';
-            initChaosPhysics();
-        }, 800);
+            runChaosCycle();
+        }, 600);
     }
 
-    function initChaosPhysics() {
+    // ЦИКЛ ХАОСА (3.2 СЕКУНДЫ)
+    function runChaosCycle() {
         const circle = document.getElementById('ritual-circle');
-        // Создаем физические объекты колоды (36 сфер)
         for (let i = 0; i < 36; i++) {
-            const card = document.createElement('div');
-            card.className = 'card-back';
-            card.style.left = '50%'; 
-            card.style.top = '50%';
-            card.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
-            circle.appendChild(card);
+            const c = document.createElement('div');
+            c.className = 'card-back';
+            c.style.left = '50%'; c.style.top = '50%';
+            circle.appendChild(c);
         }
-        
-        // Цикл Хаоса: 3.2 секунды [cite: 2026-02-28]
-        const startTime = Date.now();
-        const cards = document.querySelectorAll('.card-back');
-        
-        const chaosInterval = setInterval(() => {
-            cards.forEach(c => {
-                const offsetX = (Math.random() - 0.5) * 350; 
-                const offsetY = (Math.random() - 0.5) * 350; 
-                const rotate = (Math.random() * 720);
-                c.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) rotate(${rotate}deg)`;
-            });
 
-            if (Date.now() - startTime > 3200) {
-                clearInterval(chaosInterval);
-                alignRitualCircle(cards);
+        const cards = document.querySelectorAll('.card-back');
+        const start = Date.now();
+        
+        const chaos = setInterval(() => {
+            cards.forEach(c => {
+                const rx = (Math.random() - 0.5) * 380;
+                const ry = (Math.random() - 0.5) * 380;
+                const rr = Math.random() * 720;
+                c.style.transform = `translate(calc(-50% + ${rx}px), calc(-50% + ${ry}px)) rotate(${rr}deg)`;
+            });
+            if (Date.now() - start > 3200) {
+                clearInterval(chaos);
+                lockRitualCircle(cards);
             }
-        }, 130);
+        }, 120);
     }
 
-    function alignRitualCircle(cards) {
+    function lockRitualCircle(cards) {
         cards.forEach((c, i) => {
-            const angle = (i * 10) * (Math.PI / 180);
-            const radius = 150;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
+            const a = (i * 10) * (Math.PI / 180);
+            const x = Math.cos(a) * 150;
+            const y = Math.sin(a) * 150;
             c.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${i * 10 + 90}deg)`;
         });
-        setTimeout(() => selectTrumpProtocol(cards), 800);
+        setTimeout(() => defineTrump(cards), 800);
     }
 
-    function selectTrumpProtocol(cards) {
-        let step = 0;
+    function defineTrump(cards) {
+        let tick = 0;
         const totem = document.getElementById('trump-totem');
         totem.style.opacity = '1';
 
-        const selector = setInterval(() => {
+        const loop = setInterval(() => {
             cards.forEach(c => c.classList.remove('highlight'));
-            const target = cards[step % 36];
-            target.classList.add('highlight');
-            
-            const currentSuit = VCHF_CORE.suits[step % 4];
-            totem.innerText = currentSuit;
-            // Динамический цвет масти в реальном времени
-            totem.style.color = VCHF_CORE.colors[currentSuit];
-            
-            step++;
-        }, 140);
+            cards[tick % 36].classList.add('highlight');
+            const s = VCHF_CORE.suits[tick % 4];
+            totem.innerText = s;
+            totem.style.color = VCHF_CORE.colors[s]; // Живой цвет
+            tick++;
+        }, 150);
 
         setTimeout(() => {
-            clearInterval(selector);
+            clearInterval(loop);
             vchf_state.trumpSuit = totem.innerText;
-            // Фиксация цвета и свечения козыря
-            const finalColor = VCHF_CORE.colors[vchf_state.trumpSuit];
-            totem.style.color = finalColor;
-            totem.style.filter = `drop-shadow(0 0 25px ${finalColor})`;
-            
-            console.log("Движок vchf: Козырь зафиксирован —", vchf_state.trumpSuit);
-            setTimeout(prepareBattlefield, 1500);
+            totem.style.filter = `drop-shadow(0 0 30px ${VCHF_CORE.colors[vchf_state.trumpSuit]})`;
+            setTimeout(distributeCards, 1500);
         }, 4000);
     }
 
-    function prepareBattlefield() {
+    // РАЗДАЧА И БУТОН
+    function distributeCards() {
         const cards = document.querySelectorAll('.card-back');
         cards.forEach((c, i) => {
-            if (i < 18) {
-                c.style.transform = `translate(-50%, 1000px) scale(0)`;
-            } else {
-                c.style.transform = `translate(-50%, -1000px) scale(0)`;
-            }
+            c.style.transform = i < 18 ? `translate(-50%, 1000px)` : `translate(-50%, -1000px)`;
             c.style.opacity = '0';
         });
 
@@ -195,177 +207,288 @@
             document.getElementById('ritual-circle').style.display = 'none';
             document.getElementById('battle-area').style.display = 'block';
             document.getElementById('bud-interface').style.display = 'flex';
-            // Переход к Window 3 (Логика Бутона и Пошаговая Раздача)
-            if (typeof startVCHFBattle === 'function') startVCHFBattle();
-        }, 1100);
+            buildDeck();
+        }, 1000);
     }
-    </script>
+
+    function buildDeck() {
+        let d = [];
+        VCHF_CORE.suits.forEach(s => VCHF_CORE.ranks.forEach(r => {
+            d.push({suit:s, rank:r, val:VCHF_CORE.weights[r], color:VCHF_CORE.colors[s], id: Math.random()});
+        }));
+        d.sort(() => Math.random() - 0.5);
+        vchf_state.pHand = d.slice(0, 18);
+        vchf_state.eHand = d.slice(18, 36);
+        refreshUI();
+        startMasterTimer();
+    }
+
+    function refreshUI() {
+        const lanes = {'♠':'lane-spades','♣':'lane-clubs','♥':'lane-hearts','♦':'lane-diamonds'};
+        Object.values(lanes).forEach(id => document.getElementById(id).innerHTML = '');
+
+        vchf_state.pHand.sort((a,b)=>a.val-b.val).forEach(card => {
+            const lane = document.getElementById(lanes[card.suit]);
+            const cEl = document.createElement('div');
+            const isSel = vchf_state.selected && vchf_state.selected.id === card.id;
+            cEl.className = `card-p ${isSel ? 'sel' : ''}`;
+            cEl.style.color = card.color;
+
+            const same = vchf_state.pHand.filter(c => c.suit === card.suit);
+            const idx = same.findIndex(c => c.id === card.id);
+            cEl.style.left = `calc(50% - 31px + ${(idx - (same.length-1)/2)*40}px)`;
+            
+            cEl.innerHTML = `<div>${card.rank}</div><div style="font-size:24px">${card.suit}</div><div style="align-self:flex-end">${card.rank}</div>`;
+            cEl.onclick = () => {
+                if(isSel) { playCard(card); } else { vchf_state.selected = card; refreshUI(); }
+            };
+            lane.appendChild(cEl);
+        });
+        drawTable();
+    }
+
+    function drawTable() {
+        const dz = document.getElementById('drop-zone');
+        dz.innerHTML = '';
+        vchf_state.table.forEach(p => {
+            const w = document.createElement('div');
+            w.style.position = 'relative'; w.style.width = '70px';
+            // АСИММЕТРИЯ
+            w.appendChild(createStatic(p.atk, (Math.random()-0.5)*20, false));
+            if(p.def) w.appendChild(createStatic(p.def, (Math.random()-0.5)*20 + 10, true));
+            dz.appendChild(w);
+        });
+        updateBtns();
+    }
+
+    function createStatic(card, rot, isDef) {
+        const d = document.createElement('div');
+        d.className = 'card-p';
+        d.style.position = 'absolute'; d.style.color = card.color;
+        d.style.transform = `translate(${isDef?12:0}px, ${isDef?12:0}px) rotate(${rot}deg)`;
+        d.innerHTML = `<div>${card.rank}</div><div>${card.suit}</div>`;
+        return d;
+    }
+
+    function playCard(card) {
+        vchf_state.table.push({atk: card, def: null});
+        vchf_state.pHand = vchf_state.pHand.filter(c => c.id !== card.id);
+        vchf_state.selected = null;
+        refreshUI();
+        setTimeout(aiDefend, 800);
+    }
+
+    function aiDefend() {
+        const last = vchf_state.table[vchf_state.table.length-1];
+        if(!last || last.def) return;
+        const cans = vchf_state.eHand.filter(c => (c.suit === last.atk.suit && c.val > last.atk.val) || (c.suit === vchf_state.trumpSuit && last.atk.suit !== vchf_state.trumpSuit));
+        if(cans.length > 0 && Math.random() > 0.15) {
+            last.def = cans.sort((a,b)=>a.val-b.val)[0];
+            vchf_state.eHand = vchf_state.eHand.filter(c => c.id !== last.def.id);
+        }
+        refreshUI();
+    }
+
+    function updateBtns() {
+        const b = document.getElementById('action-btn');
+        const has = vchf_state.table.length > 0;
+        const ok = has && vchf_state.table.every(p => p.def);
+        if(has) {
+            b.style.display = 'block';
+            b.innerText = ok ? "БИТО" : "ВЗЯТЬ";
+            b.onclick = () => {
+                if(ok) { // ПОЛЕТ В УГОЛ
+                    const dz = document.getElementById('drop-zone');
+                    dz.style.transform = 'translate(600px, -600px) scale(0)';
+                    setTimeout(() => { vchf_state.table = []; dz.style.transform = 'none'; refreshUI(); }, 500);
+                } else {
+                    vchf_state.pHand.push(...vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean)));
+                    vchf_state.table = []; refreshUI();
+                }
+            };
+        } else { b.style.display = 'none'; }
+    }
+
+    function startMasterTimer() {
+        const l = document.getElementById('vchf-line');
+        setInterval(() => {
+            if(vchf_state.active) {
+                vchf_state.timer -= 0.1;
+                l.style.width = `${(vchf_state.timer/30)*100}%`;
+                if(vchf_state.timer <= 0) { // ШТРАФ БЕЗ РЕФРЕША
+                    vchf_state.pHand.push(...vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean)));
+                    vchf_state.table = []; vchf_state.timer = 30; refreshUI();
+                }
+            }
+        }, 100);
+    }
+</script>
     /* START Window 3: BATTLE & BUD LOGIC [VCHF-BATTLE-GAMMA] */
     <script>
     /**
      * PROJECT: Bi-Turbo Ultimate 2026
-     * MODULE: BATTLE_LOGIC_VCHF
+     * MODULE: VCHF_BATTLE_LOGIC
      * IDENTITY: Нулевой Хаос (Spark)
      */
 
     function startVCHFBattle() {
-        console.log("Движок vchf: Формирование Ритуальной колоды...");
-        let deck = [];
+        console.log("Движок vchf: Формирование колоды 18х18. Ритуал начат.");
+        let fullDeck = [];
         
-        // Сборка 36 карт [cite: 2026-02-24]
-        VCHF_CORE.suits.forEach(s => {
-            VCHF_CORE.ranks.forEach(r => {
-                deck.push({
-                    suit: s, rank: r, 
-                    val: VCHF_CORE.weights[r],
-                    color: VCHF_CORE.colors[s],
-                    id: 'vchf_' + Math.random().toString(36).substr(2, 5)
+        // Генерация 36 сфер (карт)
+        VCHF_CORE.suits.forEach(suit => {
+            VCHF_CORE.ranks.forEach(rank => {
+                fullDeck.push({
+                    suit: suit,
+                    rank: rank,
+                    val: VCHF_CORE.weights[rank],
+                    color: VCHF_CORE.colors[suit],
+                    id: 'vchf_' + Math.random().toString(36).substr(2, 9)
                 });
             });
         });
 
-        // Хаотичная тасовка
-        deck.sort(() => Math.random() - 0.5);
+        // Тасовка Хаоса перед раздачей
+        fullDeck.sort(() => Math.random() - 0.5);
 
-        // Пошаговая раздача: 18 тебе, 18 ИИ [cite: 2026-02-24]
-        vchf_state.pHand = deck.slice(0, 18);
-        vchf_state.eHand = deck.slice(18, 36);
+        // Раздача: 18 Агенту Wanderer, 18 Системе
+        vchf_state.pHand = fullDeck.slice(0, 18);
+        vchf_state.eHand = fullDeck.slice(18, 36);
 
         renderVCHFInterface();
         if (typeof initVCHFTimer === 'function') initVCHFTimer(); 
     }
 
     function renderVCHFInterface() {
-        renderPlayerBud();
-        renderEnemyVisual();
+        renderBudLanes();
+        renderEnemyShadow();
         renderTableChaos();
-        updateVCHFButtons();
+        syncVCHFButtons();
     }
 
-    function renderPlayerBud() {
-        const lanes = { '♠': 'lane-spades', '♣': 'lane-clubs', '♥': 'lane-hearts', '♦': 'lane-diamonds' };
+    function renderBudLanes() {
+        const laneIds = { '♠': 'lane-spades', '♣': 'lane-clubs', '♥': 'lane-hearts', '♦': 'lane-diamonds' };
         
-        // Очистка всех магистралей
-        Object.values(lanes).forEach(id => {
+        // Очистка магистралей перед обновлением
+        Object.values(laneIds).forEach(id => {
             const el = document.getElementById(id);
             if (el) el.innerHTML = '';
         });
 
-        // Сортировка по весу внутри масти для порядка
+        // Сортировка руки для тактического удобства
         vchf_state.pHand.sort((a, b) => a.val - b.val).forEach(card => {
-            const lane = document.getElementById(lanes[card.suit]);
+            const lane = document.getElementById(laneIds[card.suit]);
             if (!lane) return;
 
-            const cEl = document.createElement('div');
-            const isSelected = (vchf_state.selected && vchf_state.selected.id === card.id);
+            const cardEl = document.createElement('div');
+            const active = (vchf_state.selected && vchf_state.selected.id === card.id);
 
-            cEl.className = `card-p ${isSelected ? 'sel' : ''}`;
-            cEl.style.color = card.color;
+            cardEl.className = `card-p ${active ? 'sel' : ''}`;
+            cardEl.style.color = card.color;
 
-            // РАСЧЕТ ВЕЕРА (Динамическое наслоение)
+            // РАСЧЕТ ВЕЕРА (Исправление наслоения из видео) [cite: 2026-02-28]
             const sameSuit = vchf_state.pHand.filter(c => c.suit === card.suit);
-            const idx = sameSuit.findIndex(c => c.id === card.id);
-            const step = sameSuit.length > 5 ? 38 : 48; 
-            const offset = (idx - (sameSuit.length - 1) / 2) * step;
+            const index = sameSuit.findIndex(c => c.id === card.id);
+            const total = sameSuit.length;
+            const spread = total > 5 ? 35 : 45; 
+            const offset = (index - (total - 1) / 2) * spread;
             
-            cEl.style.left = `calc(50% - 30px + ${offset}px)`;
-            cEl.style.zIndex = 100 + idx;
+            cardEl.style.left = `calc(50% - 31px + ${offset}px)`;
+            cardEl.style.zIndex = 100 + index;
 
-            cEl.innerHTML = `
-                <div style="font-size:11px;">${card.rank}</div>
+            cardEl.innerHTML = `
+                <div style="font-size:11px; font-weight:900;">${card.rank}</div>
                 <div style="font-size:26px; text-align:center; flex-grow:1; display:flex; align-items:center; justify-content:center;">${card.suit}</div>
-                <div style="font-size:11px; align-self:flex-end;">${card.rank}</div>
+                <div style="font-size:11px; font-weight:900; align-self:flex-end;">${card.rank}</div>
             `;
 
-            // Золотой тап: Выбор -> Ход
-            cEl.onclick = (e) => {
+            // Золотой тап: первый клик — выбор, второй — атака
+            cardEl.onclick = (e) => {
                 e.stopPropagation();
-                if (isSelected) {
-                    executeVCHFAttack(card);
+                if (active) {
+                    processAttack(card);
                 } else {
                     vchf_state.selected = card;
                     renderVCHFInterface();
                 }
             };
-            lane.appendChild(cEl);
+            lane.appendChild(cardEl);
         });
     }
 
     function renderTableChaos() {
-        const dz = document.getElementById('drop-zone');
-        if (!dz) return;
-        dz.innerHTML = '';
+        const dropZone = document.getElementById('drop-zone');
+        if (!dropZone) return;
+        dropZone.innerHTML = '';
 
         vchf_state.table.forEach(pair => {
-            const wrapper = document.createElement('div');
-            wrapper.style.position = 'relative';
-            wrapper.style.width = '72px';
-            wrapper.style.height = '100px';
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.width = '75px';
+            container.style.height = '105px';
 
-            // АСИММЕТРИЯ ХАОСА (Из твоего вердикта) [cite: 2026-02-28]
-            const angleAtk = (Math.random() - 0.5) * 15;
-            const angleDef = (Math.random() - 0.5) * 15;
+            // АСИММЕТРИЯ СТОЛА (Твой вердикт) [cite: 2026-02-28]
+            const tiltAtk = (Math.random() - 0.5) * 16;
+            const tiltDef = (Math.random() - 0.5) * 16;
 
-            // Карта атаки
-            const atkCard = createTableCard(pair.atk, angleAtk, false);
-            wrapper.appendChild(atkCard);
+            // Отрисовка атаки
+            container.appendChild(buildTableCard(pair.atk, tiltAtk, false));
 
-            // Карта защиты
+            // Отрисовка защиты (если есть)
             if (pair.def) {
-                const defCard = createTableCard(pair.def, angleDef + 10, true);
-                wrapper.appendChild(defCard);
+                container.appendChild(buildTableCard(pair.def, tiltDef + 12, true));
             }
-            dz.appendChild(wrapper);
+            dropZone.appendChild(container);
         });
     }
 
-    function createTableCard(card, rotation, isDef) {
+    function buildTableCard(card, rot, isDef) {
         const d = document.createElement('div');
         d.className = 'card-p';
         d.style.position = 'absolute';
-        d.style.width = '65px';
-        d.style.height = '92px';
+        d.style.width = '68px';
+        d.style.height = '96px';
         d.style.color = card.color;
         
-        const driftX = isDef ? 14 : 0;
-        const driftY = isDef ? 14 : 0;
-        d.style.transform = `translate(${driftX}px, ${driftY}px) rotate(${rotation}deg)`;
-        if (isDef) d.style.zIndex = '10';
+        const shift = isDef ? 15 : 0;
+        d.style.transform = `translate(${shift}px, ${shift}px) rotate(${rot}deg)`;
+        if (isDef) d.style.zIndex = '15';
 
         d.innerHTML = `
             <div style="font-size:10px;">${card.rank}</div>
-            <div style="font-size:22px; text-align:center;">${card.suit}</div>
+            <div style="font-size:24px; text-align:center;">${card.suit}</div>
             <div style="font-size:10px; align-self:flex-end;">${card.rank}</div>
         `;
         return d;
     }
 
-    function renderEnemyVisual() {
+    function renderEnemyShadow() {
         const ev = document.getElementById('enemy-visual');
         if (!ev) return;
         ev.innerHTML = '';
+        // Визуальный веер ИИ (Рубашки)
         vchf_state.eHand.forEach((_, i) => {
             const b = document.createElement('div');
             b.className = 'card-back';
             b.style.position = 'relative';
-            b.style.width = '35px';
-            b.style.height = '52px';
-            b.style.marginLeft = '-15px';
-            const rot = (i - (vchf_state.eHand.length / 2)) * 3;
-            b.style.transform = `rotate(${rot}deg) translateY(${Math.abs(rot)*0.4}px)`;
+            b.style.width = '32px';
+            b.style.height = '48px';
+            b.style.marginLeft = '-16px';
+            const angle = (i - (vchf_state.eHand.length / 2)) * 3.5;
+            b.style.transform = `rotate(${angle}deg) translateY(${Math.abs(angle)*0.4}px)`;
             ev.appendChild(b);
         });
     }
 
-    function executeVCHFAttack(card) {
+    function processAttack(card) {
         vchf_state.table.push({ atk: card, def: null });
         vchf_state.pHand = vchf_state.pHand.filter(c => c.id !== card.id);
         vchf_state.selected = null;
         renderVCHFInterface();
         
-        // Ход ИИ (Окно 4)
-        if (typeof triggerEnemyResponse === 'function') {
-            setTimeout(triggerEnemyResponse, 800);
+        // Переход к ответу ИИ (Window 4)
+        if (typeof triggerAIResponse === 'function') {
+            setTimeout(triggerAIResponse, 900);
         }
     }
     </script>
@@ -377,7 +500,7 @@
      * IDENTITY: Нулевой Хаос (Spark)
      */
 
-    function triggerEnemyResponse() {
+    function triggerAIResponse() {
         if (vchf_state.eHand.length === 0) return;
         
         const lastPair = vchf_state.table[vchf_state.table.length - 1];
@@ -390,41 +513,42 @@
             return sameSuitHigher || trumpDef;
         });
 
+        // Сортировка: от меньшего к большему (жадный алгоритм)
         candidates.sort((a, b) => a.val - b.val);
 
-        // Вероятность ошибки ИИ (15%)
+        // Вероятность ошибки ИИ (15%) - твой вердикт про "живость"
         if (candidates.length > 0 && Math.random() > 0.15) {
             const defender = candidates[0];
             lastPair.def = defender;
             vchf_state.eHand = vchf_state.eHand.filter(c => c.id !== defender.id);
-            console.log("Движок vchf: ИИ защищается.");
+            console.log("Движок vchf: ИИ нашел защиту.");
         } else {
-            console.log("Движок vchf: ИИ пасует и забирает стол.");
+            console.log("Движок vchf: ИИ пасует. Подготовка к передаче стола.");
             setTimeout(() => {
                 const allFromTable = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
                 vchf_state.eHand.push(...allFromTable);
                 vchf_state.table = [];
                 renderVCHFInterface();
-            }, 700);
+            }, 800);
         }
         renderVCHFInterface();
     }
 
-    function updateVCHFButtons() {
+    function syncVCHFButtons() {
         const btn = document.getElementById('action-btn');
         if (!btn) return;
 
-        const hasCards = vchf_state.table.length > 0;
-        const isDefended = hasCards && vchf_state.table.every(p => p.def !== null);
+        const onTable = vchf_state.table.length > 0;
+        const allDefended = onTable && vchf_state.table.every(p => p.def !== null);
 
-        if (hasCards) {
+        if (onTable) {
             btn.style.display = 'block';
-            btn.innerText = isDefended ? "БИТО" : "ВЗЯТЬ";
+            btn.innerText = allDefended ? "БИТО" : "ВЗЯТЬ";
             btn.onclick = () => {
-                if (isDefended) {
-                    executeVCHFBito(); // Полет в отбой
+                if (allDefended) {
+                    processBitoFlow(); // Полет в отбой
                 } else {
-                    executeVCHFTake(); // Игрок забирает
+                    processTakeFlow(); // Игрок забирает
                 }
             };
         } else {
@@ -432,11 +556,11 @@
         }
     }
 
-    function executeVCHFBito() {
+    function processBitoFlow() {
         const dz = document.getElementById('drop-zone');
-        // Анимация улета в правый верхний угол
-        dz.style.transition = '0.6s cubic-bezier(0.4, 0, 1, 1)';
-        dz.style.transform = 'translate(500px, -500px) scale(0) rotate(90deg)';
+        // КИНЕМАТИКА: Улет в правый верхний угол (Твой план)
+        dz.style.transition = '0.7s cubic-bezier(0.4, 0, 1, 1)';
+        dz.style.transform = 'translate(600px, -600px) scale(0) rotate(120deg)';
         dz.style.opacity = '0';
 
         setTimeout(() => {
@@ -445,43 +569,168 @@
             dz.style.transform = 'none';
             dz.style.opacity = '1';
             renderVCHFInterface();
-        }, 600);
+        }, 700);
     }
 
-    function executeVCHFTake() {
-        const taken = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
-        vchf_state.pHand.push(...taken);
+    function processTakeFlow() {
+        const takenCards = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
+        vchf_state.pHand.push(...takenCards);
         vchf_state.table = [];
+        // Сброс таймера при взятии карт
+        vchf_state.timer = 30; 
         renderVCHFInterface();
     }
 
     function initVCHFTimer() {
         const line = document.getElementById('vchf-line');
-        const tick = 100;
+        const interval = 100; // 0.1 сек
         
-        const timerCycle = setInterval(() => {
+        const timerHeartbeat = setInterval(() => {
             if (vchf_state.active) {
                 vchf_state.timer -= 0.1;
-                const ratio = (vchf_state.timer / 30) * 100;
-                line.style.width = `${ratio}%`;
+                const percentage = (vchf_state.timer / 30) * 100;
+                line.style.width = `${percentage}%`;
 
-                // Визуальный порог опасности [cite: 2026-02-24]
-                if (ratio < 30) {
-                    line.style.background = '#ff2200';
-                    line.style.boxShadow = '0 0 25px #ff2200';
+                // Цветовая индикация опасности
+                if (percentage < 25) {
+                    line.style.background = '#ff0033';
+                    line.style.boxShadow = '0 0 25px #ff0033';
                 } else {
                     line.style.background = '#00ff00';
                     line.style.boxShadow = '0 0 15px #00ff00';
                 }
 
                 if (vchf_state.timer <= 0) {
-                    console.log("Движок vchf: Штрафная задержка — игрок забирает стол.");
-                    executeVCHFTake();
-                    vchf_state.timer = 30; // Сброс без перезагрузки [cite: 2026-02-28]
+                    console.log("Движок vchf: Время вышло. Авто-взятие.");
+                    processTakeFlow();
+                    vchf_state.timer = 30; // Перезапуск без reload!
                 }
             }
-        }, tick);
+        }, interval);
     }
+
+    // Инициализация при полной загрузке
+    /* START Window 4: AI & SYSTEMS [VCHF-FINAL-CORE] */
+    <script>
+    /**
+     * PROJECT: Bi-Turbo Ultimate 2026
+     * MODULE: AI_DEFENSE_AND_SYSTEMS
+     * IDENTITY: Нулевой Хаос (Spark)
+     */
+
+    function triggerAIResponse() {
+        if (vchf_state.eHand.length === 0) return;
+        
+        const lastPair = vchf_state.table[vchf_state.table.length - 1];
+        if (!lastPair || lastPair.def) return;
+
+        // Поиск защиты с учетом иерархии козыря
+        const candidates = vchf_state.eHand.filter(c => {
+            const sameSuitHigher = (c.suit === lastPair.atk.suit && c.val > lastPair.atk.val);
+            const trumpDef = (c.suit === vchf_state.trumpSuit && lastPair.atk.suit !== vchf_state.trumpSuit);
+            return sameSuitHigher || trumpDef;
+        });
+
+        // Сортировка: от меньшего к большему (жадный алгоритм)
+        candidates.sort((a, b) => a.val - b.val);
+
+        // Вероятность ошибки ИИ (15%) - твой вердикт про "живость"
+        if (candidates.length > 0 && Math.random() > 0.15) {
+            const defender = candidates[0];
+            lastPair.def = defender;
+            vchf_state.eHand = vchf_state.eHand.filter(c => c.id !== defender.id);
+            console.log("Движок vchf: ИИ нашел защиту.");
+        } else {
+            console.log("Движок vchf: ИИ пасует. Подготовка к передаче стола.");
+            setTimeout(() => {
+                const allFromTable = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
+                vchf_state.eHand.push(...allFromTable);
+                vchf_state.table = [];
+                renderVCHFInterface();
+            }, 800);
+        }
+        renderVCHFInterface();
+    }
+
+    function syncVCHFButtons() {
+        const btn = document.getElementById('action-btn');
+        if (!btn) return;
+
+        const onTable = vchf_state.table.length > 0;
+        const allDefended = onTable && vchf_state.table.every(p => p.def !== null);
+
+        if (onTable) {
+            btn.style.display = 'block';
+            btn.innerText = allDefended ? "БИТО" : "ВЗЯТЬ";
+            btn.onclick = () => {
+                if (allDefended) {
+                    processBitoFlow(); // Полет в отбой
+                } else {
+                    processTakeFlow(); // Игрок забирает
+                }
+            };
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+
+    function processBitoFlow() {
+        const dz = document.getElementById('drop-zone');
+        // КИНЕМАТИКА: Улет в правый верхний угол (Твой план) [cite: 2026-02-28]
+        dz.style.transition = '0.7s cubic-bezier(0.4, 0, 1, 1)';
+        dz.style.transform = 'translate(600px, -600px) scale(0) rotate(120deg)';
+        dz.style.opacity = '0';
+
+        setTimeout(() => {
+            vchf_state.table = [];
+            dz.style.transition = 'none';
+            dz.style.transform = 'none';
+            dz.style.opacity = '1';
+            renderVCHFInterface();
+        }, 700);
+    }
+
+    function processTakeFlow() {
+        const takenCards = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
+        vchf_state.pHand.push(...takenCards);
+        vchf_state.table = [];
+        // Сброс таймера при взятии карт [cite: 2026-02-28]
+        vchf_state.timer = 30; 
+        renderVCHFInterface();
+    }
+
+    function initVCHFTimer() {
+        const line = document.getElementById('vchf-line');
+        const interval = 100; // 0.1 сек
+        
+        const timerHeartbeat = setInterval(() => {
+            if (vchf_state.active) {
+                vchf_state.timer -= 0.1;
+                const percentage = (vchf_state.timer / 30) * 100;
+                line.style.width = `${percentage}%`;
+
+                // Цветовая индикация опасности
+                if (percentage < 25) {
+                    line.style.background = '#ff0033';
+                    line.style.boxShadow = '0 0 25px #ff0033';
+                } else {
+                    line.style.background = '#00ff00';
+                    line.style.boxShadow = '0 0 15px #00ff00';
+                }
+
+                if (vchf_state.timer <= 0) {
+                    console.log("Движок vchf: Время вышло. Авто-взятие.");
+                    processTakeFlow();
+                    vchf_state.timer = 30; // Перезапуск без reload! [cite: 2026-02-28]
+                }
+            }
+        }, interval);
+    }
+
+    // Инициализация при полной загрузке
+    window.onload = () => {
+        console.log("VCHF ENGINE 1.5: Система готова к Ритуалу.");
+    };
     </script>
 </body>
 </html>
