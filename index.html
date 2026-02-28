@@ -3,99 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Нулевой хаос | Bi-Turbo Ultimate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <title>Нулевой хаос 1.2 | GitHub Ready</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #d4af37;
-            --vchf-glow: 0 0 15px rgba(212, 175, 55, 0.6);
-            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #050505 100%);
+            --cherry: radial-gradient(circle at center, #600010 0%, #050505 100%);
             --glass: rgba(0, 0, 0, 0.85);
-            --burn-line: #00ff00;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'JetBrains Mono', monospace; }
+
+        #entropy-table { width: 100vw; height: 100vh; background: var(--cherry); position: relative; overflow: hidden; }
+
+        /* Козырь-Штурвал */
+        #trump-totem { 
+            position: absolute; top: 15px; right: 15px; font-size: 35px; 
+            color: var(--gold); text-shadow: 0 0 10px var(--gold); z-index: 1000;
         }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--gold); }
+        /* Поле боя: поднято выше, чтобы не пересекаться с Бутоном */
+        #battlefield { 
+            position: absolute; top: 15%; width: 100%; height: 45%; 
+            display: flex; flex-direction: column; align-items: center; z-index: 10; 
+        }
+        #table-drop-zone { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 90%; }
 
-        #entropy-table { width: 100vw; height: 100vh; background: var(--cherry-velvet); position: relative; display: flex; flex-direction: column; }
+        .card-pair { position: relative; width: 60px; height: 90px; }
+        .table-card { 
+            position: absolute; width: 60px; height: 90px; background: #fff; 
+            border-radius: 6px; border: 1px solid var(--gold); padding: 5px;
+            font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+        }
+        .attack-card { transform: rotate(-5deg); z-index: 1; }
+        .defense-card { transform: translate(10px, 10px) rotate(5deg); z-index: 2; }
 
-        /* ТОТЕМ КОЗЫРЯ */
-        #trump-totem { position: absolute; top: 20px; right: 20px; font-size: 32px; text-shadow: var(--vchf-glow); z-index: 1000; }
+        /* Враг */
+        #enemy-hand { position: absolute; top: -40px; width: 100%; display: flex; justify-content: center; transform: rotate(180deg); }
+        .card-back { 
+            width: 40px; height: 60px; background: url('1771489965074(1).png') center/cover; 
+            border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px; margin-left: -25px; 
+        }
 
-        /* ЗОНА БИТВЫ */
-        #battlefield { flex: 1; position: relative; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
-        #table-drop-zone { display: flex; justify-content: center; align-items: center; gap: 15px; height: 150px; width: 100%; }
-        
-        .card-pair { position: relative; width: 70px; height: 100px; }
-        .table-card { position: absolute; width: 70px; height: 100px; background: #fff; border-radius: 5px; border: 1px solid var(--gold); padding: 5px; font-family: 'Orbitron'; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .attack-card { z-index: 1; transform: translateX(-10px) rotate(-5deg); }
-        .defense-card { z-index: 2; transform: translateX(10px) translateY(10px) rotate(5deg); }
+        /* Бутон 35% (Слой управления) */
+        #bud-overlay { 
+            position: absolute; bottom: 0; width: 100%; height: 35%; 
+            background: var(--glass); backdrop-filter: blur(15px); 
+            border-top: 2px solid var(--gold); z-index: 500; 
+            display: flex; flex-direction: column; justify-content: space-evenly;
+        }
+        #burning-line { position: absolute; top: -2px; left: 0; width: 100%; height: 4px; background: #00ff00; }
 
-        /* ВРАГ */
-        #enemy-hand { position: absolute; top: -30px; width: 100%; height: 100px; display: flex; justify-content: center; transform: rotate(180deg); }
-        .card-back { width: 45px; height: 65px; background: url('1771489965074(1).png') center/cover; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px; margin-left: -30px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-
-        /* БУТОН 35% */
-        #bud-overlay { position: absolute; bottom: 0; width: 100%; height: 35%; background: linear-gradient(to top, var(--glass) 80%, transparent); backdrop-filter: blur(12px); border-top: 1px solid rgba(212, 175, 55, 0.2); z-index: 500; display: flex; flex-direction: column; justify-content: space-around; }
-        #burning-line { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--burn-line); transition: width 0.1s linear; }
-
-        .suit-lane { height: 22%; width: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
-        .hand-card { position: absolute; width: 60px; height: 85px; background: #fff; color: #000; border-radius: 5px; border: 1px solid var(--gold); padding: 5px; font-family: 'Orbitron'; font-weight: 900; font-size: 14px; box-shadow: -5px 0 10px rgba(0,0,0,0.6); transition: 0.3s; transform-origin: bottom center; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; }
-        .hand-card.selected { transform: translateY(-20px) scale(1.1); box-shadow: var(--vchf-glow); z-index: 2000 !important; border: 2px solid #fff; }
+        .suit-lane { height: 20%; position: relative; display: flex; justify-content: center; }
+        .hand-card { 
+            position: absolute; width: 55px; height: 75px; background: #fff; color: #000;
+            border-radius: 4px; border: 1px solid var(--gold); padding: 4px;
+            font-size: 12px; transition: 0.3s; cursor: pointer;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .hand-card.selected { transform: translateY(-30px) scale(1.15); z-index: 2000 !important; border: 2px solid var(--gold); box-shadow: 0 0 20px var(--gold); }
         .dimmed { opacity: 0.3; filter: grayscale(1); }
 
-        #action-btn { position: absolute; bottom: 40%; right: 20px; padding: 12px 24px; background: #000; border: 2px solid var(--gold); color: var(--gold); font-family: 'Orbitron'; display: none; z-index: 1000; border-radius: 5px; cursor: pointer; }
-        #vchf-status { position: absolute; bottom: 5px; left: 10px; font-size: 9px; opacity: 0.4; letter-spacing: 2px; }
+        #action-btn { 
+            position: absolute; top: -60px; right: 20px; padding: 10px 20px; 
+            background: #000; border: 2px solid var(--gold); color: var(--gold);
+            font-family: 'Orbitron'; border-radius: 5px; display: none;
+        }
     </style>
 </head>
 <body>
 <div id="entropy-table">
-    <div id="trump-totem"></div>
-    <div id="battlefield"><div id="enemy-hand"></div><div id="table-drop-zone"></div></div>
-    <button id="action-btn"></button>
+    <div id="trump-totem">♠</div>
+    <div id="battlefield">
+        <div id="enemy-hand"></div>
+        <div id="table-drop-zone"></div>
+        <button id="action-btn"></button>
+    </div>
     <div id="bud-overlay">
         <div id="burning-line"></div>
         <div class="suit-lane" id="lane-spades"></div>
         <div class="suit-lane" id="lane-clubs"></div>
         <div class="suit-lane" id="lane-hearts"></div>
         <div class="suit-lane" id="lane-diamonds"></div>
-        <div id="vchf-status">NULL ENTROPY | AGENT WANDERER 1.1</div>
     </div>
 </div>
 <script>
-/**
- * PROJECT: Bi-Turbo Ultimate (Нулевой хаос)
- * AGENT: Spark (Protocol 1.1)
- * LOGIC: Round Durak 18x18
+/** * Протокол 1.1: Манифест Монолита. Исправлено наложение слоев.
+ * Добавлен "Штурвал" выбора козыря.
  */
-
-const VCHF_CORE = {
+const CONFIG = {
     suits: ['♠', '♣', '♥', '♦'],
     ranks: ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'],
-    val: { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 },
-    ai_error: 0.15,
-    timer: 30
+    val: {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14}
 };
 
 let game = {
-    p_hand: [], e_hand: [], table: [],
-    trump: '', is_p_atk: true, sel: null,
-    last_t: 0, t_val: 30, t_int: null
+    pHand: [], eHand: [], table: [],
+    trump: '', isPlayerAtk: true, sel: null,
+    timer: 30, tInt: null
 };
 
-// --- CORE INIT ---
-function startGame() {
+function init() {
+    // Анимация штурвала козыря (3 сек)
+    let i = 0;
+    let roll = setInterval(() => {
+        document.getElementById('trump-totem').innerText = CONFIG.suits[i % 4];
+        i++;
+    }, 100);
+
+    setTimeout(() => {
+        clearInterval(roll);
+        setupGame();
+    }, 2500);
+}
+
+function setupGame() {
     let deck = [];
-    VCHF_CORE.suits.forEach(s => VCHF_CORE.ranks.forEach(r => deck.push({s, r, v: VCHF_CORE.val[r]})));
+    CONFIG.suits.forEach(s => CONFIG.ranks.forEach(r => deck.push({s, r, v: CONFIG.val[r]})));
     deck.sort(() => Math.random() - 0.5);
     
-    game.p_hand = deck.slice(0, 18);
-    game.e_hand = deck.slice(18, 36);
-    game.trump = VCHF_CORE.suits[Math.floor(Math.random() * 4)];
-    document.getElementById('trump-totem').innerText = game.trump;
+    game.pHand = deck.slice(0, 18);
+    game.eHand = deck.slice(18, 36);
+    game.trump = document.getElementById('trump-totem').innerText;
     
     sync();
-    runTimer();
+    startTimer();
 }
 
 function sync() {
@@ -104,37 +136,34 @@ function sync() {
 
 function renderE() {
     const el = document.getElementById('enemy-hand'); el.innerHTML = '';
-    game.e_hand.forEach((_, i) => {
+    game.eHand.forEach((_, i) => {
         const c = document.createElement('div'); c.className = 'card-back';
-        const rot = (i - (game.e_hand.length/2)) * 4;
+        const rot = (i - (game.eHand.length/2)) * 3;
         c.style.transform = `rotate(${rot}deg) translateX(${rot}px)`;
         el.appendChild(c);
     });
 }
 
 function renderP() {
-    const lanes = { '♠':'lane-spades', '♣':'lane-clubs', '♥':'lane-hearts', '♦':'lane-diamonds' };
+    const lanes = {'♠':'lane-spades', '♣':'lane-clubs', '♥':'lane-hearts', '♦':'lane-diamonds'};
     Object.values(lanes).forEach(id => document.getElementById(id).innerHTML = '');
     
-    game.p_hand.sort((a,b) => a.v - b.v).forEach(c => {
+    game.pHand.sort((a,b) => a.v - b.v).forEach(c => {
         const lane = document.getElementById(lanes[c.s]);
         const cardEl = document.createElement('div');
         cardEl.className = `hand-card ${game.sel === c ? 'selected' : ''} ${game.sel && game.sel !== c ? 'dimmed' : ''}`;
-        cardEl.style.color = (c.s === '♥' || c.s === '♦') ? '#e30a17' : '#000';
-        cardEl.innerHTML = `<span>${c.r}</span><span style="font-size:20px">${c.s}</span><span>${c.r}</span>`;
+        cardEl.style.color = (c.s === '♥' || c.s === '♦') ? '#ff4444' : '#000';
+        cardEl.innerHTML = `<b>${c.r}</b><i style="font-size:18px">${c.s}</i><b>${c.r}</b>`;
         
         cardEl.onclick = (e) => {
             e.stopPropagation();
-            const now = Date.now();
-            if(game.sel === c && (now - game.last_t) < 350) move(c);
+            if(game.sel === c) executeMove(c);
             else { game.sel = c; sync(); }
-            game.last_t = now;
         };
         
-        const cardsInS = game.p_hand.filter(x => x.s === c.s);
-        const idx = cardsInS.indexOf(c);
-        const shift = (idx - (cardsInS.length - 1) / 2) * 35;
-        cardEl.style.left = `calc(50% - 30px + ${shift}px)`;
+        const count = game.pHand.filter(x => x.s === c.s).length;
+        const idx = game.pHand.filter(x => x.s === c.s).indexOf(c);
+        cardEl.style.left = `calc(50% - 27px + ${(idx - (count-1)/2)*30}px)`;
         lane.appendChild(cardEl);
     });
 }
@@ -143,115 +172,82 @@ function renderT() {
     const zone = document.getElementById('table-drop-zone'); zone.innerHTML = '';
     game.table.forEach(slot => {
         const pair = document.createElement('div'); pair.className = 'card-pair';
-        pair.appendChild(createC(slot.atk, 'attack-card'));
-        if(slot.def) pair.appendChild(createC(slot.def, 'defense-card'));
+        pair.appendChild(createTCard(slot.atk, 'attack-card'));
+        if(slot.def) pair.appendChild(createTCard(slot.def, 'defense-card'));
         zone.appendChild(pair);
     });
 }
 
-function createC(c, type) {
+function createTCard(c, type) {
     const d = document.createElement('div'); d.className = `table-card ${type}`;
-    d.style.color = (c.s === '♥' || c.s === '♦') ? '#e30a17' : '#000';
+    d.style.color = (c.s === '♥' || c.s === '♦') ? '#ff4444' : '#000';
     d.innerHTML = `<div>${c.r}</div><div>${c.s}</div>`;
     return d;
 }
 
-// --- BATTLE LOGIC ---
-function move(c) {
-    if(game.is_p_atk) {
-        if(canA(c)) {
+function executeMove(c) {
+    if(game.isPlayerAtk) {
+        if(!game.table.length || game.table.some(s => s.atk.r === c.r || (s.def && s.def.r === c.r))) {
             game.table.push({atk:c, def:null});
-            game.p_hand = game.p_hand.filter(x => x !== c);
-            game.sel = null; sync(); setTimeout(aiD, 1200);
+            game.pHand = game.pHand.filter(x => x !== c);
+            game.sel = null; sync(); setTimeout(aiDefense, 1000);
         }
     } else {
         let t = game.table.find(s => !s.def);
-        if(t && canB(c, t.atk)) {
-            t.def = c; game.p_hand = game.p_hand.filter(x => x !== c);
-            game.sel = null; sync(); checkRound();
+        if(t && ((c.s === t.atk.s && c.v > t.atk.v) || (c.s === game.trump && t.atk.s !== game.trump))) {
+            t.def = c; game.pHand = game.pHand.filter(x => x !== c);
+            game.sel = null; sync(); checkPhase();
         }
     }
 }
 
-function canA(c) {
-    if(!game.table.length) return true;
-    let r = []; game.table.forEach(s => { r.push(s.atk.r); if(s.def) r.push(s.def.r); });
-    return r.includes(c.r);
-}
-
-function canB(d, a) {
-    if(d.s === a.s && d.v > a.v) return true;
-    return d.s === game.trump && a.s !== game.trump;
-}
-
-function aiD() {
+function aiDefense() {
     let t = game.table.find(s => !s.def); if(!t) return;
-    let opts = game.e_hand.filter(c => canB(c, t.atk)).sort((a,b) => a.v - b.v);
-    if(opts.length && Math.random() > VCHF_CORE.ai_error) {
-        t.def = opts[0]; game.e_hand = game.e_hand.filter(x => x !== opts[0]);
-        sync(); setTimeout(checkRound, 800);
+    let opts = game.eHand.filter(c => (c.s === t.atk.s && c.v > t.atk.v) || (c.s === game.trump && t.atk.s !== game.trump)).sort((a,b) => a.v - b.v);
+    if(opts.length && Math.random() > 0.15) {
+        t.def = opts[0]; game.eHand = game.eHand.filter(x => x !== opts[0]);
+        sync(); setTimeout(checkPhase, 800);
     } else take('enemy');
-}
-
-function aiA() {
-    if(game.is_p_atk || !game.e_hand.length) return;
-    let c = null;
-    if(!game.table.length) {
-        let nt = game.e_hand.filter(x => x.s !== game.trump).sort((a,b) => a.v - b.v);
-        c = nt[0] || game.e_hand.sort((a,b) => a.v - b.v)[0];
-    } else {
-        let r = []; game.table.forEach(s => { r.push(s.atk.r); if(s.def) r.push(s.def.r); });
-        let p = game.e_hand.filter(x => r.includes(x.r)).sort((a,b) => a.v - b.v);
-        if(p.length && Math.random() > VCHF_CORE.ai_error) c = p[0];
-    }
-    if(c) { game.table.push({atk:c, def:null}); game.e_hand = game.e_hand.filter(x => x !== c); sync(); }
-    else bito();
 }
 
 function take(who) {
     let cards = []; game.table.forEach(s => { cards.push(s.atk); if(s.def) cards.push(s.def); });
-    if(who === 'player' || (!game.is_p_atk && who === 'enemy')) {
-        game.p_hand.push(...cards); game.is_p_atk = false;
-    } else {
-        game.e_hand.push(...cards); game.is_p_atk = true;
-    }
-    game.table = []; sync(); if(!game.is_p_atk) setTimeout(aiA, 1000);
+    if(who === 'player' || (!game.isPlayerAtk && who === 'enemy')) game.pHand.push(...cards);
+    else game.eHand.push(...cards);
+    game.table = []; game.isPlayerAtk = (who !== 'player'); sync();
 }
 
 function bito() {
-    game.table = []; game.is_p_atk = !game.is_p_atk; sync();
-    if(!game.is_p_atk) setTimeout(aiA, 1000);
+    game.table = []; game.isPlayerAtk = !game.isPlayerAtk; sync();
+    if(!game.isPlayerAtk) setTimeout(() => {
+        let nt = game.eHand.filter(x => x.s !== game.trump).sort((a,b) => a.v - b.v);
+        let c = nt[0] || game.eHand[0];
+        game.table.push({atk:c, def:null}); game.eHand = game.eHand.filter(x => x !== c); sync();
+    }, 1000);
 }
 
 function updateBtn() {
     const b = document.getElementById('action-btn');
     if(!game.table.length) { b.style.display = 'none'; return; }
     b.style.display = 'block';
-    if(game.is_p_atk) { b.innerText = 'БИТО'; b.onclick = bito; }
+    if(game.isPlayerAtk) { b.innerText = 'БИТО'; b.onclick = bito; }
     else { b.innerText = 'ВЗЯТЬ'; b.onclick = () => take('player'); }
 }
 
-function checkRound() {
-    if(game.table.every(s => s.def)) updateBtn();
-    if(!game.p_hand.length || !game.e_hand.length) { alert("КОНЕЦ"); location.reload(); }
-}
+function checkPhase() { if(game.table.every(s => s.def)) updateBtn(); }
 
-function runTimer() {
+function startTimer() {
     const l = document.getElementById('burning-line');
-    game.t_int = setInterval(() => {
-        game.t_val -= 0.1;
-        let p = (game.t_val / VCHF_CORE.timer) * 100;
+    game.tInt = setInterval(() => {
+        game.timer -= 0.1;
+        let p = (game.timer / 30) * 100;
         l.style.width = p + '%';
         if(p < 20) l.style.background = '#ff0000';
-        if(game.t_val <= 0) { 
-            if(!game.is_p_atk) take('player'); else bito();
-            game.t_val = 30;
-        }
+        if(game.timer <= 0) { bito(); game.timer = 30; }
     }, 100);
 }
 
-document.getElementById('entropy-table').onclick = () => { game.sel = null; sync(); };
-window.onload = startGame;
+window.onload = init;
 </script>
 </body>
 </html>
