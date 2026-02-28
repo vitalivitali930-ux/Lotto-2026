@@ -3,547 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto Bi-Turbo Ultimate | Wanderer Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <title>VCHF Engine | Bi-Turbo Ultimate</title>
     <style>
         :root {
             --gold: #d4af37;
-            --vchf-glow: 0 0 20px rgba(212, 175, 55, 0.8);
-            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #050505 100%);
-            --glass: rgba(0, 0, 0, 0.85);
+            --vchf-glow: 0 0 25px rgba(212, 175, 55, 0.9);
+            --cherry-velvet: radial-gradient(circle at center, #7a0019 0%, #050505 100%);
+            --glass-panel: rgba(0, 0, 0, 0.85);
         }
-
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { 
-            width: 100%; height: 100%; background: #000; 
-            overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--gold); 
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+
+        #game-table {
+            width: 100vw; height: 100vh; background: var(--cherry-velvet);
+            position: relative; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* КОНТЕЙНЕР МОНОЛИТА */
-        #monolith-container { 
-            width: 100vw; height: 100vh; background: var(--cherry-velvet); 
-            position: relative; display: flex; flex-direction: column; 
+        #ritual-circle {
+            position: absolute; top: 45%; left: 50%; width: 340px; height: 340px;
+            transform: translate(-50%, -50%); z-index: 100;
         }
 
-        /* ШТУРВАЛ СУДЬБЫ (РИТУАЛЬНЫЙ КРУГ) */
-        #ritual-wheel {
-            position: absolute; top: 50%; left: 50%;
-            width: 320px; height: 320px;
-            transform: translate(-50%, -50%);
-            z-index: 100; display: block;
-        }
-
-        .ritual-card {
-            position: absolute; width: 45px; height: 65px;
-            background: url('1771489965074(1).png') center/cover;
-            border: 1px solid var(--gold); border-radius: 5px;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .card-back {
+            position: absolute; width: 48px; height: 70px;
+            background: url('1771489965074(1).png') center/cover, #222;
+            border: 1px solid var(--gold); border-radius: 4px;
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform-origin: center center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
 
-        .ritual-card.highlight {
+        .card-back.highlight {
             box-shadow: 0 0 30px #fff, var(--vchf-glow);
-            border: 2px solid #fff; z-index: 1000; scale: 1.2;
+            border: 2px solid #fff; z-index: 1000; transform: scale(1.25);
         }
 
-        /* ТОТЕМ КОЗЫРЯ (ЦЕНТР) */
         #trump-totem {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 70px; color: var(--gold);
-            text-shadow: var(--vchf-glow);
-            z-index: 150; opacity: 0; transition: opacity 0.8s;
-            font-family: 'Orbitron', sans-serif;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80px; color: var(--gold); text-shadow: var(--vchf-glow);
+            opacity: 0; transition: opacity 1s; pointer-events: none;
         }
 
-        /* ЗОНА БИТВЫ (СКРЫТА ДО СТАРТА) */
-        #battle-arena {
-            flex: 1; position: relative; width: 100%;
-            display: none; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 10;
-        }
-
-        #table-drop-zone { 
-            display: flex; justify-content: center; align-items: center; 
-            gap: 15px; height: 160px; width: 100%; 
-        }
-
-        /* ИНТЕРФЕЙС "БУТОН" (НИЖНИЕ 35%) */
+        /* БУТОН: ПАНЕЛЬ УПРАВЛЕНИЯ (35%) */
         #bud-interface {
             position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: linear-gradient(to top, var(--glass) 85%, transparent);
-            backdrop-filter: blur(15px); border-top: 2px solid rgba(212, 175, 55, 0.4);
-            z-index: 500; display: none; flex-direction: column;
-            justify-content: space-around; padding-bottom: 10px;
+            background: var(--glass-panel); backdrop-filter: blur(12px);
+            border-top: 3px solid var(--gold); z-index: 500;
+            display: none; flex-direction: column; justify-content: space-evenly;
         }
 
-        #burning-timer {
-            position: absolute; top: 0; left: 0; width: 100%;
-            height: 4px; background: #00ff00; transition: width 0.1s linear;
-        }
+        .lane { height: 22%; width: 100%; position: relative; display: flex; justify-content: center; }
 
-        .suit-lane { 
-            height: 22%; width: 100%; position: relative; 
-            display: flex; justify-content: center; align-items: center; 
-        }
-
-        .card-hand {
-            position: absolute; width: 62px; height: 88px;
-            background: #fff; color: #000; border-radius: 6px;
-            border: 1px solid var(--gold); padding: 6px;
-            font-family: 'Orbitron'; font-weight: 900; font-size: 14px;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.7); transition: 0.35s;
-            transform-origin: bottom center; cursor: pointer;
+        .card-p {
+            position: absolute; width: 56px; height: 78px; 
+            background: #ffffff; border-radius: 5px; border: 1px solid var(--gold); 
             display: flex; flex-direction: column; justify-content: space-between;
+            padding: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;
+        }
+        .card-p.sel { 
+            transform: translateY(-20px) scale(1.1); 
+            box-shadow: var(--vchf-glow); border: 2px solid #fff; z-index: 2000 !important; 
         }
 
-        .card-hand.selected {
-            transform: translateY(-35px) scale(1.15);
-            box-shadow: var(--vchf-glow), 0 0 25px #fff;
-            z-index: 2000 !important; border: 2px solid var(--gold);
+        #burning-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: #00ff00; box-shadow: 0 0 10px #00ff00;
         }
 
-        #action-trigger {
-            position: absolute; bottom: 42%; right: 25px;
-            padding: 15px 30px; background: #000; border: 2px solid var(--gold);
-            color: var(--gold); font-family: 'Orbitron'; font-weight: 900;
-            border-radius: 8px; cursor: pointer; display: none; z-index: 1001;
-            box-shadow: var(--vchf-glow);
-        }
-
-        #vchf-brand {
-            position: absolute; bottom: 8px; left: 15px;
-            font-size: 10px; opacity: 0.5; letter-spacing: 3px;
-            text-transform: uppercase;
+        #action-btn {
+            position: absolute; bottom: 40%; right: 20px;
+            padding: 12px 28px; background: #000; border: 2px solid var(--gold);
+            color: var(--gold); font-weight: 900; border-radius: 8px;
+            display: none; z-index: 1001;
         }
     </style>
 </head>
 <body>
-<div id="monolith-container">
-    <div id="ritual-wheel"></div>
-    <div id="trump-totem">♠</div>
-
-    <div id="battle-arena">
-        <div id="enemy-visual-hand" style="position:absolute; top:-40px; width:100%; display:flex; justify-content:center; transform:rotate(180deg);"></div>
-        <div id="table-drop-zone"></div>
+    <div id="game-table">
+        <div id="ritual-circle"></div>
+        <div id="trump-totem">♠</div>
+        <div id="battle-area" style="display:none; width:100%; height:40%; position:absolute; top:15%; z-index:10;">
+            <div id="enemy-visual" style="display:flex; justify-content:center; margin-bottom:20px; transform:rotate(180deg)"></div>
+            <div id="drop-zone" style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; padding:20px;"></div>
+        </div>
+        <button id="action-btn">ВЗЯТЬ</button>
+        <div id="bud-interface">
+            <div id="burning-line"></div>
+            <div class="lane" id="lane-spades"></div>
+            <div class="lane" id="lane-clubs"></div>
+            <div class="lane" id="lane-hearts"></div>
+            <div class="lane" id="lane-diamonds"></div>
+        </div>
     </div>
-
-    <button id="action-trigger">ВЗЯТЬ</button>
-
-    <div id="bud-interface">
-        <div id="burning-timer"></div>
-        <div class="suit-lane" id="lane-spades"></div>
-        <div class="suit-lane" id="lane-clubs"></div>
-        <div class="suit-lane" id="lane-hearts"></div>
-        <div class="suit-lane" id="lane-diamonds"></div>
-        <div id="vchf-brand">Null Chaos | Agent Spark 1.1 | vchf-engine</div>
-    </div>
-</div>
 <script>
-/**
- * PROJECT: Bi-Turbo Ultimate Lotto (Нулевой хаос)
- * AGENT: Spark (Нулевой хаос)
- * RULE: New Code = Old Code + Function. No token saving. [cite: 2026-02-23, 2026-02-26]
- */
-
-const VCHF_CORE = {
+const V_CORE = {
     suits: ['♠', '♣', '♥', '♦'],
     ranks: ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'],
-    values: {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14},
-    error_rate: 0.15, // Человеческий фактор ИИ [cite: 2026-02-24]
-    timer_max: 30
+    weights: {'6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14}
 };
 
-let game = {
-    deck: [], pHand: [], eHand: [], table: [],
-    trump: '', isAtk: true, selected: null,
-    timer: 30, interval: null, ritualActive: true
-};
+let GS = { pHand: [], eHand: [], table: [], trump: '', isAtk: true, selected: null, timer: 30 };
 
-// --- ИНИЦИАЦИЯ РИТУАЛА "ШТУРВАЛ" ---
-function initMonolith() {
-    const wheel = document.getElementById('ritual-wheel');
-    // Создаем 36 физических объектов-карт [cite: 2026-02-23]
-    for(let i=0; i<36; i++) {
-        const card = document.createElement('div');
-        card.className = 'ritual-card';
-        card.style.left = '50%'; card.style.top = '50%';
-        card.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg)`;
-        wheel.appendChild(card);
+function runRitual() {
+    const wheel = document.getElementById('ritual-circle');
+    for (let i = 0; i < 36; i++) {
+        const c = document.createElement('div');
+        c.className = 'card-back';
+        c.style.left = '50%'; c.style.top = '50%';
+        c.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg)`;
+        wheel.appendChild(c);
     }
-    executePhysicalShuffle();
+    setTimeout(shufflePhysical, 400);
 }
 
-function executePhysicalShuffle() {
-    const cards = document.querySelectorAll('.ritual-card');
-    
-    // 1. ХАОТИЧНОЕ ПЕРЕМЕШИВАНИЕ (3-4 секунды) [cite: 2026-02-28]
-    let shuffleDuration = 3500;
-    let startTime = Date.now();
-
-    let shuffleInterval = setInterval(() => {
+function shufflePhysical() {
+    const cards = document.querySelectorAll('.card-back');
+    const start = Date.now();
+    const interval = setInterval(() => {
         cards.forEach(c => {
-            const tx = (Math.random() - 0.5) * 220;
-            const ty = (Math.random() - 0.5) * 220;
-            const tr = (Math.random() * 720);
-            c.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${tr}deg)`;
+            const tx = (Math.random()-0.5)*260; const ty = (Math.random()-0.5)*260;
+            c.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random()*720}deg)`;
         });
-
-        if(Date.now() - startTime > shuffleDuration) {
-            clearInterval(shuffleInterval);
-            formRitualCircle(cards);
+        if (Date.now() - start > 3000) {
+            clearInterval(interval);
+            alignCircle(cards);
         }
-    }, 120);
+    }, 110);
 }
 
-function formRitualCircle(cards) {
-    // 2. ФОРМИРОВАНИЕ КРУГА (360 градусов) [cite: 2026-02-28]
-    const radius = 145;
+function alignCircle(cards) {
     cards.forEach((c, i) => {
-        const angle = (i * 10) * (Math.PI / 180);
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        // Поворачиваем карты лицом к центру [cite: 2026-02-28]
-        c.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${i * 10 + 90}deg)`;
+        const a = (i * 10) * (Math.PI/180);
+        const x = Math.cos(a) * 145; const y = Math.sin(a) * 145;
+        c.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${i*10 + 90}deg)`;
     });
-
-    setTimeout(() => startTrumpSelection(cards), 600);
+    setTimeout(() => startTrumpChase(cards), 800);
 }
 
-function startTrumpSelection(cards) {
-    // 3. БЕГАЮЩИЙ КОЗЫРЬ ПО РУБАШКАМ [cite: 2026-02-28]
-    let chaseIdx = 0;
-    const totem = document.getElementById('trump-totem');
+function startTrumpChase(cards) {
+    let t = 0; const totem = document.getElementById('trump-totem');
     totem.style.opacity = '1';
-
-    let chaseInterval = setInterval(() => {
-        // Убираем подсветку со всех
+    const chase = setInterval(() => {
         cards.forEach(c => c.classList.remove('highlight'));
-        
-        // Подсвечиваем текущую [cite: 2026-02-28]
-        const current = cards[chaseIdx % 36];
-        current.classList.add('highlight');
-        
-        // Бегающая масть в центре [cite: 2026-02-28]
-        totem.innerText = VCHF_CORE.suits[chaseIdx % 4];
-        chaseIdx++;
-    }, 130); // Скорость пульсации
-
-    // Фиксация козыря через 4 секунды [cite: 2026-02-28]
+        cards[t % 36].classList.add('highlight');
+        totem.innerText = V_CORE.suits[t % 4];
+        t++;
+    }, 120);
     setTimeout(() => {
-        clearInterval(chaseInterval);
-        game.trump = totem.innerText;
-        
-        // Финальный эффект: карта козыря "вспыхивает"
-        const winner = cards[(chaseIdx - 1) % 36];
-        winner.style.boxShadow = "0 0 50px #fff, 0 0 100px var(--gold)";
-        
-        setTimeout(finalizeDistribution, 1200);
+        clearInterval(chase);
+        GS.trump = totem.innerText;
+        setTimeout(dealToHands, 1500);
     }, 4000);
 }
 
-function finalizeDistribution() {
-    const cards = document.querySelectorAll('.ritual-card');
-    
-    // 4. РАЗЛЕТ КАРТ В РУКИ (Раздача 18 на 18) [cite: 2026-02-24]
+function dealToHands() {
+    const cards = document.querySelectorAll('.card-back');
     cards.forEach((c, i) => {
-        if(i < 18) {
-            // Игроку в Бутон
-            c.style.transform = `translate(-50%, 600px) scale(0.2) rotate(0deg)`;
-        } else {
-            // ИИ вверх
-            c.style.transform = `translate(-50%, -600px) scale(0.2) rotate(180deg)`;
-        }
+        c.style.transform = i < 18 ? `translate(-50%, 600px) scale(0)` : `translate(-50%, -600px) scale(0)`;
         c.style.opacity = '0';
     });
-
-    // Очистка стола и запуск логики
     setTimeout(() => {
-        document.getElementById('ritual-wheel').style.display = 'none';
-        document.getElementById('battle-arena').style.display = 'flex';
+        document.getElementById('ritual-circle').style.display = 'none';
+        document.getElementById('battle-area').style.display = 'block';
         document.getElementById('bud-interface').style.display = 'flex';
-        prepareDeckAndLogic();
-    }, 800);
+        initLogic();
+    }, 900);
+}
+function initLogic() {
+    let d = [];
+    V_CORE.suits.forEach(s => V_CORE.ranks.forEach(r => d.push({suit:s, rank:r, val:V_CORE.weights[r]})));
+    d.sort(() => Math.random() - 0.5);
+    GS.pHand = d.slice(0, 18); GS.eHand = d.slice(18, 36);
+    render();
 }
 
-function prepareDeckAndLogic() {
-    // Генерация логической колоды (ИИ не знает позиций Штурвала) [cite: 2026-02-28]
-    let deck = [];
-    VCHF_CORE.suits.forEach(s => {
-        VCHF_CORE.ranks.forEach(r => {
-            deck.push({suit: s, rank: r, val: VCHF_CORE.values[r]});
-        });
-    });
-    deck.sort(() => Math.random() - 0.5);
-
-    game.pHand = deck.slice(0, 18);
-    game.eHand = deck.slice(18, 36);
-    
-    // Синхронизация UI (будет в Window 3)
-    syncGameUI();
-    startBattleTimer();
-}
-</script>
-/**
- * PROJECT: Bi-Turbo Ultimate Lotto (Нулевой хаос)
- * MODULE: COMBAT_ENGINE_VCHF
- * RULE: No shortening. Full logic only. [cite: 2026-02-26]
- */
-
-function syncGameUI() {
-    renderPlayerHand();
-    renderEnemyVisuals();
-    renderBattlefield();
-    updateActionBtn();
-}
-
-function renderPlayerHand() {
-    const lanes = {
-        '♠': 'lane-spades', '♣': 'lane-clubs', 
-        '♥': 'lane-hearts', '♦': 'lane-diamonds'
-    };
-    
-    // Очистка рядов перед рендером
+function render() {
+    const lanes = {'♠':'lane-spades','♣':'lane-clubs','♥':'lane-hearts','♦':'lane-diamonds'};
     Object.values(lanes).forEach(id => document.getElementById(id).innerHTML = '');
-
-    // Сортировка по весу внутри масти [cite: 2026-02-23]
-    game.pHand.sort((a, b) => a.val - b.val).forEach(card => {
-        const lane = document.getElementById(lanes[card.suit]);
-        const cardEl = document.createElement('div');
-        
-        const isSelected = game.selected === card;
-        const isDimmed = game.selected && game.selected !== card;
-        
-        cardEl.className = `card-hand ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`;
-        cardEl.style.color = (card.suit === '♥' || card.suit === '♦') ? '#ff4444' : '#000';
-        
-        // Позиционирование со сдвигом (эффект веера в ряду)
-        const cardsInLane = game.pHand.filter(c => c.suit === card.suit);
-        const idx = cardsInLane.indexOf(card);
-        const offset = (idx - (cardsInLane.length - 1) / 2) * 35;
-        cardEl.style.left = `calc(50% - 31px + ${offset}px)`;
-        cardEl.style.zIndex = 100 + idx;
-
-        cardEl.innerHTML = `
-            <span>${card.rank}</span>
-            <span style="font-size:24px; align-self:center;">${card.suit}</span>
-            <span style="align-self:flex-end;">${card.rank}</span>
-        `;
-
-        cardEl.onclick = (e) => {
-            e.stopPropagation();
-            if (game.selected === card) {
-                attemptMove(card);
-            } else {
-                game.selected = card;
-                syncGameUI();
-            }
-        };
-        
-        lane.appendChild(cardEl);
+    GS.pHand.sort((a,b)=>a.val-b.val).forEach(c => {
+        const l = document.getElementById(lanes[c.suit]);
+        const el = document.createElement('div');
+        el.className = `card-p ${GS.selected === c ? 'sel' : ''}`;
+        el.style.color = (c.suit==='♥'||c.suit==='♦') ? '#f33' : '#000';
+        el.innerHTML = `<b>${c.rank}</b><i style="font-size:24px; font-style:normal; align-self:center">${c.suit}</i><b style="align-self:flex-end">${c.rank}</b>`;
+        el.onclick = () => { if(GS.selected === c) makeMove(c); else { GS.selected = c; render(); }};
+        l.appendChild(el);
+    });
+    document.getElementById('action-btn').style.display = GS.table.length > 0 ? 'block' : 'none';
+    // Рисуем стол
+    const dz = document.getElementById('drop-zone'); dz.innerHTML = '';
+    GS.table.forEach(p => {
+        const div = document.createElement('div'); div.className = 'card-p';
+        div.style.position = 'static'; div.innerHTML = `<b>${p.atk.rank}</b><i>${p.atk.suit}</i>`;
+        dz.appendChild(div);
     });
 }
 
-function renderEnemyVisuals() {
-    const el = document.getElementById('enemy-visual-hand');
-    el.innerHTML = '';
-    game.eHand.forEach((_, i) => {
-        const back = document.createElement('div');
-        back.style.width = '35px'; back.style.height = '50px';
-        back.style.background = "url('1771489965074(1).png') center/cover";
-        back.style.border = "1px solid rgba(212,175,55,0.3)";
-        back.style.borderRadius = "3px";
-        back.style.marginLeft = "-20px";
-        const rot = (i - (game.eHand.length/2)) * 2;
-        back.style.transform = `rotate(${rot}deg)`;
-        el.appendChild(back);
-    });
+function makeMove(c) {
+    GS.table.push({atk:c, def:null});
+    GS.pHand = GS.pHand.filter(x => x !== c);
+    GS.selected = null; render();
 }
 
-function renderBattlefield() {
-    const zone = document.getElementById('table-drop-zone');
-    zone.innerHTML = '';
-    
-    game.table.forEach(pair => {
-        const container = document.createElement('div');
-        container.style.position = 'relative';
-        container.style.width = '70px'; container.style.height = '100px';
-
-        // Карта атаки
-        container.appendChild(createTableCard(pair.atk, 'atk'));
-        // Карта защиты (если есть)
-        if (pair.def) {
-            container.appendChild(createTableCard(pair.def, 'def'));
-        }
-        zone.appendChild(container);
-    });
-}
-
-function createTableCard(c, type) {
-    const d = document.createElement('div');
-    d.style.position = 'absolute';
-    d.style.width = '65px'; d.style.height = '95px';
-    d.style.background = '#fff'; d.style.borderRadius = '5px';
-    d.style.border = '1px solid var(--gold)';
-    d.style.padding = '5px'; d.style.color = (c.suit === '♥' || c.suit === '♦') ? '#ff4444' : '#000';
-    d.style.fontSize = '12px'; d.style.display = 'flex';
-    d.style.flexDirection = 'column'; d.style.justifyContent = 'space-between';
-    d.style.boxShadow = "0 5px 15px rgba(0,0,0,0.5)";
-
-    if (type === 'atk') {
-        d.style.zIndex = '1'; d.style.transform = 'rotate(-4deg)';
-    } else {
-        d.style.zIndex = '2'; d.style.transform = 'translate(12px, 12px) rotate(4deg)';
-    }
-
-    d.innerHTML = `<b>${c.rank}</b><i style="font-size:20px; font-style:normal; align-self:center;">${c.suit}</i><b style="align-self:flex-end;">${c.rank}</b>`;
-    return d;
-}
-
-function attemptMove(card) {
-    if (game.isAtk) {
-        // Логика подкидывания [cite: 2026-02-28]
-        const canAdd = game.table.length === 0 || 
-                       game.table.some(p => p.atk.rank === card.rank || (p.def && p.def.rank === card.rank));
-        
-        if (canAdd && game.table.length < 6) {
-            game.table.push({atk: card, def: null});
-            game.pHand = game.pHand.filter(c => c !== card);
-            game.selected = null;
-            syncGameUI();
-            setTimeout(aiResponse, 800);
-        }
-    } else {
-        // Логика защиты
-        let target = game.table.find(p => !p.def);
-        if (target && canBeat(card, target.atk)) {
-            target.def = card;
-            game.pHand = game.pHand.filter(c => c !== card);
-            game.selected = null;
-            syncGameUI();
-        }
-    }
-}
-
-function canBeat(card, attackCard) {
-    if (card.suit === attackCard.suit) return card.val > attackCard.val;
-    if (card.suit === game.trump && attackCard.suit !== game.trump) return true;
-    return false;
-}
-
-function aiResponse() {
-    let target = game.table.find(p => !p.def);
-    if (!target) return;
-
-    // ИИ ищет минимальную карту для защиты
-    let options = game.eHand.filter(c => canBeat(c, target.atk)).sort((a,b) => a.val - b.val);
-
-    // Вероятность ошибки ИИ (Zombie Statistic) [cite: 2026-02-24]
-    if (options.length > 0 && Math.random() > VCHF_CORE.error_rate) {
-        target.def = options[0];
-        game.eHand = game.eHand.filter(c => c !== options[0]);
-        syncGameUI();
-    } else {
-        // ИИ забирает карты
-        setTimeout(() => takeCards('enemy'), 500);
-    }
-}
-
-function takeCards(who) {
-    let all = [];
-    game.table.forEach(p => {
-        all.push(p.atk);
-        if(p.def) all.push(p.def);
-    });
-    
-    if (who === 'player' || (!game.isAtk && who === 'enemy')) {
-        game.pHand.push(...all);
-        game.isAtk = false;
-    } else {
-        game.eHand.push(...all);
-        game.isAtk = true;
-    }
-    
-    game.table = [];
-    game.timer = VCHF_CORE.timer_max;
-    syncGameUI();
-}
-
-function updateActionBtn() {
-    const btn = document.getElementById('action-trigger');
-    if (game.table.length === 0) {
-        btn.style.display = 'none';
-        return;
-    }
-    btn.style.display = 'block';
-    
-    if (game.isAtk) {
-        const allDefeated = game.table.every(p => p.def);
-        btn.innerText = allDefeated ? 'БИТО' : 'ЖДУ...';
-        btn.onclick = allDefeated ? () => { game.table = []; game.isAtk = false; syncGameUI(); } : null;
-    } else {
-        btn.innerText = 'ВЗЯТЬ';
-        btn.onclick = () => takeCards('player');
-    }
-}
-
-function startBattleTimer() {
-    const line = document.getElementById('burning-timer');
-    game.interval = setInterval(() => {
-        game.timer -= 0.1;
-        let percent = (game.timer / VCHF_CORE.timer_max) * 100;
-        line.style.width = percent + '%';
-        
-        if (percent < 25) line.style.background = '#ff0000';
-        else line.style.background = '#00ff00';
-
-        if (game.timer <= 0) {
-            takeCards(game.isAtk ? 'enemy' : 'player');
-        }
-    }, 100);
-}
-/**
- * PROJECT: Bi-Turbo Ultimate Lotto (Нулевой хаос)
- * MODULE: FINALIZATION_VCHF
- * RULE: Integrity over brevity. Closing the Monolith. [cite: 2026-02-26]
- */
-
-// ПРОВЕРКА КОНЦА ИГРЫ (Win/Loss Logic) [cite: 2026-02-24]
-function checkGameOver() {
-    if (game.pHand.length === 0 && game.eHand.length === 0) {
-        alert("НИЧЬЯ В ХАОСЕ! ОБА ПУСТЫ.");
-        location.reload();
-    } else if (game.pHand.length === 0) {
-        alert("ТЫ ПОБЕДИЛ, WANDERER! ХАОС ПОКОРЕН.");
-        location.reload();
-    } else if (game.eHand.length === 0) {
-        alert("ИИ ОКАЗАЛСЯ СИЛЬНЕЕ. ПОПРОБУЙ СНОВА.");
-        location.reload();
-    }
-}
-
-// Добавляем проверку в основной цикл синхронизации
-const originalSync = syncGameUI;
-syncGameUI = function() {
-    originalSync();
-    checkGameOver();
-};
-
-// Глобальный обработчик клика для сброса выделения
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.card-hand')) {
-        game.selected = null;
-        syncGameUI();
-    }
-});
-
-// Инициализация при загрузке [cite: 2026-02-23]
-window.onload = () => {
-    console.log("Движок vchf v1.1 активен. Манифест Монолита принят.");
-    initMonolith(); // Запуск ритуала Штурвала из Window 2
-};
-
+window.onload = runRitual;
 </script>
 </body>
 </html>
