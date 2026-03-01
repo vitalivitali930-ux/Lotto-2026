@@ -337,13 +337,35 @@
     }
 
     // МЕХАНИКА "БЛУЖДАЮЩИЙ ОГОНЬ" (Wandering Fire)
-    function startTrumpChaosTimer() {
-        setInterval(() => {
-            if (vchf_state.active && !vchf_state.isLockedForShift) {
-                vchf_state.chaosTimer -= 1;
+            // --- [ Нулевой Хаос: Искра ] ---
+        // Блуждающий Огонь (Таймер смены козыря)
+        // Обновленная логика: цикличная смена с визуальным контрастом
+        const suits = ['♣', '♦', '♥', '♠'];
+        let suitIndex = 0;
+
+        function updateTrump() {
+            const trumpElement = document.getElementById('trump-card'); // Убедись, что ID совпадает
+            if (trumpElement) {
+                suitIndex = (suitIndex + 1) % suits.length;
+                const currentSuit = suits[suitIndex];
+                trumpElement.textContent = currentSuit;
+
+                // Установка цвета и тени для видимости на темном фоне
+                const isRed = currentSuit === '♦' || currentSuit === '♥';
+                trumpElement.style.color = isRed ? '#ff4d4d' : '#ffffff';
+                // Белое свечение для черных мастей, темное для красных
+                trumpElement.style.textShadow = isRed 
+                    ? '0 0 10px rgba(255, 77, 77, 0.5)' 
+                    : '0 0 10px rgba(255, 255, 255, 0.8)';
                 
-                const totem = document.getElementById('trump-totem');
-                
+                console.log(`[Манифест Монолита] Козырь изменен на: ${currentSuit}`);
+            }
+        }
+
+        // Запуск интервала (например, каждые 30 секунд или при каждом тике лото)
+        setInterval(updateTrump, 30000); 
+        // ---------------------------------------------------------
+
                 // Индикация нестабильности (за 10 секунд до смены)
                 if (vchf_state.chaosTimer <= 10) {
                     totem.classList.add('trump-unstable');
