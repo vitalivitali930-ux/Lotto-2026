@@ -30,20 +30,88 @@
         }
 
         /* ЭКРАН ВХОДА - ПРОТОКОЛ VCHF */
-        #vchf-gate {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 99999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; transition: opacity 0.8s ease;
-        }
+        /* =========================================================
+   // ЭКРАН ВХОДА (Gate & Boot Logic)
+   // Identity: Нулевой Хаос | Project: Bi-Turbo Ultimate
+   ========================================================= */
 
-        .ready-trigger {
-            padding: 30px 80px; font-size: 32px; font-weight: 900;
-            background: transparent; border: 5px solid var(--gold);
-            color: var(--gold); border-radius: 80px; cursor: pointer;
-            box-shadow: var(--vchf-glow); text-transform: uppercase; 
-            letter-spacing: 12px; transition: 0.3s;
-        }
-        .ready-trigger:active { transform: scale(0.95); filter: brightness(1.5); }
+// ТОЧКА ВХОДА: Исправленный запуск цепной реакции
+function engageVCHF() {
+    console.log("Движок vchf: Протокол запущен. Манифест Монолита активен.");
+    vchf_state.active = true;
+    
+    const gate = document.getElementById('vchf-gate');
+    if (gate) gate.style.opacity = '0';
+    
+    setTimeout(() => {
+        if (gate) gate.style.display = 'none';
+        const table = document.getElementById('game-table');
+        if (table) table.style.display = 'block';
+        
+        // Запуск Хаоса (Ритуал разлета карт)
+        runChaosCycle();
+    }, 600);
+}
+
+// ЛОГИКА КОЗЫРЯ: "Блуждающий огонь" и "Смещение в угол"
+function defineTrump(cards) {
+    let tick = 0;
+    const totem = document.getElementById('trump-totem');
+    if (!totem) return;
+    
+    totem.style.opacity = '1';
+
+    // Фаза выбора козыря (вращение мастей)
+    const loop = setInterval(() => {
+        cards.forEach(c => c.classList.remove('highlight'));
+        cards[tick % 36].classList.add('highlight');
+        const s = VCHF_CORE.suits[tick % 4];
+        totem.innerText = s;
+        totem.style.color = VCHF_CORE.colors[s];
+        tick++;
+    }, 150);
+
+    setTimeout(() => {
+        clearInterval(loop);
+        vchf_state.trumpSuit = totem.innerText;
+        
+        // Финальное свечение козыря
+        totem.style.filter = `drop-shadow(0 0 30px ${VCHF_CORE.colors[vchf_state.trumpSuit]})`;
+        
+        // ЗАПУСК ПОСТОЯННОГО ХАОСА (Смена масти каждые 15 сек, если нужно)
+        startTrumpChaosTimer(); 
+
+        setTimeout(distributeCards, 1500);
+    }, 4000);
+}
+
+// Функция смещения символа козыря в угол (Вызывается при отбое)
+function shiftTrumpToCorner(isBito) {
+    const totem = document.getElementById('trump-totem');
+    if (!totem) return;
+
+    if (isBito) {
+        // Улет в верхний правый угол, уменьшение и свечение
+        totem.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+        totem.style.transform = "translate(40vw, -42vh) scale(0.5)";
+        totem.style.opacity = "0.7";
+        totem.style.textShadow = `0 0 20px ${VCHF_CORE.colors[vchf_state.trumpSuit]}`;
+    } else {
+        // Возврат в центр (если карты взяты или новый раунд)
+        totem.style.transform = "translate(-50%, -50%) scale(1)";
+        totem.style.opacity = "1";
+    }
+}
+
+function startTrumpChaosTimer() {
+    // Здесь можно оставить статичный козырь или включить медленную пульсацию
+    const totem = document.getElementById('trump-totem');
+    if (totem) totem.classList.add('pulsing-glow');
+}
+
+/* =========================================================
+   // ИГРОВОЙ СТОЛ БАРХАТ (Table & Layout Logic)
+   ========================================================= */
 
         /* ИГРОВОЙ СТОЛ - БАРХАТ */
         #game-table { 
