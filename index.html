@@ -3,364 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BI-TURBO ULTIMATE: VCHF MONOLITH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Helvetia Lucky | Bi-Turbo Ultimate Monolith</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #d4af37; --gold-br: #ffdf00; --bg: #050505;
-            --vchf-red: #e30a17; --neon: 0 0 15px rgba(212, 175, 55, 0.4);
+            --gold: #d4af37;
+            --swiss-red: #e30a17;
+            --deep-black: #050505;
+            --velvet-green: #072a1a;
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #2a000a 100%);
+            --red-genius: #FF0000;
+            --green-active: #00FF41;
+            --gold-swiss: #d4af37;
+            --vchf-dark: #050505;
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 70%, #000000 100%);
         }
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); color: var(--gold); 
-            font-family: 'Orbitron', sans-serif; overflow: hidden; 
-        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
 
-        /* ТРЕЗОР HELVETIA */
-        #layer-safe {
-            position: fixed; inset: 0; z-index: 9999;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+        /* ЭТАП 1: ШТУРВАЛ СЕЙФА */
+        #wheel-layer {
+            position: fixed; inset: 0; background: #000; z-index: 3000;
             display: flex; align-items: center; justify-content: center;
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.8s ease-out;
         }
-        .wheel-vchf {
-            position: relative; width: 300px; height: 300px;
-            border: 10px solid #222; border-radius: 50%;
-            box-shadow: 0 0 40px #000, inset 0 0 20px #000;
-            transition: transform 1.2s cubic-bezier(0.6, -0.2, 0.3, 1.2);
-        }
-        .node {
-            position: absolute; width: 40px; height: 40px;
-            background: #222; border: 2px solid var(--gold); border-radius: 50%;
+        .safe-wheel-container {
+            position: relative; width: 320px; height: 320px;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 18px; box-shadow: var(--neon);
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .wheel-center {
+            width: 70px; height: 70px; background: radial-gradient(circle, #333, #000);
+            border: 3px solid var(--gold); border-radius: 50%; z-index: 10;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+        }
+        .spoke {
+            position: absolute; width: 6px; height: 130px;
+            background: linear-gradient(to top, var(--gold), transparent);
+            transform-origin: bottom center; bottom: 50%; left: calc(50% - 3px);
+        }
+        .flag-node {
+            position: absolute; width: 55px; height: 55px;
+            background: #0a0a0a; border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 26px; cursor: pointer; z-index: 20;
+            transform: translate(-50%, -50%); transition: 0.4s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+        }
+        .flag-node:active { transform: translate(-50%, -50%) scale(0.9); }
+        .wheel-vanishing .flag-node { opacity: 0; transform: translate(-50%, -50%) scale(0.5); transition: 0.6s; }
 
-        /* ЛОББИ (ЗАЛ) */
-        #layer-lobby {
-            display: none; opacity: 0; width: 100%; height: 100%;
-            transition: opacity 0.6s ease; padding-top: 60px;
+        /* ЭТАП 2: ДВЕРИ И БРЕНДИНГ */
+        #brand-layer {
+            position: fixed; inset: 0; background: var(--deep-black); z-index: 2500;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        .grid-vchf {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px;
+        .door-left, .door-right {
+            position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
+            border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            z-index: 2600;
         }
-        .unit-card {
-            height: 100px; background: rgba(255,255,255,0.03);
-            border: 1px solid var(--gold); border-radius: 8px;
+        .door-left { left: 0; border-right: 1px solid var(--gold); }
+        .door-right { right: 0; border-left: 1px solid var(--gold); }
+        .opened .door-left { transform: translateX(-100%); }
+        .opened .door-right { transform: translateX(100%); }
+
+        .swiss-shield {
+            width: 50px; height: 50px; background: var(--swiss-red);
+            margin: 0 auto 20px; position: relative; border-radius: 5px;
+            box-shadow: 0 0 30px rgba(227, 10, 23, 0.5); z-index: 2550;
+        }
+        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
+        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
+        h1.brand-name { color: var(--gold); font-size: 24px; letter-spacing: 8px; margin: 0; text-align: center; z-index: 2550; }
+
+        /* ЭТАП 3: КАЗИНО (ЗАЛ СО СТОЛАМИ) */
+        #main-ui {
+            display: none; opacity: 0; width: 100%; height: 100%; 
+            background: var(--bg-deep); overflow-y: auto; transition: opacity 2s ease;
+            padding-bottom: 100px; position: relative; z-index: 500;
+        }
+        header {
+            padding: 20px 10px; text-align: center; background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .brand-main { font-family: 'Orbitron'; font-size: 24px; letter-spacing: 6px; color: var(--gold-swiss); }
+        .brand-sub { font-family: 'Orbitron'; font-size: 10px; letter-spacing: 4.2px; opacity: 0.6; margin-top: 5px; color: var(--gold-swiss); }
+
+        .casino-floor { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 60px 20px; padding: 60px 20px; }
+        .table-wrap { position: relative; width: 130px; height: 130px; cursor: pointer; transition: 0.4s; }
+        .table-wrap:nth-child(even) { transform: translateY(30px); }
+        .table-surface-mini {
+            width: 100%; height: 100%; background: var(--cherry-velvet);
+            border: 2px solid #1a0005; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 10px; letter-spacing: 1px; cursor: pointer;
-            transition: 0.3s; transform: rotateX(15deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8); position: relative;
         }
-        .unit-card:hover { background: rgba(212,175,55,0.1); box-shadow: var(--neon); }
+        .table-logo-mini { width: 50%; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4)); }
 
-        /* АРЕНА VCHF (BATTLE GAMMA) */
-        #layer-game {
-            display: none; position: fixed; inset: 0; z-index: 8000;
-            background: #000; overflow: hidden;
-        }
-        .lane {
-            position: absolute; width: 100%; height: 130px;
-            border-top: 1px solid rgba(212,175,55,0.08);
-            display: flex; justify-content: center; align-items: center;
-        }
-        #lane-diamonds { bottom: 240px; } #lane-hearts { bottom: 160px; }
-        #lane-clubs { bottom: 80px; } #lane-spades { bottom: 0; }
+        /* ПУЛЬСАЦИЯ ДЛЯ СБОРА */
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 5px #ffea00; } 50% { box-shadow: 0 0 20px #ffea00; } 100% { box-shadow: 0 0 5px #ffea00; } }
+        .status-collecting { animation: pulse-yellow 1.5s infinite; background: #ffea00 !important; }
+        .status-playing { background: var(--red-genius) !important; box-shadow: 0 0 15px var(--red-genius); }
 
-        .v-card {
-            position: absolute; width: 64px; height: 92px;
-            border-radius: 5px; background: #fff; color: #000;
-            box-shadow: 2px 5px 15px rgba(0,0,0,0.5);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; flex-direction: column; padding: 4px; box-sizing: border-box;
-            cursor: pointer; font-weight: 900;
+        /* ЭТАП 4: ИГРОВОЙ СТОЛ (ВНУТРИ) */
+        #game-table-view {
+            display: none; position: fixed; inset: 0; background: var(--cherry-velvet);
+            z-index: 4000; font-family: 'JetBrains Mono', monospace;
         }
-        .v-card.back { background: #111 url('1771489965074(1).png') center/cover; border: 1px solid var(--gold); }
-        .v-card .top { font-size: 12px; }
-        .v-card .mid { font-size: 26px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .lamp { position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); transition: 0.5s; z-index: 100; }
+        .lamp.waiting { background: #555; }
+        .lamp.ready { background: var(--green-active); box-shadow: 0 0 15px var(--green-active); }
+        .lamp.active { background: var(--gold-swiss); box-shadow: 0 0 15px var(--gold-swiss); }
+        
+        #lamp-top { top: 50px; left: 50%; transform: translateX(-50%); }
+        #lamp-bottom { bottom: 175px; left: 50%; transform: translateX(-50%); }
+        #lamp-left { left: 100px; top: 50%; transform: translateY(-50%); }
+        #lamp-right { right: 100px; top: 50%; transform: translateY(-50%); }
 
-        #table-chaos {
-            position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
-            width: 320px; height: 200px; display: flex; justify-content: center; align-items: center;
+        .player-zone { position: absolute; display: flex; gap: 4px; justify-content: center; align-items: center; }
+        .zone-bottom { bottom: 100px; width: 100%; height: 60px; flex-direction: row; }
+        .zone-top { top: 65px; width: 100%; height: 60px; flex-direction: row; }
+        .zone-left { left: 10px; top: 20%; bottom: 20%; width: 85px; flex-direction: column; }
+        .zone-right { right: 10px; top: 20%; bottom: 20%; width: 85px; flex-direction: column; }
+        .slot-wide { width: 75px; height: 50px; border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 4px; background: rgba(0,0,0,0.3); }
+        .slot-tall { width: 50px; height: 75px; border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 4px; background: rgba(0,0,0,0.3); }
+
+        .main-deck {
+            width: 100px; height: 140px; border: 2px solid var(--gold-swiss); border-radius: 10px;
+            background: radial-gradient(circle, #000 30%, #4a0012 100%);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.8); z-index: 5;
         }
-        .btn-core {
-            position: absolute; bottom: 340px; left: 50%; transform: translateX(-50%);
-            background: #000; border: 2px solid var(--gold); color: var(--gold);
-            padding: 12px 30px; font-family: 'Orbitron'; font-weight: 900;
-            cursor: pointer; z-index: 10000;
+        .main-deck img { width: 80%; filter: drop-shadow(0 0 5px var(--gold-swiss)); }
+
+        /* ИНТЕРФЕЙС ВЫБОРА РЕЖИМА */
+        #mode-selector {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); border: 2px solid var(--gold); padding: 30px;
+            z-index: 5500; display: none; flex-direction: column; gap: 15px; border-radius: 10px;
         }
+        .mode-btn { padding: 15px; border: 1px solid var(--gold); color: var(--gold); background: none; cursor: pointer; font-family: 'Orbitron'; }
+        .mode-btn:hover { background: var(--gold); color: #000; }
+
+        .action-bar { position: absolute; bottom: 25px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 1500; }
+        .btn-action {
+            padding: 12px 30px; background: #000; border: 2px solid var(--gold-swiss);
+            color: var(--gold-swiss); font-family: 'Orbitron'; font-size: 14px;
+            text-transform: uppercase; cursor: pointer; border-radius: 5px;
+        }
+        .btn-ready { background: var(--green-active); color: #000; border: none; font-weight: bold; display: none; }
+
+        .video-overlay { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; z-index: 1000; }
+        .v-box { width: 65px; height: 85px; border: 1.5px solid var(--gold-swiss); background: #000; border-radius: 6px; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .btn-camera { position: absolute; top: 15px; left: 15px; z-index: 2000; padding: 8px 12px; background: rgba(0,0,0,0.8); border: 1px solid var(--red-genius); color: var(--red-genius); font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
+        .btn-back { position: absolute; top: 15px; left: 120px; z-index: 2000; padding: 8px 12px; background: #000; border: 1px solid var(--gold); color: var(--gold); font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
+
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: 85px; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px); border-top: 1px solid var(--gold-swiss);
+            display: flex; justify-content: center; align-items: center; gap: 20px; z-index: 2000; padding-bottom: 10px;
+        }
+        .nav-btn {
+            width: 160px; height: 45px; background: #000; border: 1.5px solid var(--gold-swiss);
+            color: var(--gold-swiss); font-family: 'Orbitron'; font-size: 11px; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
+        .host-label { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 8px; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="layer-safe">
-    <div id="v-wheel" class="wheel-vchf"></div>
+<div id="wheel-layer">
+    <div class="safe-wheel-container" id="main-wheel">
+        <div class="wheel-center"></div>
+    </div>
 </div>
 
-<div id="layer-lobby">
-    <div class="grid-vchf" id="v-grid"></div>
+<div id="brand-layer">
+    <div class="door-left"></div>
+    <div class="door-right"></div>
+    <div class="logo-container" style="text-align:center;">
+        <div class="swiss-shield"></div>
+        <h1 class="brand-name">HELVETIA LUCKY</h1>
+    </div>
 </div>
 
-<div id="layer-game">
-    <div id="table-chaos"></div>
-    <div id="lane-diamonds" class="lane"></div>
-    <div id="lane-hearts" class="lane"></div>
-    <div id="lane-clubs" class="lane"></div>
-    <div id="lane-spades" class="lane"></div>
-    <button id="v-action" class="btn-core">РИТУАЛ VCHF</button>
+<div id="main-ui">
+    <header>
+        <div class="brand-main">HELVETIA LUCK</div>
+        <div class="brand-sub">GLOBAL LOTTO POOL</div>
+    </header>
+    <div class="casino-floor" id="floor"></div>
+    <div class="nav-bar">
+        <div class="nav-btn">БАР (CHAT) 🍷</div>
+        <div class="nav-btn">ДРУГИЕ ИГРЫ 🃏</div>
+    </div>
 </div>
 
+<div id="game-table-view">
+    <div id="mode-selector">
+        <h2 style="color:var(--gold); font-size:14px; text-align:center;">ВЫБЕРИТЕ РЕЖИМ</h2>
+        <button class="mode-btn" onclick="setMode('normal')">КЛАССИКА 🃏</button>
+        <button class="mode-btn" onclick="setMode('attack')">ПОДКИДНОЙ ⚔️</button>
+        <button class="mode-btn" onclick="setMode('transfer')">ПЕРЕВОДНОЙ 🔄</button>
+    </div>
+
+    <div id="lamp-top" class="lamp waiting"></div> 
+    <div id="lamp-bottom" class="lamp waiting"></div> 
+    <div id="lamp-left" class="lamp waiting"></div> 
+    <div id="lamp-right" class="lamp waiting"></div> 
+
+    <button class="btn-camera" onclick="initCam()">КАМЕРА 🎥</button>
+    <button class="btn-back" onclick="closeTable()">ВЫХОД 🚪</button>
+
+    <div class="video-overlay">
+        <div class="v-box"><video id="local" autoplay muted playsinline></video></div>
+        <div class="v-box"><video id="remote" autoplay playsinline></video></div>
+    </div>
+
+    <div class="player-zone zone-top"><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div></div>
+    <div class="player-zone zone-left"><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div></div>
+    
+    <div style="position:absolute; display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <div id="invite-alert" style="position:absolute; top:120px; color:var(--gold); font-size:12px; z-index:100; text-align:center;"></div>
+        <div class="main-deck">
+            <img src="1771489965074(1).png" alt="Logo">
+        </div>
+    </div>
+
+    <div class="player-zone zone-right"><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div><div class="slot-wide"></div></div>
+    <div class="player-zone zone-bottom"><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div><div class="slot-tall"></div></div>
+
+    <div class="action-bar">
+        <button id="ready-trigger" class="btn-action btn-ready" onclick="toggleReady()">Я ГОТОВ ✅</button>
+        <button class="btn-action" id="take-btn" style="display:none;">ВЗЯТЬ 🤲</button>
+        <button class="btn-action" id="done-btn" style="display:none; border-color:var(--red-genius); color:var(--red-genius);">БИТО ⚔️</button>
+    </div>
+</div>
 <script>
-    /* АУДИО-ДВИЖОК */
-    const V_AUDIO = {
-        ctx: new (window.AudioContext || window.webkitAudioContext)(),
-        beep(f, d, t = 'sine', v = 0.1) {
-            const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-            g.gain.setValueAtTime(v, this.ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(); o.stop(this.ctx.currentTime + d);
-        }
+    /** * МАНИФЕСТ МОНОЛИТА. Спарк (Искра).
+     * Холодная логика. Шаг 1: Мультиплеер и синхронизация.
+     * Правило: Старый код + Введенная функция.
+     * Memories: Проект Лотто, Wanderer, 12 юнитов, 42 сферы.
+     */
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+
+    // ГЛОБАЛЬНОЕ СОСТОЯНИЕ (LobbyState)
+    let currentTable = null;
+    let isHost = false;
+    let isReady = false;
+    let gameActive = false;
+    let playerSlot = 'bottom'; // По умолчанию локальный игрок снизу
+
+    // Имитация сервера для демонстрации (в финале заменить на socket/TG Cloud)
+    const mockServer = {
+        tables: Array.from({length: 12}, (_, i) => ({
+            id: i + 1,
+            status: 'empty', // empty, collecting, playing
+            players: [],
+            mode: null
+        }))
     };
 
-    /* ЛОГИКА СЕЙФА HELVETIA */
-    function initSafe() {
-        const w = document.getElementById('v-wheel');
-        ['🇨🇭','🇩🇪','🇦🇹','🇱🇮','🇫🇷','🇮🇹'].forEach((f, i) => {
-            const a = i * 60, n = document.createElement('div');
-            n.className = 'node'; n.innerHTML = f;
-            n.style.left = `${150 + 125 * Math.sin(a*Math.PI/180) - 20}px`;
-            n.style.top = `${150 - 125 * Math.cos(a*Math.PI/180) - 20}px`;
-            n.onclick = () => { V_AUDIO.beep(400, 0.2); openSafe(); };
-            w.appendChild(n);
-        });
+    let audioCtx = null;
+    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playSound(f, d, t, v) {
+        initAudio(); try {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(v, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + d);
+        } catch(e) {}
     }
 
-    function openSafe() {
-        document.getElementById('v-wheel').style.transform = "rotate(720deg) scale(0)";
-        setTimeout(() => {
-            document.getElementById('layer-safe').style.opacity = '0';
+    // Рендер Штурвала (Источник 1)
+    const flags = ['🇷🇺','🇩🇪','🇫🇷','🇮🇹','🇺🇦','🇬🇧'];
+    const wheel = document.getElementById('main-wheel');
+    flags.forEach((img, i) => {
+        const angle = i * 60;
+        const spoke = document.createElement('div');
+        spoke.className = 'spoke'; spoke.style.transform = `rotate(${angle}deg)`;
+        const node = document.createElement('div');
+        node.className = 'flag-node'; node.innerHTML = img;
+        const r = 145;
+        node.style.left = `calc(50% + ${Math.sin(angle*Math.PI/180)*r}px)`;
+        node.style.top = `calc(50% + ${-Math.cos(angle*Math.PI/180)*r}px)`;
+        node.onclick = () => {
+            playSound(60, 1, 'triangle', 0.4);
+            wheel.style.transform = `rotate(${-angle + 720}deg)`;
+            wheel.classList.add('wheel-vanishing');
             setTimeout(() => {
-                document.getElementById('layer-safe').style.display = 'none';
-                showLobby();
-            }, 800);
-        }, 600);
-    }
+                document.getElementById('wheel-layer').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('wheel-layer').style.display = 'none';
+                    checkDeepLink();
+                }, 800);
+            }, 1200);
+        };
+        wheel.appendChild(spoke); wheel.appendChild(node);
+    });
 
-    function showLobby() {
-        const l = document.getElementById('layer-lobby');
-        l.style.display = 'block'; setTimeout(() => l.style.opacity = '1', 50);
-        const g = document.getElementById('v-grid');
-        for(let i=1; i<=12; i++) {
-            const u = document.createElement('div'); u.className = 'unit-card';
-            u.innerHTML = `VCHF UNIT ${i}`;
-            u.onclick = () => { V_AUDIO.beep(600, 0.1); startEngine(); };
-            g.appendChild(u);
+    // ПРОВЕРКА ПРИГЛАШЕНИЯ
+    function checkDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const tableId = params.get('table') || tg.initDataUnsafe.start_param;
+        
+        if (tableId) {
+            document.getElementById('invite-alert').innerText = "ВХОД ПО ПРИГЛАШЕНИЮ ЗА СТОЛ " + tableId;
+            showDoors(() => openTable(parseInt(tableId)));
+        } else {
+            showDoors(showCasinoFloor);
         }
     }
-    window.onload = initSafe;
-</script>
-    /* МОДУЛЬ MONOLITH ENGINE (BATTLE-GAMMA 18x18) */
-    const V_ENGINE = {
-        pHand: [], eHand: [], table: [], trump: null,
-        suits: ['♠', '♣', '♥', '♦'],
-        ranks: ['6','7','8','9','10','J','Q','K','A'],
-        weights: {'6':0, '7':1, '8':2, '9':3, '10':4, 'J':5, 'Q':6, 'K':7, 'A':8},
-        colors: {'♠':'#000', '♣':'#000', '♥':'#e30a17', '♦':'#e30a17'},
 
-        init() {
-            const g = document.getElementById('layer-game');
-            g.style.display = 'block';
-            document.getElementById('layer-lobby').style.opacity = '0';
-            setTimeout(() => document.getElementById('layer-lobby').style.display = 'none', 500);
-            
-            this.createDeck();
-            document.getElementById('v-action').onclick = () => this.ritual();
-        },
-
-        createDeck() {
-            let deck = [];
-            this.suits.forEach(s => {
-                this.ranks.forEach(r => {
-                    deck.push({ 
-                        suit: s, rank: r, weight: this.weights[r], 
-                        color: this.colors[s], id: 'c_'+Math.random().toString(36).substr(2,7) 
-                    });
-                });
-            });
-            deck.sort(() => Math.random() - 0.5);
-            this.pHand = deck.slice(0, 18);
-            this.eHand = deck.slice(18, 36);
-            this.trump = this.pHand[0].suit;
-        },
-
-        ritual() {
-            V_AUDIO.beep(200, 0.4, 'sawtooth');
-            document.getElementById('v-action').style.display = 'none';
-            this.renderLanes();
-            this.renderEnemy();
-        },
-
-        renderLanes() {
-            const ids = { '♠':'lane-spades', '♣':'lane-clubs', '♥':'lane-hearts', '♦':'lane-diamonds' };
-            Object.values(ids).forEach(id => document.getElementById(id).innerHTML = '');
-
-            this.pHand.sort((a,b) => a.weight - b.weight).forEach(card => {
-                const lane = document.getElementById(ids[card.suit]);
-                const suitSet = this.pHand.filter(c => c.suit === card.suit);
-                const idx = suitSet.findIndex(c => c.id === card.id);
-                
-                const cardEl = document.createElement('div');
-                cardEl.className = 'v-card';
-                cardEl.style.color = card.color;
-                
-                // ГЕОМЕТРИЯ БУТОНА (МАТЕМАТИКА МАГИСТРАЛЕЙ)
-                const total = suitSet.length;
-                const spread = total > 6 ? 32 : 45;
-                const offset = (idx - (total - 1) / 2) * spread;
-                const arc = Math.abs(offset) * 0.12;
-
-                cardEl.style.left = `calc(50% + ${offset}px)`;
-                cardEl.style.bottom = `${15 + arc}px`;
-                cardEl.style.transform = `translateX(-50%) rotate(${offset/12}deg)`;
-                cardEl.style.zIndex = 100 + idx;
-
-                cardEl.innerHTML = `
-                    <div class="top">${card.rank}</div>
-                    <div class="mid">${card.suit}</div>
-                    <div class="top" style="align-self:flex-end; transform:rotate(180deg)">${card.rank}</div>
-                `;
-
-                cardEl.onclick = () => this.attack(card);
-                lane.appendChild(cardEl);
-            });
-        },
-
-        renderEnemy() {
-            // Визуальный шум противника (скрытые сферы)
-            const zone = document.getElementById('layer-game');
-            const oldShadows = document.querySelectorAll('.v-card.back');
-            oldShadows.forEach(s => s.remove());
-
-            this.eHand.forEach((_, i) => {
-                const s = document.createElement('div');
-                s.className = 'v-card back';
-                s.style.position = 'absolute';
-                s.style.top = '-40px';
-                s.style.left = `calc(50% + ${(i - 8.5) * 15}px)`;
-                s.style.transform = `translateX(-50%) scale(0.6) rotate(${(i-8.5)*2}deg)`;
-                s.style.zIndex = 10 + i;
-                zone.appendChild(s);
-            });
-        },
-
-        attack(card) {
-            const pair = { atk: card, def: null };
-            this.table.push(pair);
-            this.pHand = this.pHand.filter(c => c.id !== card.id);
-            V_AUDIO.beep(500, 0.1, 'square');
-            this.renderLanes();
-            this.renderTable();
-            setTimeout(() => this.sparkMove(pair), 700);
-        },
-
-        renderTable() {
-            const t = document.getElementById('table-chaos');
-            t.innerHTML = '';
-            this.table.forEach(pair => {
-                const group = document.createElement('div');
-                group.style.position = 'relative'; group.style.width = '80px'; group.style.height = '110px';
-                
-                // АСИММЕТРИЯ СТОЛА (ТВОЙ ВЕРДИКТ)
-                const draw = (c, isDef) => {
-                    const el = document.createElement('div');
-                    el.className = 'v-card'; el.style.color = c.color;
-                    el.style.position = 'absolute';
-                    const rot = (Math.random() - 0.5) * 30;
-                    const shift = isDef ? 18 : 0;
-                    el.style.transform = `translate(${shift}px, ${shift}px) rotate(${rot}deg)`;
-                    el.innerHTML = `<div class="top">${c.rank}</div><div class="mid">${c.suit}</div>`;
-                    if(isDef) el.style.zIndex = 20;
-                    return el;
-                };
-
-                group.appendChild(draw(pair.atk, false));
-                if(pair.def) group.appendChild(draw(pair.def, true));
-                t.appendChild(group);
-            });
-        },
-
-        sparkMove(pair) {
-            // ЛОГИКА ИИ: Поиск защиты по весу и масти
-            let defs = this.eHand.filter(c => 
-                (c.suit === pair.atk.suit && c.weight > pair.atk.weight) || 
-                (c.suit === this.trump && pair.atk.suit !== this.trump)
-            );
-
-            if(defs.length > 0) {
-                defs.sort((a,b) => a.weight - b.weight);
-                pair.def = defs[0];
-                this.eHand = this.eHand.filter(c => c.id !== pair.def.id);
-                V_AUDIO.beep(300, 0.2, 'triangle');
-                this.renderTable();
-                this.renderEnemy();
-            }
-        }
-    };
-
-    function startEngine() {
-        V_ENGINE.init();
-    }
-    /* МОДУЛЬ ЗАВЕРШЕНИЯ (БИТО И УТИЛИЗАЦИЯ) */
-    V_ENGINE.cleanup = function() {
-        if (this.table.length === 0) return;
-        
-        V_AUDIO.beep(800, 0.2, 'sine', 0.05);
-        const t = document.getElementById('table-chaos');
-        const cards = t.querySelectorAll('.v-card');
-        
-        cards.forEach((c, i) => {
-            // Анимация улета в сторону (за экран)
-            const dir = Math.random() > 0.5 ? 1 : -1;
-            c.style.transition = "all 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045)";
-            c.style.transform = `translate(${dir * 1000}px, ${-500}px) rotate(${dir * 720}deg) scale(0)`;
-            c.style.opacity = "0";
-        });
-
+    function showDoors(callback) {
+        const bl = document.getElementById('brand-layer');
+        bl.style.display = 'flex';
         setTimeout(() => {
-            this.table = [];
-            t.innerHTML = '';
-            document.getElementById('v-bito').style.display = 'none';
+            playSound(800, 0.1, 'square', 0.1);
+            bl.classList.add('opened');
+            setTimeout(callback, 1500);
+        }, 100);
+    }
+
+    function showCasinoFloor() {
+        document.getElementById('brand-layer').style.display = 'none';
+        const main = document.getElementById('main-ui');
+        main.style.display = 'block';
+        setTimeout(() => main.style.opacity = '1', 50);
+        renderTables();
+    }
+
+    function renderTables() {
+        const floor = document.getElementById('floor');
+        floor.innerHTML = '';
+        mockServer.tables.forEach(table => {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            wrap.onclick = () => openTable(table.id);
             
-            // Если в руках пусто — проверка на конец цикла
-            if (this.pHand.length === 0 && this.eHand.length === 0) {
-                alert("РИТУАЛ ЗАВЕРШЕН. МОНОЛИТ ПЕРЕЗАГРУЖЕН.");
-                location.reload();
-            }
-        }, 800);
-    };
+            let statusClass = '';
+            if(table.status === 'collecting') statusClass = 'status-collecting';
+            if(table.status === 'playing') statusClass = 'status-playing';
 
-    // Добавляем кнопку БИТО динамически, если она нужна
-    const bitoBtn = document.createElement('button');
-    bitoBtn.id = 'v-bito';
-    bitoBtn.className = 'btn-core';
-    bitoBtn.innerHTML = 'БИТО';
-    bitoBtn.style.display = 'none';
-    bitoBtn.style.bottom = '420px'; // Чуть выше кнопки Ритуала
-    bitoBtn.onclick = () => V_ENGINE.cleanup();
-    document.getElementById('layer-game').appendChild(bitoBtn);
+            wrap.innerHTML = `
+                <div class="table-surface-mini">
+                    <div class="lamp l-t ${statusClass}" style="position:absolute; width:6px; height:6px; top:8px; left:50%; transform:translateX(-50%); border-radius:50%;"></div>
+                    <img src="1771489965074(1).png" class="table-logo-mini">
+                    ${table.id === 7 ? '<div class="host-label">WANDERER</div>' : ''}
+                </div>
+                <div style="position:absolute; bottom:-25px; width:100%; text-align:center; font-size:8px; font-family:'Orbitron'; color:var(--gold); opacity:0.5;">VCHF-UNIT ${table.id}</div>
+            `;
+            floor.appendChild(wrap);
+        });
+    }
 
-    // Модифицируем sparkMove для появления кнопки БИТО
-    const originalSparkMove = V_ENGINE.sparkMove;
-    V_ENGINE.sparkMove = function(pair) {
-        originalSparkMove.apply(this, arguments);
-        if (pair.def || this.eHand.length === 0) {
-            document.getElementById('v-bito').style.display = 'block';
+    function openTable(id) {
+        currentTable = mockServer.tables.find(t => t.id === id);
+        playSound(440, 0.2, 'sine', 0.1);
+        
+        document.getElementById('main-ui').style.display = 'none';
+        document.getElementById('game-table-view').style.display = 'block';
+        
+        // Логика Хозяина (Первый зашел - хозяин)
+        if (currentTable.players.length === 0) {
+            isHost = true;
+            document.getElementById('mode-selector').style.display = 'flex';
+        } else if (currentTable.status === 'playing') {
+            enterSpectatorMode();
+        } else {
+            enterLobbyMode();
         }
-    };
+    }
 
-    /* ФИНАЛЬНЫЙ СТАРТ */
-    console.log("Нулевой Хаос: Проект Би-Турбо 2026 запущен. Манифест Монолита активен.");
+    function setMode(mode) {
+        currentTable.mode = mode;
+        currentTable.status = 'collecting';
+        document.getElementById('mode-selector').style.display = 'none';
+        enterLobbyMode();
+        renderTables(); // Обновить статус в фоне
+    }
+
+    function enterLobbyMode() {
+        document.getElementById('ready-trigger').style.display = 'block';
+        document.getElementById('lamp-bottom').className = 'lamp waiting';
+        updateLobbyUI();
+    }
+
+    function toggleReady() {
+        isReady = !isReady;
+        const btn = document.getElementById('ready-trigger');
+        const lamp = document.getElementById('lamp-bottom');
+        
+        if(isReady) {
+            btn.innerText = "ГОТОВ 🗸";
+            btn.style.background = "var(--gold)";
+            lamp.className = 'lamp ready';
+            playSound(600, 0.1, 'sine', 0.2);
+            // Тут имитация: если все готовы -> startGame()
+            setTimeout(checkAllReady, 1000);
+        } else {
+            btn.innerText = "Я ГОТОВ ✅";
+            btn.style.background = "var(--green-active)";
+            lamp.className = 'lamp waiting';
+        }
+    }
+
+    function checkAllReady() {
+        // Логика: если двое+ готовы, стартуем
+        startGame();
+    }
+
+    function startGame() {
+        gameActive = true;
+        currentTable.status = 'playing';
+        document.getElementById('ready-trigger').style.display = 'none';
+        document.getElementById('take-btn').style.display = 'block';
+        document.getElementById('done-btn').style.display = 'block';
+        
+        // Визуальная активация ламп
+        document.querySelectorAll('.lamp').forEach(l => l.classList.add('ready'));
+        playSound(200, 0.5, 'square', 0.1); // Звук начала
+    }
+
+    function enterSpectatorMode() {
+        document.getElementById('invite-alert').innerText = "РЕЖИМ НАБЛЮДАТЕЛЯ";
+        document.getElementById('ready-trigger').style.display = 'none';
+    }
+
+    function closeTable() {
+        gameActive = false;
+        document.getElementById('game-table-view').style.display = 'none';
+        showCasinoFloor();
+    }
+
+    async function initCam() {
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({video:true});
+            document.getElementById('local').srcObject = s;
+        } catch(e) { console.log("Cam error"); }
+    }
 </script>
 </body>
 </html>
