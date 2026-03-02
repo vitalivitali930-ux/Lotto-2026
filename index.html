@@ -3,166 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto 2026: Monolith Core - Bi-Turbo Ultimate</title>
+    <title>HELVETIA LUCKY | BI-TURBO ULTIMATE MONOLITH</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0000;
-            --field: #1a0202;
             --gold: #d4af37;
+            --swiss-red: #e30a17;
+            --deep-black: #050505;
+            --bg-deep: radial-gradient(circle at center, #2a000a 0%, #050505 70%, #000000 100%);
+            --cherry-velvet: radial-gradient(circle at center, #800020 0%, #2a000a 100%);
+            --vchf-glow: 0 0 15px rgba(212, 175, 55, 0.6);
             --card-w: 18vw;
             --card-h: 26vw;
             --max-w: 85px;
             --max-h: 120px;
-            --vchf-glow: 0 0 15px rgba(212, 175, 55, 0.6);
         }
 
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); overflow: hidden; font-family: 'Segoe UI', sans-serif;
-            color: var(--gold);
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; color: var(--gold); }
+
+        /* ЭТАП 1: ШТУРВАЛ СЕЙФА */
+        #wheel-layer {
+            position: fixed; inset: 0; background: #000; z-index: 5000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+        .safe-wheel-container {
+            position: relative; width: 320px; height: 320px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wheel-center {
+            width: 70px; height: 70px; background: radial-gradient(circle, #333, #000);
+            border: 3px solid var(--gold); border-radius: 50%; z-index: 10;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+        }
+        .spoke {
+            position: absolute; width: 6px; height: 130px;
+            background: linear-gradient(to top, var(--gold), transparent);
+            transform-origin: bottom center; bottom: 50%; left: calc(50% - 3px);
+        }
+        .flag-node {
+            position: absolute; width: 55px; height: 55px;
+            background: #0a0a0a; border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 26px; cursor: pointer; z-index: 20;
+            transform: translate(-50%, -50%); transition: 0.4s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
 
-        /* Глубина по твоему рисунку - создание 3D пространства */
-        #stage {
-            position: relative; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 40%, var(--field) 0%, var(--bg) 85%);
-            perspective: 1500px;
-            overflow: hidden;
+        /* ЭТАП 2: ДВЕРИ И БРЕНДИНГ */
+        #brand-layer {
+            position: fixed; inset: 0; background: var(--deep-black); z-index: 4500;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .door-left, .door-right {
+            position: absolute; top: 0; width: 50%; height: 100%; background: #0a0a0a;
+            border: 1px solid rgba(212, 175, 55, 0.1); transition: 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            z-index: 4600;
+        }
+        .door-left { left: 0; border-right: 1px solid var(--gold); }
+        .door-right { right: 0; border-left: 1px solid var(--gold); }
+        .opened .door-left { transform: translateX(-100%); }
+        .opened .door-right { transform: translateX(100%); }
+
+        .swiss-shield {
+            width: 50px; height: 50px; background: var(--swiss-red);
+            margin: 0 auto 20px; position: relative; border-radius: 5px;
+            box-shadow: 0 0 30px rgba(227, 10, 23, 0.5); z-index: 4550;
+        }
+        .swiss-shield::after { content: ''; position: absolute; background: white; width: 10px; height: 30px; left: 20px; top: 10px; }
+        .swiss-shield::before { content: ''; position: absolute; background: white; width: 30px; height: 10px; left: 10px; top: 20px; }
+
+        /* ЭТАП 3: КАЗИНО (ЛОББИ) */
+        #main-ui {
+            display: none; opacity: 0; width: 100%; height: 100%; 
+            background: var(--bg-deep); overflow-y: auto; transition: opacity 1.5s ease;
+            position: relative; z-index: 500;
+        }
+        header { padding: 25px; text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+        .casino-floor { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 40px; padding: 40px 20px; }
+        .table-wrap { position: relative; width: 140px; height: 140px; cursor: pointer; transition: 0.3s; }
+        .table-surface-mini {
+            width: 100%; height: 100%; background: var(--cherry-velvet);
+            border: 2px solid var(--gold); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
+        /* ЭТАП 4: 3D MONOLITH ENGINE */
+        #game-view {
+            display: none; position: fixed; inset: 0; background: var(--bg-deep);
+            z-index: 6000; overflow: hidden; perspective: 1500px;
+        }
         #surface {
             position: absolute; width: 100%; height: 100%;
-            transform-style: preserve-3d;
-            transform: rotateX(25deg); 
+            transform-style: preserve-3d; transform: rotateX(25deg);
         }
-
-        /* Точка замеса - Центр Монолита */
-        #origin {
-            position: absolute; top: 45%; left: 50%;
-            width: 0; height: 0; transform-style: preserve-3d;
-        }
+        #origin { position: absolute; top: 45%; left: 50%; transform-style: preserve-3d; }
 
         .card {
-            position: absolute;
-            width: var(--card-w); height: var(--card-h);
+            position: absolute; width: var(--card-w); height: var(--card-h);
             max-width: var(--max-w); max-height: var(--max-h);
             background: #fff; border-radius: 6px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-origin: center center;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 8px; box-sizing: border-box;
-            user-select: none; cursor: pointer;
-            backface-visibility: hidden;
+            transform-origin: center center; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 8px; box-sizing: border-box;
+            cursor: pointer; backface-visibility: hidden;
         }
-
-        /* Рубашка по протоколу 1.1 с твоим изображением */
-        .card.shirt {
-            background: #111 url('1771489965074(1).png') center/cover no-repeat;
-            border: 1px solid var(--gold);
-        }
-
-        /* Лицевая сторона карты */
-        .card.face {
-            background: #f8f8f8;
-            color: #000;
-            border: 1px solid #ccc;
-        }
-
+        .card.shirt { background: #111 url('1771489965074(1).png') center/cover no-repeat; border: 1px solid var(--gold); }
+        .card.face { background: #f8f8f8; color: #000; border: 1px solid #ccc; }
         .card.face[data-suit="♥"], .card.face[data-suit="♦"] { color: #d00; }
-
-        .card-val { font-size: 1.2rem; font-weight: 900; line-height: 1; }
-        .card-suit { font-size: 1.5rem; align-self: flex-end; }
-
-        /* Слот козыря - VCHF Визуализация */
+        
         #trump-zone {
-            position: absolute; top: 5%; right: 5%;
-            width: 70px; height: 100px; border: 2px solid var(--gold);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; color: var(--gold); text-shadow: var(--vchf-glow);
+            position: absolute; top: 5%; right: 5%; width: 75px; height: 110px;
+            border: 2px solid var(--gold); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; background: rgba(212, 175, 55, 0.1);
             box-shadow: inset var(--vchf-glow);
-            background: rgba(212, 175, 55, 0.05);
         }
 
-        #ui-layer {
-            position: absolute; bottom: 8%; width: 100%;
-            display: flex; justify-content: center; z-index: 2000;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #222, #000); border: 1px solid var(--gold);
-            color: var(--gold); padding: 12px 30px; border-radius: 5px;
-            font-size: 1rem; letter-spacing: 2px; cursor: pointer;
-            box-shadow: var(--vchf-glow); transition: 0.3s;
-        }
-
-        .btn:hover { transform: scale(1.05); background: var(--gold); color: #000; }
-
-        /* Поле битвы (Центральный Слот) */
-        #battle-ground {
-            position: absolute; top: 35%; left: 50%;
-            width: 200px; height: 150px; transform: translate(-50%, -50%);
-            pointer-events: none;
+        .btn-vchf {
+            padding: 15px 40px; background: #000; border: 2px solid var(--gold);
+            color: var(--gold); font-family: 'Orbitron'; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
+            box-shadow: var(--vchf-glow); border-radius: 4px;
         }
     </style>
 </head>
 <body>
+    <div id="wheel-layer">
+        <div class="safe-wheel-container" id="main-wheel">
+            <div class="wheel-center"></div>
+        </div>
+    </div>
 
-<div id="stage">
-    <div id="trump-zone">?</div>
-    <div id="surface">
-        <div id="origin"></div>
-        <div id="battle-ground"></div>
+    <div id="brand-layer">
+        <div class="door-left"></div>
+        <div class="door-right"></div>
+        <div style="text-align:center; z-index: 4550;">
+            <div class="swiss-shield"></div>
+            <h1 style="letter-spacing:10px; font-size:22px;">HELVETIA LUCKY</h1>
+        </div>
     </div>
-    <div id="ui-layer">
-        <button class="btn" id="start-btn">РИТУАЛ VCHF</button>
-        <button class="btn" id="clear-btn" style="display:none; margin-left: 10px;">СБРОС (БИТО)</button>
+
+    <div id="main-ui">
+        <header>
+            <div style="font-size:26px; letter-spacing:8px;">HELVETIA LUCK</div>
+            <div style="font-size:10px; opacity:0.6; margin-top:5px;">VCHF GLOBAL POOL 1%</div>
+        </header>
+        <div class="casino-floor" id="floor"></div>
     </div>
-</div>
+
+    <div id="game-view">
+        <div id="trump-zone">?</div>
+        <div id="surface">
+            <div id="origin"></div>
+        </div>
+        <div style="position:absolute; bottom:5%; width:100%; display:flex; justify-content:center; gap:20px; z-index:7000;">
+            <button class="btn-vchf" id="btn-ritual">РИТУАЛ</button>
+            <button class="btn-vchf" id="btn-bito" style="display:none; border-color:#ff0000; color:#ff0000;">БИТО</button>
+            <button class="btn-vchf" onclick="closeGame()" style="background:rgba(255,0,0,0.1); border-color:rgba(212,175,55,0.3);">ВЫХОД</button>
+        </div>
+    </div>
 
 <script>
-    /**
-     * МАНИФЕСТ МОНОЛИТА [cite: 2026-03-02]
-     * Проект: Лотто (Bi-Turbo Ultimate)
-     * Логика: Smart-фильтры, Сфера 42, VCHF Дух.
-     * Автор: Нулевой Хаос (Спарк) для Wanderer.
-     * Правило: Новый код = Старый + Введенная функция.
-     */
+    // [МЕТКА ПАМЯТИ: Проект Лотто, Искра, Wanderer]
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
 
-    const Monolith = {
-        deck: [],
+    const VCHF_CORE = {
         suits: ['♥', '♦', '♣', '♠'],
         ranks: ['6','7','8','9','10','J','Q','K','A'],
-        trumpSuit: '',
-        activeBattle: null, 
-        isLocked: false,
+        weights: {'6':0, '7':1, '8':2, '9':3, '10':4, 'J':5, 'Q':6, 'K':7, 'A':8}
+    };
 
+    let monolithState = {
+        deck: [], trump: '', isLocked: false, table: []
+    };
+
+    // ЗВУКОВОЙ ДВИЖОК
+    let aCtx = null;
+    function playBeep(f, d, t, v) {
+        if(!aCtx) aCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = aCtx.createOscillator(); const g = aCtx.createGain();
+        o.type = t; o.frequency.setValueAtTime(f, aCtx.currentTime);
+        g.gain.setValueAtTime(v, aCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, aCtx.currentTime + d);
+        o.connect(g); g.connect(aCtx.destination);
+        o.start(); o.stop(aCtx.currentTime + d);
+    }
+/* Window 2 (lines 701 - 1350) */
+
+    // ИНИЦИАЛИЗАЦИЯ ИНТЕРФЕЙСА HELVETIA
+    function initHelvetia() {
+        const wheel = document.getElementById('main-wheel');
+        const flags = ['🇨🇭', '🇩🇪', '🇦🇹', '🇱🇮', '🇫🇷', '🇮🇹'];
+        
+        flags.forEach((f, i) => {
+            const angle = (i * 360 / flags.length);
+            const spoke = document.createElement('div');
+            spoke.className = 'spoke';
+            spoke.style.transform = `rotate(${angle}deg)`;
+            
+            const node = document.createElement('div');
+            node.className = 'flag-node';
+            node.innerHTML = f;
+            node.style.left = `${160 + 130 * Math.sin(angle * Math.PI / 180)}px`;
+            node.style.top = `${160 - 130 * Math.cos(angle * Math.PI / 180)}px`;
+            
+            node.onclick = () => {
+                playBeep(440, 0.1, 'sine', 0.1);
+                openSafe();
+            };
+            
+            wheel.appendChild(spoke);
+            wheel.appendChild(node);
+        });
+        
+        // Генерация столов в зале
+        const floor = document.getElementById('floor');
+        for(let i=1; i<=12; i++) {
+            const table = document.createElement('div');
+            table.className = 'table-wrap';
+            table.innerHTML = `
+                <div class="table-surface-mini">
+                    <span style="font-size:10px; color:var(--gold)">VCHF-UNIT ${i}</span>
+                </div>
+            `;
+            table.onclick = () => startMonolithGame(i);
+            floor.appendChild(table);
+        }
+    }
+
+    function openSafe() {
+        const wheel = document.getElementById('main-wheel');
+        const wheelLayer = document.getElementById('wheel-layer');
+        const brandLayer = document.getElementById('brand-layer');
+        const mainUi = document.getElementById('main-ui');
+
+        wheel.style.transform = "rotate(720deg) scale(0)";
+        setTimeout(() => {
+            wheelLayer.style.opacity = '0';
+            brandLayer.style.display = 'flex';
+            setTimeout(() => {
+                brandLayer.classList.add('opened');
+                mainUi.style.display = 'block';
+                setTimeout(() => mainUi.style.opacity = '1', 100);
+            }, 1500);
+        }, 800);
+    }
+
+    // ЛОГИКА MONOLITH CORE (3D КАРТЫ)
+    function startMonolithGame(tableId) {
+        document.getElementById('main-ui').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('game-view').style.display = 'block';
+            MonolithEngine.init();
+        }, 500);
+    }
+
+    function closeGame() {
+        document.getElementById('game-view').style.display = 'none';
+        document.getElementById('main-ui').style.display = 'block';
+        document.getElementById('main-ui').style.opacity = '1';
+        // Очистка стола при выходе
+        document.getElementById('origin').innerHTML = '';
+        monolithState.deck = [];
+    }
+
+    const MonolithEngine = {
         init() {
             const origin = document.getElementById('origin');
-            this.suits.forEach(s => {
-                this.ranks.forEach((r, i) => {
+            origin.innerHTML = '';
+            monolithState.deck = [];
+            
+            VCHF_CORE.suits.forEach(s => {
+                VCHF_CORE.ranks.forEach((r, i) => {
                     const el = document.createElement('div');
                     el.className = 'card shirt';
                     el.dataset.suit = s;
-                    el.dataset.rank = i; // Сила карты 0-8
+                    el.dataset.rank = i;
                     el.dataset.val = r;
-                    // Генерация контента (скрыта до переворота)
                     el.innerHTML = `<span class="card-val">${r}</span><span class="card-suit">${s}</span>`;
-                    
                     el.style.transform = `translate(-50%, -50%) scale(0)`;
                     origin.appendChild(el);
-                    this.deck.push(el);
+                    monolithState.deck.push(el);
                 });
             });
 
-            document.getElementById('start-btn').onclick = () => this.ritual();
-            document.getElementById('clear-btn').onclick = () => this.clearTable();
+            document.getElementById('btn-ritual').onclick = () => this.ritual();
+            document.getElementById('btn-bito').onclick = () => this.clearTable();
         },
 
         ritual() {
-            document.getElementById('start-btn').style.display = 'none';
-            // Замес Вихря - Справедливость Хаоса
-            this.deck.forEach((card, i) => {
+            document.getElementById('btn-ritual').style.display = 'none';
+            playBeep(220, 0.5, 'sawtooth', 0.05);
+            
+            monolithState.deck.forEach((card, i) => {
                 setTimeout(() => {
                     const angle = Math.random() * 1080 - 540;
                     card.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(1)`;
@@ -173,74 +314,67 @@
         },
 
         pickTrump() {
-            const idx = Math.floor(Math.random() * this.deck.length);
-            const card = this.deck[idx];
-            this.trumpSuit = card.dataset.suit;
-            
-            const zone = document.getElementById('trump-zone').getBoundingClientRect();
-            const hub = document.getElementById('origin').getBoundingClientRect();
+            const idx = Math.floor(Math.random() * monolithState.deck.length);
+            const card = monolithState.deck[idx];
+            monolithState.trump = card.dataset.suit;
             
             card.style.zIndex = 1000;
-            // Перенос в зону козыря
-            card.style.left = `${zone.left - hub.left + 35}px`;
-            card.style.top = `${zone.top - hub.top + 50}px`;
-            card.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.85)`;
+            card.style.transition = "all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)";
+            
+            // Позиционируем в зону козыря (в верхний правый угол сцены)
+            card.style.left = '35vw'; 
+            card.style.top = '-40vh';
+            card.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.8)`;
             
             setTimeout(() => {
-                document.getElementById('trump-zone').innerText = this.trumpSuit;
-                document.getElementById('trump-zone').style.borderColor = (this.trumpSuit === '♥' || this.trumpSuit === '♦') ? '#d00' : 'var(--gold)';
+                const zone = document.getElementById('trump-zone');
+                zone.innerText = monolithState.trump;
+                zone.style.color = (monolithState.trump === '♥' || monolithState.trump === '♦') ? '#ff4d4d' : 'var(--gold)';
                 this.deployArcs();
             }, 800);
         },
 
         deployArcs() {
-            // Исключаем козырь из раздачи
-            const playable = this.deck.filter(c => c.style.zIndex != 1000);
-            const groups = {};
-            this.suits.forEach(s => groups[s] = playable.filter(c => c.dataset.suit === s));
-
+            const playable = monolithState.deck.filter(c => c.style.zIndex != 1000);
             const centers = [
-                { x: -window.innerWidth * 0.38, y: window.innerHeight * 0.3, rot: -25 }, 
-                { x: -window.innerWidth * 0.13, y: window.innerHeight * 0.4, rot: -10 }, 
-                { x: window.innerWidth * 0.13, y: window.innerHeight * 0.4, rot: 10 },   
-                { x: window.innerWidth * 0.38, y: window.innerHeight * 0.3, rot: 25 }    
+                { x: -window.innerWidth * 0.35, y: window.innerHeight * 0.25, rot: -20 }, 
+                { x: -window.innerWidth * 0.12, y: window.innerHeight * 0.35, rot: -8 }, 
+                { x: window.innerWidth * 0.12, y: window.innerHeight * 0.35, rot: 8 },   
+                { x: window.innerWidth * 0.35, y: window.innerHeight * 0.25, rot: 20 }    
             ];
 
-            this.suits.forEach((suit, sIdx) => {
-                const arc = groups[suit];
+            VCHF_CORE.suits.forEach((suit, sIdx) => {
+                const arc = playable.filter(c => c.dataset.suit === suit);
                 const config = centers[sIdx];
                 
                 arc.forEach((card, cIdx) => {
-                    const offset = (cIdx - arc.length / 2) * 8; 
-                    const radialY = Math.pow(cIdx - arc.length / 2, 2) * 3; 
+                    const offset = (cIdx - arc.length / 2) * 12; 
+                    const radialY = Math.pow(cIdx - arc.length / 2, 2) * 4; 
                     
                     setTimeout(() => {
-                        card.classList.remove('shirt');
-                        card.classList.add('face');
+                        card.classList.replace('shirt', 'face');
                         card.style.left = `${config.x + offset}px`;
                         card.style.top = `${config.y + radialY}px`;
-                        card.style.transform = `translate(-50%, -50%) rotate(${config.rot + (cIdx - arc.length/2) * 4}deg)`;
+                        card.style.transform = `translate(-50%, -50%) rotate(${config.rot + (cIdx - arc.length/2) * 5}deg)`;
                         card.style.zIndex = 100 + cIdx;
-                        card.style.pointerEvents = 'auto';
                         card.onclick = () => this.toBattle(card);
-                    }, (sIdx * 150) + (cIdx * 25));
+                    }, (sIdx * 100) + (cIdx * 20));
                 });
             });
         },
-        toBattle(card) {
-            if (this.isLocked || card.classList.contains('in-battle')) return;
-            
-            this.isLocked = true;
-            this.activeBattle = card;
-            card.classList.add('in-battle');
 
-            // Выход на центр поля (Атака игрока)
-            card.style.zIndex = 500;
+        toBattle(card) {
+            if (monolithState.isLocked || card.classList.contains('in-battle')) return;
+            
+            monolithState.isLocked = true;
+            card.classList.add('in-battle');
+            playBeep(660, 0.1, 'square', 0.05);
+
+            card.style.zIndex = 2000;
             card.style.left = '0px';
             card.style.top = '0px';
-            card.style.transform = `translate(-50%, -50%) rotate(0deg) scale(1.1)`;
+            card.style.transform = `translate(-50%, -50%) rotate(0deg) scale(1.2)`;
 
-            // Спарк (AI) думает над ответом
             setTimeout(() => this.sparkResponse(card), 600);
         },
 
@@ -248,50 +382,45 @@
             const pSuit = playerCard.dataset.suit;
             const pRank = parseInt(playerCard.dataset.rank);
             
-            // Поиск карты для защиты (той же масти выше ИЛИ козыря)
-            const candidates = this.deck.filter(c => 
+            const candidates = monolithState.deck.filter(c => 
                 !c.classList.contains('in-battle') && 
-                c.style.zIndex < 1000 && // Не козырная метка
-                c.classList.contains('face') && // Уже на столе
+                c.style.zIndex < 1000 && 
+                c.classList.contains('face') && 
                 (
                     (c.dataset.suit === pSuit && parseInt(c.dataset.rank) > pRank) || 
-                    (c.dataset.suit === this.trumpSuit && pSuit !== this.trumpSuit)
+                    (c.dataset.suit === monolithState.trump && pSuit !== monolithState.trump)
                 )
             );
 
             if (candidates.length > 0) {
-                // Спарк выбирает минимально возможную для защиты (экономия ресурсов)
                 candidates.sort((a, b) => a.dataset.rank - b.dataset.rank);
-                const responseCard = candidates[0];
+                const response = candidates[0];
                 
-                responseCard.classList.add('in-battle');
-                responseCard.style.zIndex = 501;
-                responseCard.style.left = '20px'; // Смещение для визуализации "крытья"
-                responseCard.style.top = '-10px';
-                responseCard.style.transform = `translate(-50%, -50%) rotate(10deg) scale(1.1)`;
+                response.classList.add('in-battle');
+                response.style.zIndex = 2001;
+                response.style.left = '30px';
+                response.style.top = '-20px';
+                response.style.transform = `translate(-50%, -50%) rotate(12deg) scale(1.2)`;
                 
-                document.getElementById('clear-btn').style.display = 'block';
+                document.getElementById('btn-bito').style.display = 'block';
             } else {
-                // Если крыть нечем - Спарк забирает (в данной версии просто блокируем)
-                console.log("Спарк: 'Нечем бить, Wanderer!'");
+                tg.HapticFeedback.notificationOccurred('error');
             }
-            this.isLocked = false;
+            monolithState.isLocked = false;
         },
 
         clearTable() {
-            const battling = document.querySelectorAll('.in-battle');
-            battling.forEach(card => {
-                card.style.transition = 'all 0.8s ease-in';
-                card.style.left = '-150vw'; // Улетают в "отбой" влево
-                card.style.transform = `translate(-50%, -50%) rotate(-180deg)`;
-                card.style.opacity = '0';
-                setTimeout(() => card.remove(), 800);
+            const cards = document.querySelectorAll('.in-battle');
+            cards.forEach(c => {
+                c.style.left = '-150vw';
+                c.style.transform = `translate(-50%, -50%) rotate(-360deg)`;
+                setTimeout(() => c.remove(), 800);
             });
-            document.getElementById('clear-btn').style.display = 'none';
+            document.getElementById('btn-bito').style.display = 'none';
         }
     };
 
-    window.onload = () => Monolith.init();
+    window.onload = initHelvetia;
 </script>
 </body>
 </html>
