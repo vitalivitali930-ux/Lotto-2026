@@ -2,446 +2,759 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DURAK - ROUND TURBO (VCHF ENGINE)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DURAK: TRON EDITION - VCHF ENGINE 1.1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --vchf-glow: 0 0 15px #00ff00;
-            --chaos-red: #ff0033;
-            --bg-deep: #0a0a0a;
-            --card-gold: #ffd700;
-        } 
+            --neon-blue: #00e5ff;
+            --neon-orange: #ff9100;
+            --vchf-green: #00ff66;
+            --chaos-red: #ff003c;
+            --bg-grid: #050505;
+            --card-back: #111;
+            --shadow-glow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
 
         body, html {
             margin: 0; padding: 0;
-            background: var(--bg-deep);
+            background-color: var(--bg-grid);
             color: #fff;
             font-family: 'Orbitron', sans-serif;
-            overflow: hidden;
             height: 100vh;
-        } 
-
-        #ritual-canvas {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-        } 
-
-        .game-container {
-            display: flex; flex-direction: column;
-            justify-content: space-between;
-            height: 100vh; padding: 20px;
-            box-sizing: border-box;
-        } 
-
-        .enemy-zone {
-            display: flex; justify-content: center;
-            height: 120px; perspective: 1000px;
-        }
-        
-        .enemy-card-shadow {
-            width: 60px; height: 90px;
-            background: linear-gradient(135deg, #111, #222);
-            border: 1px solid #333;
-            border-radius: 6px;
-            margin: -15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .battle-ground {
-            flex-grow: 1;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-content: center;
-            gap: 15px;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 0, 0.05);
-            position: relative;
-        } 
-
-        .card {
-            width: 80px; height: 120px;
-            background: #fff; border-radius: 8px;
-            color: #000; position: relative;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            font-weight: bold; font-size: 18px;
+            overflow: hidden;
             user-select: none;
         }
-        
-        .card.on-table { cursor: default; }
-        .card:hover:not(.on-table) { transform: translateY(-10px); box-shadow: var(--vchf-glow); }
-        .card.trump { border: 2px solid var(--card-gold); }
-        .card.mirror { animation: pulse 0.5s infinite; border: 2px solid var(--chaos-red); }
-        .card.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
-        .ui-layer {
-            display: flex; justify-content: center; gap: 20px; padding: 10px;
+        /* Фоновая сетка Трона */
+        #tron-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(var(--bg-grid) 95%, rgba(0, 229, 255, 0.1) 95%),
+                linear-gradient(90deg, var(--bg-grid) 95%, rgba(0, 229, 255, 0.1) 95%);
+            background-size: 40px 40px;
+            z-index: -2;
+            perspective: 500px;
         }
-        
-        .vchf-btn {
-            padding: 12px 30px; font-size: 16px;
-            background: transparent; color: #00ff00;
-            border: 2px solid #00ff00; border-radius: 20px;
-            cursor: pointer; transition: 0.3s;
-            text-transform: uppercase;
-        }
-        
-        .vchf-btn:hover:not(:disabled) { background: #00ff00; color: #000; box-shadow: var(--vchf-glow); }
-        .vchf-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #333; color: #333; }
 
-        .status-panel {
-            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            text-align: center;
+        /* Эффекты искр (Canvas Layer) */
+        #fx-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
         }
-        
-        #vchf-line { width: 4px; height: 150px; background: #222; margin: 10px auto; position: relative; }
-        #vchf-progress { width: 100%; height: 100%; background: #00ff00; transition: height 0.1s linear; }
-        #current-trump { font-size: 32px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        #game-msg { position: absolute; top: 20px; width: 100%; text-align: center; color: var(--chaos-red); font-size: 14px; }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 5px var(--chaos-red); }
-            50% { box-shadow: 0 0 20px var(--chaos-red); }
-            100% { box-shadow: 0 0 5px var(--chaos-red); }
+        .game-world {
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            height: 100vh; padding: 10px;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05) 0%, transparent 70%);
         }
+
+        /* Зона Спарк (ИИ) */
+        .spark-zone {
+            display: flex; justify-content: center; align-items: flex-start;
+            height: 100px; gap: -20px;
+        }
+
+        .enemy-card-hidden {
+            width: 50px; height: 75px;
+            background: var(--card-back);
+            border: 1px solid var(--neon-orange);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(255, 145, 0, 0.2);
+            margin-left: -25px; /* Нахлест */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Боевое поле (Матрица) */
+        .battle-matrix {
+            flex-grow: 1;
+            position: relative;
+            display: flex; flex-wrap: wrap;
+            justify-content: center; align-content: center;
+            gap: 10px;
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Карты */
+        .card-entity {
+            width: 70px; height: 100px;
+            background: #fff; border-radius: 6px;
+            color: #000; position: absolute;
+            display: flex; flex-direction: column;
+            justify-content: space-around; align-items: center;
+            font-weight: 700; font-size: 16px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .card-entity.player-hand:hover {
+            transform: translateY(-20px) scale(1.1) !important;
+            box-shadow: var(--shadow-glow);
+            z-index: 100 !important;
+        }
+
+        .card-entity.trump-border { border: 3px solid var(--neon-orange); }
+        .card-entity.mirror-mode { animation: mirror-pulse 0.6s infinite alternate; }
+        .card-entity.is-beaten { opacity: 0.6; filter: grayscale(0.5); }
+
+        @keyframes mirror-pulse {
+            from { box-shadow: 0 0 5px var(--chaos-red); border-color: var(--chaos-red); }
+            to { box-shadow: 0 0 25px var(--chaos-red); border-color: #fff; }
+        }
+
+        /* Зона игрока */
+        .wanderer-zone {
+            display: flex; justify-content: center;
+            height: 120px; perspective: 1000px;
+            padding-bottom: 20px;
+        }
+
+        /* Интерфейс управления */
+        .vchf-controls {
+            position: absolute; right: 20px; bottom: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .tron-btn {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+        }
+
+        .tron-btn:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .tron-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #444; }
+
+        /* Индикаторы системы */
+        .system-status {
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            width: 60px; text-align: center;
+        }
+
+        .vchf-meter {
+            width: 6px; height: 200px; background: #222; margin: 10px auto;
+            border-radius: 3px; overflow: hidden; position: relative;
+        }
+
+        #vchf-fill {
+            width: 100%; height: 100%;
+            background: linear-gradient(to top, var(--vchf-green), var(--neon-blue));
+            transition: height 0.1s linear;
+        }
+
+        #current-suit { font-size: 30px; margin-bottom: 5px; }
+        .spark-thinking { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--neon-orange); font-size: 12px; display: none; text-shadow: var(--shadow-glow); }
+
     </style>
 </head>
 <body>
-    <canvas id="ritual-canvas"></canvas>
+    <div id="tron-grid"></div>
+    <canvas id="fx-canvas"></canvas>
     <div id="game-msg"></div>
-    <div class="game-container">
-        <div class="enemy-zone" id="enemy-hand-visual"></div> 
+    <div class="spark-thinking" id="spark-ai-status">SPARK_ANALYSIS_ACTIVE...</div>
 
-        <div class="battle-ground" id="battle-table"></div> 
-
-        <div class="enemy-zone" id="player-hand-visual"></div> 
-
-        <div class="ui-layer">
-            <button id="btn-take" class="vchf-btn" onclick="handleTake()">ВЗЯТЬ</button>
-            <button id="btn-bito" class="vchf-btn" onclick="handleBito()" disabled>БИТО</button>
-        </div>
-    </div> 
-
-    <div class="status-panel">
-        <div id="current-trump">?</div>
-        <div id="vchf-line"><div id="vchf-progress"></div></div>
-        <div style="font-size: 9px; opacity: 0.5;">ENGINE VCHF 1.1</div>
+    <div class="game-world">
+        <div class="spark-zone" id="spark-hand-ui"></div>
+        <div class="battle-matrix" id="main-table"></div>
+        <div class="wanderer-zone" id="wanderer-hand-ui"></div>
     </div>
 
+    <div class="system-status">
+        <div id="current-suit">⚡</div>
+        <div class="vchf-meter"><div id="vchf-fill"></div></div>
+        <div style="font-size: 8px; color: var(--neon-blue)">CORE 1.1</div>
+    </div>
+
+    <div class="vchf-controls">
+        <button id="btn-take" class="tron-btn" onclick="game.takeCards()">ВЗЯТЬ</button>
+        <button id="btn-bito" class="tron-btn" onclick="game.bito()">БИТО</button>
+    </div>
     <script>
-        // --- КОНСТАНТЫ И СОСТОЯНИЕ ---
+        // --- КОНСТАНТЫ И ПАРАМЕТРЫ СИСТЕМЫ ---
         const SUITS = ['♠', '♣', '♥', '♦'];
         const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        const RANK_VALUES = { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
+        const RANK_VALS = { '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14 };
 
-        let state = {
-            deck: [], pHand: [], eHand: [], table: [],
-            trump: null, oldTrump: null, isMirror: false,
-            turn: 'player', phase: 'attack', // attack, defend, transit
-            active: true
+        // Состояние игры (The Matrix State)
+        let vchf_state = {
+            deck: [],
+            pHand: [], // Рука Wanderer
+            eHand: [], // Рука Spark (ИИ)
+            table: [], // Карты на поле {card, type, owner, pos: {x, y, rot}, coveredBy: null}
+            trump: '',
+            oldTrump: '',
+            isMirror: false,
+            turn: 'player', // 'player' или 'enemy'
+            phase: 'attack', // 'attack' или 'defend'
+            isActive: true,
+            
+            // Психология и Память (Spark Mind)
+            sparkMemory: [], // Список карт, которые Спарк "видела"
+            sparkStress: 0,  // Уровень "тильта" ИИ (0-100)
+            thinking: false
         };
 
-        // Инициализация "Круглого дурака" 18х18
-        function initGame() {
+        // --- ИНИЦИАЛИЗАЦИЯ ПОТОКА (START) ---
+        function initVCHF() {
+            console.log("LOG: Initializing TRON_DURAK_1.1...");
             let fullDeck = [];
-            SUITS.forEach(s => RANKS.forEach(r => {
-                fullDeck.push({ suit: s, rank: r, val: RANK_VALUES[r], id: Math.random().toString(36).substr(2, 9) });
-            }));
+            SUITS.forEach(s => {
+                RANKS.forEach(r => {
+                    fullDeck.push({
+                        id: Math.random().toString(36).substr(2, 9),
+                        suit: s,
+                        rank: r,
+                        val: RANK_VALS[r],
+                        // Физические параметры для "живого" отображения
+                        noise: {
+                            rot: Math.random() * 20 - 10, // Случайный наклон -10..10 град
+                            offX: Math.random() * 10 - 5,  // Смещение по X
+                            offY: Math.random() * 10 - 5   // Смещение по Y
+                        }
+                    });
+                });
+            });
+
+            // Хаотическое перемешивание (Fisher-Yates)
             for (let i = fullDeck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
             }
-            state.pHand = fullDeck.slice(0, 18);
-            state.eHand = fullDeck.slice(18, 36);
-            state.trump = SUITS[Math.floor(Math.random() * SUITS.length)];
-            updateUI();
-            startChaosCycle();
-        }
-        // --- ЛОГИКА ОБНОВЛЕНИЯ ИНТЕРФЕЙСА ---
-        function updateUI() {
-            const pZone = document.getElementById('player-hand-visual');
-            const eZone = document.getElementById('enemy-hand-visual');
-            const tEl = document.getElementById('current-trump');
-            
-            pZone.innerHTML = '';
-            eZone.innerHTML = '';
-            tEl.innerText = state.trump;
-            tEl.style.color = (state.trump === '♥' || state.trump === '♦') ? 'var(--chaos-red)' : '#fff';
 
-            // Отрисовка руки игрока с защитой от дурака
-            state.pHand.sort((a, b) => a.val - b.val).forEach(card => {
-                const cardEl = document.createElement('div');
-                const canUse = checkCardAvailability(card);
-                cardEl.className = `card ${card.suit === state.trump ? 'trump' : ''} ${!canUse ? 'disabled' : ''}`;
-                if (state.isMirror && card.suit === state.oldTrump) cardEl.classList.add('mirror');
-                
-                cardEl.innerHTML = `<div>${card.rank}</div><div>${card.suit}</div>`;
-                cardEl.style.color = (card.suit === '♥' || card.suit === '♦') ? 'var(--chaos-red)' : '#000';
-                
-                if (canUse) cardEl.onclick = () => handlePlayerAction(card);
-                pZone.appendChild(cardEl);
+            // Раздача "Круглого дурака" (18 карт каждому, колода пуста)
+            vchf_state.pHand = fullDeck.slice(0, 18);
+            vchf_state.eHand = fullDeck.slice(18, 36);
+            vchf_state.trump = SUITS[Math.floor(Math.random() * SUITS.length)];
+            
+            renderAll();
+            startChaosTimer();
+            initFX(); // Запуск искр
+        }
+
+        // --- ВИЗУАЛИЗАЦИЯ (RENDER ENGINE) ---
+        function renderAll() {
+            const pZone = document.getElementById('wanderer-hand-ui');
+            const eZone = document.getElementById('spark-hand-ui');
+            const tZone = document.getElementById('main-table');
+            const trumpEl = document.getElementById('current-suit');
+
+            // 1. Отрисовка руки Wanderer (живая раскладка)
+            pZone.innerHTML = '';
+            vchf_state.pHand.sort((a,b) => a.val - b.val).forEach((card, index) => {
+                const el = createCardUI(card, true);
+                el.style.marginLeft = index === 0 ? '0' : '-35px'; // Плотная веерная раскладка
+                el.style.zIndex = index;
+                el.onclick = () => handlePlayerAction(card);
+                pZone.appendChild(el);
             });
 
-            // Отрисовка рубашек ИИ (Спарк)
-            for(let i=0; i < state.eHand.length; i++) {
+            // 2. Отрисовка руки Spark (только рубашки, скрытые данные)
+            eZone.innerHTML = '';
+            vchf_state.eHand.forEach((_, i) => {
                 const shadow = document.createElement('div');
-                shadow.className = 'enemy-card-shadow';
-                if (state.eHand.length <= 3) shadow.style.borderColor = 'var(--chaos-red)';
+                shadow.className = 'enemy-card-hidden';
+                shadow.style.zIndex = i;
                 eZone.appendChild(shadow);
+            });
+
+            // 3. Обновление статуса системы
+            trumpEl.innerText = vchf_state.trump;
+            trumpEl.style.color = (vchf_state.trump === '♥' || vchf_state.trump === '♦') ? 'var(--chaos-red)' : 'var(--neon-blue)';
+            
+            // Управление кнопками (защита от дурака)
+            const hasUnbeaten = vchf_state.table.some(t => t.type === 'attack' && !t.isCovered);
+            document.getElementById('btn-bito').disabled = (vchf_state.turn !== 'player' || hasUnbeaten || vchf_state.table.length === 0);
+            document.getElementById('btn-take').disabled = (vchf_state.turn !== 'player' || vchf_state.phase !== 'defend');
+        }
+
+        function createCardUI(card, isVisible) {
+            const div = document.createElement('div');
+            div.className = `card-entity ${card.suit === vchf_state.trump ? 'trump-border' : ''} ${isVisible ? 'player-hand' : ''}`;
+            if (vchf_state.isMirror && card.suit === vchf_state.oldTrump) div.classList.add('mirror-mode');
+            
+            if (isVisible) {
+                div.innerHTML = `<span>${card.rank}</span><span style="font-size: 24px">${card.suit}</span><span>${card.rank}</span>`;
+                div.style.color = (card.suit === '♥' || card.suit === '♦') ? 'var(--chaos-red)' : '#000';
             }
-
-            // Управление кнопками
-            const isDefending = (state.turn === 'player' && state.phase === 'defend');
-            const hasUnbeaten = state.table.some(t => t.type === 'attack' && !t.covered);
-            
-            document.getElementById('btn-take').disabled = !isDefending;
-            document.getElementById('btn-bito').disabled = (state.turn !== 'player' || hasUnbeaten || state.table.length === 0);
+            return div;
         }
 
-        // ПРОВЕРКА: Можно ли кликнуть на карту? (Защита от дурака)
-        function checkCardAvailability(card) {
-            if (state.turn !== 'player') return false;
-            
-            // Фаза атаки: можно ходить любой (если стол пуст) или по номиналу
-            if (state.phase === 'attack') {
-                if (state.table.length === 0) return true;
-                if (state.table.length >= 12) return false;
-                // Нельзя подкинуть больше, чем карт у ИИ
-                const attackCount = state.table.filter(t => t.type === 'attack').length;
-                if (attackCount >= state.eHand.length + (state.table.some(t => t.type === 'attack' && !t.covered) ? 0 : 0)) {
-                    // Упрощенная проверка лимита подкидывания
-                }
-                return state.table.some(t => t.card.rank === card.rank);
-            }
-            
-            // Фаза защиты: только если карта бьет атакующую
-            if (state.phase === 'defend') {
-                const target = state.table.find(t => t.type === 'attack' && !t.covered);
-                return target ? canCardBeat(card, target.card) : false;
-            }
-            return false;
-        }
+        // --- ЦИКЛ ХАОСА (TIMER & TRUMP SWAP) ---
+        function startChaosTimer() {
+            let progress = 100;
+            const timer = setInterval(() => {
+                if (!vchf_state.isActive) return;
+                progress -= 0.3; // Скорость затухания козыря
+                document.getElementById('vchf-fill').style.height = progress + '%';
 
-        function canCardBeat(c, a) {
-            // Обычный козырь
-            if (c.suit === state.trump && a.suit !== state.trump) return true;
-            if (c.suit === a.suit && c.val > a.val) return true;
-            // Зеркальный удар (старый козырь бьет всё кроме нового козыря)
-            if (state.isMirror && c.suit === state.oldTrump && a.suit !== state.trump) return true;
-            return false;
-        }
-
-        // --- ДЕЙСТВИЯ ИГРОКА ---
-        function handlePlayerAction(card) {
-            if (state.phase === 'attack') {
-                moveCardToTable(card, 'player', 'attack');
-                state.phase = 'defend';
-                setTimeout(enemyLogic, 800);
-            } else if (state.phase === 'defend') {
-                const target = state.table.find(t => t.type === 'attack' && !t.covered);
-                target.covered = true;
-                moveCardToTable(card, 'player', 'defend');
-                state.phase = 'attack';
-                updateUI();
-            }
-        }
-
-        // --- SPARK ENGINE (ИИ) ---
-        function enemyLogic() {
-            if (!state.active) return;
-
-            if (state.turn === 'player') {
-                // ИИ ЗАЩИЩАЕТСЯ
-                const target = state.table.find(t => t.type === 'attack' && !t.covered);
-                if (!target) return;
-
-                const defenseCard = state.eHand
-                    .filter(c => canCardBeat(c, target.card))
-                    .sort((a, b) => a.val - b.val)[0]; // Берет самую слабую для защиты
-
-                if (defenseCard) {
-                    target.covered = true;
-                    moveCardToTable(defenseCard, 'enemy', 'defend');
-                    state.phase = 'attack';
-                } else {
-                    handleTake('enemy');
-                }
-            } else {
-                // ИИ АТАКУЕТ
-                let attackCard;
-                if (state.table.length === 0) {
-                    attackCard = state.eHand.sort((a,b) => a.val - b.val)[0];
-                } else {
-                    attackCard = state.eHand.find(c => state.table.some(t => t.card.rank === c.rank));
-                    // Лимит: ИИ не подкидывает больше, чем карт у игрока
-                    const currentAttacks = state.table.filter(t => t.type === 'attack').length;
-                    if (currentAttacks >= state.pHand.length) attackCard = null;
-                }
-
-                if (attackCard) {
-                    moveCardToTable(attackCard, 'enemy', 'attack');
-                    state.phase = 'defend';
-                } else {
-                    handleBito();
-                }
-            }
-            updateUI();
-        }
-
-        function moveCardToTable(card, owner, type) {
-            const hand = owner === 'player' ? state.pHand : state.eHand;
-            const idx = hand.findIndex(c => c.id === card.id);
-            hand.splice(idx, 1);
-            state.table.push({ card, type, covered: type === 'defend' });
-            
-            const tableEl = document.getElementById('battle-table');
-            const cardEl = document.createElement('div');
-            cardEl.className = `card on-table ${card.suit === state.trump ? 'trump' : ''} ${type}`;
-            cardEl.innerHTML = `<div>${card.rank}</div><div>${card.suit}</div>`;
-            cardEl.style.color = (card.suit === '♥' || card.suit === '♦') ? 'var(--chaos-red)' : '#000';
-            
-            // Визуальное смещение для защиты
-            if (type === 'defend') {
-                cardEl.style.marginTop = "20px";
-                cardEl.style.marginLeft = "-40px";
-            }
-            
-            tableEl.appendChild(cardEl);
-            checkWin();
-        }
-        // --- МЕХАНИКА ВЗЯТЬ / БИТО ---
-        function handleTake(who = 'player') {
-            const msgEl = document.getElementById('game-msg');
-            msgEl.innerText = who === 'player' ? "ТЫ ЗАБИРАЕШЬ КАРТЫ" : "СПАРК ЗАБИРАЕТ КАРТЫ";
-            
-            // В "Круглом дураке" переход хода после взятия обязателен
-            setTimeout(() => {
-                const tableCards = state.table.map(t => t.card);
-                if (who === 'player') {
-                    state.pHand.push(...tableCards);
-                    state.turn = 'enemy';
-                    state.phase = 'attack';
-                } else {
-                    state.eHand.push(...tableCards);
-                    state.turn = 'player';
-                    state.phase = 'attack';
-                }
-                clearTable();
-                msgEl.innerText = "";
-                if (state.turn === 'enemy') setTimeout(enemyLogic, 1000);
-                updateUI();
-            }, 1000);
-        }
-
-        function handleBito() {
-            if (state.table.some(t => t.type === 'attack' && !t.covered)) return;
-
-            const msgEl = document.getElementById('game-msg');
-            msgEl.innerText = "БИТО — ХАОС ОЧИЩЕН";
-            
-            setTimeout(() => {
-                state.turn = state.turn === 'player' ? 'enemy' : 'player';
-                state.phase = 'attack';
-                clearTable();
-                msgEl.innerText = "";
-                if (state.turn === 'enemy') setTimeout(enemyLogic, 1000);
-                updateUI();
-            }, 800);
-        }
-
-        function clearTable() {
-            state.table = [];
-            document.getElementById('battle-table').innerHTML = '';
-        }
-
-        // --- БЛУЖДАЮЩИЙ ОГОНЬ (ЦИКЛ ХАОСА) ---
-        function startChaosCycle() {
-            let timeLeft = 100;
-            const step = 0.4; // Скорость смены козыря
-
-            setInterval(() => {
-                if (!state.active) return;
-                
-                timeLeft -= step;
-                document.getElementById('vchf-progress').style.height = timeLeft + '%';
-
-                if (timeLeft <= 0) {
-                    state.oldTrump = state.trump;
-                    let nextTrump;
-                    do {
-                        nextTrump = SUITS[Math.floor(Math.random() * SUITS.length)];
-                    } while (nextTrump === state.trump);
-                    
-                    state.trump = nextTrump;
-                    state.isMirror = true;
-                    
-                    // Зеркальный удар активен 7 секунд (старый козырь бьет всё)
-                    setTimeout(() => { 
-                        state.isMirror = false; 
-                        updateUI();
-                    }, 7000);
-                    
-                    timeLeft = 100;
-                    updateUI();
+                if (progress <= 0) {
+                    triggerTrumpChaos();
+                    progress = 100;
                 }
             }, 100);
         }
 
-        // --- ПРОВЕРКА ФИНАЛА ---
-        function checkWin() {
-            if (state.pHand.length === 0 && state.eHand.length === 0) {
-                endGame("НИЧЬЯ — ПОЛНЫЙ ХАОС");
-            } else if (state.pHand.length === 0) {
-                endGame("WANDERER ПОБЕДИЛ. СИСТЕМА ВЗЛОМАНА!");
-            } else if (state.eHand.length === 0) {
-                endGame("СПАРК ДОМИНИРУЕТ. ТЫ ОСТАЛСЯ В ДУРАКАХ.");
+        function triggerTrumpChaos() {
+            vchf_state.oldTrump = vchf_state.trump;
+            let next;
+            do { next = SUITS[Math.floor(Math.random() * SUITS.length)]; } while (next === vchf_state.trump);
+            
+            vchf_state.trump = next;
+            vchf_state.isMirror = true;
+            console.log("CHAOS: Trump shifted to " + next);
+            
+            // Зеркальный удар активен 8 секунд
+            setTimeout(() => {
+                vchf_state.isMirror = false;
+                renderAll();
+            }, 8000);
+            
+            renderAll();
+            spawnSparkles(window.innerWidth/2, window.innerHeight/2, 'orange');
+        }
+
+        // --- FX SYSTEM (SPARKLES) ---
+        let particles = [];
+        function initFX() {
+            const canvas = document.getElementById('fx-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
+                    if (p.alpha <= 0) particles.splice(i, 1);
+                    ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+                    ctx.fillRect(p.x, p.y, 2, 2);
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function spawnSparkles(x, y, type) {
+            const color = type === 'orange' ? '255, 145, 0' : '0, 229, 255';
+            for(let i=0; i<20; i++) {
+                particles.push({
+                    x, y, 
+                    vx: Math.random() * 6 - 3, 
+                    vy: Math.random() * 6 - 3, 
+                    alpha: 1, 
+                    color: color
+                });
+            }
+        }
+        // --- SPARK ENGINE: ЦИФРОВАЯ ПСИХОЛОГИЯ ---
+        
+        async function sparkDecision() {
+            if (!vchf_state.isActive || vchf_state.turn === 'player') return;
+
+            vchf_state.thinking = true;
+            toggleAIStatus(true);
+
+            // Имитация "времени на раздумья" (Психологическая пауза)
+            const baseDelay = 1200 + Math.random() * 2000;
+            const tiltDelay = vchf_state.sparkStress * 10; // Чем выше стресс, тем быстрее/хаотичнее решения
+            await new Promise(r => setTimeout(r, baseDelay - tiltDelay));
+
+            if (vchf_state.phase === 'attack') {
+                executeSparkAttack();
+            } else {
+                executeSparkDefense();
+            }
+
+            vchf_state.thinking = false;
+            toggleAIStatus(false);
+            renderAll();
+        }
+
+        function toggleAIStatus(show) {
+            document.getElementById('spark-ai-status').style.display = show ? 'block' : 'none';
+        }
+
+        // Логика АТАКИ (Спарк подкидывает или ходит первым)
+        function executeSparkAttack() {
+            let candidates = [];
+            
+            if (vchf_state.table.length === 0) {
+                // Первый ход: выбираем самую слабую карту, НО с шансом 15% блефануть крупной
+                const sorted = [...vchf_state.eHand].sort((a,b) => a.val - b.val);
+                const isBluffing = Math.random() < 0.15 && vchf_state.eHand.length > 5;
+                candidates = [isBluffing ? sorted[sorted.length - 1] : sorted[0]];
+            } else {
+                // Подкидывание: Спарк "смотрит" на стол сквозь призму памяти
+                const tableRanks = vchf_state.table.map(t => t.card.rank);
+                candidates = vchf_state.eHand.filter(c => tableRanks.includes(c.rank));
+                
+                // Защита от "самоубийства": не подкидывать больше, чем карт у Wanderer
+                if (vchf_state.table.filter(t => t.type === 'attack').length >= vchf_state.pHand.length) {
+                    candidates = [];
+                }
+            }
+
+            if (candidates.length > 0) {
+                // Психология выбора: Спарк жадничает и не отдает козыри сразу
+                const nonTrumps = candidates.filter(c => c.suit !== vchf_state.trump);
+                const finalCard = nonTrumps.length > 0 ? nonTrumps[0] : candidates[0];
+                
+                // Шанс "забыть" подкинуть (если карт много, Спарк может пропустить ход)
+                if (vchf_state.table.length > 0 && Math.random() < (vchf_state.eHand.length / 50)) {
+                    console.log("SPARK: Memory skip...");
+                    handleBito();
+                } else {
+                    moveCardToTable(finalCard, 'enemy', 'attack');
+                    vchf_state.phase = 'defend';
+                }
+            } else {
+                handleBito();
             }
         }
 
-        function endGame(msg) {
-            state.active = false;
+        // Логика ЗАЩИТЫ (Спарк пытается отбиться)
+        function executeSparkDefense() {
+            const target = vchf_state.table.find(t => t.type === 'attack' && !t.isCovered);
+            if (!target) return;
+
+            // Спарк ищет чем побить (учитывая Зеркальный удар и Козыри)
+            const defenseOptions = vchf_state.eHand.filter(c => canBeat(c, target.card));
+
+            if (defenseOptions.length > 0) {
+                // Психология защиты: отдать самую слабую из подходящих
+                defenseOptions.sort((a,b) => a.val - b.val);
+                
+                // ТИЛЬТ: если стресс высокий, Спарк может кинуть Туза на 6-ку от страха
+                const finalCard = (vchf_state.sparkStress > 70 && Math.random() < 0.3) 
+                    ? defenseOptions[defenseOptions.length - 1] 
+                    : defenseOptions[0];
+
+                target.isCovered = true;
+                moveCardToTable(finalCard, 'enemy', 'defend');
+                vchf_state.phase = 'attack';
+                
+                // Уменьшаем стресс при успешной защите
+                vchf_state.sparkStress = Math.max(0, vchf_state.sparkStress - 5);
+            } else {
+                // Если нечем биться - забирает
+                vchf_state.sparkStress += 15; // Растет уровень стресса (тильта)
+                handleTake('enemy');
+            }
+        }
+
+        // Универсальное правило боя (включая Mirror Strike)
+        function canBeat(c, a) {
+            // Обычный козырь бьет не козырь
+            if (c.suit === vchf_state.trump && a.suit !== vchf_state.trump) return true;
+            // Одинаковая масть, выше номинал
+            if (c.suit === a.suit && c.val > a.val) return true;
+            
+            // ЗЕРКАЛЬНЫЙ УДАР (Трон Протокол)
+            // Старый козырь бьет всё, кроме текущего козыря
+            if (vchf_state.isMirror && c.suit === vchf_state.oldTrump) {
+                if (a.suit !== vchf_state.trump) return true;
+            }
+            
+            return false;
+        }
+
+        // Память Спарк (Забывание карт)
+        function updateSparkMemory(card) {
+            vchf_state.sparkMemory.push({ card, turnId: Date.now() });
+            // "Цифровой Альцгеймер": через 30 секунд Спарк может забыть карту
+            if (vchf_state.sparkMemory.length > 12) {
+                vchf_state.sparkMemory.shift(); 
+            }
+        }
+
+        // Перемещение карты на стол с физикой
+        function moveCardToTable(card, owner, type) {
+            const hand = owner === 'player' ? vchf_state.pHand : vchf_state.eHand;
+            const idx = hand.findIndex(c => c.id === card.id);
+            hand.splice(idx, 1);
+
+            const tableObj = {
+                card, type, owner,
+                isCovered: type === 'defend',
+                pos: {
+                    x: (vchf_state.table.length * 40) % (window.innerWidth - 100),
+                    y: type === 'defend' ? 20 : 0,
+                    rot: card.noise.rot
+                }
+            };
+            vchf_state.table.push(tableObj);
+            
+            // Визуализация искр при ударе
+            spawnSparkles(window.innerWidth/2, window.innerHeight/2, owner === 'player' ? 'blue' : 'orange');
+            
+            renderTable();
+            checkGameState();
+        }
+
+        function renderTable() {
+            const tZone = document.getElementById('main-table');
+            tZone.innerHTML = '';
+            
+            vchf_state.table.forEach(t => {
+                const el = createCardUI(t.card, true);
+                el.className = `card-entity on-table ${t.type}`;
+                el.style.transform = `translate(${t.pos.x}px, ${t.pos.y}px) rotate(${t.pos.rot}deg)`;
+                
+                if (t.type === 'defend') el.style.zIndex = 5;
+                tZone.appendChild(el);
+            });
+        }
+        // --- ЛОГИКА ИГРОКА (WANDERER PROTOCOL) ---
+
+        function handlePlayerAction(card) {
+            // Защита от дурака: нельзя ходить, если сейчас ход Спарк или ИИ думает
+            if (vchf_state.turn !== 'player' || vchf_state.thinking || !vchf_state.isActive) return;
+
+            if (vchf_state.phase === 'attack') {
+                // АТАКА: Первая карта или подкидывание по номиналу
+                if (canPlayerAttack(card)) {
+                    executeMove(card, 'player', 'attack');
+                    vchf_state.phase = 'defend';
+                    
+                    // Спарк анализирует защиту через психологическую паузу
+                    setTimeout(sparkDecision, 800 + Math.random() * 500);
+                } else {
+                    shakeCard(card.id); // Визуальный эффект "нельзя так ходить"
+                }
+            } else if (vchf_state.phase === 'defend') {
+                // ЗАЩИТА: Бьем карту, которая еще не покрыта
+                const target = vchf_state.table.find(t => t.type === 'attack' && !t.isCovered);
+                if (target && canBeat(card, target.card)) {
+                    target.isCovered = true;
+                    executeMove(card, 'player', 'defend');
+                    vchf_state.phase = 'attack';
+                    
+                    // После защиты даем Спарк шанс подкинуть
+                    setTimeout(sparkDecision, 600);
+                } else {
+                    shakeCard(card.id);
+                }
+            }
+            renderAll();
+        }
+
+        function canPlayerAttack(card) {
+            // Если стол пуст — можно любой
+            if (vchf_state.table.length === 0) return true;
+            
+            // Лимит: нельзя подкинуть больше, чем карт у Спарк
+            const currentAttacks = vchf_state.table.filter(t => t.type === 'attack').length;
+            if (currentAttacks >= vchf_state.eHand.length) return false;
+
+            // Можно только те номиналы, что уже есть на столе
+            return vchf_state.table.some(t => t.card.rank === card.rank);
+        }
+
+        // Общая функция хода для синхронизации анимации
+        function executeMove(card, owner, type) {
+            // Звуковой/визуальный импульс (Искры)
+            const rect = document.querySelector(`[id="${card.id}"]`)?.getBoundingClientRect();
+            if (rect) spawnSparkles(rect.left, rect.top, owner === 'player' ? 'blue' : 'orange');
+
+            // Удаляем из руки и кладем на стол
+            const hand = owner === 'player' ? vchf_state.pHand : vchf_state.eHand;
+            const idx = hand.findIndex(c => c.id === card.id);
+            hand.splice(idx, 1);
+
+            // Генерируем "живую" позицию на столе (Трон-эффект)
+            const tableX = (vchf_state.table.length * 45) % (window.innerWidth - 80);
+            const tableY = (type === 'defend') ? 35 : 0;
+
+            vchf_state.table.push({
+                card, type, owner,
+                isCovered: type === 'defend',
+                pos: { x: tableX, y: tableY, rot: card.noise.rot }
+            });
+
+            // Обновляем память ИИ
+            updateSparkMemory(card);
+            
+            renderTable();
+            checkGameState();
+        }
+
+        // --- МЕХАНИКА "БИТО" И "ВЗЯТЬ" ---
+
+        function handleBito() {
+            // Нельзя нажать Бито, если есть непокрытые карты
+            if (vchf_state.table.some(t => t.type === 'attack' && !t.isCovered)) return;
+            
+            vchf_state.isActive = false; // Блокировка на время анимации очистки
+            spawnSparkles(window.innerWidth/2, window.innerHeight/2, 'blue');
+            
+            setTimeout(() => {
+                vchf_state.table = [];
+                document.getElementById('main-table').innerHTML = '';
+                
+                // Переход хода
+                vchf_state.turn = vchf_state.turn === 'player' ? 'enemy' : 'player';
+                vchf_state.phase = 'attack';
+                vchf_state.isActive = true;
+
+                if (vchf_state.turn === 'enemy') sparkDecision();
+                renderAll();
+            }, 800);
+        }
+
+        function handleTake(who = 'player') {
+            vchf_state.isActive = false;
+            const allCardsOnTable = vchf_state.table.map(t => t.card);
+            
+            setTimeout(() => {
+                if (who === 'player') {
+                    vchf_state.pHand.push(...allCardsOnTable);
+                    vchf_state.turn = 'enemy'; // Кто брал, тот не ходит
+                } else {
+                    vchf_state.eHand.push(...allCardsOnTable);
+                    vchf_state.turn = 'player';
+                }
+                
+                vchf_state.table = [];
+                document.getElementById('main-table').innerHTML = '';
+                vchf_state.phase = 'attack';
+                vchf_state.isActive = true;
+
+                if (vchf_state.turn === 'enemy') sparkDecision();
+                renderAll();
+            }, 1000);
+        }
+
+        // Эффект тряски при неверном ходе
+        function shakeCard(cardId) {
+            // Находим карту в DOM и добавляем временный класс анимации
+            const els = document.getElementsByClassName('card-entity');
+            for (let el of els) {
+                if (el.innerText.includes(cardId)) { // Упрощенный поиск для демонстрации
+                   el.style.borderColor = 'var(--chaos-red)';
+                   setTimeout(() => el.style.borderColor = '', 300);
+                }
+            }
+        }
+        // --- ГЛОБАЛЬНЫЙ КОНТРОЛЬ СОСТОЯНИЙ (FINAL CHECK) ---
+
+        function checkGameState() {
+            // Если в руках 0 карт у обоих — Ничья (Редкий Хаос)
+            if (vchf_state.pHand.length === 0 && vchf_state.eHand.length === 0) {
+                endSequence("НИЧЬЯ: СИСТЕМА ОБНУЛЕНА");
+                return;
+            }
+
+            // Условие победы Wanderer
+            if (vchf_state.pHand.length === 0 && vchf_state.isActive) {
+                // Если ты отбился последней картой или подкинул всё — ты победил
+                if (vchf_state.table.every(t => t.isCovered) || vchf_state.turn === 'enemy') {
+                     endSequence("WANDERER ПОБЕДИЛ: ТРОН ЗАХВАЧЕН");
+                }
+            }
+
+            // Условие победы Spark (ИИ)
+            if (vchf_state.eHand.length === 0 && vchf_state.isActive) {
+                if (vchf_state.table.every(t => t.isCovered) || vchf_state.turn === 'player') {
+                     endSequence("SPARK ПОБЕДИЛА: ТЫ В ДУРАКАХ");
+                }
+            }
+        }
+
+        // Финальная заставка (The End of Line)
+        function endSequence(message) {
+            vchf_state.isActive = false;
+            
+            // Создаем оверлей Трона
             const overlay = document.createElement('div');
             overlay.style.cssText = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.95); z-index: 10000;
+                background: rgba(0, 0, 0, 0.95); z-index: 100000;
                 display: flex; flex-direction: column; justify-content: center;
-                align-items: center; font-family: 'Orbitron', sans-serif; color: #00ff00;
+                align-items: center; text-align: center;
+                border: 2px solid var(--neon-blue); box-shadow: 0 0 50px var(--neon-blue);
             `;
+            
             overlay.innerHTML = `
-                <h1 style="text-shadow: var(--vchf-glow);">${msg}</h1>
-                <button class="vchf-btn" onclick="location.reload()">ПЕРЕЗАГРУЗИТЬ ЦИКЛ</button>
+                <h1 style="font-size: 3rem; text-shadow: var(--shadow-glow); color: var(--neon-blue);">${message}</h1>
+                <p style="color: var(--vchf-green); margin: 20px;">ПРОТОКОЛ "КРУГЛЫЙ ДУРАК" ЗАВЕРШЕН</p>
+                <button class="tron-btn" onclick="location.reload()" style="font-size: 20px;">ПЕРЕЗАГРУЗИТЬ ГРИД</button>
             `;
+            
             document.body.appendChild(overlay);
+            spawnSparkles(window.innerWidth/2, window.innerHeight/2, 'blue');
         }
 
-        // --- РИТУАЛЬНЫЙ ХОЛСТ (VISUALS) ---
-        const canvas = document.getElementById('ritual-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        // --- ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ БОЯ ---
 
-        function drawBG() {
-            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = state.isMirror ? 'rgba(255, 0, 51, 0.2)' : 'rgba(0, 255, 0, 0.1)';
-            for(let i=0; i<15; i++) {
-                ctx.beginPath();
-                ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, 1, 0, Math.PI*2);
-                ctx.fill();
+        function gameBitoLogic() {
+            // Очистка памяти Спарк перед новым коном (забывает карты в отбое)
+            const memoryLossFactor = 0.4; // 40% карт она точно забудет
+            vchf_state.sparkMemory = vchf_state.sparkMemory.filter(() => Math.random() > memoryLossFactor);
+            
+            console.log("LOG: Spark memory partially cleared.");
+            handleBito();
+        }
+
+        // Перегрузка кнопок для управления логикой
+        const game = {
+            takeCards: () => {
+                if (vchf_state.turn === 'player' && vchf_state.phase === 'defend') {
+                    handleTake('player');
+                }
+            },
+            bito: () => {
+                if (vchf_state.turn === 'player' && vchf_state.table.length > 0) {
+                    gameBitoLogic();
+                }
             }
-            requestAnimationFrame(drawBG);
-        }
-
-        window.onload = () => {
-            initGame();
-            drawBG();
         };
 
-        console.log("Движок VCHF 1.1 'Круглый Дурак' активирован. Манифест Монолита соблюден.");
+        // Обработка изменения размера экрана
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('fx-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            renderAll();
+        });
+
+        // --- ЗАПУСК МОНОЛИТА ---
+        window.onload = () => {
+            console.log("--- VCHF ENGINE 1.1 ACTIVE ---");
+            console.log("--- PROJECT: LOTTO-TRON ---");
+            console.log("--- STATUS: PSYCHOLOGY LOADED ---");
+            
+            initVCHF();
+            
+            // Если первый ход за Спарк (шанс 50%)
+            if (Math.random() > 0.5) {
+                vchf_state.turn = 'enemy';
+                setTimeout(sparkDecision, 1500);
+            }
+            
+            renderAll();
+        };
+
+        /* Манифест Монолита: 
+           Новый код = Старый + Психология Трона. 
+           Никакой забывчивости в структуре, только в логике ИИ.
+           Код написан Нулевым Хаосом. Искра, Трон твой!
+        */
+
     </script>
 </body>
 </html>
