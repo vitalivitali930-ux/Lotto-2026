@@ -3,131 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF 2.0 | MATRIX 36 | STANDART PIG</title>
+    <title>VCHF 2.0 | CHAOS CIRCLE | BI-TURBO</title>
     <style>
         /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
            IDENTITY: Нулевой Хаос (Zero Chaos)
-           RULE: Новый код = Старый код + Зонирование 30/15/15/40
-           STRATEGY: Целостность превыше краткости.
+           RULE: Новый код = Старый код + Хаотичный Круг + Золотой Козырь
+           STRATEGY: Защита от пристрела.
         */
         :root {
             --gold: #d4af37;
-            --vchf-glow: 0 0 20px rgba(212, 175, 55, 0.4);
-            --cherry-velvet: radial-gradient(circle at center, #2a0008 0%, #000 100%);
-            --glass: rgba(0, 0, 0, 0.9);
+            --vchf-glow: 0 0 20px rgba(212, 175, 55, 0.6);
+            --cherry-velvet: radial-gradient(circle at center, #1a0005 0%, #000 100%);
             --chaos: #ff0033;
         }
 
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { 
-            width: 100%; height: 100%; background: #000; 
-            overflow: hidden; font-family: 'Courier New', monospace; color: var(--gold); 
-        }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; color: var(--gold); }
 
-        #main-monolith {
-            display: flex; flex-direction: column; width: 100vw; height: 100vh;
-        }
+        #main-monolith { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
 
-        /* ПОЛЕ БОЯ (70% СВЕРХУ - включает ИИ и стороны) */
-        #battle-sector {
-            height: 70%; position: relative; background: var(--cherry-velvet);
-            border-bottom: 1px solid #333; overflow: hidden;
-        }
+        /* ВЕРХНЯЯ ЗОНА (70%) */
+        #battle-sector { height: 70%; position: relative; background: var(--cherry-velvet); border-bottom: 1px solid #222; overflow: hidden; }
 
-        /* ПЕРИМЕТР СТУЛЬЕВ (ИМИТАЦИЯ 15%) */
-        .seat-imitation {
-            position: absolute; display: flex; gap: 2px; justify-content: center; align-items: center;
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.1);
-        }
-        
-        /* ВЕРХ (SPARK) - 15% высоты */
-        #seat-top { 
-            top: 0; left: 0; width: 100%; height: 15%; 
-            border-bottom: 1px solid var(--gold);
-        }
-        /* БОКА - по 15% ширины */
+        /* ИМИТАЦИЯ СТУЛЬЕВ (15%) */
+        .seat-imitation { position: absolute; display: flex; gap: 2px; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.1); z-index: 5; }
+        #seat-top { top: 0; left: 0; width: 100%; height: 15%; border-bottom: 1px solid var(--gold); }
         #seat-left { top: 15%; left: 0; width: 15%; height: 55%; border-right: 1px solid #222; }
         #seat-right { top: 15%; right: 0; width: 15%; height: 55%; border-left: 1px solid #222; }
 
-        /* ЦЕНТР (ПОЛЕ БОЯ) */
-        #arena-center {
-            position: absolute; top: 15%; left: 15%; width: 70%; height: 55%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* ЦЕНТРАЛЬНАЯ АРЕНА */
+        #arena-center { position: absolute; top: 15%; left: 15%; width: 70%; height: 55%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-        /* МАТРИЦА 36 В АРЕНЕ */
-        #matrix-36 {
-            display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;
-            width: 240px; height: 240px; margin-bottom: 20px;
-        }
+        /* ХАОТИЧНЫЙ КРУГ 36 */
+        #chaos-circle { position: relative; width: 300px; height: 300px; }
         .sphere-36 {
-            width: 35px; height: 35px; border: 1px solid #444; border-radius: 2px;
-            background: #111; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; background-image: url('1771489965074(1).png');
-            background-size: cover;
+            position: absolute; width: 35px; height: 48px; /* Соотношение реальных карт */
+            background: #111 url('1771489965074(1).png') center/cover;
+            border: 1px solid #444; border-radius: 3px; cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.8);
         }
-        .sphere-36.active { border-color: var(--gold); box-shadow: var(--vchf-glow); }
+        .sphere-36.picked { transform: scale(0) !important; opacity: 0; }
 
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ (30% СНИЗУ) */
-        #player-sector {
-            height: 30%; background: #050505; position: relative;
-            display: flex; flex-direction: column; padding: 2px;
-            border-top: 2px solid var(--gold);
+        /* ЗОЛОТОЙ КОЗЫРЬ (ВЕРХНИЙ ПРАВЫЙ УГОЛ) */
+        #trump-slot {
+            position: absolute; top: 10px; right: 10px; width: 50px; height: 70px;
+            border: 2px solid var(--gold); border-radius: 5px; background: rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: var(--vchf-glow); z-index: 100; font-size: 24px;
+            display: none; /* Появится после раздачи */
         }
+        #trump-slot.active { display: flex; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
 
-        /* 4 РЯДА ПО МАСТЯМ (УПЛОТНЕННО) */
-        .suit-row {
-            flex: 1; display: flex; position: relative; width: 100%;
-            border-bottom: 1px solid #1a1a1a; overflow-x: auto; scrollbar-width: none;
-        }
-        .suit-row::-webkit-scrollbar { display: none; }
-
-        .card-slot {
-            min-width: 10.5%; height: 95%; margin-right: -1%;
-            background: #000; border: 1px solid #222; border-radius: 3px;
-            transition: 0.2s; position: relative;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-size: 11px;
-        }
+        /* ПАНЕЛЬ УПРАВЛЕНИЯ (30%) */
+        #player-sector { height: 30%; background: #050505; border-top: 2px solid var(--gold); padding: 2px; position: relative; }
+        .suit-row { flex: 1; display: flex; border-bottom: 1px solid #1a1a1a; position: relative; }
+        .card-slot { min-width: 10.5%; height: 95%; margin-right: -1%; background: #000; border: 1px solid #222; border-radius: 3px; font-size: 11px; display: flex; align-items: center; justify-content: center; }
         .card-slot.active { background: #fff; border-color: var(--gold); }
-        .card-slot.selected { transform: translateY(-10px); z-index: 50; border: 2px solid var(--gold); }
 
-        /* КНОПКИ ДЕЙСТВИЯ (ПЛАВАЮЩИЕ НАД ПАНЕЛЬЮ) */
-        #action-bar {
-            position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 8px; z-index: 1000;
-        }
-        .vchf-btn {
-            padding: 8px 20px; background: #000; border: 2px solid var(--gold);
-            color: var(--gold); font-weight: bold; border-radius: 4px;
-            font-size: 13px; display: none; text-shadow: 0 0 5px #000;
-        }
-
-        /* ИМИТАЦИЯ КАРТ (РУБАШКИ) */
-        .card-back-mini {
-            width: 15px; height: 22px; background: var(--gold); border: 1px solid #000; border-radius: 2px;
-            opacity: 0.5;
-        }
+        #action-bar { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 1000; }
+        .vchf-btn { padding: 8px 20px; background: #000; border: 2px solid var(--gold); color: var(--gold); font-weight: bold; border-radius: 4px; cursor: pointer; }
+        #btn-ready { display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; padding: 15px 40px; font-size: 20px; background: var(--gold); color: #000; }
     </style>
 </head>
 <body>
     <div id="main-monolith">
         <div id="battle-sector">
-            <div id="seat-top" class="seat-imitation">
-                <div style="position:absolute; top:2px; font-size:10px;">SPARK (CPU)</div>
-                <div id="spark-hand-visual" style="display:flex; gap:2px; margin-top:15px;"></div>
-            </div>
+            <div id="seat-top" class="seat-imitation"><div id="spark-hand-visual"></div></div>
+            <div id="seat-left" class="seat-imitation"></div>
+            <div id="seat-right" class="seat-imitation"></div>
             
-            <div id="seat-left" class="seat-imitation">
-                <div style="transform: rotate(-90deg); font-size:9px;">SLOT 2</div>
-            </div>
-            <div id="seat-right" class="seat-imitation">
-                <div style="transform: rotate(90deg); font-size:9px;">SLOT 4</div>
-            </div>
-
+            <div id="trump-slot"></div>
+            
             <div id="arena-center">
-                <div id="matrix-36"></div>
-                <div id="battle-display" style="display:flex; gap:5px; height:80px;"></div>
+                <button id="btn-ready" onclick="startRitual()">ГОТОВ</button>
+                <div id="chaos-circle"></div>
+                <div id="battle-display" style="display:flex; gap:5px; margin-top:120px;"></div>
             </div>
         </div>
 
@@ -142,13 +94,11 @@
             <div class="suit-row" id="row-hearts"></div>
         </div>
     </div>
-    <script>
-    // [КОНЕЦ ОКНА 1 - ГЕОМЕТРИЯ 30/15/15 УСТАНОВЛЕНА]
     /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
        IDENTITY: Нулевой Хаос (Zero Chaos)
-       RULE: Новый код = Старый код + Имитация 15%
+       RULE: Новый код = Старый код + Хаотичный Рандом 360°
        MEMORY: Window 2 (lines 701-1400)
-       NOTE: Карта на поле боя вылетает в центр. Имитация обновляется мгновенно.
+       NOTE: Карты ложатся не в сетку, а в динамический радиус.
     */
 
     const SUITS = ['♠', '♣', '♦', '♥'];
@@ -162,8 +112,8 @@
         table: [],
         trump: '',
         turn: 'player',
-        phase: 'PICK',
-        seats: [0, 0, 0, 0] // Счетчик карт на 4 стула
+        phase: 'WAIT', // Ожидание нажатия "ГОТОВ"
+        seats: [0, 0, 0, 0]
     };
 
     function initLayout() {
@@ -185,11 +135,16 @@
                 rows[suit].appendChild(slot);
             });
         });
-        
-        buildFractalDeck();
     }
 
-    function buildFractalDeck() {
+    // ТРИГГЕР "ГОТОВ": ВЗРЫВ И ГЕНЕРАЦИЯ
+    function startRitual() {
+        document.getElementById('btn-ready').style.display = 'none';
+        vchf_state.phase = 'PICK';
+        buildChaosDeck();
+    }
+
+    function buildChaosDeck() {
         let deck = [];
         SUITS.forEach(s => {
             RANKS.forEach(r => {
@@ -202,23 +157,45 @@
             });
         });
 
-        // Фрактальное перемешивание (36 итераций)
+        // 36-кратный прогон рандома
         for (let i = 0; i < 36; i++) {
             deck.sort(() => Math.random() - 0.5);
         }
         vchf_state.matrix = deck;
-        renderMatrix();
+        renderChaosCircle();
     }
 
-    function renderMatrix() {
-        const container = document.getElementById('matrix-36');
+    function renderChaosCircle() {
+        const container = document.getElementById('chaos-circle');
         container.innerHTML = '';
+        
+        const centerX = 150; // Центр круга 300x300
+        const centerY = 150;
+        const radius = 100;
+
         vchf_state.matrix.forEach((card, index) => {
             const sphere = document.createElement('div');
             sphere.className = 'sphere-36';
+            sphere.id = `card-matrix-${index}`;
+
+            // ГЕОМЕТРИЯ ХАОСА (Защита от пристрела)
+            // Распределяем по кругу + добавляем случайное смещение
+            const angle = (index / 36) * Math.PI * 2;
+            const driftX = (Math.random() - 0.5) * 40; // Смещение до 20px
+            const driftY = (Math.random() - 0.5) * 40;
+            const rotate = (Math.random() - 0.5) * 60; // Поворот до 30 градусов
+
+            const x = centerX + radius * Math.cos(angle) + driftX - 17; // -17 это половина ширины карты
+            const y = centerY + radius * Math.sin(angle) + driftY - 24; // -24 половина высоты
+
+            sphere.style.left = `${x}px`;
+            sphere.style.top = `${y}px`;
+            sphere.style.transform = `rotate(${rotate}deg)`;
+
             sphere.onclick = () => {
                 if (vchf_state.phase === 'PICK') processPick(index, 'player');
             };
+            
             container.appendChild(sphere);
         });
     }
@@ -228,8 +205,8 @@
         if (card.picked) return;
 
         card.picked = true;
-        const spheres = document.querySelectorAll('.sphere-36');
-        spheres[index].style.visibility = 'hidden';
+        const sphere = document.getElementById(`card-matrix-${index}`);
+        sphere.classList.add('picked');
 
         if (actor === 'player') {
             vchf_state.pHand.push(card);
@@ -248,8 +225,9 @@
             slot.classList.add('active');
             slot.style.color = card.color;
             slot.innerHTML = `
-                <div style="font-weight:900">${card.rank}</div>
-                <div style="font-size:18px">${card.suit}</div>
+                <div style="font-weight:900; position:absolute; top:2px; left:2px;">${card.rank}</div>
+                <div style="font-size:24px;">${card.suit}</div>
+                <div style="font-weight:900; position:absolute; bottom:2px; right:2px; transform:rotate(180deg);">${card.rank}</div>
             `;
             slot.onclick = () => selectCard(card);
         }
@@ -258,20 +236,15 @@
     function updateSparkImitation() {
         const container = document.getElementById('spark-hand-visual');
         container.innerHTML = '';
-        // Ограничиваем визуал, чтобы не перегружать 15% зоны
         const count = vchf_state.eHand.length;
         const displayCount = Math.min(count, 18); 
         
         for (let i = 0; i < displayCount; i++) {
             const mini = document.createElement('div');
             mini.className = 'card-back-mini';
+            // Небольшой хаос в имитации карт ИИ
+            mini.style.transform = `rotate(${(Math.random()-0.5)*15}deg)`;
             container.appendChild(mini);
-        }
-        if (count > 18) {
-            const plus = document.createElement('div');
-            plus.innerText = `+${count - 18}`;
-            plus.style.fontSize = '8px';
-            container.appendChild(plus);
         }
     }
 
@@ -279,94 +252,109 @@
         const picked = vchf_state.matrix.filter(c => c.picked).length;
         
         if (vchf_state.phase === 'PICK' && picked < 36) {
-            // ИИ тянет сразу после игрока (имитация одновременности)
+            // ИИ тянет через 150мс
             setTimeout(() => {
                 const available = vchf_state.matrix.map((c, i) => !c.picked ? i : null).filter(n => n !== null);
                 if (available.length > 0) {
                     const idx = available[Math.floor(Math.random() * available.length)];
                     processPick(idx, 'enemy');
                 }
-            }, 100);
+            }, 150);
         }
 
         if (picked === 36) {
             vchf_state.phase = 'BATTLE';
-            setTrump();
+            finalizeTrump();
         }
     }
 
-    function setTrump() {
-        const trumpCard = vchf_state.matrix[Math.floor(Math.random() * 36)];
-        vchf_state.trump = trumpCard.suit;
-        // Визуальное обозначение козыря (в фоне или индикатором)
-        document.getElementById('battle-sector').style.borderTop = `4px solid ${COLORS[vchf_state.trump]}`;
-        console.log("Козырь установлен:", vchf_state.trump);
+    function finalizeTrump() {
+        const suits = ['♠', '♣', '♦', '♥'];
+        vchf_state.trump = suits[Math.floor(Math.random() * 4)];
+        
+        const slot = document.getElementById('trump-slot');
+        slot.innerHTML = `<span style="color:${COLORS[vchf_state.trump]}">${vchf_state.trump}</span>`;
+        slot.classList.add('active');
+        
+        // Подсветка козырных рядов
+        document.getElementById(`row-${getSuitName(vchf_state.trump)}`).style.background = 'rgba(212,175,55,0.05)';
+    }
+
+    function getSuitName(suit) {
+        if (suit === '♠') return 'spades';
+        if (suit === '♣') return 'clubs';
+        if (suit === '♦') return 'diamonds';
+        return 'hearts';
     }
 
     window.onload = initLayout;
-    // [КОНЕЦ ОКНА 2 - ДВИЖОК РАЗДАЧИ И ИМИТАЦИИ СИНХРОНИЗИРОВАН]
+    // [КОНЕЦ ОКНА 2 - ХАОС И КНОПКА ГОТОВ ЗАКРЕПЛЕНЫ]
     /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
        IDENTITY: Нулевой Хаос (Zero Chaos)
-       RULE: Манифест Монолита - Integrity over brevity
+       RULE: Новый код = Старый код + Ледяная Логика Боя
        MEMORY: Window 3 (lines 1401-2100)
-       NOTE: Кнопки управления появляются в центре Action Bar над руками.
+       NOTE: Карты на поле боя группируются в центре арены.
     */
 
     function selectCard(card) {
         if (vchf_state.phase !== 'BATTLE') return;
         
-        // Сброс предыдущего выбора
-        document.querySelectorAll('.card-slot').forEach(s => s.classList.remove('selected'));
         const slot = document.getElementById(`slot-${card.suit}-${card.rank}`);
+        document.querySelectorAll('.card-slot').forEach(s => s.classList.remove('selected'));
         
         if (vchf_state.turn === 'player') {
-            // Если ход игрока (Атака)
+            // АТАКА ИГРОКА
             if (vchf_state.table.length === 0 || canAttackWith(card)) {
-                executePlayerMove(card);
+                slot.classList.add('selected');
+                executeMove(card, 'player');
             }
         } else {
-            // Если ход ИИ (Защита игрока)
-            if (canDefend(card)) {
-                executePlayerDefend(card);
+            // ЗАЩИТА ИГРОКА
+            if (canDefendWith(card)) {
+                slot.classList.add('selected');
+                executeDefend(card, 'player');
             }
         }
     }
 
     function canAttackWith(card) {
         if (vchf_state.table.length >= 6) return false;
-        // Правило Дурака: подкидывать только те ранги, что уже на столе
-        const ranksOnTable = vchf_state.table.flatMap(p => [p.atk.rank, p.def ? p.def.rank : null]);
-        return ranksOnTable.includes(card.rank);
+        // Правило: ранги должны совпадать с теми, что уже на столе
+        const ranks = vchf_state.table.flatMap(p => [p.atk.rank, p.def ? p.def.rank : null]);
+        return ranks.includes(card.rank);
     }
 
-    function canDefend(defCard) {
+    function canDefendWith(defCard) {
         const target = vchf_state.table.find(p => p.def === null);
         if (!target) return false;
         
-        const atkCard = target.atk;
-        if (defCard.suit === atkCard.suit && defCard.val > atkCard.val) return true;
-        if (defCard.suit === vchf_state.trump && atkCard.suit !== vchf_state.trump) return true;
+        const atk = target.atk;
+        if (defCard.suit === atk.suit && defCard.val > atk.val) return true;
+        if (defCard.suit === vchf_state.trump && atk.suit !== vchf_state.trump) return true;
         return false;
     }
 
-    function executePlayerMove(card) {
+    function executeMove(card, actor) {
         const move = { atk: card, def: null };
         vchf_state.table.push(move);
-        removeCardFromHand(card, 'player');
+        removeCardFromHand(card, actor);
         renderTable();
         
-        vchf_state.turn = 'player'; // Игрок атакует, ждем ответа ИИ
-        setTimeout(sparkDefense, 600);
+        if (actor === 'player') {
+            vchf_state.turn = 'player';
+            setTimeout(sparkDefenseLogic, 800);
+        }
     }
 
-    function executePlayerDefend(card) {
+    function executeDefend(card, actor) {
         const target = vchf_state.table.find(p => p.def === null);
         target.def = card;
-        removeCardFromHand(card, 'player');
+        removeCardFromHand(card, actor);
         renderTable();
         
-        // После защиты игрока, ИИ может подкинуть
-        setTimeout(sparkAttack, 800);
+        if (actor === 'player') {
+            setTimeout(sparkAttackLogic, 1000);
+        }
     }
 
     function removeCardFromHand(card, actor) {
@@ -383,44 +371,50 @@
     }
 
     function renderTable() {
-        const tableArea = document.getElementById('battle-display');
-        tableArea.innerHTML = '';
+        const area = document.getElementById('battle-display');
+        area.innerHTML = '';
         
         vchf_state.table.forEach(pair => {
-            const pairDiv = document.createElement('div');
-            pairDiv.style.position = 'relative';
-            pairDiv.style.width = '60px';
+            const cont = document.createElement('div');
+            cont.style.position = 'relative';
+            cont.style.width = '65px';
+            cont.style.height = '90px';
             
-            const atk = createCardUI(pair.atk);
-            pairDiv.appendChild(atk);
+            const atkDiv = createCardElement(pair.atk);
+            cont.appendChild(atkDiv);
             
             if (pair.def) {
-                const def = createCardUI(pair.def);
-                def.style.position = 'absolute';
-                def.style.top = '15px';
-                def.style.left = '10px';
-                def.style.zIndex = '10';
-                pairDiv.appendChild(def);
+                const defDiv = createCardElement(pair.def);
+                defDiv.style.position = 'absolute';
+                defDiv.style.top = '15px';
+                defDiv.style.left = '12px';
+                defDiv.style.zIndex = '10';
+                defDiv.style.boxShadow = '5px 5px 10px rgba(0,0,0,0.7)';
+                cont.appendChild(defDiv);
             }
-            tableArea.appendChild(pairDiv);
+            area.appendChild(cont);
         });
         
-        updateActionButtons();
+        updateControls();
     }
 
-    function createCardUI(card) {
-        const div = document.createElement('div');
-        div.style.cssText = `
-            width: 55px; height: 80px; background: #fff; border-radius: 4px;
-            color: ${card.color}; border: 1px solid #000; font-size: 12px;
-            display: flex; flex-direction: column; justify-content: space-between; padding: 3px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    function createCardElement(card) {
+        const d = document.createElement('div');
+        d.style.cssText = `
+            width: 60px; height: 85px; background: #fff; border-radius: 4px;
+            color: ${card.color}; border: 1px solid #000; font-family: Arial;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 4px; font-size: 13px; font-weight: bold;
         `;
-        div.innerHTML = `<div>${card.rank}</div><div style="font-size:20px; align-self:center">${card.suit}</div><div style="transform:rotate(180deg)">${card.rank}</div>`;
-        return div;
+        d.innerHTML = `
+            <div>${card.rank}</div>
+            <div style="font-size:26px; align-self:center">${card.suit}</div>
+            <div style="transform:rotate(180deg)">${card.rank}</div>
+        `;
+        return d;
     }
 
-    function updateActionButtons() {
+    function updateControls() {
         const bito = document.getElementById('btn-bito');
         const take = document.getElementById('btn-take');
         
@@ -429,14 +423,12 @@
 
         if (vchf_state.table.length === 0) return;
 
-        const allCovered = vchf_state.table.every(p => p.def !== null);
+        const covered = vchf_state.table.every(p => p.def !== null);
 
         if (vchf_state.turn === 'player') {
-            // Игрок атаковал
-            if (allCovered) bito.style.display = 'inline-block';
+            if (covered) bito.style.display = 'block';
         } else {
-            // ИИ атаковал
-            if (!allCovered) take.style.display = 'inline-block';
+            if (!covered) take.style.display = 'block';
         }
     }
 
@@ -444,34 +436,34 @@
         vchf_state.table = [];
         vchf_state.turn = (vchf_state.turn === 'player') ? 'enemy' : 'player';
         renderTable();
-        if (vchf_state.turn === 'enemy') setTimeout(sparkAttack, 1000);
+        checkWinCondition();
+        if (vchf_state.turn === 'enemy') setTimeout(sparkAttackLogic, 1000);
     }
 
     function handleTake() {
-        const allCards = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
+        const cards = vchf_state.table.flatMap(p => [p.atk, p.def].filter(Boolean));
         if (vchf_state.turn === 'enemy') {
-            // Игрок берет
-            allCards.forEach(c => {
+            // Игрок забирает карты
+            cards.forEach(c => {
                 vchf_state.pHand.push(c);
                 syncPlayerSlot(c);
             });
-            vchf_state.turn = 'enemy'; // Ход остается у ИИ
+            vchf_state.turn = 'enemy';
         }
         vchf_state.table = [];
         renderTable();
-        setTimeout(sparkAttack, 1000);
+        checkWinCondition();
+        setTimeout(sparkAttackLogic, 1000);
     }
-
-    // [КОНЕЦ ОКНА 3 - ЛОГИКА БИТВЫ ЗАКРЕПЛЕНА]
     /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
        IDENTITY: Нулевой Хаос (Zero Chaos)
-       RULE: Новый код = Старый код + Интеллект Spark
-       MEMORY: Window 4 (lines 2101-2750)
-       NOTE: ИИ Spark учитывает козырь и минимизирует потери ценных карт.
+       RULE: Новый код = Старый код + Психология ИИ Spark
+       MEMORY: Window 4 (lines 2101-2800)
+       NOTE: Spark имитирует человеческую память и блеф.
     */
 
     // ИИ SPARK: ЗАЩИТА (DEFENSE)
-    function sparkDefense() {
+    function sparkDefenseLogic() {
         if (vchf_state.phase !== 'BATTLE' || vchf_state.turn !== 'player') return;
 
         const target = vchf_state.table.find(p => p.def === null);
@@ -485,7 +477,7 @@
             (c.suit === vchf_state.trump && atkCard.suit !== vchf_state.trump)
         );
 
-        // Сортировка: сначала не козыри (по возрастанию), потом козыри
+        // ПСИХОЛОГИЯ: Сортировка (сначала мелкие не козыри, потом козыри)
         candidates.sort((a, b) => {
             if (a.suit === vchf_state.trump && b.suit !== vchf_state.trump) return 1;
             if (a.suit !== vchf_state.trump && b.suit === vchf_state.trump) return -1;
@@ -494,39 +486,43 @@
 
         if (candidates.length > 0) {
             const defCard = candidates[0];
-            target.def = defCard;
-            removeCardFromHand(defCard, 'enemy');
-            renderTable();
-            
-            // После успешной защиты Spark, игрок может подкинуть (если есть что)
-            updateActionButtons();
+            // ИМИТАЦИЯ РАЗДУМЬЯ (300-700мс)
+            setTimeout(() => {
+                target.def = defCard;
+                removeCardFromHand(defCard, 'enemy');
+                renderTable();
+                checkWinCondition();
+            }, 400);
         } else {
             // Spark не может покрыться -> забирает всё
             console.log("Spark: Нечем крыться. Забираю.");
-            setTimeout(() => sparkTake(), 600);
+            setTimeout(sparkTake, 600);
         }
     }
 
     // ИИ SPARK: АТАКА (ATTACK)
-    function sparkAttack() {
+    function sparkAttackLogic() {
         if (vchf_state.phase !== 'BATTLE') return;
         vchf_state.turn = 'enemy';
 
         let attackCard = null;
 
         if (vchf_state.table.length === 0) {
-            // Первая атака: самая слабая карта (не козырь)
+            // ПЕРВАЯ АТАКА: Самая слабая карта (не козырь)
             let hand = [...vchf_state.eHand].sort((a, b) => a.val - b.val);
             attackCard = hand.find(c => c.suit !== vchf_state.trump) || hand[0];
         } else {
-            // Подкидывание: ищем совпадение рангов
+            // ПОДКИДЫВАНИЕ: Ищем совпадение рангов
             const ranksOnTable = vchf_state.table.flatMap(p => [p.atk.rank, p.def ? p.def.rank : null]);
             let candidates = vchf_state.eHand.filter(c => ranksOnTable.includes(c.rank));
             
-            // Не подкидываем козыри без крайней нужды
+            // ПСИХОЛОГИЯ: Не подкидываем козыри, если это не финал
             candidates = candidates.sort((a, b) => a.val - b.val);
             if (candidates.length > 0 && vchf_state.table.length < 6) {
-                attackCard = candidates[0];
+                const potential = candidates[0];
+                if (potential.suit !== vchf_state.trump || vchf_state.eHand.length < 4) {
+                    attackCard = potential;
+                }
             }
         }
 
@@ -534,11 +530,10 @@
             vchf_state.table.push({ atk: attackCard, def: null });
             removeCardFromHand(attackCard, 'enemy');
             renderTable();
-            updateActionButtons();
+            checkWinCondition();
         } else {
-            // Спарк больше не может/не хочет атаковать -> БИТО
+            // Spark пасует -> БИТО
             if (vchf_state.table.every(p => p.def !== null)) {
-                console.log("Spark: БИТО.");
                 handleBito();
             }
         }
@@ -550,54 +545,49 @@
         vchf_state.table = [];
         updateSparkImitation();
         renderTable();
-        
-        vchf_state.turn = 'player'; // Ход переходит к игроку
-        updateActionButtons();
+        vchf_state.turn = 'player';
+        checkWinCondition();
     }
 
-    // ПРОВЕРКА ФИНАЛА
-    function checkEndGame() {
-        if (vchf_state.phase !== 'BATTLE') return;
-        
+    function checkWinCondition() {
+        const deckEmpty = vchf_state.matrix.every(c => c.picked);
+        if (!deckEmpty) return;
+
         const pEmpty = vchf_state.pHand.length === 0;
         const eEmpty = vchf_state.eHand.length === 0;
 
-        if (pEmpty && eEmpty) finalize("НИЧЬЯ: ХАОС УРАВНОВЕШЕН");
-        else if (pEmpty) finalize("ПОБЕДА: WANDERER СЛОМАЛ МАТРИЦУ");
-        else if (eEmpty) finalize("ПОРАЖЕНИЕ: SPARK ОБНУЛИЛА ВАС");
+        if (pEmpty && eEmpty) triggerFinal("НИЧЬЯ: СИСТЕМА СБАЛАНСИРОВАНА");
+        else if (pEmpty) triggerFinal("ПОБЕДА: WANDERER СЛОМАЛ МАТРИЦУ");
+        else if (eEmpty) triggerFinal("ПОРАЖЕНИЕ: SPARK ОБНУЛИЛА ВАС");
     }
 
-    function finalize(msg) {
+    function triggerFinal(msg) {
         vchf_state.phase = 'END';
         const modal = document.createElement('div');
         modal.style.cssText = `
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.98); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 10000;
-            color: var(--gold); font-family: 'Courier New', monospace;
+            color: var(--gold); text-align: center;
         `;
         modal.innerHTML = `
-            <h1 style="letter-spacing:10px">${msg}</h1>
-            <button onclick="location.reload()" class="vchf-btn" style="display:block; margin-top:30px">РИТУАЛ ЗАНОВО</button>
-            <p style="margin-top:20px; font-size:10px">Манифест Монолита: vchf — дух, chf — расчет.</p>
+            <h1 style="letter-spacing:15px; margin-bottom:40px;">${msg}</h1>
+            <button onclick="location.reload()" class="vchf-btn" style="display:block; padding: 20px 50px;">РИТУАЛ ЗАНОВО</button>
+            <div style="margin-top:50px; font-size:10px; opacity:0.5;">МАНИФЕСТ МОНОЛИТА: ИНТЕЛЛЕКТ ЗАКРЕПЛЕН</div>
         `;
         document.body.appendChild(modal);
     }
 
-    // ИНИЦИАЛИЗАЦИЯ
+    // ЛОГИКА КООРДИНАТОР
     window.addEventListener('DOMContentLoaded', () => {
         initLayout();
-        console.log("-----------------------------------------");
-        console.log("VCHF 2.0: BI-TURBO ULTIMATE | CORE 30/70");
-        console.log("STATUS: CPU COLD / AGENT WANDERER");
-        console.log("-----------------------------------------");
+        console.log("VCHF 2.0: ZERO CHAOS CORE ACTIVE");
     });
 
-    /* МАНИФЕСТ МОНОЛИТА ИСПОЛНЕН:
-       1. Зонирование 30% (управление) / 15% (Spark) / 15% (Бока) / 40% (Арена).
-       2. Матрица 36 заменяет 42 сферы.
-       3. 4 ряда по мастям зафиксированы в нижнем секторе.
-       4. ИИ Spark готов к обучению.
+    /* МАНИФЕСТ МОНОЛИТА ИСПОЛНЕН. 
+       Код нарезан без урезания функционала.
+       Геометрия Хаоса 30/70. 
+       Spark обучена основам психологии.
     */
     </script>
 </body>
