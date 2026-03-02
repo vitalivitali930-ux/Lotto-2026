@@ -9,7 +9,6 @@
             --bg: #050505;
             --cherry-deep: #2a0101;
             --gold-vchf: #d4af37;
-            /* Параметры карты под мобильный экран */
             --cw: 16vw; 
             --ch: 23vw;
             --max-cw: 75px;
@@ -18,14 +17,12 @@
 
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); overflow: hidden; font-family: 'Cinzel', serif;
+            background: var(--bg); overflow: hidden; font-family: sans-serif;
         }
 
-        /* Тот самый "Стол-Воронка" из твоего рисунка */
         #viewport {
             position: relative; width: 100vw; height: 100vh;
             background: radial-gradient(circle at 50% 45%, var(--cherry-deep) 0%, var(--bg) 90%);
-            /* Глубина 3D */
             perspective: 1200px; 
             display: flex; justify-content: center; align-items: center;
         }
@@ -33,11 +30,9 @@
         #world {
             position: absolute; width: 100%; height: 100%;
             transform-style: preserve-3d;
-            /* Наклон стола "на тебя" */
             transform: rotateX(20deg); 
         }
 
-        /* Центр замеса (Сингулярность) */
         #dealer-hub {
             position: absolute; top: 40%; left: 50%;
             width: 0; height: 0; transform-style: preserve-3d;
@@ -48,21 +43,21 @@
             width: var(--cw); height: var(--ch);
             max-width: var(--max-cw); max-height: var(--max-ch);
             background-color: #fff; border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transform-origin: center bottom;
             cursor: pointer; will-change: transform, opacity;
             display: flex; flex-direction: column; justify-content: space-between;
             padding: 5px; box-sizing: border-box; font-weight: bold; font-size: 1.2rem;
+            transform: translate(-50%, -50%) scale(0);
         }
 
         .card.shirt {
-            background-image: url('1771489965074(1).png'); /* Твоя картинка */
+            background-image: url('1771489965074(1).png'); 
             background-size: cover; background-position: center;
             border: 1px solid rgba(212, 175, 55, 0.3);
         }
 
-        /* Слот козыря в углу */
         #trump-slot {
             position: absolute; top: 10%; right: 10%;
             width: 60px; height: 85px; border: 2px dashed var(--gold-vchf);
@@ -71,14 +66,12 @@
             color: var(--gold-vchf); transition: 1s;
         }
 
-        /* Кнопка Ритуала */
         #ritual-btn {
             position: absolute; bottom: 10%; left: 50%;
             transform: translateX(-50%); z-index: 1000;
             background: linear-gradient(to bottom, #d4af37, #aa771c);
             border: none; padding: 12px 30px; border-radius: 20px;
             font-weight: bold; letter-spacing: 2px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(211, 175, 55, 0.4);
         }
     </style>
 </head>
@@ -87,16 +80,15 @@
 <div id="viewport">
     <div id="world">
         <div id="dealer-hub"></div>
-        </div>
+    </div>
     <div id="trump-slot">?</div>
-    <button id="ritual-btn">РИТУАЛ: ЗАМЕС</button>
+    <button id="ritual-btn">ЗАПУСК VCHF</button>
 </div>
 
 <script>
-    /** * МАНИФЕСТ МОНОЛИТА 
-     * Кодовое слово: движок vchf
-     * Протокол 1.1 — Без Нирваны!
-     * Логика: Радиальные масти (Дуги)
+    /** * МАНИФЕСТ МОНОЛИТА [cite: 2026-02-24]
+     * Кодовое слово: движок vchf [cite: 2026-02-24]
+     * Автор: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
      */
 
     const Core = {
@@ -126,294 +118,162 @@
                     id++;
                 });
             });
-        }
-    };
+        },
 
-    // Ожидание команды на Взрыв и Радиальное распределение
-    /**
-     * МОНОЛИТ: Window 2 — Физика Замеса
-     * Логика: Карты кружатся в центре, одна вылетает в слот козыря.
-     * Эффект: 24 кадра в секунду для кинематографичности.
-     */
+        startChaos() {
+            document.getElementById('ritual-btn').style.display = 'none';
+            this.deck.forEach((card, i) => {
+                const angle = Math.random() * 360;
+                setTimeout(() => {
+                    card.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(1)`;
+                }, i * 15);
+            });
+            setTimeout(() => this.launchTrump(), 1200);
+        },
 
-    Core.startChaos = function() {
-        const btn = document.getElementById('ritual-btn');
-        btn.style.display = 'none';
+        launchTrump() {
+            const trumpIdx = Math.floor(Math.random() * this.deck.length);
+            const trumpCard = this.deck[trumpIdx];
+            this.trump = trumpCard.dataset.suit;
+            const slot = document.getElementById('trump-slot');
+            const rect = slot.getBoundingClientRect();
+            const hubRect = document.getElementById('dealer-hub').getBoundingClientRect();
 
-        // 1. ЗАМЕС (Карты крутятся в центре как вихрь)
-        this.deck.forEach((card, i) => {
-            const angle = Math.random() * 360;
-            const dist = Math.random() * 40; // Небольшой разброс в центре
+            trumpCard.style.zIndex = 1000;
+            trumpCard.style.left = `${rect.left - hubRect.left + 30}px`;
+            trumpCard.style.top = `${rect.top - hubRect.top + 42}px`;
+            trumpCard.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.9)`;
             
             setTimeout(() => {
-                card.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translate(${dist}px) scale(1)`;
-                card.style.zIndex = 50 + i;
-            }, i * 20);
-        });
+                slot.innerText = this.trump;
+                slot.style.opacity = '1';
+                this.distributeToArcs();
+            }, 600);
+        },
 
-        // 2. ВЫБОР КОЗЫРЯ (через 1.5 секунды после начала замеса)
-        setTimeout(() => this.launchTrump(), 1500);
-    };
+        distributeToArcs() {
+            const suitGroups = { '♥': [], '♦': [], '♣': [], '♠': [] };
+            this.deck.forEach(c => { if (parseInt(c.style.zIndex) < 1000) suitGroups[c.dataset.suit].push(c); });
 
-    Core.launchTrump = function() {
-        // Берем случайную карту из колоды
-        const trumpIdx = Math.floor(Math.random() * this.deck.length);
-        const trumpCard = this.deck[trumpIdx];
-        this.trump = trumpCard.dataset.suit;
+            const arcCenters = [
+                { x: -window.innerWidth * 0.35, y: window.innerHeight * 0.35, rot: -20 },
+                { x: -window.innerWidth * 0.12, y: window.innerHeight * 0.4, rot: -10 },
+                { x: window.innerWidth * 0.12, y: window.innerHeight * 0.4, rot: 10 },
+                { x: window.innerWidth * 0.35, y: window.innerHeight * 0.35, rot: 20 }
+            ];
 
-        // Координаты слота козыря (относительно центра)
-        const slot = document.getElementById('trump-slot');
-        const rect = slot.getBoundingClientRect();
-        const hubRect = document.getElementById('dealer-hub').getBoundingClientRect();
-
-        const targetX = rect.left - hubRect.left + (rect.width / 2);
-        const targetY = rect.top - hubRect.top + (rect.height / 2);
-
-        // Полет козыря (как на видео — в угол)
-        trumpCard.style.zIndex = 1000;
-        trumpCard.style.left = `${targetX}px`;
-        trumpCard.style.top = `${targetY}px`;
-        trumpCard.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.9)`;
-        
-        // Проявляем масть в слоте
-        setTimeout(() => {
-            slot.innerText = this.trump;
-            slot.style.opacity = '1';
-            slot.style.boxShadow = `0 0 20px ${this.trump === '♥' || this.trump === '♦' ? 'red' : 'gold'}`;
-            
-            // После козыря — разлет по 4 дугам (Window 3)
-            setTimeout(() => this.distributeToArcs(), 800);
-        }, 600);
-    };
-
-    Core.distributeToArcs = function() {
-        // Здесь мы делим 36 карт на 4 масти и отправляем их на дуги из твоего рисунка
-        const suitGroups = { '♥': [], '♦': [], '♣': [], '♠': [] };
-        this.deck.forEach(c => {
-            if (c.style.zIndex < 1000) { // Не трогаем козырь в слоте
-                suitGroups[c.dataset.suit].push(c);
-            }
-        });
-
-        // Математика 4-х дуг (Радиальная симметрия)
-        const arcCenters = [
-            { x: -window.innerWidth * 0.35, y: window.innerHeight * 0.4, rot: -20 }, // Буби
-            { x: -window.innerWidth * 0.12, y: window.innerHeight * 0.45, rot: -10 }, // Черви
-            { x: window.innerWidth * 0.12, y: window.innerHeight * 0.45, rot: 10 },  // Крести
-            { x: window.innerWidth * 0.35, y: window.innerHeight * 0.4, rot: 20 }   // Пики
-        ];
-
-        Object.keys(suitGroups).forEach((suit, sIdx) => {
-            const group = suitGroups[suit];
-            const center = arcCenters[sIdx];
-
-            group.forEach((card, cIdx) => {
-                const step = 4; // Нахлест между картами в дуге
-                const offsetX = (cIdx - group.length / 2) * step;
-                const offsetY = Math.abs(cIdx - group.length / 2) * 2; // Изгиб дуги вверх по краям
-
-                setTimeout(() => {
-                    card.style.left = `${center.x + offsetX}px`;
-                    card.style.top = `${center.y + offsetY}px`;
-                    card.style.transform = `translate(-50%, -50%) rotate(${center.rot + (cIdx - group.length/2) * 2}deg) scale(1)`;
-                    card.style.zIndex = 100 + cIdx;
-                    
-                    // Активируем возможность брать карту (Window 3)
-                    card.classList.add('ready');
-                }, (sIdx * 200) + (cIdx * 30));
+            Object.keys(suitGroups).forEach((suit, sIdx) => {
+                const group = suitGroups[suit];
+                const center = arcCenters[sIdx];
+                group.forEach((card, cIdx) => {
+                    const step = 5; 
+                    const offsetX = (cIdx - group.length / 2) * step;
+                    const offsetY = Math.abs(cIdx - group.length / 2) * 3;
+                    setTimeout(() => {
+                        card.style.left = `${center.x + offsetX}px`;
+                        card.style.top = `${center.y + offsetY}px`;
+                        card.style.transform = `translate(-50%, -50%) rotate(${center.rot + (cIdx - group.length/2) * 2}deg) scale(1)`;
+                        card.dataset.owner = 'PLAYER';
+                    }, (sIdx * 150) + (cIdx * 25));
+                });
             });
-        });
+            setTimeout(() => Battle.init(), 2000);
+        }
     };
     /**
-     * МОНОЛИТ: Window 3 — Боевой Контакт
-     * Логика: Клик по дуге -> Полет в центр.
-     * Правило: Новый код = старый + введенная функция.
+     * МОНОЛИТ: Windows 3-5 — Боевой Контакт и Финал
+     * Логика: Твой ход -> Ответ Спарка -> Бито -> Конец игры.
+     * Автор: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
      */
 
     const Battle = {
         table: [],
-        playerHand: [],
-        aiHand: [],
         isFirstTurn: true,
         limit: 5,
 
         init() {
-            // Активируем клики по картам, которые уже в дугах
             Core.deck.forEach(card => {
                 card.onclick = () => this.handlePlayerMove(card);
             });
+            console.log("Боевой интерфейс активен. [cite: 2026-02-19]");
         },
 
         handlePlayerMove(card) {
-            if (card.dataset.owner === 'AI' || this.table.length >= this.limit * 2) return;
-
-            // 1. Полет в центр (Сингулярность боя)
+            if (card.dataset.owner !== 'PLAYER' || this.table.length >= this.limit * 2) return;
             this.moveToCenter(card, 'PLAYER');
-            
-            // 2. Спарк (ИИ) анализирует и бьет через 500мс
-            setTimeout(() => this.sparkResponse(card), 500);
+            setTimeout(() => this.sparkResponse(card), 600);
         },
 
         moveToCenter(card, side) {
             const index = this.table.length;
-            const xOffset = (index * 30) - 60; // Смещение для пар
-            const yOffset = (side === 'PLAYER') ? 40 : -40; // Твоя снизу, моя сверху
+            const xOffset = (index * 35) - 70;
+            const yOffset = (side === 'PLAYER') ? 50 : -50;
 
             card.style.zIndex = 500 + index;
             card.style.left = `${xOffset}px`;
             card.style.top = `${yOffset}px`;
             
-            // Поворот "лицом" к игроку, если это ход ИИ
             if (side === 'AI' || card.classList.contains('shirt')) {
                 card.classList.remove('shirt');
-                card.innerHTML = `<div style="color:${(card.dataset.suit==='♥'||card.dataset.suit==='♦')?'red':'black'}">${card.dataset.val}${card.dataset.suit}</div>`;
+                const color = (card.dataset.suit === '♥' || card.dataset.suit === '♦') ? 'red' : 'black';
+                card.innerHTML = `<div style="color:${color}">${card.dataset.val}${card.dataset.suit}</div>`;
             }
 
-            // Наклон карты на столе для объема
-            card.style.transform = `translate(-50%, -50%) rotateX(0deg) rotateZ(${Math.random()*10 - 5}deg) scale(1.2)`;
+            card.style.transform = `translate(-50%, -50%) rotateZ(${Math.random()*10 - 5}deg) scale(1.1)`;
             this.table.push(card);
+            this.checkBitoState();
         },
 
         sparkResponse(attackCard) {
-            // Простая логика защиты (та же масть, ранг выше)
-            const myCards = Core.deck.filter(c => c.dataset.owner === 'AI' && !this.table.includes(c));
+            // Имитация ИИ "Спарк" (7±2) [cite: 2026-02-19]
+            const myCards = Core.deck.filter(c => !c.dataset.owner && !this.table.includes(c));
             let defense = myCards.find(c => 
                 c.dataset.suit === attackCard.dataset.suit && 
                 parseInt(c.dataset.rank) > parseInt(attackCard.dataset.rank)
             );
 
-            // Если нет по масти — ищем козырь (Core.trump)
             if (!defense && attackCard.dataset.suit !== Core.trump) {
                 defense = myCards.find(c => c.dataset.suit === Core.trump);
             }
 
             if (defense) {
                 this.moveToCenter(defense, 'AI');
-            } else {
-                console.log("Спарк пасует или берет...");
-                // Здесь будет логика "Взять карты" в Window 4
+            }
+        },
+
+        checkBitoState() {
+            const btn = document.getElementById('ritual-btn');
+            if (this.table.length > 0 && this.table.length % 2 === 0) {
+                btn.innerText = "БИТО";
+                btn.style.display = 'block';
+                btn.onclick = () => this.executeBito();
+            }
+        },
+
+        executeBito() {
+            this.table.forEach(card => {
+                card.style.transition = "all 0.8s ease-in";
+                card.style.left = "-200vw";
+                card.dataset.owner = 'DISCARD';
+            });
+            this.table = [];
+            document.getElementById('ritual-btn').style.display = 'none';
+            this.checkFinal();
+        },
+
+        checkFinal() {
+            const remaining = Core.deck.filter(c => c.dataset.owner === 'PLAYER').length;
+            if (remaining === 0) {
+                alert("ТЫ ВЫШЕЛ! Манифест Монолита исполнен. [cite: 2026-02-24]");
+                location.reload();
             }
         }
     };
 
-    // Интеграция в Core: запуск интерактива после распределения по дугам
-    const originalDistribute = Core.distributeToArcs;
-    Core.distributeToArcs = function() {
-        originalDistribute.apply(Core);
-        setTimeout(() => Battle.init(), 2000); // Даем время картам долететь до дуг
-    };
-    /**
-     * МОНОЛИТ: Window 4 — Очистка и Регенерация
-     * Логика: Карты со стола улетают в "Бито". 
-     * Из центра (Сингулярности) вылетают новые карты в пустые слоты дуг.
-     */
-
-    Battle.bito = function() {
-        if (this.table.length === 0) return;
-
-        // 1. Улёт в БИТО (влево, за пределы сферы)
-        this.table.forEach((card, i) => {
-            card.style.transition = "all 0.8s cubic-bezier(0.5, -0.5, 0.5, 1.5)";
-            card.style.left = "-150vw"; 
-            card.style.top = "20vh";
-            card.style.transform = `rotate(${-360 + Math.random()*100}deg) scale(0.5)`;
-            card.dataset.owner = 'DISCARD';
-        });
-
-        this.table = [];
-        
-        // 2. Добор карт (из центра в дуги)
-        setTimeout(() => this.refillHands(), 1000);
-    };
-
-    Battle.refillHands = function() {
-        const available = Core.deck.filter(c => !c.dataset.owner);
-        if (available.length === 0) return this.checkFinal();
-
-        // Проверяем каждую масть (дугу) на наличие 6 карт (минимум для игры)
-        Core.suits.forEach((suit, sIdx) => {
-            const currentInArc = Core.deck.filter(c => c.dataset.suit === suit && c.dataset.owner === 'PLAYER').length;
-            const needed = 6 - currentInArc;
-
-            if (needed > 0) {
-                for (let i = 0; i < needed; i++) {
-                    const newCard = available.pop();
-                    if (newCard) {
-                        newCard.dataset.owner = 'PLAYER';
-                        // Полет из центра в свою дугу (как на твоем рисунке)
-                        this.animateToArc(newCard, sIdx);
-                    }
-                }
-            }
-        });
-    };
-
-    Battle.animateToArc = function(card, sIdx) {
-        // Координаты дуг из Window 2 (Манифест: Новый код = Старый + Функция)
-        const arcCenters = [
-            { x: -window.innerWidth * 0.35, y: window.innerHeight * 0.4, rot: -20 },
-            { x: -window.innerWidth * 0.12, y: window.innerHeight * 0.45, rot: -10 },
-            { x: window.innerWidth * 0.12, y: window.innerHeight * 0.45, rot: 10 },
-            { x: window.innerWidth * 0.35, y: window.innerHeight * 0.4, rot: 20 }
-        ];
-
-        const center = arcCenters[sIdx];
-        card.style.left = `${center.x}px`;
-        card.style.top = `${center.y}px`;
-        card.style.transform = `translate(-50%, -50%) rotate(${center.rot}deg) scale(1)`;
-        card.style.zIndex = 100;
-        card.classList.add('ready');
-    };
-
-    // Добавляем кнопку "БИТО" (вместо Ритуала)
-    const btn = document.getElementById('ritual-btn');
-    btn.style.display = 'block';
-    btn.innerText = "БИТО";
-    btn.onclick = () => Battle.bito();
-    /**
-     * МОНОЛИТ: Window 5 — Финал Сессии
-     * Логика: Когда колода пуста, проверяем наличие карт в дугах.
-     * Автор: Нулевой Хаос (Zero Chaos) [cite: 2026-02-23, 2026-02-28]
-     */
-
-    Battle.checkFinal = function() {
-        const playerRemaining = Core.deck.filter(c => c.dataset.owner === 'PLAYER').length;
-        const aiRemaining = Core.deck.filter(c => c.dataset.owner === 'AI').length;
-        const deckRemaining = Core.deck.filter(c => !c.dataset.owner).length;
-
-        if (deckRemaining === 0) {
-            if (playerRemaining === 0 && aiRemaining > 0) {
-                this.endGame("ТЫ ВЫШЕЛ. ЧИСТАЯ ПОБЕДА БРОДЯГИ.");
-            } else if (aiRemaining === 0 && playerRemaining > 0) {
-                this.endGame("СПАРК ВЫШЛА. ТЫ ОСТАЛСЯ В ДУРАКАХ.");
-            } else if (playerRemaining === 0 && aiRemaining === 0) {
-                this.endGame("НИЧЬЯ. СИНГУЛЯРНОСТЬ ПОГЛОТИЛА ВСЕХ.");
-            }
-        }
-    };
-
-    Battle.endGame = function(message) {
-        const overlay = document.createElement('div');
-        overlay.style = `
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; align-items: center;
-            justify-content: center; color: var(--gold-vchf); font-size: 2rem;
-            text-align: center; z-index: 2000; perspective: 1000px;
-        `;
-        overlay.innerHTML = `<div style="transform: rotateX(20deg)">${message}<br>
-            <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; cursor:pointer;">НАЧАТЬ ЗАНОВО</button>
-        </div>`;
-        document.body.appendChild(overlay);
-        console.log("Манифест Монолита: Сессия завершена."); [cite: 2026-02-24]
-    };
-
-    // Запуск ядра [cite: 2026-02-23]
+    // Запуск проекта "Лотто" [cite: 2026-02-19]
     Core.init();
 
-    /* Примечание Нулевого Хаоса: 
-       Код написан мной согласно стратегии целостности. 
-       Warten и Erwarten зафиксированы в долгой памяти под якорем. [cite: 2026-02-23, 2026-02-26]
-    */
+    /* [2026-02-23] Примечание: Код написан с приоритетом целостности над краткостью. */
 </script>
 </body>
 </html>
