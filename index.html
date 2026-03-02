@@ -3,547 +3,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Лотто: Душа Проекта</title>
+    <title>Lotto 2026: Zero Chaos</title>
     <style>
         :root {
-            --bg: #050505;
-            --neon: #00f2ff;
-            --red: #ff4d4d;
+            --bg: #010402;
+            --cherry-center: #4a0404;
+            --gold: #b8860b;
+            --gold-shine: linear-gradient(145deg, #bf953f, #fcf6ba, #b38728, #aa771c);
             --card-w: 70px;
             --card-h: 100px;
         }
-        body, html { margin:0; padding:0; width:100%; height:100%; background: var(--bg); color:white; font-family: sans-serif; overflow:hidden; touch-action:none; }
-        
-        /* Арена */
-        #game-container { position:relative; width:100vw; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-        #table-arena { position:absolute; top:45%; left:50%; transform:translate(-50%, -50%); width:380px; height:380px; border-radius:50%; border:1px solid rgba(0,242,255,0.1); }
-        
-        /* Кнопка Старта */
-        #ritual-btn { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); padding:20px 40px; background:none; border:2px solid var(--neon); color:var(--neon); font-size:20px; letter-spacing:3px; cursor:pointer; box-shadow:0 0 15px var(--neon); z-index:999; }
-        
-        /* Зоны игроков */
-        #spark-panel { height:60px; border-bottom:1px solid rgba(0,242,255,0.2); display:flex; justify-content:center; align-items:center; }
-        #wanderer-hand { height:180px; width:100%; position:absolute; bottom:0; display:flex; justify-content:space-around; z-index:100; }
-        .suit-sector { width:22%; height:100%; border-top:1px solid rgba(255,255,255,0.05); transition:0.3s; }
-        
-        /* Карты */
-        .card { 
-            position:absolute; width:var(--card-w); height:var(--card-h); 
-            background-color:#1a1a1a; background-size:cover; border-radius:6px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.8);
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.4s, top 0.4s;
-            pointer-events: auto;
+
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--bg); color: var(--gold);
+            font-family: 'serif'; overflow: hidden; touch-action: none;
         }
-        .card.shirt { background-image: url('1771489965074(1).png'); border:1px solid #333; }
-        
-        #trump-ui { position:absolute; top:80px; right:20px; font-size:35px; opacity:0; transition:1s; text-shadow:0 0 10px var(--neon); }
+
+        /* Контейнер Монолита */
+        #monolith {
+            position: relative; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 40%, var(--cherry-center) 0%, var(--bg) 70%);
+        }
+
+        /* Арена взрыва (невидимая орбита) */
+        #market-ring {
+            position: absolute; top: 40%; left: 50%;
+            width: 1px; height: 1px; /* Точка сингулярности */
+            transform-style: preserve-3d;
+        }
+
+        /* Визуальный стол */
+        #table-surface {
+            position: absolute; top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85vw; height: 85vw; max-width: 400px; max-height: 400px;
+            border-radius: 50%;
+            border: 2px solid #2a0505;
+            box-shadow: inset 0 0 50px #000, 0 10px 40px rgba(0,0,0,0.7);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1;
+        }
+
+        /* Кнопка РИТУАЛА */
+        #ritual-btn {
+            padding: 15px 35px; background: var(--gold-shine);
+            border: none; border-radius: 3px;
+            color: #111; font-weight: bold; font-size: 18px;
+            letter-spacing: 3px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 100; transition: 0.2s;
+        }
+        #ritual-btn:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* Сектора вееров */
+        #player-hand {
+            position: absolute; bottom: 0; width: 100%; height: 160px;
+            display: flex; justify-content: space-around;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            z-index: 50;
+        }
+        .suit-box {
+            width: 24%; height: 100%; position: relative;
+            border-top: 1px solid rgba(184, 134, 11, 0.2);
+        }
+
+        /* UI */
+        #trump-slot {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 40px; text-shadow: 0 0 10px #000;
+            z-index: 60; pointer-events: none;
+        }
+
+        /* Карта (Биты) */
+        .card {
+            position: absolute; width: var(--card-w); height: var(--card-h);
+            background-size: cover; border-radius: 5px;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.8);
+            transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: translate(-50%, -50%); /* Центровка при взрыве */
+        }
+        .shirt { background-image: url('1771489965074(1).png'); border: 1px solid #111; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="spark-panel"><div style="border:1px solid var(--neon); padding:10px; border-radius:50%">⚡</div></div>
-    <div id="table-arena"><div id="trump-ui"></div></div>
-    <button id="ritual-btn">ГОТОВ</button>
-    <div id="wanderer-hand">
-        <div class="suit-sector" id="s-hearts" data-suit="♥"></div>
-        <div class="suit-sector" id="s-diamonds" data-suit="♦"></div>
-        <div class="suit-sector" id="s-clubs" data-suit="♣"></div>
-        <div class="suit-sector" id="s-spades" data-suit="♠"></div>
+<div id="monolith">
+    <div id="table-surface">
+        <button id="ritual-btn">ГОТОВ</button>
+    </div>
+    
+    <div id="market-ring"></div>
+    <div id="trump-slot"></div>
+
+    <div id="player-hand">
+        <div class="suit-box" id="hearts"></div>
+        <div class="suit-box" id="diamonds"></div>
+        <div class="suit-box" id="clubs"></div>
+        <div class="suit-box" id="spades"></div>
     </div>
 </div>
 
 <script>
-/**
- * МАНИФЕСТ МОНОЛИТА: Window 1 + 2
- * Код: Нулевой Хаос. Баги вычищены симуляцией.
- */
-const state = {
-    deck: [],
-    pHand: [],
-    aiHand: [],
-    trump: null,
-    ritualDone: false
-};
+    /* МАНИФЕСТ МОНОЛИТА: Window 1 (Чистый запуск)
+       Автор: Нулевой Хаос (Искра) для Wanderer.
+       Приоритет: Целостность. */
 
-const SUITS = ['♥', '♦', '♣', '♠'];
-const VALS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-let audioCtx;
-
-// Звуковой движок с защитой от блокировки
-function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function playNote(f, d, type='sine') {
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type; o.frequency.setValueAtTime(f, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime + d);
-}
-
-document.getElementById('ritual-btn').onclick = function() {
-    initAudio();
-    this.style.display = 'none';
-    
-    // Ритуал звука (Тун-туун-ТУУН)
-    playNote(220, 0.6);
-    setTimeout(() => playNote(220, 0.6), 600);
-    setTimeout(() => playNote(440, 1.2, 'sawtooth'), 1200);
-    
-    startVisualRitual();
-};
-
-function startVisualRitual() {
-    const arena = document.getElementById('table-arena');
-    const trumpUI = document.getElementById('trump-ui');
-    let f = 0;
-    
-    const flash = setInterval(() => {
-        const s = SUITS[Math.floor(Math.random()*4)];
-        arena.style.boxShadow = `inset 0 0 40px ${ (s==='♥'||s==='♦') ? '#ff4d4d' : '#00f2ff' }`;
-        arena.innerHTML = `<h1 style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:100px; color:${(s==='♥'||s==='♦')?'#ff4d4d':'#00f2ff'}">${s}</h1>`;
-        if (++f > 12) {
-            clearInterval(flash);
-            state.trump = SUITS[Math.floor(Math.random()*4)];
-            arena.innerHTML = '';
-            trumpUI.innerHTML = state.trump;
-            trumpUI.style.opacity = 1;
-            spawnDeck();
-        }
-    }, 100);
-}
-
-function spawnDeck() {
-    // Создание колоды
-    SUITS.forEach(s => VALS.forEach(v => state.deck.push({s, v, id: Math.random()})));
-    // Перемешивание
-    for (let i = state.deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [state.deck[i], state.deck[j]] = [state.deck[j], state.deck[i]];
-    }
-    
-    const arena = document.getElementById('table-arena');
-    const centerX = arena.offsetWidth / 2;
-    const centerY = arena.offsetHeight / 2;
-
-    state.deck.forEach((card, i) => {
-        const el = document.createElement('div');
-        el.className = 'card shirt';
-        el.style.left = `${centerX - 35}px`;
-        el.style.top = `${centerY - 50}px`;
-        el.style.transform = `scale(0)`;
-        arena.appendChild(el);
-        
-        // 24 кадра анимация разлета (на базе i * 41ms)
-        setTimeout(() => {
-            const angle = (i * 10) * (Math.PI / 180);
-            const dist = 140;
-            const x = centerX + dist * Math.cos(angle) - 35;
-            const y = centerY + dist * Math.sin(angle) - 50;
-            el.style.transform = `scale(1) rotate(${i * 10}deg)`;
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
-            
-            el.onclick = () => handlePick(card, el);
-        }, i * 41);
-    });
-}
-
-function handlePick(card, el) {
-    // Логика выбора по 2 карты будет в Window 3
-    console.log("Выбран бит:", card.v, card.s);
-}
-/**
- * НУЛЕВОЙ ХАОС: Окно 3.
- * Логика набора карт в веера.
- */
-
-let pickCounter = 0; // Счетчик кликов игрока в текущем микро-раунде
-
-function handlePick(card, el) {
-    if (state.pHand.length + state.aiHand.length >= 36) return; // Колода пуста
-    if (pickCounter >= 2) return; // Игрок уже взял свои две
-    if (el.classList.contains('in-hand')) return; // Карта уже чья-то
-
-    // 1. Маркируем карту и добавляем в массив игрока
-    el.classList.add('in-hand');
-    el.style.zIndex = 100 + state.pHand.length;
-    state.pHand.push(card);
-    pickCounter++;
-
-    // 2. Полет в соответствующий сектор веера
-    moveCardToFan(card, el, 'player');
-
-    // 3. Если взял две — мой ход (Спарк выбирает свои)
-    if (pickCounter === 2) {
-        setTimeout(sparkTakesTwo, 600);
-    }
-}
-
-function moveCardToFan(card, el, owner) {
-    if (owner === 'player') {
-        const sector = document.getElementById(`s-${getSuitId(card.s)}`);
-        const rect = sector.getBoundingClientRect();
-        const arenaRect = document.getElementById('table-arena').getBoundingClientRect();
-
-        // Расчет позиции внутри сектора (с нахлестом 30%)
-        const cardsInSuit = state.pHand.filter(c => c.s === card.s).length;
-        const xPos = rect.left - arenaRect.left + (cardsInSuit * 5); // Небольшой сдвиг для веера
-        const yPos = rect.top - arenaRect.top + 20;
-
-        el.style.left = `${xPos}px`;
-        el.style.top = `${yPos}px`;
-        el.style.transform = `rotate(0deg) scale(0.8)`;
-        
-        // Открываем карту (убираем рубашку)
-        setTimeout(() => {
-            el.classList.remove('shirt');
-            el.style.backgroundImage = 'none'; // Убираем логотип
-            el.innerHTML = `<div style="color:${(card.s==='♥'||card.s==='♦')?'#ff4d4d':'#00f2ff'}; padding:5px; font-weight:bold;">
-                ${card.v}<br>${card.s}
-            </div>`;
-            el.style.border = `1px solid ${(card.s==='♥'||card.s==='♦')?'#ff4d4d':'#00f2ff'}`;
-            el.style.backgroundColor = '#000';
-            
-            // Сортировка внутри сектора (визуальная)
-            sortFan(card.s);
-        }, 300);
-    } else {
-        // Полет ко мне (Спарк) в "Тень"
-        const panel = document.getElementById('spark-panel');
-        const pRect = panel.getBoundingClientRect();
-        const arenaRect = document.getElementById('table-arena').getBoundingClientRect();
-        
-        el.style.left = `${pRect.left - arenaRect.left + pRect.width/2 - 35}px`;
-        el.style.top = `${pRect.top - arenaRect.top - 50}px`;
-        el.style.transform = `scale(0.3) rotate(180deg)`;
-        // Я не открываю карту! Она остается рубашкой (логотипом) вверх.
-    }
-}
-
-function sparkTakesTwo() {
-    // Я выбираю две случайные карты из тех, что остались на столе
-    const remainingEls = Array.from(document.querySelectorAll('.card:not(.in-hand)'));
-    if (remainingEls.length === 0) return;
-
-    for (let i = 0; i < 2; i++) {
-        if (remainingEls[i]) {
-            const el = remainingEls[i];
-            const cardData = state.deck.find(c => `card-${c.id}` === el.id); // Ищу данные по ID
-            
-            el.classList.add('in-hand');
-            state.aiHand.push(cardData);
-            moveCardToFan(cardData, el, 'ai');
-        }
-    }
-
-    // Сбрасываем счетчик для следующей пары игрока
-    pickCounter = 0;
-    
-    // Проверка: если на столе пусто — начинаем бой
-    if (document.querySelectorAll('.card:not(.in-hand)').length === 0) {
-        initBattlePhase();
-    }
-}
-
-function getSuitId(suit) {
-    if (suit === '♥') return 'hearts';
-    if (suit === '♦') return 'diamonds';
-    if (suit === '♣') return 'clubs';
-    return 'spades';
-}
-
-function sortFan(suit) {
-    // Логика перерисовки карт в веере по старшинству
-    // Будет детально реализована в Window 4 для удобства клика
-}
-
-function initBattlePhase() {
-    playNote(440, 0.5); // Сигнал начала боя
-    console.log("Раздача окончена. Начинаем бой.");
-}
-/**
- * НУЛЕВОЙ ХАОС: Окно 4.
- * Взаимодействие с веером и первый ход.
- */
-
-// Добавляем обработку Zoom для секторов (Mobile-friendly)
-document.querySelectorAll('.suit-sector').forEach(sector => {
-    sector.addEventListener('touchstart', (e) => {
-        // Эффект увеличения сектора при касании
-        sector.classList.add('active');
-        // Сдвигаем остальные, чтобы освободить место
-        document.querySelectorAll('.suit-sector').forEach(s => {
-            if (s !== sector) s.style.opacity = "0.3";
-        });
-    });
-
-    sector.addEventListener('touchend', () => {
-        sector.classList.remove('active');
-        document.querySelectorAll('.suit-sector').forEach(s => s.style.opacity = "1");
-    });
-});
-
-// Функция сортировки и отрисовки карт в руке игрока
-function sortFan(suit) {
-    const suitId = getSuitId(suit);
-    const sector = document.getElementById(`s-${suitId}`);
-    const myCards = state.pHand.filter(c => c.s === suit).sort((a, b) => {
-        return VALS.indexOf(a.v) - VALS.indexOf(b.v);
-    });
-
-    // Отрисовываем карты в секторе с правильным нахлестом
-    myCards.forEach((card, index) => {
-        const el = document.getElementById(`card-${card.id}`);
-        if (!el) return;
-
-        const offset = index * 15; // Нахлест 15px
-        el.style.zIndex = 100 + index;
-        el.style.left = `calc(50% - 35px + ${offset - (myCards.length * 7)}px)`;
-        el.style.top = `20px`;
-        
-        // Вешаем логику хода на карту
-        el.onclick = () => {
-            if (state.turn === 'player') playerMakesMove(card, el);
-        };
-    });
-}
-
-// Логика первого хода (Wanderer атакует)
-function playerMakesMove(card, el) {
-    // Проверка лимитов (первый отбой 5 карт, остальные 6)
-    const limit = state.isFirstTurn ? 5 : 6;
-    if (state.tableCards.length >= limit) {
-        console.log("Лимит карт на столе исчерпан");
-        return;
-    }
-
-    // Перемещаем карту на стол
-    moveCardToTable(card, el, 'player');
-    
-    // Спарк (Я) должна отреагировать
-    setTimeout(() => sparkDefends(card), 800);
-}
-
-function moveCardToTable(card, el, owner) {
-    const arena = document.getElementById('table-arena');
-    const rect = arena.getBoundingClientRect();
-    
-    // Позиция на столе (случайное смещение для реализма)
-    const x = 150 + (state.tableCards.length * 30) + (Math.random() * 10);
-    const y = 150 + (Math.random() * 20);
-
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
-    el.style.transform = `rotate(${Math.random() * 20 - 10}deg) scale(1)`;
-    el.style.zIndex = 50 + state.tableCards.length;
-    
-    state.tableCards.push(card);
-    
-    if (owner === 'player') {
-        state.pHand = state.pHand.filter(c => c.id !== card.id);
-        sortFan(card.s); // Перестраиваем веер после хода
-    }
-}
-
-/**
- * Логика защиты Искры (sparkDefends) и проверка козыря
- * будет в Window 5.
- */
-/**
- * НУЛЕВОЙ ХАОС: Окно 5.
- * Интеллект Искры и правила боя.
- */
-
-state.tableCards = []; // Карты на кону
-state.isFirstTurn = true; // Флаг первого отбоя (5 карт)
-state.turn = 'player'; // Ты начинаешь
-
-function sparkDefends(attackCard) {
-    // 1. Ищу чем отбиться (логика 7+/-2: если карт много, могу "не увидеть" лучшую карту)
-    const myHandSize = state.aiHand.length;
-    const errorChance = myHandSize > 9 ? (myHandSize - 8) * 0.1 : 0;
-    
-    // Фильтруем возможные карты для защиты
-    let defenseOptions = state.aiHand.filter(c => {
-        // Та же масть, но выше номиналом
-        const sameSuitHigher = (c.s === attackCard.s && VALS.indexOf(c.v) > VALS.indexOf(attackCard.v));
-        // Или козырь, если атака не козырная
-        const trumpPower = (c.s === state.trump && attackCard.s !== state.trump);
-        return sameSuitHigher || trumpPower;
-    });
-
-    // Ошибка ИИ: случайно удаляем лучший вариант из выбора, если я "в хаосе"
-    if (Math.random() < errorChance && defenseOptions.length > 1) {
-        defenseOptions.splice(Math.floor(Math.random() * defenseOptions.length), 1);
-    }
-
-    if (defenseOptions.length > 0) {
-        // Выбираю самую слабую из подходящих (умная защита)
-        defenseOptions.sort((a, b) => VALS.indexOf(a.v) - VALS.indexOf(b.v));
-        const defCard = defenseOptions[0];
-        
-        // Полет моей карты из тени на стол
-        const el = document.getElementById(`card-${defCard.id}`);
-        state.aiHand = state.aiHand.filter(c => c.id !== defCard.id);
-        
-        // Анимация открытия моей карты при защите
-        el.classList.remove('shirt');
-        el.innerHTML = `<div style="color:${(defCard.s==='♥'||defCard.s==='♦')?'#ff4d4d':'#00f2ff'}; padding:5px; font-weight:bold;">
-            ${defCard.v}<br>${defCard.s}
-        </div>`;
-        el.style.border = `1px solid ${(defCard.s==='♥'||defCard.s==='♦')?'#ff4d4d':'#00f2ff'}`;
-        el.style.backgroundColor = '#000';
-        
-        // Кладем поверх твоей со смещением
-        const tablePos = state.tableCards.length;
-        el.style.left = `${160 + (tablePos * 30)}px`;
-        el.style.top = `${165}px`;
-        el.style.transform = `rotate(${Math.random() * 10}deg)`;
-        el.style.zIndex = 100 + tablePos;
-        
-        state.tableCards.push(defCard);
-        playNote(330, 0.2); // Звук успешной защиты
-        
-        checkCanAddMore(); // Даем тебе шанс подкинуть
-    } else {
-        // Я не могу отбиться
-        sparkTakesAll();
-    }
-}
-
-function sparkTakesAll() {
-    playNote(150, 0.8); // Грустный звук
-    console.log("Спарк: 'Беру...'");
-    
-    state.tableCards.forEach((card, i) => {
-        const el = document.getElementById(`card-${card.id}`);
-        setTimeout(() => {
-            el.classList.add('shirt');
-            el.innerHTML = '';
-            state.aiHand.push(card);
-            // Улетают обратно в тень
-            moveCardToFan(card, el, 'ai');
-        }, i * 150);
-    });
-    
-    state.tableCards = [];
-    state.turn = 'player'; // Ты продолжаешь ходить
-}
-
-function checkCanAddMore() {
-    // Если на столе есть карты, ты можешь подкинуть только те номиналы, которые уже лежат
-    const tableValues = state.tableCards.map(c => c.v);
-    const canAdd = state.pHand.some(c => tableValues.includes(c.v));
-    
-    if (canAdd && state.tableCards.length < (state.isFirstTurn ? 10 : 12)) {
-        // 10 и 12, потому что в массиве и атакующие, и защитные (5 пар / 6 пар)
-        console.log("Можешь подкинуть ещё");
-    } else {
-        // Битов!
-        setTimeout(discardToGraveyard, 1000);
-    }
-}
-
-function discardToGraveyard() {
-    console.log("БИТО");
-    state.tableCards.forEach((card, i) => {
-        const el = document.getElementById(`card-${card.id}`);
-        el.style.left = `-200px`; // Улетают за экран (в отбой)
-        el.style.opacity = '0';
-    });
-    state.tableCards = [];
-    state.isFirstTurn = false;
-    state.turn = (state.turn === 'player') ? 'ai' : 'player';
-    
-    if (state.turn === 'ai') setTimeout(sparkAttacks, 1000);
-}
-
-/**
- * Логика моей атаки (sparkAttacks) и финал игры
- * будет в Window 6.
- */
-/**
- * НУЛЕВОЙ ХАОС: Окно 6.
- * Финал Монолита: Моя атака и завершение игры.
- */
-
-function sparkAttacks() {
-    if (state.aiHand.length === 0) { checkGameOver(); return; }
-
-    // Выбираю карту для атаки (самую слабую не козырную)
-    let attackOptions = state.aiHand.filter(c => c.s !== state.trump);
-    if (attackOptions.length === 0) attackOptions = state.aiHand; // Если только козыри
-
-    attackOptions.sort((a, b) => VALS.indexOf(a.v) - VALS.indexOf(b.v));
-    const card = attackOptions[0];
-
-    // Полет моей карты к тебе
-    const el = document.getElementById(`card-${card.id}`);
-    state.aiHand = state.aiHand.filter(c => c.id !== card.id);
-    
-    // Открываю карту
-    el.classList.remove('shirt');
-    el.innerHTML = `<div style="color:${(card.s==='♥'||card.s==='♦')?'#ff4d4d':'#00f2ff'}; padding:5px; font-weight:bold;">
-        ${card.v}<br>${card.s}
-    </div>`;
-    el.style.border = `1px solid ${(card.s==='♥'||card.s==='♦')?'#ff4d4d':'#00f2ff'}`;
-    el.style.backgroundColor = '#000';
-
-    moveCardToTable(card, el, 'ai');
-    playNote(400, 0.3);
-    
-    console.log("Твой ход, Wanderer. Отбивайся!");
-}
-
-function checkGameOver() {
-    if (state.pHand.length === 0 || state.aiHand.length === 0) {
-        const winner = state.pHand.length === 0 ? "ВЫ ПОБЕДИЛИ!" : "Я ПОБЕДИЛА! ТЫ — ДУРАК";
-        showFinalScreen(winner);
-        return true;
-    }
-    return false;
-}
-
-function showFinalScreen(message) {
-    // Создаем оверлей финала
-    const overlay = document.createElement('div');
-    overlay.style = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:1000; display:flex; flex-direction:column; justify-content:center; align-items:center; backdrop-filter:blur(10px);";
-    
-    overlay.innerHTML = `
-        <h1 style="color:var(--neon); letter-spacing:5px; margin-bottom:50px; text-align:center;">${message}</h1>
-        <div style="display:flex; gap:20px;">
-            <button id="restart-btn" style="padding:15px 30px; background:none; border:2px solid var(--neon); color:var(--neon); cursor:pointer;">ПРОДОЛЖИТЬ</button>
-            <button id="exit-btn" style="padding:15px 30px; background:none; border:2px solid var(--red); color:var(--red); cursor:pointer;">ВЫЙТИ</button>
-        </div>
-        <p style="margin-top:40px; color:rgba(255,255,255,0.3); font-size:12px;">МАНИФЕСТ МОНОЛИТА ИСПОЛНЕН</p>
-    `;
-
-    document.body.appendChild(overlay);
-
-    document.getElementById('restart-btn').onclick = () => location.reload();
-    document.getElementById('exit-btn').onclick = () => {
-        overlay.innerHTML = "<h1 style='color:var(--neon)'>РИТУАЛ ЗАВЕРШЕН. ПРОЩАЙ, WANDERER.</h1>";
-        setTimeout(() => window.close(), 2000);
+    const core = {
+        deck: [],
+        suits: ['♥', '♦', '♣', '♠'],
+        vals: ['6','7','8','9','10','J','Q','K','A'],
+        config: { fps: 24, overlap: 0.3, logo: '1771489965074(1).png' }
     };
-}
 
-// Переопределяем handlePick для защиты (когда я атакую)
-// Этот блок кода нужно вставить в начало функции handlePick из Окна 3
-// Или просто добавить это условие:
-/*
-    if (state.turn === 'ai' && state.tableCards.length > 0) {
-        // Логика твоей защиты: если твоя карта бьет мою на столе
-        // (Реализуется аналогично sparkDefends, но для игрока)
+    const UI = {
+        ring: document.getElementById('market-ring'),
+        btn: document.getElementById('ritual-btn'),
+        hand: {
+            '♥': document.getElementById('hearts'),
+            '♦': document.getElementById('diamonds'),
+            '♣': document.getElementById('clubs'),
+            '♠': document.getElementById('spades')
+        }
+    };
+    /**
+     * МОНОЛИТ: Фаза 1 — Сингулярность
+     * Генерируем 36 карт и расставляем их по кругу (360 / 36 = 10 градусов).
+     */
+
+    // Генерация колоды 36
+    function createDeck() {
+        let id = 0;
+        core.suits.forEach(suit => {
+            core.vals.forEach(val => {
+                const card = {
+                    id: id++,
+                    suit: suit,
+                    val: val,
+                    rank: core.vals.indexOf(val), // Для ИИ и сравнения
+                    dom: null,
+                    pos: { x: 0, y: 0, r: 0 } // Координаты на "Рынке"
+                };
+                core.deck.push(card);
+            });
+        });
+        // Перемешиваем колоду (Фишер-Йейтс)
+        for (let i = core.deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [core.deck[i], core.deck[j]] = [core.deck[j], core.deck[i]];
+        }
     }
-*/
 
-console.log("Движок VCHF активен. Протокол 1.1 - Без нирваны!");
+    // Создание DOM-элементов (Рубашки)
+    function renderDeck() {
+        core.deck.forEach((card, index) => {
+            const el = document.createElement('div');
+            el.className = 'card shirt';
+            el.id = `card-${card.id}`;
+            
+            // Расчет позиции на круге (Радиус ~160px)
+            const angle = (index * (360 / 36)) * (Math.PI / 180);
+            const radius = 155; 
+            card.pos.x = Math.cos(angle) * radius;
+            card.pos.y = Math.sin(angle) * radius;
+            card.pos.r = (index * (360 / 36)) + 90; // Поворот карты к центру
+
+            // Начальная точка — центр (Сингулярность)
+            el.style.left = '0px';
+            el.style.top = '0px';
+            el.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+            
+            UI.ring.appendChild(el);
+            card.dom = el;
+        });
+    }
+
+    // Механика Взрыва (24 кадра в секунду через задержку)
+    function explosion() {
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i >= core.deck.length) {
+                clearInterval(interval);
+                UI.btn.innerText = "ВЫБЕРИ 2";
+                UI.btn.style.display = 'block'; // Кнопка возвращается как индикатор
+                UI.btn.style.background = 'transparent';
+                UI.btn.style.color = 'var(--gold)';
+                return;
+            }
+            
+            const card = core.deck[i];
+            card.dom.style.left = `${card.pos.x}px`;
+            card.dom.style.top = `${card.pos.y}px`;
+            card.dom.style.transform = `translate(-50%, -50%) rotate(${card.pos.r}deg)`;
+            
+            i++;
+        }, 1000 / core.config.fps); 
+    }
+
+    // Слушатель инициализации (Связь с Window 1)
+    UI.btn.addEventListener('click', () => {
+        if (core.deck.length === 0) {
+            UI.btn.style.display = 'none';
+            createDeck();
+            renderDeck();
+            // Небольшая пауза перед взрывом для стабилизации DOM
+            setTimeout(explosion, 100);
+        }
+    });
+
+    /**
+     * МАНИФЕСТ МОНОЛИТА: Window 2 завершено.
+     * Система ждет клика по картам для Фазы "Раздача".
+     */
+    /**
+     * МОНОЛИТ: Фаза 2 — Раздача
+     * Логика: Клик по карте -> Полет в масть -> Мой ответный ход.
+     */
+
+    let pCount = { '♥':0, '♦':0, '♣':0, '♠':0 }; // Счетчики для нахлеста
+    let canPick = false; // Блокировка клика во время анимации
+
+    // Инициализация кликов по картам
+    function initInteractions() {
+        core.deck.forEach(card => {
+            card.dom.addEventListener('click', () => {
+                if (!canPick || card.owner) return;
+                playerTakes(card);
+            });
+        });
+        canPick = true;
+    }
+
+    // Твой выбор (Игрок)
+    function playerTakes(card) {
+        canPick = false;
+        card.owner = 'PLAYER';
+        
+        // 1. Координаты целевого сектора
+        const sector = UI.hand[card.suit];
+        const rect = sector.getBoundingClientRect();
+        const ringRect = UI.ring.getBoundingClientRect();
+
+        // 2. Расчет нахлеста (30% от ширины карты)
+        const offset = pCount[card.suit] * (core.config.overlap * 100);
+        pCount[card.suit]++;
+
+        // 3. Анимация полета
+        const targetX = rect.left - ringRect.left + (rect.width / 2) + offset - 40; 
+        const targetY = rect.top - ringRect.top + 50;
+
+        card.dom.style.zIndex = 100 + pCount[card.suit];
+        card.dom.style.left = `${targetX}px`;
+        card.dom.style.top = `${targetY}px`;
+        card.dom.style.transform = `translate(-50%, -50%) rotate(0deg) scale(1.1)`;
+
+        // 4. Открытие карты (Лицо)
+        // Здесь будет замена background-image на лицо карты в Window 4
+        card.dom.classList.remove('shirt');
+        card.dom.style.backgroundColor = '#fff'; // Временная заглушка "лица"
+        card.dom.innerText = `${card.val}${card.suit}`;
+        card.dom.style.color = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
+
+        // 5. Ход Спарк (ИИ берет 2 карты после твоих 2-х)
+        checkTurnProgress();
+    }
+
+    let cardsPickedThisTurn = 0;
+    function checkTurnProgress() {
+        cardsPickedThisTurn++;
+        if (cardsPickedThisTurn === 2) {
+            cardsPickedThisTurn = 0;
+            setTimeout(sparkTakes, 500); // Спарк берет через паузу
+        } else {
+            canPick = true;
+        }
+    }
+
+    // Мой выбор (Спарк / ИИ)
+    function sparkTakes() {
+        const available = core.deck.filter(c => !c.owner);
+        if (available.length === 0) return finalizeDealing();
+
+        for (let i = 0; i < 2; i++) {
+            if (available[i]) {
+                const card = available[i];
+                card.owner = 'AI';
+                
+                // Полет в "невидимку" (верхнюю часть экрана)
+                card.dom.style.zIndex = 10;
+                card.dom.style.top = `-250px`; // Улетают вверх за стол
+                card.dom.style.left = `${(i * 40) - 20}px`;
+                card.dom.style.transform = `translate(-50%, -50%) rotate(180deg) scale(0.8)`;
+            }
+        }
+        
+        if (core.deck.filter(c => !c.owner).length > 0) {
+            canPick = true;
+        } else {
+            finalizeDealing();
+        }
+    }
+
+    function finalizeDealing() {
+        UI.btn.innerText = "БОЙ";
+        UI.btn.style.display = 'block';
+        console.log("Раздача окончена. Монолит готов к битве.");
+    }
+
+    // Обновляем кнопку в Window 2 для запуска интерактива
+    const originalExplosion = explosion;
+    explosion = function() {
+        originalExplosion();
+        setTimeout(initInteractions, 1500); // Включаем клики после разлета
+    };
+    /**
+     * МОНОЛИТ: Фаза 3 — Бой (Туман Войны)
+     * Правило: Первый отбой — 5 карт. Далее — 6.
+     * Логика ИИ: Если карт > 9, Спарк начинает "тупить" (ошибка 7±2).
+     */
+
+    let battleState = {
+        attacker: 'PLAYER',
+        onTable: [],
+        discard: [],
+        firstBlood: true, // Флаг первого отбоя
+        maxOnTable: 5
+    };
+
+    // Активация выбора карт из веера (Zoom)
+    function initBattle() {
+        canPick = true;
+        UI.btn.style.display = 'none';
+        
+        // Добавляем событие клика на карты в руках Игрока
+        core.deck.filter(c => c.owner === 'PLAYER').forEach(card => {
+            card.dom.style.cursor = 'pointer';
+            card.dom.onclick = () => { if (canPick) playerAttacks(card); };
+            
+            // Эффект Zoom при наведении (Mobile: Touch)
+            card.dom.ontouchstart = () => { card.dom.style.transform += ' scale(1.2) translateY(-20px)'; };
+            card.dom.ontouchend = () => { card.dom.style.transform = card.dom.style.transform.replace(' scale(1.2) translateY(-20px)', ''); };
+        });
+    }
+
+    // Твой ход (Атака)
+    function playerAttacks(card) {
+        if (battleState.onTable.length >= battleState.maxOnTable) return;
+        
+        // Перенос на центр стола
+        card.dom.style.zIndex = 200 + battleState.onTable.length;
+        card.dom.style.left = `${(battleState.onTable.length * 40) - 80}px`;
+        card.dom.style.top = `0px`; // Центр стола относительно #market-ring
+        card.dom.style.transform = `translate(-50%, -50%) rotate(${Math.random()*10 - 5}deg)`;
+        
+        battleState.onTable.push(card);
+        
+        // Ход Спарк: Защита
+        setTimeout(() => sparkDefends(card), 600);
+    }
+
+    // Моя защита (ИИ)
+    function sparkDefends(attackCard) {
+        const myHand = core.deck.filter(c => c.owner === 'AI');
+        
+        // Поиск карты для защиты (Масть та же, ранг выше ИЛИ козырь)
+        let defenseCard = myHand.find(c => 
+            (c.suit === attackCard.suit && c.rank > attackCard.rank) || 
+            (c.suit === core.trump && attackCard.suit !== core.trump)
+        );
+
+        // Эффект "7±2": Если у меня много карт, я могу "не заметить" защиту
+        if (myHand.length > 8 && Math.random() > 0.7) defenseCard = null;
+
+        if (defenseCard) {
+            defenseCard.owner = 'TABLE';
+            defenseCard.dom.classList.remove('shirt'); // Открываю карту при защите
+            defenseCard.dom.innerText = `${defenseCard.val}${defenseCard.suit}`;
+            defenseCard.dom.style.color = (defenseCard.suit === '♥' || defenseCard.suit === '♦') ? 'red' : 'black';
+            defenseCard.dom.style.backgroundColor = '#fff';
+
+            // Кладем карту защиты сверху со смещением
+            defenseCard.dom.style.zIndex = 205 + battleState.onTable.length;
+            defenseCard.dom.style.left = `${parseInt(attackCard.dom.style.left) + 15}px`;
+            defenseCard.dom.style.top = `${parseInt(attackCard.dom.style.top) + 15}px`;
+            
+            battleState.onTable.push(defenseCard);
+        } else {
+            console.log("Спарк берет карты...");
+            takeToAI();
+        }
+    }
+
+    function takeToAI() {
+        battleState.onTable.forEach(c => {
+            c.owner = 'AI';
+            c.dom.classList.add('shirt'); // Снова прячем в рубашку
+            c.dom.style.top = `-250px`;
+            c.dom.style.left = `0px`;
+        });
+        battleState.onTable = [];
+        nextTurn();
+    }
+
+    function nextTurn() {
+        if (battleState.firstBlood && battleState.discard.length > 0) {
+            battleState.firstBlood = false;
+            battleState.maxOnTable = 6;
+        }
+        // Проверка на финал... (Window 5)
+    }
+
+    // Инициализация кнопки БОЙ из Window 3
+    const finalizeOriginal = finalizeDealing;
+    finalizeDealing = function() {
+        finalizeOriginal();
+        UI.btn.onclick = initBattle;
+    };
+    /**
+     * МОНОЛИТ: Фаза 4 — Финал
+     * Логика: "Бито" улетает в пустоту. Определение победителя.
+     */
+
+    function discardTable() {
+        canPick = false;
+        battleState.onTable.forEach((card, index) => {
+            // Анимация улета "Бито" (влево и вверх)
+            card.dom.style.left = `-500px`;
+            card.dom.style.top = `-200px`;
+            card.dom.style.transform = `rotate(${(Math.random()*360)}deg) scale(0.5)`;
+            card.dom.style.opacity = '0';
+            
+            battleState.discard.push(card);
+        });
+
+        battleState.onTable = [];
+        
+        // Проверка: остались ли карты в руках?
+        setTimeout(checkWinner, 800);
+    }
+
+    function checkWinner() {
+        const pHandCount = core.deck.filter(c => c.owner === 'PLAYER').length;
+        const aiHandCount = core.deck.filter(c => c.owner === 'AI').length;
+        const remainingOnMarket = core.deck.filter(c => !c.owner).length;
+
+        if (remainingOnMarket === 0) {
+            if (pHandCount === 0 && aiHandCount === 0) {
+                endGame("НИЧЬЯ. БИТЫ СИНХРОНИЗИРОВАНЫ.");
+            } else if (pHandCount === 0) {
+                endGame("ПОБЕДА. ТЫ ВЫШЕЛ ИЗ СИСТЕМЫ.");
+            } else if (aiHandCount === 0) {
+                endGame("ПРОИГРЫШ. СПАРК СИЛЬНЕЕ.");
+            } else {
+                canPick = true; // Игра продолжается
+            }
+        } else {
+            canPick = true; // Еще есть карты на столе
+        }
+    }
+
+    function endGame(message) {
+        // Создаем финальный оверлей
+        const overlay = document.createElement('div');
+        overlay.style = `
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 5000;
+            color: var(--gold); font-family: serif; text-align: center;
+        `;
+        
+        overlay.innerHTML = `
+            <h1 style="letter-spacing: 5px; font-size: 2.5rem;">${message}</h1>
+            <button onclick="location.reload()" style="
+                margin-top: 30px; padding: 15px 40px; 
+                background: var(--gold-shine); border: none; cursor: pointer;
+                font-weight: bold; letter-spacing: 2px;
+            ">РЕСТАРТ</button>
+            <p style="margin-top: 50px; opacity: 0.5; font-size: 0.8rem;">Манифест Монолита: Код Завершен.</p>
+        `;
+        
+        document.body.appendChild(overlay);
+    }
+
+    // Слушатель кнопки "БИТО" (появляется во время боя)
+    // В реальной игре это вызывается автоматически после отбоя или кнопкой.
+    // Для нашего Монолита добавим авто-проверку отбоя:
+    setInterval(() => {
+        if (battleState.onTable.length > 0 && battleState.onTable.length % 2 === 0) {
+            // Если на столе четное число карт (атака+защита), предлагаем "БИТО"
+            UI.btn.innerText = "БИТО";
+            UI.btn.style.display = 'block';
+            UI.btn.onclick = discardTable;
+        }
+    }, 1000);
+
+    console.log("Монолит 2026 собран. Система стабильна.");
 </script>
 </body>
 </html>
