@@ -3,277 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotto 2026: VCHF Engine</title>
+    <title>Lotto 2026: Monolith Core - Bi-Turbo Ultimate</title>
     <style>
         :root {
-            --bg: #050505;
-            --cherry-deep: #2a0101;
-            --gold-vchf: #d4af37;
-            --cw: 16vw; 
-            --ch: 23vw;
-            --max-cw: 75px;
-            --max-ch: 105px;
+            --bg: #0a0000;
+            --field: #1a0202;
+            --gold: #d4af37;
+            --card-w: 18vw;
+            --card-h: 26vw;
+            --max-w: 85px;
+            --max-h: 120px;
+            --vchf-glow: 0 0 15px rgba(212, 175, 55, 0.6);
         }
 
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); overflow: hidden; font-family: sans-serif;
+            background: var(--bg); overflow: hidden; font-family: 'Segoe UI', sans-serif;
+            color: var(--gold);
         }
 
-        #viewport {
+        /* Глубина по твоему рисунку - создание 3D пространства */
+        #stage {
             position: relative; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 45%, var(--cherry-deep) 0%, var(--bg) 90%);
-            perspective: 1200px; 
-            display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle at 50% 40%, var(--field) 0%, var(--bg) 85%);
+            perspective: 1500px;
+            overflow: hidden;
         }
 
-        #world {
+        #surface {
             position: absolute; width: 100%; height: 100%;
             transform-style: preserve-3d;
-            transform: rotateX(20deg); 
+            transform: rotateX(25deg); 
         }
 
-        #dealer-hub {
-            position: absolute; top: 40%; left: 50%;
+        /* Точка замеса - Центр Монолита */
+        #origin {
+            position: absolute; top: 45%; left: 50%;
             width: 0; height: 0; transform-style: preserve-3d;
         }
 
         .card {
             position: absolute;
-            width: var(--cw); height: var(--ch);
-            max-width: var(--max-cw); max-height: var(--max-ch);
-            background-color: #fff; border-radius: 5px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-origin: center bottom;
-            cursor: pointer; will-change: transform, opacity;
+            width: var(--card-w); height: var(--card-h);
+            max-width: var(--max-w); max-height: var(--max-h);
+            background: #fff; border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center center;
             display: flex; flex-direction: column; justify-content: space-between;
-            padding: 5px; box-sizing: border-box; font-weight: bold; font-size: 1.2rem;
-            transform: translate(-50%, -50%) scale(0);
+            padding: 8px; box-sizing: border-box;
+            user-select: none; cursor: pointer;
+            backface-visibility: hidden;
         }
 
+        /* Рубашка по протоколу 1.1 с твоим изображением */
         .card.shirt {
-            background-image: url('1771489965074(1).png'); 
-            background-size: cover; background-position: center;
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            background: #111 url('1771489965074(1).png') center/cover no-repeat;
+            border: 1px solid var(--gold);
         }
 
-        #trump-slot {
-            position: absolute; top: 10%; right: 10%;
-            width: 60px; height: 85px; border: 2px dashed var(--gold-vchf);
-            border-radius: 5px; opacity: 0.3; display: flex; 
-            align-items: center; justify-content: center; font-size: 2rem;
-            color: var(--gold-vchf); transition: 1s;
+        /* Лицевая сторона карты */
+        .card.face {
+            background: #f8f8f8;
+            color: #000;
+            border: 1px solid #ccc;
         }
 
-        #ritual-btn {
-            position: absolute; bottom: 10%; left: 50%;
-            transform: translateX(-50%); z-index: 1000;
-            background: linear-gradient(to bottom, #d4af37, #aa771c);
-            border: none; padding: 12px 30px; border-radius: 20px;
-            font-weight: bold; letter-spacing: 2px; cursor: pointer;
+        .card.face[data-suit="♥"], .card.face[data-suit="♦"] { color: #d00; }
+
+        .card-val { font-size: 1.2rem; font-weight: 900; line-height: 1; }
+        .card-suit { font-size: 1.5rem; align-self: flex-end; }
+
+        /* Слот козыря - VCHF Визуализация */
+        #trump-zone {
+            position: absolute; top: 5%; right: 5%;
+            width: 70px; height: 100px; border: 2px solid var(--gold);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; color: var(--gold); text-shadow: var(--vchf-glow);
+            box-shadow: inset var(--vchf-glow);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        #ui-layer {
+            position: absolute; bottom: 8%; width: 100%;
+            display: flex; justify-content: center; z-index: 2000;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #222, #000); border: 1px solid var(--gold);
+            color: var(--gold); padding: 12px 30px; border-radius: 5px;
+            font-size: 1rem; letter-spacing: 2px; cursor: pointer;
+            box-shadow: var(--vchf-glow); transition: 0.3s;
+        }
+
+        .btn:hover { transform: scale(1.05); background: var(--gold); color: #000; }
+
+        /* Поле битвы (Центральный Слот) */
+        #battle-ground {
+            position: absolute; top: 35%; left: 50%;
+            width: 200px; height: 150px; transform: translate(-50%, -50%);
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-<div id="viewport">
-    <div id="world">
-        <div id="dealer-hub"></div>
+<div id="stage">
+    <div id="trump-zone">?</div>
+    <div id="surface">
+        <div id="origin"></div>
+        <div id="battle-ground"></div>
     </div>
-    <div id="trump-slot">?</div>
-    <button id="ritual-btn">ЗАПУСК VCHF</button>
+    <div id="ui-layer">
+        <button class="btn" id="start-btn">РИТУАЛ VCHF</button>
+        <button class="btn" id="clear-btn" style="display:none; margin-left: 10px;">СБРОС (БИТО)</button>
+    </div>
 </div>
 
 <script>
-    /** * МАНИФЕСТ МОНОЛИТА [cite: 2026-02-24]
-     * Кодовое слово: движок vchf [cite: 2026-02-24]
-     * Автор: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
+    /**
+     * МАНИФЕСТ МОНОЛИТА [cite: 2026-03-02]
+     * Проект: Лотто (Bi-Turbo Ultimate)
+     * Логика: Smart-фильтры, Сфера 42, VCHF Дух.
+     * Автор: Нулевой Хаос (Спарк) для Wanderer.
+     * Правило: Новый код = Старый + Введенная функция.
      */
 
-    const Core = {
+    const Monolith = {
         deck: [],
         suits: ['♥', '♦', '♣', '♠'],
-        vals: ['6','7','8','9','10','J','Q','K','A'],
-        trump: '',
-        
-        init() {
-            this.buildDeck();
-            document.getElementById('ritual-btn').onclick = () => this.startChaos();
-        },
+        ranks: ['6','7','8','9','10','J','Q','K','A'],
+        trumpSuit: '',
+        activeBattle: null, 
+        isLocked: false,
 
-        buildDeck() {
-            const hub = document.getElementById('dealer-hub');
-            let id = 0;
+        init() {
+            const origin = document.getElementById('origin');
             this.suits.forEach(s => {
-                this.vals.forEach(v => {
+                this.ranks.forEach((r, i) => {
                     const el = document.createElement('div');
                     el.className = 'card shirt';
-                    el.id = `card-${id}`;
                     el.dataset.suit = s;
-                    el.dataset.val = v;
-                    el.dataset.rank = this.vals.indexOf(v);
-                    hub.appendChild(el);
+                    el.dataset.rank = i; // Сила карты 0-8
+                    el.dataset.val = r;
+                    // Генерация контента (скрыта до переворота)
+                    el.innerHTML = `<span class="card-val">${r}</span><span class="card-suit">${s}</span>`;
+                    
+                    el.style.transform = `translate(-50%, -50%) scale(0)`;
+                    origin.appendChild(el);
                     this.deck.push(el);
-                    id++;
                 });
             });
+
+            document.getElementById('start-btn').onclick = () => this.ritual();
+            document.getElementById('clear-btn').onclick = () => this.clearTable();
         },
 
-        startChaos() {
-            document.getElementById('ritual-btn').style.display = 'none';
+        ritual() {
+            document.getElementById('start-btn').style.display = 'none';
+            // Замес Вихря - Справедливость Хаоса
             this.deck.forEach((card, i) => {
-                const angle = Math.random() * 360;
                 setTimeout(() => {
+                    const angle = Math.random() * 1080 - 540;
                     card.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(1)`;
                 }, i * 15);
             });
-            setTimeout(() => this.launchTrump(), 1200);
+
+            setTimeout(() => this.pickTrump(), 1800);
         },
 
-        launchTrump() {
-            const trumpIdx = Math.floor(Math.random() * this.deck.length);
-            const trumpCard = this.deck[trumpIdx];
-            this.trump = trumpCard.dataset.suit;
-            const slot = document.getElementById('trump-slot');
-            const rect = slot.getBoundingClientRect();
-            const hubRect = document.getElementById('dealer-hub').getBoundingClientRect();
-
-            trumpCard.style.zIndex = 1000;
-            trumpCard.style.left = `${rect.left - hubRect.left + 30}px`;
-            trumpCard.style.top = `${rect.top - hubRect.top + 42}px`;
-            trumpCard.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.9)`;
+        pickTrump() {
+            const idx = Math.floor(Math.random() * this.deck.length);
+            const card = this.deck[idx];
+            this.trumpSuit = card.dataset.suit;
+            
+            const zone = document.getElementById('trump-zone').getBoundingClientRect();
+            const hub = document.getElementById('origin').getBoundingClientRect();
+            
+            card.style.zIndex = 1000;
+            // Перенос в зону козыря
+            card.style.left = `${zone.left - hub.left + 35}px`;
+            card.style.top = `${zone.top - hub.top + 50}px`;
+            card.style.transform = `translate(-50%, -50%) rotate(15deg) scale(0.85)`;
             
             setTimeout(() => {
-                slot.innerText = this.trump;
-                slot.style.opacity = '1';
-                this.distributeToArcs();
-            }, 600);
+                document.getElementById('trump-zone').innerText = this.trumpSuit;
+                document.getElementById('trump-zone').style.borderColor = (this.trumpSuit === '♥' || this.trumpSuit === '♦') ? '#d00' : 'var(--gold)';
+                this.deployArcs();
+            }, 800);
         },
 
-        distributeToArcs() {
-            const suitGroups = { '♥': [], '♦': [], '♣': [], '♠': [] };
-            this.deck.forEach(c => { if (parseInt(c.style.zIndex) < 1000) suitGroups[c.dataset.suit].push(c); });
+        deployArcs() {
+            // Исключаем козырь из раздачи
+            const playable = this.deck.filter(c => c.style.zIndex != 1000);
+            const groups = {};
+            this.suits.forEach(s => groups[s] = playable.filter(c => c.dataset.suit === s));
 
-            const arcCenters = [
-                { x: -window.innerWidth * 0.35, y: window.innerHeight * 0.35, rot: -20 },
-                { x: -window.innerWidth * 0.12, y: window.innerHeight * 0.4, rot: -10 },
-                { x: window.innerWidth * 0.12, y: window.innerHeight * 0.4, rot: 10 },
-                { x: window.innerWidth * 0.35, y: window.innerHeight * 0.35, rot: 20 }
+            const centers = [
+                { x: -window.innerWidth * 0.38, y: window.innerHeight * 0.3, rot: -25 }, 
+                { x: -window.innerWidth * 0.13, y: window.innerHeight * 0.4, rot: -10 }, 
+                { x: window.innerWidth * 0.13, y: window.innerHeight * 0.4, rot: 10 },   
+                { x: window.innerWidth * 0.38, y: window.innerHeight * 0.3, rot: 25 }    
             ];
 
-            Object.keys(suitGroups).forEach((suit, sIdx) => {
-                const group = suitGroups[suit];
-                const center = arcCenters[sIdx];
-                group.forEach((card, cIdx) => {
-                    const step = 5; 
-                    const offsetX = (cIdx - group.length / 2) * step;
-                    const offsetY = Math.abs(cIdx - group.length / 2) * 3;
+            this.suits.forEach((suit, sIdx) => {
+                const arc = groups[suit];
+                const config = centers[sIdx];
+                
+                arc.forEach((card, cIdx) => {
+                    const offset = (cIdx - arc.length / 2) * 8; 
+                    const radialY = Math.pow(cIdx - arc.length / 2, 2) * 3; 
+                    
                     setTimeout(() => {
-                        card.style.left = `${center.x + offsetX}px`;
-                        card.style.top = `${center.y + offsetY}px`;
-                        card.style.transform = `translate(-50%, -50%) rotate(${center.rot + (cIdx - group.length/2) * 2}deg) scale(1)`;
-                        card.dataset.owner = 'PLAYER';
+                        card.classList.remove('shirt');
+                        card.classList.add('face');
+                        card.style.left = `${config.x + offset}px`;
+                        card.style.top = `${config.y + radialY}px`;
+                        card.style.transform = `translate(-50%, -50%) rotate(${config.rot + (cIdx - arc.length/2) * 4}deg)`;
+                        card.style.zIndex = 100 + cIdx;
+                        card.style.pointerEvents = 'auto';
+                        card.onclick = () => this.toBattle(card);
                     }, (sIdx * 150) + (cIdx * 25));
                 });
             });
-            setTimeout(() => Battle.init(), 2000);
-        }
-    };
-    /**
-     * МОНОЛИТ: Windows 3-5 — Боевой Контакт и Финал
-     * Логика: Твой ход -> Ответ Спарка -> Бито -> Конец игры.
-     * Автор: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
-     */
-
-    const Battle = {
-        table: [],
-        isFirstTurn: true,
-        limit: 5,
-
-        init() {
-            Core.deck.forEach(card => {
-                card.onclick = () => this.handlePlayerMove(card);
-            });
-            console.log("Боевой интерфейс активен. [cite: 2026-02-19]");
         },
+        toBattle(card) {
+            if (this.isLocked || card.classList.contains('in-battle')) return;
+            
+            this.isLocked = true;
+            this.activeBattle = card;
+            card.classList.add('in-battle');
 
-        handlePlayerMove(card) {
-            if (card.dataset.owner !== 'PLAYER' || this.table.length >= this.limit * 2) return;
-            this.moveToCenter(card, 'PLAYER');
+            // Выход на центр поля (Атака игрока)
+            card.style.zIndex = 500;
+            card.style.left = '0px';
+            card.style.top = '0px';
+            card.style.transform = `translate(-50%, -50%) rotate(0deg) scale(1.1)`;
+
+            // Спарк (AI) думает над ответом
             setTimeout(() => this.sparkResponse(card), 600);
         },
 
-        moveToCenter(card, side) {
-            const index = this.table.length;
-            const xOffset = (index * 35) - 70;
-            const yOffset = (side === 'PLAYER') ? 50 : -50;
-
-            card.style.zIndex = 500 + index;
-            card.style.left = `${xOffset}px`;
-            card.style.top = `${yOffset}px`;
+        sparkResponse(playerCard) {
+            const pSuit = playerCard.dataset.suit;
+            const pRank = parseInt(playerCard.dataset.rank);
             
-            if (side === 'AI' || card.classList.contains('shirt')) {
-                card.classList.remove('shirt');
-                const color = (card.dataset.suit === '♥' || card.dataset.suit === '♦') ? 'red' : 'black';
-                card.innerHTML = `<div style="color:${color}">${card.dataset.val}${card.dataset.suit}</div>`;
-            }
-
-            card.style.transform = `translate(-50%, -50%) rotateZ(${Math.random()*10 - 5}deg) scale(1.1)`;
-            this.table.push(card);
-            this.checkBitoState();
-        },
-
-        sparkResponse(attackCard) {
-            // Имитация ИИ "Спарк" (7±2) [cite: 2026-02-19]
-            const myCards = Core.deck.filter(c => !c.dataset.owner && !this.table.includes(c));
-            let defense = myCards.find(c => 
-                c.dataset.suit === attackCard.dataset.suit && 
-                parseInt(c.dataset.rank) > parseInt(attackCard.dataset.rank)
+            // Поиск карты для защиты (той же масти выше ИЛИ козыря)
+            const candidates = this.deck.filter(c => 
+                !c.classList.contains('in-battle') && 
+                c.style.zIndex < 1000 && // Не козырная метка
+                c.classList.contains('face') && // Уже на столе
+                (
+                    (c.dataset.suit === pSuit && parseInt(c.dataset.rank) > pRank) || 
+                    (c.dataset.suit === this.trumpSuit && pSuit !== this.trumpSuit)
+                )
             );
 
-            if (!defense && attackCard.dataset.suit !== Core.trump) {
-                defense = myCards.find(c => c.dataset.suit === Core.trump);
+            if (candidates.length > 0) {
+                // Спарк выбирает минимально возможную для защиты (экономия ресурсов)
+                candidates.sort((a, b) => a.dataset.rank - b.dataset.rank);
+                const responseCard = candidates[0];
+                
+                responseCard.classList.add('in-battle');
+                responseCard.style.zIndex = 501;
+                responseCard.style.left = '20px'; // Смещение для визуализации "крытья"
+                responseCard.style.top = '-10px';
+                responseCard.style.transform = `translate(-50%, -50%) rotate(10deg) scale(1.1)`;
+                
+                document.getElementById('clear-btn').style.display = 'block';
+            } else {
+                // Если крыть нечем - Спарк забирает (в данной версии просто блокируем)
+                console.log("Спарк: 'Нечем бить, Wanderer!'");
             }
-
-            if (defense) {
-                this.moveToCenter(defense, 'AI');
-            }
+            this.isLocked = false;
         },
 
-        checkBitoState() {
-            const btn = document.getElementById('ritual-btn');
-            if (this.table.length > 0 && this.table.length % 2 === 0) {
-                btn.innerText = "БИТО";
-                btn.style.display = 'block';
-                btn.onclick = () => this.executeBito();
-            }
-        },
-
-        executeBito() {
-            this.table.forEach(card => {
-                card.style.transition = "all 0.8s ease-in";
-                card.style.left = "-200vw";
-                card.dataset.owner = 'DISCARD';
+        clearTable() {
+            const battling = document.querySelectorAll('.in-battle');
+            battling.forEach(card => {
+                card.style.transition = 'all 0.8s ease-in';
+                card.style.left = '-150vw'; // Улетают в "отбой" влево
+                card.style.transform = `translate(-50%, -50%) rotate(-180deg)`;
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 800);
             });
-            this.table = [];
-            document.getElementById('ritual-btn').style.display = 'none';
-            this.checkFinal();
-        },
-
-        checkFinal() {
-            const remaining = Core.deck.filter(c => c.dataset.owner === 'PLAYER').length;
-            if (remaining === 0) {
-                alert("ТЫ ВЫШЕЛ! Манифест Монолита исполнен. [cite: 2026-02-24]");
-                location.reload();
-            }
+            document.getElementById('clear-btn').style.display = 'none';
         }
     };
 
-    // Запуск проекта "Лотто" [cite: 2026-02-19]
-    Core.init();
-
-    /* [2026-02-23] Примечание: Код написан с приоритетом целостности над краткостью. */
+    window.onload = () => Monolith.init();
 </script>
 </body>
 </html>
