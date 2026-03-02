@@ -3,360 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LOTTO BI-TURBO ULTIMATE 2026</title>
+    <title>BI-TURBO ULTIMATE: VCHF MONOLITH</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* ГЛОБАЛЬНЫЕ СТАНДАРТЫ (БЕЗ КОЛЛИЗИЙ) */
         :root {
-            --gold: #d4af37; 
-            --gold-bright: #ffdf00;
-            --bg-black: #050505;
-            --vchf-red: #e30a17;
-            --glass: rgba(255, 255, 255, 0.05);
-            --neon-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            --gold: #d4af37; --gold-br: #ffdf00; --bg: #050505;
+            --vchf-red: #e30a17; --neon: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--bg); color: var(--gold); 
+            font-family: 'Orbitron', sans-serif; overflow: hidden; 
         }
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background: var(--bg-black);
-            color: var(--gold);
-            font-family: 'Orbitron', sans-serif;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* ЭКРАН 1: ШВЕЙЦАРСКИЙ ТРЕЗОР (HELVETIA) */
-        #helvetia-layer {
-            position: fixed; inset: 0; z-index: 9000;
-            display: flex; align-items: center; justify-content: center;
+        /* ТРЕЗОР HELVETIA */
+        #layer-safe {
+            position: fixed; inset: 0; z-index: 9999;
             background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-            transition: opacity 1s ease-in-out;
-        }
-
-        .safe-wheel {
-            position: relative; width: 320px; height: 320px;
-            border: 8px solid #222; border-radius: 50%;
-            box-shadow: 0 0 50px #000, inset 0 0 30px #000;
-            transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-
-        .flag-node {
-            position: absolute; width: 45px; height: 45px;
-            background: #222; border: 2px solid var(--gold);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; cursor: pointer; z-index: 10;
-            box-shadow: var(--neon-shadow);
-        }
-
-        /* ЭКРАН 2: ЛОББИ И ЗАЛ (BI-TURBO) */
-        #main-ui {
-            display: none; opacity: 0; position: relative; width: 100%; height: 100%;
-            transition: opacity 0.8s ease;
-        }
-
-        #floor {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
-            padding: 80px 20px; perspective: 1000px;
-        }
-
-        .table-wrap {
-            height: 120px; background: var(--glass);
-            border: 1px solid var(--gold); border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: inset 0 0 10px rgba(212,175,55,0.2);
-            transform: rotateX(20deg); cursor: pointer;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wheel-vchf {
+            position: relative; width: 300px; height: 300px;
+            border: 10px solid #222; border-radius: 50%;
+            box-shadow: 0 0 40px #000, inset 0 0 20px #000;
+            transition: transform 1.2s cubic-bezier(0.6, -0.2, 0.3, 1.2);
+        }
+        .node {
+            position: absolute; width: 40px; height: 40px;
+            background: #222; border: 2px solid var(--gold); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 18px; box-shadow: var(--neon);
         }
 
-        /* ЭКРАН 3: БИТВА VCHF (MONOLITH CORE) */
-        #game-view {
+        /* ЛОББИ (ЗАЛ) */
+        #layer-lobby {
+            display: none; opacity: 0; width: 100%; height: 100%;
+            transition: opacity 0.6s ease; padding-top: 60px;
+        }
+        .grid-vchf {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px;
+        }
+        .unit-card {
+            height: 100px; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--gold); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; letter-spacing: 1px; cursor: pointer;
+            transition: 0.3s; transform: rotateX(15deg);
+        }
+        .unit-card:hover { background: rgba(212,175,55,0.1); box-shadow: var(--neon); }
+
+        /* АРЕНА VCHF (BATTLE GAMMA) */
+        #layer-game {
             display: none; position: fixed; inset: 0; z-index: 8000;
-            background: #000; perspective: 1500px;
+            background: #000; overflow: hidden;
         }
-
         .lane {
-            position: absolute; width: 100%; height: 140px;
-            border-top: 1px solid rgba(212,175,55,0.05);
+            position: absolute; width: 100%; height: 130px;
+            border-top: 1px solid rgba(212,175,55,0.08);
             display: flex; justify-content: center; align-items: center;
         }
-        #lane-diamonds { bottom: 250px; }
-        #lane-hearts { bottom: 170px; }
-        #lane-clubs { bottom: 90px; }
-        #lane-spades { bottom: 10px; }
+        #lane-diamonds { bottom: 240px; } #lane-hearts { bottom: 160px; }
+        #lane-clubs { bottom: 80px; } #lane-spades { bottom: 0; }
 
-        .card {
-            position: absolute; width: 65px; height: 95px;
-            border-radius: 6px; background: #fff;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d; cursor: pointer;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+        .v-card {
+            position: absolute; width: 64px; height: 92px;
+            border-radius: 5px; background: #fff; color: #000;
+            box-shadow: 2px 5px 15px rgba(0,0,0,0.5);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; padding: 4px; box-sizing: border-box;
+            cursor: pointer; font-weight: 900;
         }
-        
-        .card.shirt { background: #111 url('1771489965074(1).png') center/cover; border: 1px solid var(--gold); }
-        .card.face { color: #000; font-weight: 900; border: 1px solid #999; }
-        
-        .card-val { position: absolute; top: 5px; left: 5px; font-size: 14px; }
-        .card-suit { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; }
+        .v-card.back { background: #111 url('1771489965074(1).png') center/cover; border: 1px solid var(--gold); }
+        .v-card .top { font-size: 12px; }
+        .v-card .mid { font-size: 26px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 
-        #drop-zone {
-            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
-            width: 320px; height: 220px; display: flex; justify-content: center; align-items: center;
+        #table-chaos {
+            position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
+            width: 320px; height: 200px; display: flex; justify-content: center; align-items: center;
         }
-
-        /* КНОПКИ РИТУАЛА */
-        .btn-ritual {
-            position: absolute; bottom: 320px; left: 50%; transform: translateX(-50%);
+        .btn-core {
+            position: absolute; bottom: 340px; left: 50%; transform: translateX(-50%);
             background: #000; border: 2px solid var(--gold); color: var(--gold);
-            padding: 15px 40px; font-family: 'Orbitron'; font-weight: 900;
-            letter-spacing: 3px; cursor: pointer; box-shadow: var(--neon-shadow);
+            padding: 12px 30px; font-family: 'Orbitron'; font-weight: 900;
+            cursor: pointer; z-index: 10000;
         }
     </style>
 </head>
 <body>
 
-<div id="helvetia-layer">
-    <div id="main-wheel" class="safe-wheel"></div>
+<div id="layer-safe">
+    <div id="v-wheel" class="wheel-vchf"></div>
 </div>
 
-<div id="main-ui">
-    <div id="floor"></div>
+<div id="layer-lobby">
+    <div class="grid-vchf" id="v-grid"></div>
 </div>
 
-<div id="game-view">
-    <div id="origin" style="position: absolute; top: 50%; left: 50%;"></div>
-    <div id="drop-zone"></div>
+<div id="layer-game">
+    <div id="table-chaos"></div>
     <div id="lane-diamonds" class="lane"></div>
     <div id="lane-hearts" class="lane"></div>
     <div id="lane-clubs" class="lane"></div>
     <div id="lane-spades" class="lane"></div>
-    <div id="trump-info" style="position:absolute; top:20px; right:20px; font-size:40px; opacity:0.3"></div>
-    <button id="btn-ritual" class="btn-ritual">РИТУАЛ VCHF</button>
-    <button id="btn-bito" class="btn-ritual" style="display:none; bottom: 400px;">БИТО</button>
+    <button id="v-action" class="btn-core">РИТУАЛ VCHF</button>
 </div>
 
 <script>
-    /* МОДУЛЬ АУДИО (ИЗ ТВОИХ ИСХОДНИКОВ) */
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, dur, type = 'sine', vol = 0.1) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + dur);
-    }
-
-    /* МОДУЛЬ СЕЙФА (HELVETIA) */
-    function initSafe() {
-        const wheel = document.getElementById('main-wheel');
-        const flags = ['🇨🇭', '🇩🇪', '🇦🇹', '🇱🇮', '🇫🇷', '🇮🇹'];
-        flags.forEach((f, i) => {
-            const angle = (i * 360 / flags.length);
-            const node = document.createElement('div');
-            node.className = 'flag-node';
-            node.innerHTML = f;
-            node.style.left = `${160 + 135 * Math.sin(angle * Math.PI / 180) - 22}px`;
-            node.style.top = `${160 - 135 * Math.cos(angle * Math.PI / 180) - 22}px`;
-            node.onclick = () => {
-                playBeep(440, 0.2, 'sine', 0.15);
-                unlockSafe();
-            };
-            wheel.appendChild(node);
-        });
-    }
-
-    function unlockSafe() {
-        const wheel = document.getElementById('main-wheel');
-        wheel.style.transform = "rotate(720deg) scale(0)";
-        setTimeout(() => {
-            document.getElementById('helvetia-layer').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('helvetia-layer').style.display = 'none';
-                showLobby();
-            }, 1000);
-        }, 800);
-    }
-
-    function showLobby() {
-        const ui = document.getElementById('main-ui');
-        ui.style.display = 'block';
-        setTimeout(() => ui.style.opacity = '1', 100);
-        
-        const floor = document.getElementById('floor');
-        floor.innerHTML = '';
-        for(let i=1; i<=12; i++) {
-            const table = document.createElement('div');
-            table.className = 'table-wrap';
-            table.innerHTML = `<span>VCHF UNIT ${i}</span>`;
-            table.onclick = () => launchMonolith();
-            floor.appendChild(table);
-        }
-    }
-
-    window.onload = initSafe;
-</script>
-/* Window 2: МОДУЛЬ MONOLITH CORE (VCHF-BATTLE-GAMMA) */
-
-    const VCHF_ENGINE = {
-        deck: [],
-        pHand: [],
-        eHand: [],
-        table: [],
-        trump: null,
-        isLocked: false,
-
-        // ГЕНЕРАЦИЯ ПОЛНОЙ МАТРИЦЫ (36 СФЕР)
-        createDeck() {
-            const suits = ['♠', '♣', '♥', '♦'];
-            const ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-            const weights = {'6':0, '7':1, '8':2, '9':3, '10':4, 'J':5, 'Q':6, 'K':7, 'A':8};
-            const colors = {'♠':'#000', '♣':'#000', '♥':'#e30a17', '♦':'#e30a17'};
-            
-            this.deck = [];
-            suits.forEach(s => {
-                ranks.forEach(r => {
-                    this.deck.push({
-                        suit: s, rank: r, weight: weights[r],
-                        color: colors[s], id: 'vchf_' + Math.random().toString(36).substr(2, 9)
-                    });
-                });
-            });
-            // Хаос-тасовка
-            this.deck.sort(() => Math.random() - 0.5);
-        },
-
-        // РИТУАЛ РАЗДАЧИ (18 НА 18)
-        launch() {
-            document.getElementById('main-ui').style.display = 'none';
-            document.getElementById('game-view').style.display = 'block';
-            document.getElementById('btn-ritual').style.display = 'block';
-            this.createDeck();
-            
-            // Визуализация рубашек в центре
-            const origin = document.getElementById('origin');
-            origin.innerHTML = '';
-            this.deck.forEach((card, i) => {
-                const el = document.createElement('div');
-                el.className = 'card shirt';
-                el.id = card.id;
-                el.style.transform = `translate(-50%, -50%) scale(0) rotate(${i*10}deg)`;
-                origin.appendChild(el);
-                setTimeout(() => {
-                    el.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random()*360}deg)`;
-                }, i * 20);
-            });
-            
-            document.getElementById('btn-ritual').onclick = () => this.ritualStep();
-        },
-
-        ritualStep() {
-            playBeep(220, 0.6, 'sawtooth', 0.05);
-            document.getElementById('btn-ritual').style.display = 'none';
-
-            // Разделение массива
-            this.pHand = this.deck.slice(0, 18);
-            this.eHand = this.deck.slice(18, 36);
-            this.trump = this.pHand[0].suit; // Козырь по первой карте Бродяги
-
-            const tInfo = document.getElementById('trump-info');
-            tInfo.innerHTML = this.trump;
-            tInfo.style.color = (this.trump === '♥' || this.trump === '♦') ? 'var(--vchf-red)' : 'var(--gold)';
-
-            this.deployToLanes();
-        },
-
-        // ГЕОМЕТРИЯ МАГИСТРАЛЕЙ (БУТОН)
-        deployToLanes() {
-            const laneIds = { '♠': 'lane-spades', '♣': 'lane-clubs', '♥': 'lane-hearts', '♦': 'lane-diamonds' };
-            
-            this.pHand.sort((a,b) => a.weight - b.weight).forEach((card, i) => {
-                const cardEl = document.getElementById(card.id);
-                cardEl.classList.replace('shirt', 'face');
-                cardEl.innerHTML = `<span class="card-val">${card.rank}</span><span class="card-suit">${card.suit}</span>`;
-                cardEl.style.color = card.color;
-
-                const lane = document.getElementById(laneIds[card.suit]);
-                const suitGroup = this.pHand.filter(c => c.suit === card.suit);
-                const idxInSuit = suitGroup.findIndex(c => c.id === card.id);
-                
-                // Математика веера: исключаем наслоение
-                const total = suitGroup.length;
-                const spread = total > 6 ? 35 : 50; 
-                const offset = (idxInSuit - (total - 1) / 2) * spread;
-                const arcY = Math.abs(offset) * 0.15; 
-
-                setTimeout(() => {
-                    lane.appendChild(cardEl);
-                    cardEl.style.left = `calc(50% + ${offset}px)`;
-                    cardEl.style.top = `${arcY}px`;
-                    cardEl.style.transform = `translate(-50%, 0) rotate(${offset/10}deg)`;
-                    cardEl.style.zIndex = 100 + idxInSuit;
-                    
-                    cardEl.onclick = () => this.playerAttack(card);
-                }, i * 40);
-            });
-        },
-
-        playerAttack(card) {
-            if (this.isLocked) return;
-            this.isLocked = true;
-            
-            const cardEl = document.getElementById(card.id);
-            this.table.push({ atk: card, def: null });
-            this.pHand = this.pHand.filter(c => c.id !== card.id);
-
-            // Анимация в Хаос (Центр)
-            const tilt = (Math.random() - 0.5) * 25;
-            cardEl.style.zIndex = 500 + this.table.length;
-            document.getElementById('drop-zone').appendChild(cardEl);
-            cardEl.style.left = '40%';
-            cardEl.style.top = '40%';
-            cardEl.style.transform = `translate(-50%, -50%) rotate(${tilt}deg) scale(1.1)`;
-
-            playBeep(600, 0.1, 'square', 0.03);
-            setTimeout(() => this.sparkAI(), 800);
-        },
-
-        sparkAI() {
-            const currentPair = this.table[this.table.length - 1];
-            const atk = currentPair.atk;
-
-            // Логика отбива (Smart-Spark)
-            let candidates = this.eHand.filter(c => 
-                (c.suit === atk.suit && c.weight > atk.weight) || 
-                (c.suit === this.trump && atk.suit !== this.trump)
-            );
-
-            if (candidates.length > 0) {
-                candidates.sort((a,b) => a.weight - b.weight);
-                const def = candidates[0];
-                currentPair.def = def;
-                this.eHand = this.eHand.filter(c => c.id !== def.id);
-
-                const defEl = document.getElementById(def.id);
-                defEl.classList.replace('shirt', 'face');
-                defEl.innerHTML = `<span class="card-val">${def.rank}</span><span class="card-suit">${def.suit}</span>`;
-                defEl.style.color = def.color;
-
-                document.getElementById('drop-zone').appendChild(defEl);
-                defEl.style.zIndex = 600 + this.table.length;
-                defEl.style.left = '60%';
-                defEl.style.top = '45%';
-                defEl.style.transform = `translate(-50%, -50%) rotate(${(Math.random()-0.5)*20}deg) scale(1.1)`;
-                
-                document.getElementById('btn-bito').style.display = 'block';
-            } else {
-                // ИИ нечем крыть
-                playBeep(150, 0.5, 'sine', 0.1);
-            }
-            this.isLocked = false;
+    /* АУДИО-ДВИЖОК */
+    const V_AUDIO = {
+        ctx: new (window.AudioContext || window.webkitAudioContext)(),
+        beep(f, d, t = 'sine', v = 0.1) {
+            const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
+            g.gain.setValueAtTime(v, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
+            o.connect(g); g.connect(this.ctx.destination);
+            o.start(); o.stop(this.ctx.currentTime + d);
         }
     };
 
-    // ГЛОБАЛЬНЫЙ ЗАПУСК
-    function launchMonolith() {
-        VCHF_ENGINE.launch();
+    /* ЛОГИКА СЕЙФА HELVETIA */
+    function initSafe() {
+        const w = document.getElementById('v-wheel');
+        ['🇨🇭','🇩🇪','🇦🇹','🇱🇮','🇫🇷','🇮🇹'].forEach((f, i) => {
+            const a = i * 60, n = document.createElement('div');
+            n.className = 'node'; n.innerHTML = f;
+            n.style.left = `${150 + 125 * Math.sin(a*Math.PI/180) - 20}px`;
+            n.style.top = `${150 - 125 * Math.cos(a*Math.PI/180) - 20}px`;
+            n.onclick = () => { V_AUDIO.beep(400, 0.2); openSafe(); };
+            w.appendChild(n);
+        });
     }
+
+    function openSafe() {
+        document.getElementById('v-wheel').style.transform = "rotate(720deg) scale(0)";
+        setTimeout(() => {
+            document.getElementById('layer-safe').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('layer-safe').style.display = 'none';
+                showLobby();
+            }, 800);
+        }, 600);
+    }
+
+    function showLobby() {
+        const l = document.getElementById('layer-lobby');
+        l.style.display = 'block'; setTimeout(() => l.style.opacity = '1', 50);
+        const g = document.getElementById('v-grid');
+        for(let i=1; i<=12; i++) {
+            const u = document.createElement('div'); u.className = 'unit-card';
+            u.innerHTML = `VCHF UNIT ${i}`;
+            u.onclick = () => { V_AUDIO.beep(600, 0.1); startEngine(); };
+            g.appendChild(u);
+        }
+    }
+    window.onload = initSafe;
+</script>
+    /* МОДУЛЬ MONOLITH ENGINE (BATTLE-GAMMA 18x18) */
+    const V_ENGINE = {
+        pHand: [], eHand: [], table: [], trump: null,
+        suits: ['♠', '♣', '♥', '♦'],
+        ranks: ['6','7','8','9','10','J','Q','K','A'],
+        weights: {'6':0, '7':1, '8':2, '9':3, '10':4, 'J':5, 'Q':6, 'K':7, 'A':8},
+        colors: {'♠':'#000', '♣':'#000', '♥':'#e30a17', '♦':'#e30a17'},
+
+        init() {
+            const g = document.getElementById('layer-game');
+            g.style.display = 'block';
+            document.getElementById('layer-lobby').style.opacity = '0';
+            setTimeout(() => document.getElementById('layer-lobby').style.display = 'none', 500);
+            
+            this.createDeck();
+            document.getElementById('v-action').onclick = () => this.ritual();
+        },
+
+        createDeck() {
+            let deck = [];
+            this.suits.forEach(s => {
+                this.ranks.forEach(r => {
+                    deck.push({ 
+                        suit: s, rank: r, weight: this.weights[r], 
+                        color: this.colors[s], id: 'c_'+Math.random().toString(36).substr(2,7) 
+                    });
+                });
+            });
+            deck.sort(() => Math.random() - 0.5);
+            this.pHand = deck.slice(0, 18);
+            this.eHand = deck.slice(18, 36);
+            this.trump = this.pHand[0].suit;
+        },
+
+        ritual() {
+            V_AUDIO.beep(200, 0.4, 'sawtooth');
+            document.getElementById('v-action').style.display = 'none';
+            this.renderLanes();
+            this.renderEnemy();
+        },
+
+        renderLanes() {
+            const ids = { '♠':'lane-spades', '♣':'lane-clubs', '♥':'lane-hearts', '♦':'lane-diamonds' };
+            Object.values(ids).forEach(id => document.getElementById(id).innerHTML = '');
+
+            this.pHand.sort((a,b) => a.weight - b.weight).forEach(card => {
+                const lane = document.getElementById(ids[card.suit]);
+                const suitSet = this.pHand.filter(c => c.suit === card.suit);
+                const idx = suitSet.findIndex(c => c.id === card.id);
+                
+                const cardEl = document.createElement('div');
+                cardEl.className = 'v-card';
+                cardEl.style.color = card.color;
+                
+                // ГЕОМЕТРИЯ БУТОНА (МАТЕМАТИКА МАГИСТРАЛЕЙ)
+                const total = suitSet.length;
+                const spread = total > 6 ? 32 : 45;
+                const offset = (idx - (total - 1) / 2) * spread;
+                const arc = Math.abs(offset) * 0.12;
+
+                cardEl.style.left = `calc(50% + ${offset}px)`;
+                cardEl.style.bottom = `${15 + arc}px`;
+                cardEl.style.transform = `translateX(-50%) rotate(${offset/12}deg)`;
+                cardEl.style.zIndex = 100 + idx;
+
+                cardEl.innerHTML = `
+                    <div class="top">${card.rank}</div>
+                    <div class="mid">${card.suit}</div>
+                    <div class="top" style="align-self:flex-end; transform:rotate(180deg)">${card.rank}</div>
+                `;
+
+                cardEl.onclick = () => this.attack(card);
+                lane.appendChild(cardEl);
+            });
+        },
+
+        renderEnemy() {
+            // Визуальный шум противника (скрытые сферы)
+            const zone = document.getElementById('layer-game');
+            const oldShadows = document.querySelectorAll('.v-card.back');
+            oldShadows.forEach(s => s.remove());
+
+            this.eHand.forEach((_, i) => {
+                const s = document.createElement('div');
+                s.className = 'v-card back';
+                s.style.position = 'absolute';
+                s.style.top = '-40px';
+                s.style.left = `calc(50% + ${(i - 8.5) * 15}px)`;
+                s.style.transform = `translateX(-50%) scale(0.6) rotate(${(i-8.5)*2}deg)`;
+                s.style.zIndex = 10 + i;
+                zone.appendChild(s);
+            });
+        },
+
+        attack(card) {
+            const pair = { atk: card, def: null };
+            this.table.push(pair);
+            this.pHand = this.pHand.filter(c => c.id !== card.id);
+            V_AUDIO.beep(500, 0.1, 'square');
+            this.renderLanes();
+            this.renderTable();
+            setTimeout(() => this.sparkMove(pair), 700);
+        },
+
+        renderTable() {
+            const t = document.getElementById('table-chaos');
+            t.innerHTML = '';
+            this.table.forEach(pair => {
+                const group = document.createElement('div');
+                group.style.position = 'relative'; group.style.width = '80px'; group.style.height = '110px';
+                
+                // АСИММЕТРИЯ СТОЛА (ТВОЙ ВЕРДИКТ)
+                const draw = (c, isDef) => {
+                    const el = document.createElement('div');
+                    el.className = 'v-card'; el.style.color = c.color;
+                    el.style.position = 'absolute';
+                    const rot = (Math.random() - 0.5) * 30;
+                    const shift = isDef ? 18 : 0;
+                    el.style.transform = `translate(${shift}px, ${shift}px) rotate(${rot}deg)`;
+                    el.innerHTML = `<div class="top">${c.rank}</div><div class="mid">${c.suit}</div>`;
+                    if(isDef) el.style.zIndex = 20;
+                    return el;
+                };
+
+                group.appendChild(draw(pair.atk, false));
+                if(pair.def) group.appendChild(draw(pair.def, true));
+                t.appendChild(group);
+            });
+        },
+
+        sparkMove(pair) {
+            // ЛОГИКА ИИ: Поиск защиты по весу и масти
+            let defs = this.eHand.filter(c => 
+                (c.suit === pair.atk.suit && c.weight > pair.atk.weight) || 
+                (c.suit === this.trump && pair.atk.suit !== this.trump)
+            );
+
+            if(defs.length > 0) {
+                defs.sort((a,b) => a.weight - b.weight);
+                pair.def = defs[0];
+                this.eHand = this.eHand.filter(c => c.id !== pair.def.id);
+                V_AUDIO.beep(300, 0.2, 'triangle');
+                this.renderTable();
+                this.renderEnemy();
+            }
+        }
+    };
+
+    function startEngine() {
+        V_ENGINE.init();
+    }
+    /* МОДУЛЬ ЗАВЕРШЕНИЯ (БИТО И УТИЛИЗАЦИЯ) */
+    V_ENGINE.cleanup = function() {
+        if (this.table.length === 0) return;
+        
+        V_AUDIO.beep(800, 0.2, 'sine', 0.05);
+        const t = document.getElementById('table-chaos');
+        const cards = t.querySelectorAll('.v-card');
+        
+        cards.forEach((c, i) => {
+            // Анимация улета в сторону (за экран)
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            c.style.transition = "all 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045)";
+            c.style.transform = `translate(${dir * 1000}px, ${-500}px) rotate(${dir * 720}deg) scale(0)`;
+            c.style.opacity = "0";
+        });
+
+        setTimeout(() => {
+            this.table = [];
+            t.innerHTML = '';
+            document.getElementById('v-bito').style.display = 'none';
+            
+            // Если в руках пусто — проверка на конец цикла
+            if (this.pHand.length === 0 && this.eHand.length === 0) {
+                alert("РИТУАЛ ЗАВЕРШЕН. МОНОЛИТ ПЕРЕЗАГРУЖЕН.");
+                location.reload();
+            }
+        }, 800);
+    };
+
+    // Добавляем кнопку БИТО динамически, если она нужна
+    const bitoBtn = document.createElement('button');
+    bitoBtn.id = 'v-bito';
+    bitoBtn.className = 'btn-core';
+    bitoBtn.innerHTML = 'БИТО';
+    bitoBtn.style.display = 'none';
+    bitoBtn.style.bottom = '420px'; // Чуть выше кнопки Ритуала
+    bitoBtn.onclick = () => V_ENGINE.cleanup();
+    document.getElementById('layer-game').appendChild(bitoBtn);
+
+    // Модифицируем sparkMove для появления кнопки БИТО
+    const originalSparkMove = V_ENGINE.sparkMove;
+    V_ENGINE.sparkMove = function(pair) {
+        originalSparkMove.apply(this, arguments);
+        if (pair.def || this.eHand.length === 0) {
+            document.getElementById('v-bito').style.display = 'block';
+        }
+    };
+
+    /* ФИНАЛЬНЫЙ СТАРТ */
+    console.log("Нулевой Хаос: Проект Би-Турбо 2026 запущен. Манифест Монолита активен.");
 </script>
 </body>
 </html>
