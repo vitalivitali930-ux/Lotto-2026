@@ -11,7 +11,7 @@
             --nebula-core: #222a44; 
             --spark-neon: #00fa9a;
             --trump-halo: #8a2be2; 
-            --cherry-pulse: #4a0404; /* Вишневый импульс для стола */
+            --cherry-pulse: #4a0404; /* Вишневый импульс */
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.06); 
         }
@@ -29,9 +29,9 @@
         .arena-top {
             height: 62%;
             position: relative;
-            /* ЖИВОЙ СТОЛ: Анимация градиента от индиго к вишневому */
+            /* ЭФФЕКТ ДЫХАНИЯ: Увеличили время до 8 секунд и добавили мягкую кривую */
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
-            animation: tableBreathe 12s infinite alternate ease-in-out;
+            animation: tableBreathe 8s infinite ease-in-out;
             box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
             border-bottom: 2px solid rgba(255, 207, 64, 0.25);
             overflow: hidden;
@@ -39,11 +39,20 @@
             transform: rotateX(8deg);
             margin-top: 5px;
         }
+
         @keyframes tableBreathe {
-            0% { background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%); }
-            50% { background: radial-gradient(circle at 50% 45%, #2a1020 0%, var(--cherry-pulse) 65%, #050000 100%); }
-            100% { background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%); }
+            0%, 100% { 
+                /* Выдох: Тусклый индиго */
+                background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
+                filter: brightness(0.8);
+            }
+            50% { 
+                /* Пик вдоха: Яркий вишневый резонанс */
+                background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%);
+                filter: brightness(1.2);
+            }
         }
+
         .arena-top::after {
             content: '';
             position: absolute;
@@ -66,8 +75,8 @@
             z-index: 1;
         }
         @keyframes nebulaPulse {
-            0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
-            100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
         }
         .control-bottom {
             height: 38%;
@@ -230,7 +239,7 @@
         </div>
     </div>
 <script>
-    /* Код обновлен Искрой (Living Pulsar & Cherry Table). Сверка структуры: 100%. [cite: 2026-03-03] */
+    /* Код обновлен Искрой (Living Pulsar & Cherry Table). Сверка структуры: 100%. */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -297,7 +306,6 @@
             }
         });
     }
-
     function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
@@ -520,7 +528,6 @@
         }
         updateActionButtons();
     }
-
     function sparkBito() { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1200); }
     function sparkTake() {
         showMsg('SPARK: БЕРУ');
