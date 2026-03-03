@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (FX Edition)</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -49,7 +49,7 @@
             box-shadow: var(--shadow-gold);
             cursor: pointer;
             z-index: 10;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             transform-style: preserve-3d;
         }
         .shuffling { transition: all 0.2s ease-in-out !important; }
@@ -58,11 +58,19 @@
             background-color: var(--bg-card);
             transform: rotateY(0deg);
         }
-        /* Эффект жизни при наведении */
         .card-node.face-up:active { transform: scale(1.1) translateY(-10px) rotateZ(2deg); z-index: 500 !important; }
-
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
         
+        /* Спецэффект: Золотая пыль */
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: var(--gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
         #status-msg {
             position: absolute;
             top: 40%; left: 50%;
@@ -88,19 +96,11 @@
             position: absolute; top: 15px; right: 15px; width: 55px; height: 75px; 
             border: 2px solid var(--gold); background: rgba(45, 5, 5, 0.9); 
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
         .trump-shuffling { animation: flash 0.3s infinite; }
         @keyframes flash { 0% { opacity: 1; border-color: var(--gold); } 50% { opacity: 0.5; border-color: #fff; } 100% { opacity: 1; border-color: var(--gold); } }
 
-        /* Поле боя - абсолютное позиционирование пар */
-        #battle-table { 
-            position: absolute; 
-            top: 50%; left: 50%; 
-            width: 100%; height: 100%; 
-            transform: translate(-50%, -50%);
-            pointer-events: none; 
-        }
+        #battle-table { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none; }
 
         .suits-grid { display: flex; flex-direction: column; height: 100%; position: relative; }
         .suit-row { display: flex; height: 45px; margin-top: -15px; }
@@ -115,10 +115,7 @@
             transition: transform 0.3s, z-index 0s;
         }
         .slot:first-child { margin-left: 0; }
-        .slot.filled { 
-            background: var(--bg-card); border: 1px solid var(--gold); 
-            z-index: 5; box-shadow: -3px 0 8px rgba(0,0,0,0.4);
-        }
+        .slot.filled { background: var(--bg-card); border: 1px solid var(--gold); z-index: 5; box-shadow: -3px 0 8px rgba(0,0,0,0.4); }
         .slot.filled:active { z-index: 100; transform: translateY(-15px) rotate(2deg); }
 
         .action-btns { position: absolute; bottom: 20px; left: 10px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; }
@@ -126,7 +123,6 @@
             padding: 14px 18px; background: linear-gradient(to bottom, var(--velvet-bright), #220101); 
             border: 1px solid var(--gold); color: var(--gold); font-family: serif; 
             font-weight: bold; text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         button:active { transform: scale(0.95); }
         
@@ -141,7 +137,7 @@
 </head>
 <body>
     <div id='status-msg'></div>
-    <div class='arena-top'>
+    <div class='arena-top' id='arena'>
         <div class='spark-zone'><span style='font-size:10px; color:var(--gold); letter-spacing:2px;'>SPARK CORE</span><div id='spark-cards' style='margin-left:15px;'></div></div>
         <div class='trump-status'><div id='trump-icon' style='font-size:30px;'>?</div></div>
         <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
@@ -163,9 +159,54 @@
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#333', '♣': '#333', '♦': '#c00', '♥': '#c00'};
     var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
+    
+    // СИНТЕЗАТОР ЗВУКА
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    var ctx = null;
 
-    // Хранилище координат для пар на столе
-    var tablePositions = []; 
+    function playSound(type) {
+        if(!ctx) ctx = new AudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if(type === 'slide') { // Шелест карты
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
+            osc.start(); osc.stop(ctx.currentTime + 0.1);
+        } else if(type === 'bito') { // Хлопок бито
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(100, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+            osc.start(); osc.stop(ctx.currentTime + 0.3);
+        }
+    }
+
+    // ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (ПЫЛЬ)
+    function createDust(x, y) {
+        var arena = document.getElementById('arena');
+        for(var i=0; i<15; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            arena.appendChild(p);
+            
+            var tx = (Math.random() - 0.5) * 200;
+            var ty = (Math.random() - 0.5) * 200;
+            
+            p.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: 'translate(' + tx + 'px, ' + ty + 'px) scale(0)', opacity: 0 }
+            ], { duration: 1000 + Math.random() * 500, easing: 'ease-out' }).onfinish = function() { this.effect.target.remove(); };
+        }
+    }
 
     function showMsg(txt) {
         var m = document.getElementById('status-msg');
@@ -188,7 +229,6 @@
             }
         });
     }
-
     function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
@@ -224,6 +264,8 @@
 
         var interval = setInterval(function() {
             var elapsed = Date.now() - startTime;
+            if(Math.random() > 0.7) playSound('slide'); // Звук при тасовке
+            
             vchf.deck.forEach(function(card, i) {
                 var node = document.getElementById('node-' + i);
                 if(node) {
@@ -242,6 +284,7 @@
             }
         }, 80);
     }
+
     function finalizeShuffle() {
         vchf.deck.sort(function() { return Math.random() - 0.5; });
         vchf.trump = SUITS[Math.floor(Math.random() * 4)];
@@ -274,6 +317,7 @@
         var c = vchf.deck[idx];
         if(!c || c.used) return;
         c.used = true;
+        playSound('slide'); // Звук при раздаче
         var node = document.getElementById('node-' + idx);
         if(actor === 'player') {
             vchf.pHand.push(c);
@@ -299,17 +343,16 @@
             }
         }
     }
-
     function checkFinal() {
         if(vchf.deck.every(function(x) { return x.used; })) {
             if(vchf.phase !== 'BATTLE') {
                 vchf.phase = 'BATTLE'; 
-                tablePositions = []; // Сброс координат стола
                 showMsg('БОЙ: ТВОЙ ХОД'); 
                 updateActionButtons();
             }
         }
     }
+
     function updateSlot(card) {
         var el = document.getElementById('slot-' + card.s + '-' + card.r);
         if(!el) return;
@@ -323,45 +366,24 @@
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
 
-    function drawSparkVisual() {
-        var cont = document.getElementById('spark-cards');
-        if(!cont) return;
-        cont.innerHTML = '';
-        vchf.eHand.forEach(function() {
-            var m = document.createElement('div');
-            m.style.cssText = 'width:10px;height:15px;background:var(--gold);opacity:0.6;border:1px solid #000;border-radius:2px;';
-            cont.appendChild(m);
-        });
-    }
-
     function getTableCoords(index) {
-        // Логика: 1-2-3 (верхний ряд), 4-5-6 (нижний ряд)
         var isBottomRow = index >= 3;
         var colIndex = index % 3;
-        
         var screenW = window.innerWidth;
-        var startX = screenW / 2 - 100; // Центрирование группы
+        var startX = screenW / 2 - 100;
         var stepX = 85; 
-        var startY = isBottomRow ? 180 : 80; // Смещение по вертикали
-
-        return {
-            x: startX + (colIndex * stepX),
-            y: startY,
-            rotate: (Math.random() * 12 - 6) // Живой наклон
-        };
+        var startY = isBottomRow ? 180 : 80;
+        return { x: startX + (colIndex * stepX), y: startY, rotate: (Math.random() * 12 - 6) };
     }
 
     function renderTable() {
         var tc = document.getElementById('battle-table');
         if(!tc) return;
         tc.innerHTML = '';
-        
         vchf.table.forEach(function(move, i) {
-            // moveIndex - это порядковый номер пары (0, 1, 2...)
             var pairIndex = Math.floor(i / 2);
             var isDefense = i % 2 !== 0;
             var pos = getTableCoords(pairIndex);
-            
             var c = move.card;
             var el = document.createElement('div');
             el.className = 'card-node face-up';
@@ -369,58 +391,42 @@
             el.style.left = pos.x + (isDefense ? 15 : 0) + 'px';
             el.style.top = pos.y + (isDefense ? 20 : 0) + 'px';
             el.style.zIndex = 100 + i;
-            
-            // Защитная карта ложится поверх со смещением и своим углом
             var finalRotate = isDefense ? (pos.rotate + 10) : pos.rotate;
             el.style.transform = 'rotate(' + finalRotate + 'deg)';
-            
             var r = document.createElement('div');
             r.style.cssText = 'position:absolute;top:4px;left:4px;font-size:12px;font-weight:bold;';
             r.textContent = c.r;
             var s = document.createElement('div');
             s.style.cssText = 'font-size:28px;text-align:center;margin-top:15px;';
             s.textContent = c.s;
-            
             el.appendChild(r); el.appendChild(s);
             tc.appendChild(el);
         });
     }
 
+    function handleBito() {
+        playSound('bito'); // Звук хлопка
+        // Эффект золотой пыли на месте каждой карты на столе
+        var tableCards = document.querySelectorAll('#battle-table .card-node');
+        tableCards.forEach(function(card) {
+            var rect = card.getBoundingClientRect();
+            createDust(rect.left + 25, rect.top + 35);
+        });
+
+        vchf.table = []; renderTable(); 
+        vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player'; 
+        updateActionButtons();
+        if(vchf.turn === 'enemy') setTimeout(sparkThink, 1200);
+    }
     function selectFromHand(card) {
         if(vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
         if(canPlay(card)) {
+            playSound('slide');
             vchf.table.push({card: card, actor: 'player'});
-            removeFromHand(card, 'player'); 
-            renderTable();
-            if(vchf.table.length % 2 !== 0) { 
-                vchf.turn = 'enemy'; 
-                setTimeout(sparkThink, 800); 
-            }
+            removeFromHand(card, 'player'); renderTable();
+            if(vchf.table.length % 2 !== 0) { vchf.turn = 'enemy'; setTimeout(sparkThink, 1000); }
         }
         updateActionButtons();
-    }
-    function canPlay(card) {
-        if(vchf.table.length === 0) return true;
-        var lastMove = vchf.table[vchf.table.length - 1];
-        if(vchf.table.length % 2 !== 0) {
-            var target = lastMove.card;
-            if(card.s === target.s && card.v > target.v) return true;
-            if(card.s === vchf.trump && target.s !== vchf.trump) return true;
-            return false;
-        }
-        var activeRanks = vchf.table.map(function(m) { return m.card.r; });
-        return activeRanks.indexOf(card.r) !== -1;
-    }
-
-    function removeFromHand(card, actor) {
-        if(actor === 'player') {
-            vchf.pHand = vchf.pHand.filter(function(c) { return !(c.s === card.s && c.r === card.r); });
-            var slot = document.getElementById('slot-' + card.s + '-' + card.r);
-            if(slot) { slot.classList.remove('filled'); slot.innerHTML = ''; }
-        } else {
-            vchf.eHand = vchf.eHand.filter(function(c) { return !(c.s === card.s && c.r === card.r); });
-            drawSparkVisual();
-        }
     }
 
     function sparkThink() {
@@ -431,19 +437,22 @@
                 return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
             }).sort(function(a,b) { return a.v - b.v; });
             if(cand.length > 0) {
+                playSound('slide');
                 var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
                 removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { sparkTake(); }
         } else {
             if(vchf.table.length === 0) {
+                playSound('slide');
                 var ch = vchf.eHand.sort(function(a,b) { return a.v - b.v; })[0];
                 vchf.table.push({card: ch, actor: 'enemy'});
                 removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { 
-                if(vchf.table.length < 12) { // Spark может подкидывать до 6 пар
+                if(vchf.table.length < 12) {
                     var activeRanks = vchf.table.map(function(m) { return m.card.r; });
                     var cand = vchf.eHand.filter(function(c) { return activeRanks.indexOf(c.r) !== -1; });
                     if(cand.length > 0) {
+                        playSound('slide');
                         var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
                         removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
                         return;
@@ -463,27 +472,48 @@
         vchf.turn = 'player'; updateActionButtons();
     }
 
-    function updateActionButtons() {
-        var bB = document.getElementById('btn-bito');
-        var bT = document.getElementById('btn-take');
-        if(bB && bT) {
-            bB.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
-            bT.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
+    function canPlay(card) {
+        if(vchf.table.length === 0) return true;
+        var lastMove = vchf.table[vchf.table.length - 1];
+        if(vchf.table.length % 2 !== 0) {
+            var target = lastMove.card;
+            return (card.s === target.s && card.v > target.v) || (card.s === vchf.trump && target.s !== vchf.trump);
+        }
+        return vchf.table.map(function(m) { return m.card.r; }).indexOf(card.r) !== -1;
+    }
+
+    function removeFromHand(card, actor) {
+        if(actor === 'player') {
+            vchf.pHand = vchf.pHand.filter(function(c) { return !(c.s === card.s && c.r === card.r); });
+            var slot = document.getElementById('slot-' + card.s + '-' + card.r);
+            if(slot) { slot.classList.remove('filled'); slot.innerHTML = ''; }
+        } else {
+            vchf.eHand = vchf.eHand.filter(function(c) { return !(c.s === card.s && c.r === card.r); });
+            drawSparkVisual();
         }
     }
 
-    function handleBito() { 
-        vchf.table = []; renderTable(); 
-        vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player'; 
-        updateActionButtons();
-        if(vchf.turn === 'enemy') setTimeout(sparkThink, 600);
+    function drawSparkVisual() {
+        var cont = document.getElementById('spark-cards');
+        if(!cont) return;
+        cont.innerHTML = '';
+        vchf.eHand.forEach(function() {
+            var m = document.createElement('div');
+            m.style.cssText = 'width:10px;height:15px;background:var(--gold);opacity:0.6;border:1px solid #000;border-radius:2px;';
+            cont.appendChild(m);
+        });
+    }
+
+    function updateActionButtons() {
+        document.getElementById('btn-bito').style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
+        document.getElementById('btn-take').style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
     }
 
     function handleTake() {
         vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
         vchf.table = []; vchf.pHand.forEach(function(c) { updateSlot(c); });
         renderTable(); vchf.turn = 'enemy'; updateActionButtons();
-        setTimeout(sparkThink, 1000);
+        setTimeout(sparkThink, 1500);
     }
 
     function checkEnd() {
