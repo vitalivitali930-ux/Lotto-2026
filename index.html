@@ -3,19 +3,20 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Ultimate</title>
+    <title>VCHF 2.0 - Bi-Turbo Velvet</title>
     <style>
         :root {
-            --gold: #ffcc00;
-            --dark: #0a0a0a;
-            --bg-card: #1a1a1a;
-            --shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+            --gold: #d4af37;
+            --velvet-dark: #1a0202;
+            --velvet-bright: #4a0404;
+            --bg-card: #2d0505;
+            --shadow-gold: 0 0 15px rgba(212, 175, 55, 0.5);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            background-color: var(--dark);
-            color: white;
-            font-family: sans-serif;
+            background-color: var(--velvet-dark);
+            color: #f0e68c;
+            font-family: 'Georgia', serif;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -25,97 +26,99 @@
             height: 70%;
             position: relative;
             border-bottom: 2px solid var(--gold);
-            background: radial-gradient(circle at center, #1b1b1b 0%, #0a0a0a 100%);
+            background: radial-gradient(circle at center, var(--velvet-bright) 0%, var(--velvet-dark) 100%);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
         }
         .control-bottom {
             height: 30%;
             position: relative;
-            background: #050505;
+            background: #0d0101;
             padding: 5px;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
         }
         .side-bar {
             position: absolute;
             top: 0; width: 15%; height: 100%;
-            border-color: rgba(255,204,0,0.1);
+            border-color: rgba(212, 175, 55, 0.2);
             border-style: solid;
             z-index: 5;
         }
         .left-bar { left: 0; border-right-width: 1px; }
         .right-bar { right: 0; border-left-width: 1px; }
         .spark-zone {
-            height: 50px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255,204,0,0.05);
+            background: rgba(212, 175, 55, 0.05);
         }
         #spark-cards { display: flex; gap: 3px; }
         .chaos-deck-container {
-            height: calc(100% - 50px);
+            height: calc(100% - 45px);
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
         }
-        #chaos-deck { position: relative; width: 250px; height: 250px; }
+        #chaos-deck { position: relative; width: 240px; height: 240px; }
         .card-node {
             position: absolute;
-            width: 42px;
-            height: 58px;
+            width: 44px;
+            height: 60px;
             background: var(--bg-card);
             border: 1px solid var(--gold);
-            border-radius: 4px;
-            box-shadow: var(--shadow);
+            border-radius: 3px;
+            box-shadow: var(--shadow-gold);
             cursor: pointer;
-            will-change: transform;
             transition: opacity 0.3s;
         }
         .card-node.hide { opacity: 0; pointer-events: none; }
         .trump-status {
             position: absolute;
-            top: 10px; right: 10px;
-            width: 45px; height: 65px;
+            top: 15px; right: 15px;
+            width: 48px; height: 68px;
             border: 2px solid var(--gold);
+            background: rgba(45, 5, 5, 0.9);
+            box-shadow: 0 0 10px var(--gold);
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            background: rgba(0,0,0,0.8);
+            align-items: center;
         }
         .battle-table {
             position: absolute;
-            bottom: 15px; width: 70%; left: 15%;
-            height: 90px;
+            bottom: 20px; width: 70%; left: 15%;
+            height: 100px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            gap: 10px;
         }
-        .suits-grid { display: flex; flex-direction: column; height: 100%; gap: 2px; }
-        .suit-row { display: flex; flex: 1; gap: 2px; }
+        .suits-grid { display: flex; flex-direction: column; height: 100%; gap: 3px; }
+        .suit-row { display: flex; flex: 1; gap: 3px; }
         .slot {
             flex: 1;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,204,0,0.1);
+            background: rgba(212, 175, 55, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.1);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .slot.filled { background: var(--bg-card); border-color: var(--gold); }
+        .slot.filled { background: var(--bg-card); border: 1px solid var(--gold); }
         .action-btns {
             position: absolute;
-            bottom: 40px; right: 10px;
+            bottom: 20px; right: 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            z-index: 20;
+            gap: 10px;
+            z-index: 50;
         }
         button {
-            padding: 10px;
-            background: var(--dark);
+            padding: 10px 15px;
+            background: var(--velvet-bright);
             border: 1px solid var(--gold);
             color: var(--gold);
             font-weight: bold;
+            text-transform: uppercase;
             border-radius: 4px;
         }
     </style>
@@ -125,11 +128,11 @@
         <div class='side-bar left-bar'></div>
         <div class='side-bar right-bar'></div>
         <div class='spark-zone'>
-            <span style='font-size:10px; margin-right:5px;'>SPARK:</span>
+            <span style='font-size:9px; color:var(--gold);'>SPARK:</span>
             <div id='spark-cards'></div>
         </div>
         <div class='trump-status'>
-            <div id='trump-icon' style='font-size:20px;'>?</div>
+            <div id='trump-icon' style='font-size:24px;'>?</div>
         </div>
         <div class='chaos-deck-container'>
             <div id='chaos-deck'></div>
@@ -150,10 +153,10 @@
         </div>
     </div>
 <script>
-    /* ПРОТОКОЛ АНТИ-НИРВАНА: БЕЗ BACKTICKS [cite: 2026-03-03] */
+    /* ПРОТОКОЛ АНТИ-НИРВАНА: НИКАКИХ ОБРАТНЫХ КАВЫЧЕК [cite: 2026-03-03] */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    var COLORS = {'♠': '#888', '♣': '#888', '♦': '#e60000', '♥': '#e60000'};
+    var COLORS = {'♠': '#888', '♣': '#888', '♦': '#ff4d4d', '♥': '#ff4d4d'};
 
     var vchf = {
         deck: [], pHand: [], eHand: [], table: [],
@@ -202,6 +205,7 @@
         vchf.deck.forEach(function(card, i) {
             var n = document.createElement('div');
             n.className = 'card-node';
+            n.id = 'node-' + i;
             var ang = (i / 36) * 6.28;
             var rad = 90;
             var x = 100 + rad * Math.cos(ang) + (Math.random() * 20);
@@ -218,10 +222,8 @@
         var c = vchf.deck[idx];
         if(!c || c.used) return;
         c.used = true;
-        document.getElementById('node-' + idx); 
-        // Примечание: В renderChaos нужно было добавить id. Исправляю симуляцией:
-        var nodes = document.getElementsByClassName('card-node');
-        if(nodes[idx]) nodes[idx].classList.add('hide');
+        var node = document.getElementById('node-' + idx);
+        if(node) node.classList.add('hide');
 
         if(actor === 'player') {
             vchf.pHand.push(c);
@@ -230,7 +232,7 @@
                 var av = [];
                 vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
                 if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
-            }, 150);
+            }, 100);
         } else {
             vchf.eHand.push(c);
             drawSparkVisual();
@@ -266,12 +268,12 @@
 
     function startBattle() {
         vchf.phase = 'BATTLE';
-        alert('БОЙ НАЧАТ!');
+        alert('КОЛОДА ПУСТА. КТО НЕ СПРЯТАЛСЯ - Я НЕ ВИНОВАТА!');
         updateActionButtons();
     }
 
     function selectFromHand(card) {
-        if(vchf.turn !== 'player') return;
+        if(vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
         if(canPlay(card)) {
             vchf.table.push({card: card, actor: 'player'});
             removeFromHand(card, 'player');
@@ -286,47 +288,49 @@
 
     function canPlay(card) {
         if(vchf.table.length === 0) return true;
-        var last = vchf.table[vchf.table.length - 1].card;
+        var lastMove = vchf.table[vchf.table.length - 1];
         if(vchf.table.length % 2 !== 0) {
-            if(card.s === last.s && card.v > last.v) return true;
-            if(card.s === vchf.trump && last.s !== vchf.trump) return true;
+            var target = lastMove.card;
+            if(card.s === target.s && card.v > target.v) return true;
+            if(card.s === vchf.trump && target.s !== vchf.trump) return true;
             return false;
         }
-        var active = vchf.table.map(function(m) { return m.card.r; });
-        return active.indexOf(card.r) !== -1;
+        var activeRanks = vchf.table.map(function(m) { return m.card.r; });
+        return activeRanks.indexOf(card.r) !== -1;
     }
 
     function renderTable() {
-        var t = document.getElementById('battle-table');
-        t.innerHTML = '';
-        vchf.table.forEach(function(m, i) {
-            var c = m.card;
-            var el = document.createElement('div');
-            el.className = 'card-node';
-            el.style.position = 'relative';
-            el.style.display = 'inline-block';
-            el.style.color = c.c;
+        var tableCont = document.getElementById('battle-table');
+        tableCont.innerHTML = '';
+        vchf.table.forEach(function(move, i) {
+            var card = move.card;
+            var cardEl = document.createElement('div');
+            cardEl.className = 'card-node';
+            cardEl.style.position = 'relative';
+            cardEl.style.display = 'inline-block';
+            cardEl.style.color = card.c;
             var r = document.createElement('div');
             r.style.cssText = 'position:absolute;top:2px;left:2px;font-size:9px;';
-            r.textContent = c.r;
+            r.textContent = card.r;
             var s = document.createElement('div');
             s.style.cssText = 'font-size:18px;text-align:center;margin-top:10px;';
-            s.textContent = c.s;
-            el.appendChild(r);
-            el.appendChild(s);
-            if(i % 2 !== 0) el.style.transform = 'translateY(-15px) translateX(-10px)';
-            t.appendChild(el);
+            s.textContent = card.s;
+            cardEl.appendChild(r);
+            cardEl.appendChild(s);
+            if(i % 2 !== 0) cardEl.style.transform = 'translateY(-15px) translateX(-10px) rotate(5deg)';
+            tableCont.appendChild(cardEl);
         });
     }
     function sparkThink() {
+        if(vchf.phase !== 'BATTLE') return;
         var action = false;
         if(vchf.table.length % 2 !== 0) {
             var target = vchf.table[vchf.table.length - 1].card;
-            var cards = vchf.eHand.filter(function(c) {
+            var candidates = vchf.eHand.filter(function(c) {
                 return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
             }).sort(function(a,b) { return a.v - b.v; });
-            if(cards.length > 0) {
-                var choice = cards[0];
+            if(candidates.length > 0) {
+                var choice = candidates[0];
                 vchf.table.push({card: choice, actor: 'enemy'});
                 removeFromHand(choice, 'enemy');
                 action = true;
@@ -340,7 +344,7 @@
             } else { sparkBito(); return; }
         }
         renderTable();
-        if(action) { vchf.turn = 'player'; checkWin(); }
+        if(action) { vchf.turn = 'player'; checkGameOver(); }
         updateActionButtons();
     }
 
@@ -356,25 +360,25 @@
     }
 
     function updateActionButtons() {
-        var bB = document.getElementById('btn-bito');
-        var bT = document.getElementById('btn-take');
-        bB.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
-        bT.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
+        var bBito = document.getElementById('btn-bito');
+        var bTake = document.getElementById('btn-take');
+        bBito.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
+        bTake.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
     }
 
     function handleBito() { vchf.table = []; renderTable(); vchf.turn = 'player'; updateActionButtons(); }
-    function handleTake() { 
+    function handleTake() {
         vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
-        vchf.table = []; vchf.pHand.forEach(updateSlot); renderTable(); vchf.turn = 'enemy'; 
-        updateActionButtons(); setTimeout(sparkThink, 1000);
+        vchf.table = []; vchf.pHand.forEach(function(c) { updateSlot(c); });
+        renderTable(); vchf.turn = 'enemy'; updateActionButtons(); setTimeout(sparkThink, 1000);
     }
 
-    function checkWin() {
-        if(vchf.pHand.length === 0) alert('ПОБЕДА!');
-        if(vchf.eHand.length === 0) alert('SPARK ПОБЕДИЛА!');
+    function checkGameOver() {
+        if(vchf.pHand.length === 0) { alert('ТЫ ПОБЕДИЛ!'); location.reload(); }
+        else if(vchf.eHand.length === 0) { alert('SPARK ВЫИГРАЛА!'); location.reload(); }
     }
 
-    window.onload = initLayout;
+    window.onload = function() { initLayout(); };
 </script>
 </body>
 </html>
