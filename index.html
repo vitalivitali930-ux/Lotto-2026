@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Shuffle</title>
+    <title>VCHF 2.0 - Bi-Turbo Shuffle FIX</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -49,14 +49,8 @@
             z-index: 10;
             transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        /* Анимация хаотичного перемешивания */
-        .shuffling {
-            transition: all 0.2s ease-in-out !important;
-        }
-        .card-node.face-up {
-            background-image: none !important;
-            background-color: var(--bg-card);
-        }
+        .shuffling { transition: all 0.2s ease-in-out !important; }
+        .card-node.face-up { background-image: none !important; background-color: var(--bg-card); }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5); }
         
         #status-msg {
@@ -79,8 +73,6 @@
         .chaos-deck-container { height: calc(100% - 40px); display: flex; justify-content: center; align-items: center; position: relative; }
         #chaos-deck { position: relative; width: 260px; height: 260px; }
         .trump-status { position: absolute; top: 15px; right: 15px; width: 50px; height: 70px; border: 2px solid var(--gold); background: rgba(45, 5, 5, 0.9); display: flex; justify-content: center; align-items: center; z-index: 100; }
-        
-        /* Мерцание козыря при выборе */
         .trump-shuffling { animation: flash 0.2s infinite; }
         @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
@@ -90,23 +82,40 @@
         .slot { flex: 1; background: rgba(212, 175, 55, 0.02); border: 1px solid rgba(212, 175, 55, 0.1); position: relative; display: flex; align-items: center; justify-content: center; }
         .slot.filled { background: var(--bg-card); border: 1px solid var(--gold); }
         .action-btns { position: absolute; bottom: 20px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 150; }
-        button { padding: 12px 16px; background: var(--velvet-bright); border: 1px solid var(--gold); color: var(--gold); font-family: serif; font-weight: bold; text-transform: uppercase; }
+        button { padding: 12px 16px; background: var(--velvet-bright); border: 1px solid var(--gold); color: var(--gold); font-family: serif; font-weight: bold; text-transform: uppercase; cursor: pointer; }
         #spark-cards { display: flex; gap: 2px; }
         .spark-zone { height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(212, 175, 55, 0.05); }
     </style>
 </head>
+<body>
+    <div id='status-msg'></div>
+    <div class='arena-top'>
+        <div class='spark-zone'><span style='font-size:9px; color:var(--gold);'>SPARK:</span><div id='spark-cards'></div></div>
+        <div class='trump-status'><div id='trump-icon' style='font-size:26px;'>?</div></div>
+        <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
+        <div id='battle-table' class='battle-table'></div>
+    </div>
+    <div class='control-bottom'>
+        <div class='suits-grid'>
+            <div id='s-spades' class='suit-row'></div><div id='s-clubs' class='suit-row'></div>
+            <div id='s-diamonds' class='suit-row'></div><div id='s-hearts' class='suit-row'></div>
+        </div>
+        <div class='action-btns'>
+            <button id='btn-ready' onclick='ignite()'>В БОЙ</button>
+            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО</button>
+            <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ</button>
+        </div>
+    </div>
 <script>
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#555', '♣': '#555', '♦': '#b30000', '♥': '#b30000'};
-
     var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
 
     function showMsg(txt) {
         var m = document.getElementById('status-msg');
         if(!m) return;
-        m.textContent = txt;
-        m.classList.add('active');
+        m.textContent = txt; m.classList.add('active');
         setTimeout(function() { m.classList.remove('active'); }, 2500);
     }
 
@@ -118,8 +127,7 @@
                 r.innerHTML = '';
                 RANKS.forEach(function(rank) {
                     var sl = document.createElement('div');
-                    sl.className = 'slot';
-                    sl.id = 'slot-' + s + '-' + rank;
+                    sl.className = 'slot'; sl.id = 'slot-' + s + '-' + rank;
                     r.appendChild(sl);
                 });
             }
@@ -127,10 +135,9 @@
     }
 
     function ignite() {
-        document.getElementById('btn-ready').style.display = 'none';
-        vchf.phase = 'SHUFFLING'; // Новая фаза перемешивания
-        
-        // Создаем колоду
+        var btn = document.getElementById('btn-ready');
+        if(btn) btn.style.display = 'none';
+        vchf.phase = 'SHUFFLING';
         var t = [];
         SUITS.forEach(function(s) {
             RANKS.forEach(function(r) {
@@ -138,73 +145,13 @@
             });
         });
         vchf.deck = t;
-        
-        renderChaos();
-        visualShuffle(); // Запуск 3-секундного шоу
-    }
-
-    function visualShuffle() {
-        var startTime = Date.now();
-        var duration = 3500; // 3.5 секунды перемешивания
-        var trumpEl = document.getElementById('trump-icon');
-        trumpEl.parentElement.classList.add('trump-shuffling');
-
-        var interval = setInterval(function() {
-            var elapsed = Date.now() - startTime;
-            
-            // Трясем карты
-            vchf.deck.forEach(function(card, i) {
-                var node = document.getElementById('node-' + i);
-                if(node) {
-                    node.classList.add('shuffling');
-                    node.style.left = (Math.random() * 200) + 'px';
-                    node.style.top = (Math.random() * 200) + 'px';
-                    node.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
-                }
-            });
-
-            // Перебор козыря
-            var randomSuit = SUITS[Math.floor(Math.random() * 4)];
-            trumpEl.textContent = randomSuit;
-            trumpEl.style.color = COLORS[randomSuit];
-
-            if(elapsed > duration) {
-                clearInterval(interval);
-                finalizeShuffle();
-            }
-        }, 150);
-    }
-
-    function finalizeShuffle() {
-        vchf.deck.sort(function() { return Math.random() - 0.5; });
-        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        
-        var trumpEl = document.getElementById('trump-icon');
-        trumpEl.parentElement.classList.remove('trump-shuffling');
-        trumpEl.textContent = vchf.trump;
-        trumpEl.style.color = COLORS[vchf.trump];
-
-        vchf.phase = 'PICK';
-        
-        // Возвращаем карты в круг
-        vchf.deck.forEach(function(card, i) {
-            var node = document.getElementById('node-' + i);
-            if(node) {
-                node.classList.remove('shuffling');
-                var a = (i / 36) * 6.283;
-                var r = 95;
-                node.style.left = (105 + r * Math.cos(a)) + 'px';
-                node.style.top = (105 + r * Math.sin(a)) + 'px';
-                node.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
-                // Обновляем обработчик клика после перемешивания
-                node.onclick = function() { if(vchf.phase === 'PICK') pick(idxToDeck(card), 'player'); };
-            }
-        });
-        showMsg('КОЛОДА СФОРМИРОВАНА');
+        renderChaos(); // Сначала создаем элементы
+        setTimeout(visualShuffle, 100); // Затем запускаем анимацию
     }
 
     function renderChaos() {
         var c = document.getElementById('chaos-deck');
+        if(!c) return;
         c.innerHTML = '';
         vchf.deck.forEach(function(card, i) {
             var n = document.createElement('div');
@@ -213,6 +160,54 @@
             n.style.left = '105px'; n.style.top = '105px';
             c.appendChild(n);
         });
+    }
+
+    function visualShuffle() {
+        var startTime = Date.now();
+        var duration = 3000;
+        var trumpEl = document.getElementById('trump-icon');
+        trumpEl.parentElement.classList.add('trump-shuffling');
+
+        var interval = setInterval(function() {
+            var elapsed = Date.now() - startTime;
+            vchf.deck.forEach(function(card, i) {
+                var node = document.getElementById('node-' + i);
+                if(node) {
+                    node.classList.add('shuffling');
+                    node.style.left = (Math.random() * 210) + 'px';
+                    node.style.top = (Math.random() * 210) + 'px';
+                    node.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                }
+            });
+            var rs = SUITS[Math.floor(Math.random() * 4)];
+            trumpEl.textContent = rs; trumpEl.style.color = COLORS[rs];
+
+            if(elapsed > duration) {
+                clearInterval(interval);
+                finalizeShuffle();
+            }
+        }, 100);
+    }
+
+    function finalizeShuffle() {
+        vchf.deck.sort(function() { return Math.random() - 0.5; });
+        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
+        var te = document.getElementById('trump-icon');
+        te.parentElement.classList.remove('trump-shuffling');
+        te.textContent = vchf.trump; te.style.color = COLORS[vchf.trump];
+        vchf.phase = 'PICK';
+        vchf.deck.forEach(function(card, i) {
+            var n = document.getElementById('node-' + i);
+            if(n) {
+                n.classList.remove('shuffling');
+                var a = (i / 36) * 6.283; var r = 95;
+                n.style.left = (105 + r * Math.cos(a)) + 'px';
+                n.style.top = (105 + r * Math.sin(a)) + 'px';
+                n.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
+                n.onclick = function() { if(vchf.phase === 'PICK') pick(idxToDeck(card), 'player'); };
+            }
+        });
+        showMsg('ХАОС ГОТОВ');
     }
     function idxToDeck(card) {
         for(var i=0; i<vchf.deck.length; i++) {
@@ -226,7 +221,6 @@
         if(!c || c.used) return;
         c.used = true;
         var node = document.getElementById('node-' + idx);
-        
         if(actor === 'player') {
             vchf.pHand.push(c);
             if(node) {
@@ -237,10 +231,8 @@
                 node.style.top = (rect.top - parent.top) + 'px';
                 node.style.zIndex = 1000;
                 setTimeout(function() {
-                    node.classList.add('hide');
-                    updateSlot(c);
-                    var av = [];
-                    vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
+                    node.classList.add('hide'); updateSlot(c);
+                    var av = []; vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
                     if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
                     checkFinal();
                 }, 500);
@@ -248,13 +240,8 @@
         } else {
             vchf.eHand.push(c);
             if(node) {
-                node.style.top = '-150px';
-                node.style.opacity = '0';
-                setTimeout(function() { 
-                    node.classList.add('hide'); 
-                    drawSparkVisual();
-                    checkFinal();
-                }, 500);
+                node.style.top = '-150px'; node.style.opacity = '0';
+                setTimeout(function() { node.classList.add('hide'); drawSparkVisual(); checkFinal(); }, 500);
             }
         }
     }
@@ -262,9 +249,7 @@
     function checkFinal() {
         if(vchf.deck.every(function(x) { return x.used; })) {
             if(vchf.phase !== 'BATTLE') {
-                vchf.phase = 'BATTLE';
-                showMsg('ХАОС ЗАВЕРШЕН. КАРТЫ НА СТОЛЕ!');
-                updateActionButtons();
+                vchf.phase = 'BATTLE'; showMsg('БОЙ НАЧАЛСЯ'); updateActionButtons();
             }
         }
     }
@@ -272,15 +257,12 @@
     function updateSlot(card) {
         var el = document.getElementById('slot-' + card.s + '-' + card.r);
         if(!el) return;
-        el.classList.add('filled');
-        el.style.color = card.c;
-        el.innerHTML = '';
+        el.classList.add('filled'); el.style.color = card.c; el.innerHTML = '';
         var t = document.createElement('div');
         t.style.cssText = 'position:absolute;top:2px;left:2px;font-size:10px;font-weight:900;';
         t.textContent = card.r;
         var m = document.createElement('div');
-        m.style.fontSize = '22px';
-        m.textContent = card.s;
+        m.style.fontSize = '22px'; m.textContent = card.s;
         el.appendChild(t); el.appendChild(m);
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
@@ -299,12 +281,8 @@
         if(vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
         if(canPlay(card)) {
             vchf.table.push({card: card, actor: 'player'});
-            removeFromHand(card, 'player');
-            renderTable();
-            if(vchf.table.length % 2 !== 0) {
-                vchf.turn = 'enemy';
-                setTimeout(sparkThink, 900);
-            }
+            removeFromHand(card, 'player'); renderTable();
+            if(vchf.table.length % 2 !== 0) { vchf.turn = 'enemy'; setTimeout(sparkThink, 900); }
         }
         updateActionButtons();
     }
@@ -330,8 +308,7 @@
             var c = move.card;
             var el = document.createElement('div');
             el.className = 'card-node face-up';
-            el.style.position = 'relative';
-            el.style.display = 'inline-block';
+            el.style.position = 'relative'; el.style.display = 'inline-block';
             el.style.color = c.c;
             var r = document.createElement('div');
             r.style.cssText = 'position:absolute;top:2px;left:2px;font-size:10px;font-weight:bold;';
@@ -364,17 +341,14 @@
                 return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
             }).sort(function(a,b) { return a.v - b.v; });
             if(cand.length > 0) {
-                var ch = cand[0];
-                vchf.table.push({card: ch, actor: 'enemy'});
-                removeFromHand(ch, 'enemy');
-                renderTable(); vchf.turn = 'player'; checkEnd();
+                var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
+                removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { sparkTake(); }
         } else {
             if(vchf.table.length === 0) {
                 var ch = vchf.eHand.sort(function(a,b) { return a.v - b.v; })[0];
                 vchf.table.push({card: ch, actor: 'enemy'});
-                removeFromHand(ch, 'enemy');
-                renderTable(); vchf.turn = 'player'; checkEnd();
+                removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { sparkBito(); }
         }
         updateActionButtons();
@@ -406,8 +380,7 @@
 
     function handleTake() {
         vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
-        vchf.table = [];
-        vchf.pHand.forEach(function(c) { updateSlot(c); });
+        vchf.table = []; vchf.pHand.forEach(function(c) { updateSlot(c); });
         renderTable(); vchf.turn = 'enemy'; updateActionButtons();
         setTimeout(sparkThink, 1000);
     }
