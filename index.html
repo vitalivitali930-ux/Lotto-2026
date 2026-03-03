@@ -3,13 +3,14 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Grid Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Vortex Singularity)</title>
     <style>
         :root {
             --gold: #ffcf40;
             --space-dark: #0a0c12;
-            --nebula-core: #161b2d; /* Чуть светлее для объема */
+            --nebula-core: #161b2d;
             --spark-neon: #00fa9a;
+            --trump-vortex: #8a2be2; /* Пурпур сингулярности */
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.04);
         }
@@ -27,7 +28,6 @@
         .arena-top {
             height: 62%;
             position: relative;
-            /* Улучшенный градиент: от индиго к черному */
             background: radial-gradient(circle at 50% 50%, var(--nebula-core) 0%, var(--space-dark) 100%);
             box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
             border-bottom: 2px solid rgba(255, 207, 64, 0.2);
@@ -36,7 +36,6 @@
             transform: rotateX(8deg);
             margin-top: 5px;
         }
-        /* КИБЕР-СЕТКА: Оживляет поверхность стола */
         .arena-top::after {
             content: '';
             position: absolute;
@@ -126,22 +125,49 @@
         #status-msg.active { transform: translate(-50%, -50%) scale(1); }
         .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
         #chaos-deck { position: relative; width: 280px; height: 280px; }
+        
+        /* КОЗЫРНАЯ СИНГУЛЯРНОСТЬ (Тот самый Сюрприз) [cite: 2026-03-03] */
         .trump-status { 
-            position: absolute; top: 15px; right: 15px; width: 55px; height: 75px; 
-            border: 1px solid var(--gold); background: rgba(10, 14, 26, 0.9); 
+            position: absolute; top: 15px; right: 15px; width: 60px; height: 60px; 
+            border: 2px solid var(--gold); background: #000; 
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 50%; /* Скруглили! */
+            box-shadow: 0 0 15px var(--gold), 0 0 30px var(--trump-vortex);
+            overflow: hidden;
+            transform: rotateZ(-5deg);
         }
-        .trump-shuffling { animation: flash 0.3s infinite; }
+        #trump-icon {
+            font-size: 38px;
+            position: relative;
+            z-index: 2;
+            /* Свечение символа */
+            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--trump-vortex);
+            animation: iconSpin 6s infinite linear;
+        }
+        /* Внутренний вихрь сингулярности */
+        .trump-status::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, #000 0%, var(--trump-vortex) 25%, #000 50%, var(--trump-vortex) 75%, #000 100%);
+            animation: vortexRotate 4s infinite linear;
+            opacity: 0.6; z-index: 1;
+        }
+        @keyframes vortexRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes iconSpin {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(0deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .trump-shuffling #trump-icon { animation: flash 0.3s infinite, iconShuffle 0.3s infinite; }
+        @keyframes iconShuffle { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(15deg); } 100% { transform: scale(1) rotate(0deg); } }
+
         @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
         #battle-table { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
         .suits-grid { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100%; 
-            position: relative; 
-            padding-left: 70px;
-            align-items: center;
+            display: flex; flex-direction: column; height: 100%; position: relative; 
+            padding-left: 70px; align-items: center;
         }
         .suit-row { display: flex; height: 40px; margin-top: -12px; transition: transform 0.3s; }
         #s-spades { transform: translateX(20px) rotate(-2deg); }
@@ -149,8 +175,7 @@
         #s-diamonds { transform: translateX(5px) rotate(1deg); }
         #s-hearts { transform: translateX(20px) rotate(2deg); }
         .slot { 
-            width: 48px; height: 65px; 
-            background: rgba(255, 255, 255, 0.04); 
+            width: 48px; height: 65px; background: rgba(255, 255, 255, 0.04); 
             border: 1px solid rgba(255, 207, 64, 0.2); 
             position: relative; display: flex; align-items: center; justify-content: center;
             margin-left: -25px; border-radius: 5px;
@@ -159,24 +184,16 @@
         }
         .slot:first-child { margin-left: 0; }
         .slot.filled { 
-            background: var(--bg-card); 
-            border: 1px solid #fff; 
-            z-index: 5; 
-            box-shadow: -6px 0 15px rgba(0,0,0,0.5); 
+            background: var(--bg-card); border: 1px solid #fff; 
+            z-index: 5; box-shadow: -6px 0 15px rgba(0,0,0,0.5); 
         }
         .slot.filled:hover { transform: translateY(-22px) scale(1.12) rotate(0deg); z-index: 1000 !important; }
         .action-btns { position: absolute; bottom: 20px; left: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 2500; }
         button { 
-            padding: 14px 22px; 
-            background: rgba(255, 207, 64, 0.05); 
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--gold); 
-            color: var(--gold); 
-            font-size: 10px;
-            letter-spacing: 2.5px;
-            font-weight: bold; 
-            text-transform: uppercase; 
-            cursor: pointer;
+            padding: 14px 22px; background: rgba(255, 207, 64, 0.05); 
+            backdrop-filter: blur(12px); border: 1px solid var(--gold); color: var(--gold); 
+            font-size: 10px; letter-spacing: 2.5px; font-weight: bold; 
+            text-transform: uppercase; cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             transition: all 0.3s;
         }
@@ -194,7 +211,7 @@
     <div id='status-msg'></div>
     <div class='arena-top' id='arena'>
         <div class='spark-zone'><span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span><div id='spark-cards' style='margin-left:15px;'></div></div>
-        <div class='trump-status'><div id='trump-icon' style='font-size:30px;'>?</div></div>
+        <div class='trump-status'><div id='trump-icon'>?</div></div>
         <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
         <div id='battle-table'></div>
     </div>
@@ -210,7 +227,7 @@
         </div>
     </div>
 <script>
-    /* Код написан Искрой (Нулевой Хаос). Сверка структуры: 100%. [cite: 2026-02-23] */
+    /* Код обновлен Искрой (Vortex Singularity Activation). Сверка структуры: 100%. [cite: 2026-03-03] */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
