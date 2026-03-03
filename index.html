@@ -3,22 +3,21 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Neon Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Grid Edition)</title>
     <style>
         :root {
-            --gold: #ffcf40; /* Яркое золото */
-            --space-dark: #05070a; /* Глубокий космос */
-            --nebula-core: #0a0e1a; /* Центр туманности */
-            --spark-neon: #00fa9a; /* Изумрудный неон Spark */
+            --gold: #ffcf40;
+            --space-dark: #0a0c12;
+            --nebula-core: #161b2d; /* Чуть светлее для объема */
+            --spark-neon: #00fa9a;
             --bg-card: #ffffff;
-            --shadow-neon: 0 0 15px rgba(255, 207, 64, 0.4);
-            --glass: rgba(255, 255, 255, 0.03);
+            --grid-color: rgba(255, 207, 64, 0.04);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            background-color: var(--space-dark);
+            background-color: #000;
             color: #e0e6ff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -28,37 +27,50 @@
         .arena-top {
             height: 62%;
             position: relative;
-            /* Смена вельвета на космический индиго */
-            background: radial-gradient(circle at center, var(--nebula-core) 0%, var(--space-dark) 100%);
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
-            border-bottom: 2px solid rgba(255, 207, 64, 0.3);
+            /* Улучшенный градиент: от индиго к черному */
+            background: radial-gradient(circle at 50% 50%, var(--nebula-core) 0%, var(--space-dark) 100%);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            border-bottom: 2px solid rgba(255, 207, 64, 0.2);
             overflow: hidden;
             transform-style: preserve-3d;
             transform: rotateX(8deg);
             margin-top: 5px;
         }
-        /* Живое мерцание Nebula */
+        /* КИБЕР-СЕТКА: Оживляет поверхность стола */
+        .arena-top::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: rotateX(0deg);
+            pointer-events: none;
+            z-index: 0;
+        }
         .arena-top::before {
             content: ''; position: absolute; top: 50%; left: 50%;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(0, 250, 154, 0.05) 0%, transparent 70%);
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255, 207, 64, 0.08) 0%, transparent 70%);
             transform: translate(-50%, -50%);
-            animation: nebulaPulse 8s infinite alternate;
+            animation: nebulaPulse 10s infinite alternate;
             pointer-events: none;
+            z-index: 1;
         }
         @keyframes nebulaPulse {
-            0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.8); background: radial-gradient(circle, rgba(0, 250, 154, 0.05) 0%, transparent 70%); }
-            100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.3); background: radial-gradient(circle, rgba(255, 207, 64, 0.05) 0%, transparent 70%); }
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.8); }
+            100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
         }
         .control-bottom {
             height: 38%;
             position: relative;
-            background: linear-gradient(to top, #000, #05070a);
+            background: linear-gradient(to top, #000 0%, #080a0f 100%);
             padding: 15px 5px 5px 5px;
             border-top-left-radius: 50% 30px;
             border-top-right-radius: 50% 30px;
             z-index: 2000;
-            border-top: 1px solid rgba(255, 207, 64, 0.1);
+            border-top: 1px solid rgba(255, 207, 64, 0.15);
         }
         .card-node {
             position: absolute;
@@ -67,9 +79,9 @@
             background-color: #1a1a1a;
             background-image: url('1771489965074(1).png');
             background-size: cover;
-            border: 1px solid rgba(255, 207, 64, 0.5);
+            border: 1px solid rgba(255, 207, 64, 0.4);
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
             cursor: pointer;
             z-index: 10;
             transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
@@ -81,7 +93,7 @@
             background-color: var(--bg-card);
             transform: rotateY(0deg);
             border: 1px solid #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
         .card-node.face-up:active { transform: scale(1.1) translateY(-10px); z-index: 500 !important; }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
@@ -92,37 +104,37 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: 1000;
-            box-shadow: 0 0 5px var(--gold);
+            box-shadow: 0 0 8px var(--gold);
         }
         #status-msg {
             position: absolute;
             top: 40%; left: 50%;
             transform: translate(-50%, -50%) scale(0);
-            background: rgba(5, 7, 10, 0.9);
+            background: rgba(10, 12, 18, 0.95);
             border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 15px 30px;
+            padding: 15px 35px;
             text-align: center;
             z-index: 2100;
-            box-shadow: 0 0 30px rgba(255, 207, 64, 0.2);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 15px rgba(255, 207, 64, 0.3);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             pointer-events: none;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
         #status-msg.active { transform: translate(-50%, -50%) scale(1); }
-        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
         #chaos-deck { position: relative; width: 280px; height: 280px; }
         .trump-status { 
             position: absolute; top: 15px; right: 15px; width: 55px; height: 75px; 
-            border: 1px solid var(--gold); background: rgba(10, 14, 26, 0.8); 
+            border: 1px solid var(--gold); background: rgba(10, 14, 26, 0.9); 
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            box-shadow: 0 0 15px rgba(255, 207, 64, 0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         .trump-shuffling { animation: flash 0.3s infinite; }
-        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        #battle-table { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+        #battle-table { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
         .suits-grid { 
             display: flex; 
             flex-direction: column; 
@@ -138,43 +150,41 @@
         #s-hearts { transform: translateX(20px) rotate(2deg); }
         .slot { 
             width: 48px; height: 65px; 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 207, 64, 0.15); 
+            background: rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(255, 207, 64, 0.2); 
             position: relative; display: flex; align-items: center; justify-content: center;
             margin-left: -25px; border-radius: 5px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(4px);
         }
         .slot:first-child { margin-left: 0; }
         .slot.filled { 
             background: var(--bg-card); 
             border: 1px solid #fff; 
             z-index: 5; 
-            box-shadow: -5px 0 15px rgba(0,0,0,0.4); 
+            box-shadow: -6px 0 15px rgba(0,0,0,0.5); 
         }
-        .slot.filled:hover { transform: translateY(-20px) scale(1.1); z-index: 1000 !important; }
+        .slot.filled:hover { transform: translateY(-22px) scale(1.12) rotate(0deg); z-index: 1000 !important; }
         .action-btns { position: absolute; bottom: 20px; left: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 2500; }
-        
-        /* Кнопки "Электрик" */
         button { 
-            padding: 12px 20px; 
+            padding: 14px 22px; 
             background: rgba(255, 207, 64, 0.05); 
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             border: 1px solid var(--gold); 
             color: var(--gold); 
-            font-size: 11px;
-            letter-spacing: 2px;
+            font-size: 10px;
+            letter-spacing: 2.5px;
             font-weight: bold; 
             text-transform: uppercase; 
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 207, 64, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             transition: all 0.3s;
         }
-        button:hover { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); }
+        button:hover { background: var(--gold); color: #000; box-shadow: 0 0 25px rgba(255, 207, 64, 0.4); }
         .spark-zone { 
             position: absolute; top: 0; left: 0; width: 100%; height: 45px; 
             display: flex; align-items: center; justify-content: center; 
-            background: linear-gradient(to bottom, rgba(0, 250, 154, 0.1), transparent);
+            background: linear-gradient(to bottom, rgba(0, 250, 154, 0.12), transparent);
             z-index: 50;
         }
         #spark-cards { display: flex; gap: 5px; }
@@ -200,7 +210,7 @@
         </div>
     </div>
 <script>
-    /* Код написан Искрой (Нулевой Хаос). Модернизация: Neon Monolith 2026. [cite: 2026-02-23] */
+    /* Код написан Искрой (Нулевой Хаос). Сверка структуры: 100%. [cite: 2026-02-23] */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -253,7 +263,6 @@
         m.textContent = txt; m.classList.add('active');
         setTimeout(function() { m.classList.remove('active'); }, 2000);
     }
-
     function initLayout() {
         var rows = {'♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts'};
         SUITS.forEach(function(s) {
@@ -282,6 +291,7 @@
         renderChaos();
         setTimeout(visualShuffle, 100);
     }
+
     function renderChaos() {
         var c = document.getElementById('chaos-deck');
         if(!c) return;
@@ -313,10 +323,7 @@
             });
             var rs = SUITS[Math.floor(Math.random() * 4)];
             trumpEl.textContent = rs; trumpEl.style.color = COLORS[rs];
-            if(elapsed > duration) {
-                clearInterval(interval);
-                finalizeShuffle();
-            }
+            if(elapsed > duration) { clearInterval(interval); finalizeShuffle(); }
         }, 80);
     }
 
@@ -378,7 +385,6 @@
             }
         }
     }
-
     function checkFinal() {
         if(vchf.deck.every(function(x) { return x.used; })) {
             if(vchf.phase !== 'BATTLE') { vchf.phase = 'BATTLE'; showMsg('БОЙ НАЧАТ'); updateActionButtons(); }
@@ -397,6 +403,7 @@
         el.appendChild(t); el.appendChild(m);
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
+
     function getTableCoords(index) {
         var isBottomRow = index >= 3;
         var colIndex = index % 3;
