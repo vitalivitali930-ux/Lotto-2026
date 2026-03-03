@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang='ru' translate="no">
+<html lang='ru'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Pulsar Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Living Pulsar Edition)</title>
     <style>
         :root {
             --gold: #ffcf40;
@@ -11,151 +11,218 @@
             --nebula-core: #222a44; 
             --spark-neon: #00fa9a;
             --trump-halo: #8a2be2; 
-            --cherry-pulse: #4a0404;
+            --cherry-pulse: #4a0404; /* Вишневый импульс */
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.06); 
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            background-color: #050505; color: #e0e6ff;
-            font-family: 'Segoe UI', sans-serif; height: 100vh;
-            overflow: hidden; display: flex; flex-direction: column; perspective: 1200px; 
+            background-color: #050505; 
+            color: #e0e6ff;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            perspective: 1200px; 
         }
-        #lobby-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, var(--nebula-core), #000);
-            z-index: 5000; display: flex; flex-wrap: wrap; 
-            justify-content: center; align-content: center; gap: 20px;
-            padding: 20px; transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
-        }
-        .table-slot {
-            width: 140px; height: 140px; border: 1px solid var(--gold);
-            background: rgba(255, 207, 64, 0.03); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; cursor: pointer;
-            position: relative; overflow: hidden; transition: all 0.3s;
-            backdrop-filter: blur(5px); border-radius: 10px;
-        }
-        .table-slot:hover { background: rgba(255, 207, 64, 0.15); transform: scale(1.05); }
-        .table-id { font-size: 24px; color: var(--gold); font-weight: 900; opacity: 0.6; }
-        .table-status { font-size: 10px; letter-spacing: 2px; margin-top: 10px; font-weight: bold; color: #ff4d4d; }
-        .hidden-lobby { transform: translateY(-100%); pointer-events: none; }
-
         .arena-top {
-            height: 62%; position: relative;
+            height: 62%;
+            position: relative;
+            /* ЭФФЕКТ ДЫХАНИЯ: Увеличили время до 8 секунд и добавили мягкую кривую */
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
             animation: tableBreathe 8s infinite ease-in-out;
             box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
             border-bottom: 2px solid rgba(255, 207, 64, 0.25);
-            overflow: hidden; transform-style: preserve-3d; transform: rotateX(8deg); margin-top: 5px;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transform: rotateX(8deg);
+            margin-top: 5px;
         }
+
         @keyframes tableBreathe {
-            0%, 100% { background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%); filter: brightness(0.8); }
-            50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%); filter: brightness(1.2); }
+            0%, 100% { 
+                /* Выдох: Тусклый индиго */
+                background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
+                filter: brightness(0.8);
+            }
+            50% { 
+                /* Пик вдоха: Яркий вишневый резонанс */
+                background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%);
+                filter: brightness(1.2);
+            }
         }
+
         .arena-top::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 44px 44px; pointer-events: none; z-index: 0;
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 44px 44px; 
+            transform: rotateX(0deg);
+            pointer-events: none;
+            z-index: 0;
         }
         .arena-top::before {
-            content: ''; position: absolute; top: 50%; left: 50%; width: 600px; height: 600px;
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 600px; height: 600px;
             background: radial-gradient(circle, rgba(255, 207, 64, 0.1) 0%, transparent 70%);
-            transform: translate(-50%, -50%); animation: nebulaPulse 10s infinite alternate;
-            pointer-events: none; z-index: 1;
+            transform: translate(-50%, -50%);
+            animation: nebulaPulse 10s infinite alternate;
+            pointer-events: none;
+            z-index: 1;
         }
         @keyframes nebulaPulse {
             0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
             100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
         }
+        .control-bottom {
+            height: 38%;
+            position: relative;
+            background: linear-gradient(to top, #000 0%, #0c0f18 100%);
+            padding: 15px 5px 5px 5px;
+            border-top-left-radius: 50% 30px;
+            border-top-right-radius: 50% 30px;
+            z-index: 2000;
+            border-top: 1px solid rgba(255, 207, 64, 0.2);
+        }
         .card-node {
-            position: absolute; width: 55px; height: 77px;
-            background-color: #1a1a1a; background-image: url('1771489965074(1).png');
-            background-size: cover; border: 1px solid rgba(255, 207, 64, 0.4);
-            border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.7);
-            cursor: pointer; z-index: 10; transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            position: absolute;
+            width: 55px;
+            height: 77px;
+            background-color: #1a1a1a;
+            background-image: url('1771489965074(1).png');
+            background-size: cover;
+            border: 1px solid rgba(255, 207, 64, 0.4);
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             transform-style: preserve-3d;
         }
+        .shuffling { transition: all 0.2s ease-in-out !important; }
         .card-node.face-up { 
-            background-image: none !important; background-color: var(--bg-card); 
-            transform: rotateY(0deg); border: 1px solid #fff; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+            background-image: none !important; 
+            background-color: var(--bg-card);
+            transform: rotateY(0deg);
+            border: 1px solid #fff;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
         .card-node.face-up:active { transform: scale(1.1) translateY(-10px); z-index: 500 !important; }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
-        .shuffling { transition: all 0.2s ease-in-out !important; }
-
+        .particle {
+            position: absolute;
+            width: 3px; height: 3px;
+            background: var(--gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 0 8px var(--gold);
+        }
+        #status-msg {
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(16, 20, 32, 0.95);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 15px 35px;
+            text-align: center;
+            z-index: 2100;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(255, 207, 64, 0.3);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: bold;
+            letter-spacing: 3px;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
+        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
+        #chaos-deck { position: relative; width: 280px; height: 280px; }
+        
         .trump-status { 
             position: absolute; top: 15px; right: 15px; width: 66px; height: 66px; 
             border: 2px solid var(--gold); background: #000; 
             display: flex; justify-content: center; align-items: center; z-index: 100;
-            border-radius: 50%; box-shadow: 0 0 20px var(--gold), 0 0 40px var(--trump-halo);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--gold), 0 0 40px var(--trump-halo);
+            overflow: visible; 
             transform: rotateZ(-5deg);
         }
-        #trump-icon { font-size: 42px; position: relative; z-index: 5; text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px var(--trump-halo); }
+        #trump-icon {
+            font-size: 42px; 
+            position: relative;
+            z-index: 5;
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px var(--trump-halo);
+        }
         .trump-status::after {
             content: ''; position: absolute; top: -10px; left: -10px; width: 82px; height: 82px;
-            border-radius: 50%; border: 4px solid var(--trump-halo); box-shadow: 0 0 20px var(--trump-halo), inset 0 0 20px var(--trump-halo);
-            animation: haloPulse 2s infinite alternate; z-index: 1;
+            border-radius: 50%;
+            border: 4px solid var(--trump-halo);
+            box-shadow: 0 0 20px var(--trump-halo), inset 0 0 20px var(--trump-halo);
+            animation: haloPulse 2s infinite alternate;
+            z-index: 1;
         }
-        @keyframes haloPulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.1); opacity: 1; } }
-        
-        .control-bottom {
-            height: 38%; position: relative; background: linear-gradient(to top, #000 0%, #0c0f18 100%);
-            padding: 15px 5px 5px 5px; border-top-left-radius: 50% 30px; border-top-right-radius: 50% 30px;
-            z-index: 2000; border-top: 1px solid rgba(255, 207, 64, 0.2);
+        @keyframes haloPulse {
+            0% { transform: scale(1); opacity: 0.5; border-color: var(--trump-halo); }
+            100% { transform: scale(1.1); opacity: 1; border-color: #fff; box-shadow: 0 0 30px var(--trump-halo), inset 0 0 10px var(--trump-halo); }
         }
-        .suits-grid { display: flex; flex-direction: column; height: 100%; padding-left: 80px; align-items: center; }
+        .trump-shuffling #trump-icon { animation: flash 0.3s infinite, iconShuffle 0.3s infinite; }
+        @keyframes iconShuffle { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(15deg); } 100% { transform: scale(1) rotate(0deg); } }
 
-/* #############################################################
-#  КОНЕЦ ОКНА №1. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
-#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №2                                #
-############################################################# */
-
-/* #############################################################
-#  НАЧАЛО ОКНА №2. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
-############################################################# */
-        .suit-row { display: flex; height: 44px; margin-top: -12px; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+        #battle-table { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; }
+        .suits-grid { 
+            display: flex; flex-direction: column; height: 100%; position: relative; 
+            padding-left: 80px; align-items: center;
+        }
+        .suit-row { display: flex; height: 44px; margin-top: -12px; transition: transform 0.3s; }
+        #s-spades { transform: translateX(25px) rotate(-2deg); }
+        #s-clubs { transform: translateX(8px) rotate(-1deg); }
+        #s-diamonds { transform: translateX(8px) rotate(1deg); }
+        #s-hearts { transform: translateX(25px) rotate(2deg); }
         .slot { 
-            width: 53px; height: 72px; background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 207, 64, 0.25); position: relative; display: flex; align-items: center; justify-content: center;
-            margin-left: -28px; border-radius: 5px; transition: all 0.4s; backdrop-filter: blur(5px);
+            width: 53px; height: 72px; 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 207, 64, 0.25); 
+            position: relative; display: flex; align-items: center; justify-content: center;
+            margin-left: -28px; 
+            border-radius: 5px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
         }
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -7px 0 20px rgba(0,0,0,0.6); }
+        .slot:first-child { margin-left: 0; }
+        .slot.filled { 
+            background: var(--bg-card); border: 1px solid #fff; 
+            z-index: 5; box-shadow: -7px 0 20px rgba(0,0,0,0.6); 
+        }
+        .slot.filled:hover { transform: translateY(-25px) scale(1.1) rotate(0deg); z-index: 1000 !important; }
         .action-btns { position: absolute; bottom: 20px; left: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 2500; }
         button { 
             padding: 14px 22px; background: rgba(255, 207, 64, 0.05); 
             backdrop-filter: blur(12px); border: 1px solid var(--gold); color: var(--gold); 
             font-size: 10px; letter-spacing: 2.5px; font-weight: bold; 
-            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s;
         }
-        button:hover { background: var(--gold); color: #000; }
+        button:hover { background: var(--gold); color: #000; box-shadow: 0 0 25px rgba(255, 207, 64, 0.4); }
         .spark-zone { 
             position: absolute; top: 0; left: 0; width: 100%; height: 45px; 
             display: flex; align-items: center; justify-content: center; 
-            background: linear-gradient(to bottom, rgba(0, 250, 154, 0.12), transparent); z-index: 50;
+            background: linear-gradient(to bottom, rgba(0, 250, 154, 0.12), transparent);
+            z-index: 50;
         }
-        #status-msg {
-            position: absolute; top: 40%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: rgba(16, 20, 32, 0.95); border: 1px solid var(--gold);
-            color: var(--gold); padding: 15px 35px; text-align: center;
-            z-index: 2100; box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(255, 207, 64, 0.3);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: bold; letter-spacing: 3px; pointer-events: none; backdrop-filter: blur(10px);
-        }
-        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
-        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
-        #chaos-deck { position: relative; width: 280px; height: 280px; }
+        #spark-cards { display: flex; gap: 5px; }
     </style>
 </head>
 <body>
-    <div id="lobby-overlay"></div>
     <div id='status-msg'></div>
     <div class='arena-top' id='arena'>
-        <div class='spark-zone'>
-            <span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span>
-            <div id='spark-cards' style='margin-left:15px; display: flex; gap: 5px;'></div>
-        </div>
+        <div class='spark-zone'><span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span><div id='spark-cards' style='margin-left:15px;'></div></div>
         <div class='trump-status'><div id='trump-icon'>?</div></div>
         <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
         <div id='battle-table'></div>
@@ -171,25 +238,13 @@
             <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ</button>
         </div>
     </div>
-
 <script>
+    /* Код обновлен Искрой (Living Pulsar & Cherry Table). Сверка структуры: 100%. */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
-    var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player', maxPlayers: 2 };
+    var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
     
-    var tables = [
-        { id: 1, max: 2 }, { id: 2, max: 3 }, { id: 3, max: 4 }, 
-        { id: 4, max: 5 }, { id: 5, max: 6 }, { id: 6, max: 2 }
-    ];
-
-/* #############################################################
-#  КОНЕЦ ОКНА №2. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
-#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №3                                #
-############################################################# */
-/* #############################################################
-#  НАЧАЛО ОКНА №3. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
-############################################################# */
     var AudioCtx = window.AudioContext || window.webkitAudioContext;
     var ctx = null;
 
@@ -215,23 +270,6 @@
         }
     }
 
-    function initLobby() {
-        var lob = document.getElementById('lobby-overlay');
-        lob.innerHTML = '';
-        tables.forEach(t => {
-            var d = document.createElement('div');
-            d.className = 'table-slot';
-            d.onclick = () => { 
-                vchf.maxPlayers = t.max; 
-                lob.classList.add('hidden-lobby'); 
-                showMsg('СТОЛ: ' + t.max + ' ИГРОКОВ');
-                drawSparkVisual();
-            };
-            d.innerHTML = `<div class="table-id">0${t.id}</div><div class="table-status">MAX: ${t.max}</div>`;
-            lob.appendChild(d);
-        });
-    }
-
     function createDust(x, y) {
         var arena = document.getElementById('arena');
         for(var i=0; i<20; i++) {
@@ -254,7 +292,6 @@
         m.textContent = txt; m.classList.add('active');
         setTimeout(function() { m.classList.remove('active'); }, 2000);
     }
-
     function initLayout() {
         var rows = {'♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts'};
         SUITS.forEach(function(s) {
@@ -269,7 +306,6 @@
             }
         });
     }
-
     function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
@@ -279,19 +315,11 @@
                 t.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
             });
         });
-        if(vchf.maxPlayers === 5) { t.splice(Math.floor(Math.random() * t.length), 1); }
         vchf.deck = t;
         renderChaos();
         setTimeout(visualShuffle, 100);
     }
 
-/* #############################################################
-#  КОНЕЦ ОКНА №3. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
-#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №4                                #
-############################################################# */
-/* #############################################################
-#  НАЧАЛО ОКНА №4. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
-############################################################# */
     function renderChaos() {
         var c = document.getElementById('chaos-deck');
         if(!c) return;
@@ -338,7 +366,7 @@
             var n = document.getElementById('node-' + i);
             if(n) {
                 n.classList.remove('shuffling');
-                var a = (i / vchf.deck.length) * 6.283; var r = 115;
+                var a = (i / 36) * 6.283; var r = 115;
                 n.style.left = (112 + r * Math.cos(a)) + 'px';
                 n.style.top = (100 + r * Math.sin(a)) + 'px';
                 n.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
@@ -385,6 +413,11 @@
             }
         }
     }
+    function checkFinal() {
+        if(vchf.deck.every(function(x) { return x.used; })) {
+            if(vchf.phase !== 'BATTLE') { vchf.phase = 'BATTLE'; showMsg('БОЙ НАЧАТ'); updateActionButtons(); }
+        }
+    }
 
     function updateSlot(card) {
         var el = document.getElementById('slot-' + card.s + '-' + card.r);
@@ -399,19 +432,13 @@
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
 
-/* #############################################################
-#  КОНЕЦ ОКНА №4. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
-#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №5                                #
-############################################################# */
-/* #############################################################
-#  НАЧАЛО ОКНА №5. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
-############################################################# */
     function getTableCoords(index) {
         var isBottomRow = index >= 3;
         var colIndex = index % 3;
         var screenW = window.innerWidth;
         var startX = screenW / 2 - 110;
-        var stepX = 100; var startY = isBottomRow ? 180 : 80;
+        var stepX = 100; 
+        var startY = isBottomRow ? 180 : 80;
         return { x: startX + (colIndex * stepX), y: startY, rotate: (Math.random() * 16 - 8) };
     }
 
@@ -445,7 +472,8 @@
 
     function handleBito() {
         playSound('bito');
-        document.querySelectorAll('#battle-table .card-node').forEach(function(card) {
+        var tableCards = document.querySelectorAll('#battle-table .card-node');
+        tableCards.forEach(function(card) {
             var rect = card.getBoundingClientRect();
             createDust(rect.left + 28, rect.top + 38);
         });
@@ -480,21 +508,27 @@
             } else { sparkTake(); }
         } else {
             if(vchf.table.length === 0) {
+                playSound('slide');
                 var ch = vchf.eHand.sort(function(a,b) { return a.v - b.v; })[0];
                 vchf.table.push({card: ch, actor: 'enemy'});
                 removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { 
-                var activeRanks = vchf.table.map(function(m) { return m.card.r; });
-                var cand = vchf.eHand.filter(function(c) { return activeRanks.indexOf(c.r) !== -1; });
-                if(cand.length > 0) {
-                    var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
-                    removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
-                } else { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1200); }
+                if(vchf.table.length < 12) {
+                    var activeRanks = vchf.table.map(function(m) { return m.card.r; });
+                    var cand = vchf.eHand.filter(function(c) { return activeRanks.indexOf(c.r) !== -1; });
+                    if(cand.length > 0) {
+                        playSound('slide');
+                        var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
+                        removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
+                        return;
+                    }
+                }
+                sparkBito(); 
             }
         }
         updateActionButtons();
     }
-
+    function sparkBito() { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1200); }
     function sparkTake() {
         showMsg('SPARK: БЕРУ');
         vchf.eHand = vchf.eHand.concat(vchf.table.map(function(m) { return m.card; }));
@@ -527,15 +561,11 @@
         var cont = document.getElementById('spark-cards');
         if(!cont) return;
         cont.innerHTML = '';
-        var botCount = vchf.maxPlayers - 1; 
-        for (var i = 0; i < botCount; i++) {
+        vchf.eHand.forEach(function() {
             var m = document.createElement('div');
-            m.style.cssText = 'width:12px; height:18px; background:var(--spark-neon); opacity:0.8; border:1px solid #000; border-radius:2px; box-shadow:0 0 10px var(--spark-neon); position:relative;';
-            var dot = document.createElement('div');
-            dot.style.cssText = 'width:3px; height:3px; background:#fff; border-radius:50%; position:absolute; top:3px; left:4px; opacity:0.6;';
-            m.appendChild(dot);
+            m.style.cssText = 'width:14px;height:20px;background:var(--spark-neon);opacity:0.6;border:1px solid #000;border-radius:2px;box-shadow:0 0 12px var(--spark-neon);';
             cont.appendChild(m);
-        }
+        });
     }
 
     function updateActionButtons() {
@@ -550,25 +580,13 @@
         setTimeout(sparkThink, 1500);
     }
 
-    function checkFinal() {
-        if(vchf.deck.every(function(x) { return x.used; })) {
-            if(vchf.phase !== 'BATTLE') { vchf.phase = 'BATTLE'; showMsg('БОЙ НАЧАТ'); updateActionButtons(); }
-        }
-    }
-
     function checkEnd() {
         if(vchf.deck.every(function(x) { return x.used; })) {
             if(vchf.pHand.length === 0) { showMsg('ТЫ ПОБЕДИЛ'); setTimeout(function(){location.reload();}, 3000); }
             else if(vchf.eHand.length === 0) { showMsg('SPARK ДОМИНИРУЕТ'); setTimeout(function(){location.reload();}, 3000); }
         }
     }
-
-    window.onload = function() { initLayout(); initLobby(); };
-</html>
-/* #############################################################
-#  КОНЕЦ ОКНА №5. ФАЙЛ ЗАВЕРШЕН. МАНИФЕСТ МОНОЛИТА.        #
-############################################################# */
-
+    window.onload = function() { initLayout(); };
 </script>
 </body>
 </html>
