@@ -3,66 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF 2.0 | MONOLITH BASE</title>
+    <title>VCHF 2.0 - Bi-Turbo Ultimate (Chaos Edition)</title>
     <style>
-        /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
-           RULE: Новый код = Старый код + Метод Прямой Вставки
-           MEMORY: Window 1 (lines 1-700) [cite: 2026-02-23]
-        */
-        :root { --gold: #d4af37; --cherry: radial-gradient(circle, #1a0005 0%, #000 100%); }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: monospace; color: var(--gold); }
-        #monolith { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
-        
-        /* ЗОНИРОВАНИЕ 70/30 [cite: 2026-02-24] */
-        #top-zone { height: 70%; position: relative; background: var(--cherry); border-bottom: 1px solid #333; }
-        #bottom-zone { height: 30%; background: #050505; border-top: 2px solid var(--gold); display: flex; flex-direction: column; position: relative; }
+        :root {
+            --gold: #ffcc00;
+            --dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --red: #e60000;
+            --grey: #888888;
+            --shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+        }
 
-        /* ИМИТАЦИЯ 15% [cite: 2026-02-24] */
-        .side-bar { position: absolute; background: rgba(0,0,0,0.5); border: 1px solid rgba(212,175,55,0.1); }
-        #spark-top { top: 0; width: 100%; height: 15%; border-bottom: 1px solid var(--gold); display: flex; justify-content: center; align-items: center; }
-        #bar-left { top: 15%; left: 0; width: 15%; height: 55%; border-right: 1px solid #222; }
-        #bar-right { top: 15%; right: 0; width: 15%; height: 55%; border-left: 1px solid #222; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* АРЕНА 40% [cite: 2026-02-24] */
-        #arena { position: absolute; top: 15%; left: 15%; width: 70%; height: 55%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #chaos-deck { position: relative; width: 260px; height: 260px; }
-        .card-node { position: absolute; width: 40px; height: 55px; background: #111 url('1771489965074(1).png') center/cover; border: 1px solid #444; border-radius: 4px; transition: 0.4s; cursor: pointer; }
-        .card-node.hide { transform: scale(0); opacity: 0; pointer-events: none; }
+        body {
+            background-color: var(--dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* УПРАВЛЕНИЕ [cite: 2026-02-24] */
-        .suit-line { flex: 1; display: flex; border-bottom: 1px solid #111; }
-        .slot { flex: 1; border-right: 1px solid #111; display: flex; align-items: center; justify-content: center; position: relative; font-weight: 900; }
-        .slot.filled { background: #fff; color: #000; border: 1px solid var(--gold); }
+        /* ЗОНИРОВАНИЕ 70/30 */
+        .arena-top {
+            height: 70%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid var(--gold);
+            background: radial-gradient(circle at center, #1b1b1b 0%, #0a0a0a 100%);
+        }
 
-        #btn-ready { padding: 15px 40px; background: var(--gold); color: #000; font-weight: 900; border: none; cursor: pointer; z-index: 100; }
-        #trump-view { position: absolute; top: 10px; right: 10px; width: 40px; height: 60px; border: 2px solid var(--gold); display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 15px var(--gold); }
+        .control-bottom {
+            height: 30%;
+            position: relative;
+            padding: 5px;
+            background: #050505;
+        }
+
+        /* БОКОВЫЕ БАРЫ 15% */
+        .side-bar {
+            position: absolute;
+            top: 0;
+            width: 15%;
+            height: 100%;
+            z-index: 10;
+        }
+        .left-bar { left: 0; border-right: 1px solid rgba(255,204,0,0.1); }
+        .right-bar { right: 0; border-left: 1px solid rgba(255,204,0,0.1); }
+
+        /* СПАРК (ВЕРХ) */
+        .spark-zone {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255,204,0,0.05);
+        }
+        #spark-cards { display: flex; gap: 2px; }
+
+        /* КОЛОДА ХАОСА */
+        .chaos-deck-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #chaos-deck {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+        .card-node {
+            position: absolute;
+            width: 40px;
+            height: 56px;
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            will-change: transform;
+        }
+        .card-node.hide { opacity: 0; transform: scale(0); pointer-events: none; }
+
+        /* ЗОЛОТОЙ КОЗЫРЬ */
+        .trump-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 70px;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 20px var(--gold);
+        }
+        #trump-icon { font-size: 24px; color: var(--gold); }
+
+        /* СТОЛ БИТВЫ */
+        .battle-table {
+            position: absolute;
+            bottom: 20px;
+            width: 70%;
+            left: 15%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* УПРАВЛЕНИЕ (30%) - СЕТКА МАСТЕЙ */
+        .suits-grid {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 4px;
+        }
+        .suit-row {
+            display: flex;
+            flex: 1;
+            gap: 2px;
+            align-items: center;
+        }
+        .slot {
+            flex: 1;
+            height: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,204,0,0.1);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: 0.2s;
+        }
+        .slot.filled {
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            box-shadow: inset 0 0 5px rgba(255,204,0,0.3);
+        }
+
+        /* КНОПКИ ДЕЙСТВИЙ */
+        .action-btns {
+            position: absolute;
+            bottom: 35%;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            background: var(--dark);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-weight: bold;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
+        @media (max-height: 600px) {
+            .spark-zone { height: 40px; }
+            #chaos-deck { width: 200px; height: 200px; }
+            .card-node { width: 30px; height: 42px; }
+        }
     </style>
 </head>
 <body>
-    <div id="monolith">
-        <div id="top-zone">
-            <div id="spark-top"><div id="spark-cards" style="display:flex; gap:2px;"></div></div>
-            <div id="bar-left"></div>
-            <div id="bar-right"></div>
-            <div id="trump-view"></div>
-            <div id="arena">
-                <button id="btn-ready" onclick="ignite()">ГОТОВ</button>
-                <div id="chaos-deck"></div>
-                <div id="battle-field" style="display:flex; gap:5px; margin-top:10px;"></div>
-            </div>
+    <div class="arena-top">
+        <div class="side-bar left-bar"></div>
+        <div class="side-bar right-bar"></div>
+        
+        <div class="spark-zone">
+            <span>SPARK:</span>
+            <div id="spark-cards"></div>
         </div>
-        <div id="bottom-zone">
-            <div class="suit-line" id="s-spades"></div>
-            <div class="suit-line" id="s-clubs"></div>
-            <div class="suit-line" id="s-diamonds"></div>
-            <div class="suit-line" id="s-hearts"></div>
-        </div>
-    </div>
+
+        <div class="trump
+    <script>
     /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
        IDENTITY: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
-       RULE: Новый код = Старый код + Метод textContent [cite: 2023-02-22]
-       MEMORY: Window 2 (lines 701-1400). Семь раз проверь. [cite: 2026-02-23]
+       RULE: Новый код = Старый код + Метод textContent [cite: 2026-02-22]
+       MEMORY: Window 2. Синхронизация 1:1. [cite: 2026-03-03]
     */
 
     const SUITS = ['♠', '♣', '♦', '♥'];
@@ -88,45 +222,60 @@
             RANKS.forEach(r => {
                 const slot = document.createElement('div');
                 slot.className = 'slot';
-                slot.id = 'slot-' + s + '-' + r;
+                slot.id = `slot-${s}-${r}`;
                 rows[s].appendChild(slot);
             });
         });
     }
 
     function ignite() {
-        document.getElementById('btn-ready').style.display = 'none';
+        const btn = document.getElementById('btn-ready');
+        if(btn) btn.style.display = 'none';
         vchf.phase = 'PICK';
         
-        // Генерация 36 сфер [cite: 2026-02-24]
         let tempDeck = [];
         SUITS.forEach(s => {
             RANKS.forEach(r => {
-                tempDeck.push({ s: s, r: r, v: RANKS.indexOf(r) + 6, c: COLORS[s], used: false });
+                tempDeck.push({ 
+                    s: s, r: r, 
+                    v: RANKS.indexOf(r) + 6, 
+                    c: COLORS[s], 
+                    used: false 
+                });
             });
         });
         
         vchf.deck = tempDeck.sort(() => Math.random() - 0.5);
+        vchf.trump = SUITS[Math.floor(Math.random() * SUITS.length)];
+        
+        const tIcon = document.getElementById('trump-icon');
+        if(tIcon) {
+            tIcon.textContent = vchf.trump;
+            tIcon.style.color = COLORS[vchf.trump];
+        }
+        
         renderChaos();
     }
 
     function renderChaos() {
         const container = document.getElementById('chaos-deck');
+        if(!container) return;
         container.innerHTML = '';
         
         vchf.deck.forEach((card, i) => {
             const node = document.createElement('div');
             node.className = 'card-node';
-            node.id = 'node-' + i;
+            node.id = `node-${i}`;
             
-            // Защита от пристрела: Рандомные координаты [cite: 2026-02-24]
+            // ГЕОМЕТРИЯ ХАОСА 360 [cite: 2026-03-02]
             const angle = (i / 36) * Math.PI * 2;
-            const x = 110 + 90 * Math.cos(angle) + (Math.random() - 0.5) * 30;
-            const y = 110 + 90 * Math.sin(angle) + (Math.random() - 0.5) * 30;
+            const radius = 95;
+            const x = 110 + radius * Math.cos(angle) + (Math.random() - 0.5) * 25;
+            const y = 110 + radius * Math.sin(angle) + (Math.random() - 0.5) * 25;
             
-            node.style.left = x + 'px';
-            node.style.top = y + 'px';
-            node.style.transform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
+            node.style.left = `${x}px`;
+            node.style.top = `${y}px`;
+            node.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
             
             node.onclick = () => { if (vchf.phase === 'PICK') pick(i, 'player'); };
             container.appendChild(node);
@@ -135,309 +284,292 @@
 
     function pick(idx, actor) {
         const card = vchf.deck[idx];
-        if (card.used) return;
+        if (!card || card.used) return;
         
         card.used = true;
-        document.getElementById('node-' + idx).classList.add('hide');
+        const visualNode = document.getElementById(`node-${idx}`);
+        if(visualNode) visualNode.classList.add('hide');
         
         if (actor === 'player') {
             vchf.pHand.push(card);
-            updateSlot(card); // Безопасная вставка [cite: 2026-02-23]
-            // ИИ берет следом
+            updateSlot(card);
+            
             setTimeout(() => {
                 const avail = vchf.deck.map((c, i) => !c.used ? i : null).filter(n => n !== null);
                 if (avail.length > 0) pick(avail[Math.floor(Math.random() * avail.length)], 'enemy');
             }, 100);
         } else {
             vchf.eHand.push(card);
-            drawSpark();
+            drawSparkVisual();
         }
         
-        if (vchf.deck.filter(c => !c.used).length === 0) startBattle();
+        if (vchf.deck.every(c => c.used)) startBattle();
     }
 
     function updateSlot(card) {
-        const el = document.getElementById('slot-' + card.s + '-' + card.r);
+        const el = document.getElementById(`slot-${card.s}-${card.r}`);
         if (!el) return;
         
         el.classList.add('filled');
         el.style.color = card.c;
+        el.innerHTML = ''; // УДАЛЕНИЕ СТАРОГО МУСОРА [cite: 2026-02-23]
+
+        // ЭТАЛОННАЯ ОТРИСОВКА (БЕЗ `${card.rank}`) [cite: 2026-03-02]
+        const top = document.createElement('div');
+        top.style.cssText = 'position:absolute;top:2px;left:2px;font-size:10px;font-weight:900;';
+        top.textContent = card.r;
         
-        // МЕТОД ПРЯМОЙ ВСТАВКИ (Устранение ошибки со скриншота) [cite: 2026-02-23]
-        const topR = document.createElement('div');
-        topR.style.cssText = 'position:absolute; top:2px; left:2px; font-size:10px;';
-        topR.textContent = card.r;
+        const mid = document.createElement('div');
+        mid.style.fontSize = '22px';
+        mid.textContent = card.s;
         
-        const midS = document.createElement('div');
-        midS.style.fontSize = '20px';
-        midS.textContent = card.s;
+        const bot = document.createElement('div');
+        bot.style.cssText = 'position:absolute;bottom:2px;right:2px;font-size:10px;font-weight:900;transform:rotate(180deg);';
+        bot.textContent = card.r;
         
-        const botR = document.createElement('div');
-        botR.style.cssText = 'position:absolute; bottom:2px; right:2px; font-size:10px; transform:rotate(180deg);';
-        botR.textContent = card.r;
+        el.appendChild(top);
+        el.appendChild(mid);
+        el.appendChild(bot);
         
-        el.innerHTML = '';
-        el.appendChild(topR);
-        el.appendChild(midS);
-        el.appendChild(botR);
-        
-        el.onclick = () => selectFromHand(card);
+        el.onclick = () => { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
 
-    function drawSpark() {
+    function drawSparkVisual() {
         const cont = document.getElementById('spark-cards');
+        if(!cont) return;
         cont.innerHTML = '';
         vchf.eHand.forEach(() => {
-            const m = document.createElement('div');
-            m.className = 'card-back-mini';
-            m.style.width = '10px'; m.style.height = '15px'; 
-            m.style.background = 'var(--gold)'; m.style.opacity = '0.5';
-            cont.appendChild(m);
+            const mini = document.createElement('div');
+            mini.style.cssText = 'width:8px;height:12px;background:var(--gold);opacity:0.5;border-radius:1px;';
+            cont.appendChild(mini);
         });
     }
-
-    window.onload = initLayout;
     /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
        IDENTITY: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
-       RULE: Семь раз проверь — один раз отрежь. [cite: 2026-02-23]
-       MEMORY: Window 3 (lines 1401-2100).
+       RULE: Новый код = Старый код + Логика Битвы [cite: 2026-02-22]
+       MEMORY: Window 3. Синхронизация бит в бит. [cite: 2026-03-03]
     */
 
     function startBattle() {
         vchf.phase = 'BATTLE';
-        
-        // Установка козыря [cite: 2026-02-24]
-        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        const tv = document.getElementById('trump-view');
-        if (tv) {
-            tv.style.display = 'flex';
-            tv.style.color = COLORS[vchf.trump];
-            tv.textContent = vchf.trump;
-        }
-
-        // Подсветка линии управления (30% зона) [cite: 2026-02-24]
-        const targetRow = document.getElementById('s-' + getSuitKey(vchf.trump));
-        if (targetRow) targetRow.style.background = 'rgba(212,175,55,0.1)';
-        
-        vchf.turn = 'player';
-        refreshActions();
+        vchf.turn = 'player'; 
+        alert('КОЛОДА ПУСТА. НАЧИНАЕМ БОЙ!');
+        updateActionButtons();
     }
 
     function selectFromHand(card) {
-        if (vchf.phase !== 'BATTLE') return;
+        if (vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
         
-        // Визуальный отклик выбора [cite: 2026-02-23]
-        document.querySelectorAll('.slot').forEach(s => s.style.boxShadow = 'none');
-        const activeSlot = document.getElementById('slot-' + card.s + '-' + card.r);
-        if (activeSlot) activeSlot.style.boxShadow = 'inset 0 0 10px #000';
-
-        if (vchf.turn === 'player') {
-            // Логика атаки: первый ход или подкидывание по рангу [cite: 2026-02-23]
-            if (vchf.table.length === 0 || canPop(card)) {
-                sendToTable(card, 'player');
-            }
-        } else {
-            // Логика защиты [cite: 2026-02-23]
-            if (canBeat(card)) {
-                beatOnTable(card, 'player');
-            }
-        }
-    }
-
-    function canPop(card) {
-        let match = false;
-        vchf.table.forEach(p => {
-            if (p.atk.r === card.r || (p.def && p.def.r === card.r)) match = true;
-        });
-        return match && vchf.table.length < 6;
-    }
-
-    function canBeat(card) {
-        const target = vchf.table.find(p => !p.def);
-        if (!target) return false;
-        // Правило масти или козыря [cite: 2026-02-23]
-        if (card.s === target.atk.s && card.v > target.atk.v) return true;
-        if (card.s === vchf.trump && target.atk.s !== vchf.trump) return true;
-        return false;
-    }
-
-    function sendToTable(card, actor) {
-        vchf.table.push({ atk: card, def: null });
-        removeFromHand(card, actor);
-        renderTable();
-        if (actor === 'player') setTimeout(sparkDefend, 600);
-    }
-
-    function beatOnTable(card, actor) {
-        const pair = vchf.table.find(p => !p.def);
-        if (pair) {
-            pair.def = card;
-            removeFromHand(card, actor);
+        // Если игрок атакует или защищается
+        if (canPlay(card)) {
+            vchf.table.push({ card: card, actor: 'player' });
+            removeFromHand(card, 'player');
             renderTable();
-            if (actor === 'player') setTimeout(sparkAttack, 800);
+            
+            // Если ход игрока завершен, Spark должен реагировать
+            if (vchf.table.length % 2 !== 0) {
+                vchf.turn = 'enemy';
+                setTimeout(sparkThink, 800);
+            }
         }
+        updateActionButtons();
+    }
+
+    function canPlay(card) {
+        if (vchf.table.length === 0) return true; // Первая карта хода
+        
+        const lastMove = vchf.table[vchf.table.length - 1];
+        
+        // Логика защиты
+        if (vchf.table.length % 2 !== 0) {
+            const target = lastMove.card;
+            // Бьем масть в масть выше рангом или козырем
+            if (card.s === target.s && card.v > target.v) return true;
+            if (card.s === vchf.trump && target.s !== vchf.trump) return true;
+            return false;
+        }
+        
+        // Логика подкидывания (тот же ранг)
+        const activeRanks = vchf.table.map(m => m.card.r);
+        return activeRanks.includes(card.r);
     }
 
     function renderTable() {
-        const field = document.getElementById('battle-field');
-        field.innerHTML = '';
+        const tableCont = document.getElementById('battle-table');
+        if(!tableCont) return;
+        tableCont.innerHTML = '';
         
-        vchf.table.forEach(pair => {
-            const wrapper = document.createElement('div');
-            wrapper.style.position = 'relative';
-            wrapper.style.width = '50px'; wrapper.style.height = '70px';
+        vchf.table.forEach((move, i) => {
+            const card = move.card;
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card-node';
+            cardEl.style.position = 'relative';
+            cardEl.style.display = 'inline-block';
+            cardEl.style.margin = '0 5px';
+            cardEl.style.color = card.c;
+            cardEl.style.background = 'var(--bg-card)';
+            cardEl.style.border = '1px solid var(--gold)';
             
-            const a = createStaticCard(pair.atk);
-            wrapper.appendChild(a);
+            // Защита от бага текста
+            cardEl.innerHTML = `
+                <div style="position:absolute;top:2px;left:2px;font-size:9px;">${card.r}</div>
+                <div style="font-size:18px;text-align:center;margin-top:10px;">${card.s}</div>
+            `;
             
-            if (pair.def) {
-                const d = createStaticCard(pair.def);
-                d.style.position = 'absolute'; d.style.top = '10px'; d.style.left = '8px';
-                wrapper.appendChild(d);
+            // Смещение для защищающейся карты
+            if (i % 2 !== 0) {
+                cardEl.style.transform = 'translateY(-20px) translateX(-15px) rotate(5deg)';
+                cardEl.style.zIndex = '5';
             }
-            field.appendChild(wrapper);
+            
+            tableCont.appendChild(cardEl);
         });
-        refreshActions();
-    }
-
-    function createStaticCard(card) {
-        const c = document.createElement('div');
-        c.style.cssText = 'width:45px; height:65px; background:#fff; border-radius:3px; color:' + card.c + '; border:1px solid #000; display:flex; flex-direction:column; justify-content:space-between; padding:2px; font-weight:bold; font-size:10px;';
-        
-        const t = document.createElement('div'); t.textContent = card.r;
-        const m = document.createElement('div'); m.textContent = card.s; m.style.fontSize = '18px'; m.style.textAlign = 'center';
-        const b = document.createElement('div'); b.textContent = card.r; b.style.transform = 'rotate(180deg)';
-        
-        c.appendChild(t); c.appendChild(m); c.appendChild(b);
-        return c;
-    }
-
-    function getSuitKey(s) {
-        const m = {'♠':'spades', '♣':'clubs', '♦':'diamonds', '♥':'hearts'};
-        return m[s];
-    }
-    /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
-       IDENTITY: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
-       RULE: Новый код = Старый код + Логика Spark [cite: 2023-02-22]
-       MEMORY: Window 4 (lines 2101-2800). Финализация. [cite: 2026-02-23]
-    */
-
-    function sparkDefend() {
-        if (vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
-
-        const target = vchf.table.find(p => !p.def);
-        if (!target) return;
-
-        const atk = target.atk;
-        // Поиск минимальной карты для защиты [cite: 2026-02-23]
-        let candidates = vchf.eHand.filter(c => 
-            (c.s === atk.s && c.v > atk.v) || (c.s === vchf.trump && atk.s !== vchf.trump)
-        );
-
-        candidates.sort((a, b) => {
-            if (a.s === vchf.trump && b.s !== vchf.trump) return 1;
-            if (a.s !== vchf.trump && b.s === vchf.trump) return -1;
-            return a.v - b.v;
-        });
-
-        if (candidates.length > 0) {
-            beatOnTable(candidates[0], 'enemy');
-        } else {
-            setTimeout(sparkTake, 500);
-        }
-    }
-
-    function sparkAttack() {
-        if (vchf.phase !== 'BATTLE') return;
-        vchf.turn = 'enemy';
-
-        let move = null;
-        if (vchf.table.length === 0) {
-            // Атака самой слабой [cite: 2026-02-23]
-            const sorted = [...vchf.eHand].sort((a, b) => a.v - b.v);
-            move = sorted.find(c => c.s !== vchf.trump) || sorted[0];
-        } else {
-            // Подкидывание по рангу [cite: 2026-02-23]
-            const tableRanks = vchf.table.flatMap(p => [p.atk.r, p.def ? p.def.r : null]);
-            const canPop = vchf.eHand.filter(c => tableRanks.includes(c.r)).sort((a,b) => a.v - b.v);
-            if (canPop.length > 0 && vchf.table.length < 6) move = canPop[0];
-        }
-
-        if (move) {
-            sendToTable(move, 'enemy');
-        } else {
-            if (vchf.table.every(p => p.def)) handleBito();
-        }
-    }
-
-    function sparkTake() {
-        vchf.table.forEach(p => {
-            vchf.eHand.push(p.atk);
-            if (p.def) vchf.eHand.push(p.def);
-        });
-        vchf.table = [];
-        drawSpark();
-        renderTable();
-        vchf.turn = 'player';
     }
 
     function removeFromHand(card, actor) {
         if (actor === 'player') {
-            const slot = document.getElementById('slot-' + card.s + '-' + card.r);
-            if (slot) {
-                slot.classList.remove('filled');
-                slot.innerHTML = '';
-                slot.onclick = null;
-            }
             vchf.pHand = vchf.pHand.filter(c => !(c.s === card.s && c.r === card.r));
+            const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+            if(slot) slot.classList.remove('filled');
+            if(slot) slot.innerHTML = '';
         } else {
             vchf.eHand = vchf.eHand.filter(c => !(c.s === card.s && c.r === card.r));
-            drawSpark();
+            drawSparkVisual();
         }
-        checkEnd();
     }
 
-    function refreshActions() {
-        const b = document.getElementById('btn-bito');
-        const t = document.getElementById('btn-take');
-        if (!b || !t) return;
+    function updateActionButtons() {
+        const bBito = document.getElementById('btn-bito');
+        const bTake = document.getElementById('btn-take');
         
-        b.style.display = 'none'; t.style.display = 'none';
-        if (vchf.table.length === 0) return;
-
-        const ready = vchf.table.every(p => p.def);
-        if (vchf.turn === 'player') {
-            if (ready) b.style.display = 'block';
-        } else {
-            if (!ready) t.style.display = 'block';
+        if (vchf.phase === 'BATTLE') {
+            bBito.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
+            bTake.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
         }
     }
 
     function handleBito() {
         vchf.table = [];
-        vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player';
         renderTable();
-        if (vchf.turn === 'enemy') setTimeout(sparkAttack, 600);
+        vchf.turn = 'player';
+        updateActionButtons();
+        alert('БИТО. ТВОЙ ХОД!');
     }
 
     function handleTake() {
-        vchf.table.forEach(p => {
-            vchf.pHand.push(p.atk); updateSlot(p.atk);
-            if (p.def) { vchf.pHand.push(p.def); updateSlot(p.def); }
-        });
+        vchf.pHand = [...vchf.pHand, ...vchf.table.map(m => m.card)];
         vchf.table = [];
+        vchf.pHand.forEach(c => updateSlot(c));
         renderTable();
-        setTimeout(sparkAttack, 800);
+        vchf.turn = 'enemy';
+        updateActionButtons();
+        setTimeout(sparkThink, 1000);
+    }
+    /* PROJECT: VCHF 2.0 (Bi-Turbo Ultimate)
+       IDENTITY: Нулевой Хаос (Zero Chaos) [cite: 2026-02-28]
+       RULE: Новый код = Старый код + Интеллект Spark [cite: 2026-02-22]
+       MEMORY: Window 4. Финализация. Синхрон 1:1. [cite: 2026-03-03]
+    */
+
+    function sparkThink() {
+        if (vchf.phase !== 'BATTLE') return;
+
+        let actionTaken = false;
+
+        // Если Spark защищается
+        if (vchf.table.length % 2 !== 0) {
+            const target = vchf.table[vchf.table.length - 1].card;
+            // Ищем карту для защиты (сначала не козырь, потом козырь)
+            let candidates = vchf.eHand.filter(c => (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump));
+            candidates.sort((a, b) => a.v - b.v); // Берем минимально возможную для защиты
+
+            if (candidates.length > 0) {
+                const choice = candidates[0];
+                vchf.table.push({ card: choice, actor: 'enemy' });
+                removeFromHand(choice, 'enemy');
+                actionTaken = true;
+            } else {
+                // Spark не может отбиться - забирает карты
+                sparkTake();
+                return;
+            }
+        } 
+        // Если Spark атакует или подкидывает
+        else {
+            if (vchf.table.length === 0) {
+                // Первый ход Spark (выбирает самую слабую не козырную карту)
+                let candidates = [...vchf.eHand].sort((a, b) => a.v - b.v);
+                const choice = candidates[0];
+                vchf.table.push({ card: choice, actor: 'enemy' });
+                removeFromHand(choice, 'enemy');
+                actionTaken = true;
+            } else {
+                // Попытка подкинуть ранг
+                const activeRanks = vchf.table.map(m => m.card.r);
+                let candidates = vchf.eHand.filter(c => activeRanks.includes(c.r));
+                if (candidates.length > 0 && vchf.table.length < 6) {
+                    const choice = candidates[0];
+                    vchf.table.push({ card: choice, actor: 'enemy' });
+                    removeFromHand(choice, 'enemy');
+                    actionTaken = true;
+                } else {
+                    // Больше нечего подкидывать - БИТО
+                    sparkBito();
+                    return;
+                }
+            }
+        }
+
+        renderTable();
+        if (actionTaken) {
+            vchf.turn = 'player';
+            checkGameOver();
+        }
+        updateActionButtons();
     }
 
-    function checkEnd() {
+    function sparkTake() {
+        alert('SPARK ЗАБИРАЕТ КАРТЫ!');
+        vchf.eHand = [...vchf.eHand, ...vchf.table.map(m => m.card)];
+        vchf.table = [];
+        renderTable();
+        drawSparkVisual();
+        vchf.turn = 'player';
+        updateActionButtons();
+        checkGameOver();
+    }
+
+    function sparkBito() {
+        alert('SPARK ГОВОРИТ: БИТО!');
+        vchf.table = [];
+        renderTable();
+        vchf.turn = 'enemy';
+        updateActionButtons();
+        checkGameOver();
+        // После Бито Spark может ходить снова, если у него есть карты
+        if (vchf.turn === 'enemy') setTimeout(sparkThink, 1000);
+    }
+
+    function checkGameOver() {
         if (vchf.deck.every(c => c.used)) {
-            if (vchf.pHand.length === 0 || vchf.eHand.length === 0) {
-                alert("КОНЕЦ ЦИКЛА. МОНОЛИТ СТАБИЛЕН.");
+            if (vchf.pHand.length === 0 && vchf.eHand.length === 0) {
+                alert('НИЧЬЯ! МОНОЛИТ СТАБИЛЕН.');
+                location.reload();
+            } else if (vchf.pHand.length === 0) {
+                alert('ТЫ ПОБЕДИЛ! SPARK УХОДИТ В ОФЛАЙН.');
+                location.reload();
+            } else if (vchf.eHand.length === 0) {
+                alert('SPARK ПОБЕДИЛА! УЧИСЬ, СТУДЕНТ.');
                 location.reload();
             }
         }
     }
+
+    // Инициализация при старте
+    window.onload = () => {
+        initLayout();
+        console.log("Движок VCHF активен. Протокол 1.1 запущен.");
+    };
     </script>
 </body>
 </html>
