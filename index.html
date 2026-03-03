@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Shadow & Pulsar Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Pulsar Edition)</title>
     <style>
         :root {
             --gold: #ffcf40;
@@ -57,9 +57,15 @@
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 44px 44px; pointer-events: none; z-index: 0;
         }
-        .particle {
-            position: absolute; width: 3px; height: 3px; background: var(--gold);
-            border-radius: 50%; pointer-events: none; z-index: 1000; box-shadow: 0 0 8px var(--gold);
+        .arena-top::before {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255, 207, 64, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%); animation: nebulaPulse 10s infinite alternate;
+            pointer-events: none; z-index: 1;
+        }
+        @keyframes nebulaPulse {
+            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
         }
         .card-node {
             position: absolute; width: 55px; height: 77px;
@@ -69,7 +75,12 @@
             cursor: pointer; z-index: 10; transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             transform-style: preserve-3d;
         }
-        .card-node.face-up { background-image: none !important; background-color: var(--bg-card); transform: rotateY(0deg); border: 1px solid #fff; }
+        .card-node.face-up { 
+            background-image: none !important; background-color: var(--bg-card); 
+            transform: rotateY(0deg); border: 1px solid #fff; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+        }
+        .card-node.face-up:active { transform: scale(1.1) translateY(-10px); z-index: 500 !important; }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
         .shuffling { transition: all 0.2s ease-in-out !important; }
 
@@ -99,6 +110,7 @@
 #  КОНЕЦ ОКНА №1. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
 #  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №2                                #
 ############################################################# */
+
 /* #############################################################
 #  НАЧАЛО ОКНА №2. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
 ############################################################# */
