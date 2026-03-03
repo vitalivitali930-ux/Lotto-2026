@@ -11,7 +11,7 @@
             --nebula-core: #222a44; 
             --spark-neon: #00fa9a;
             --trump-halo: #8a2be2; 
-            --cherry-pulse: #4a0404; /* Твой Вишневый импульс сохранен */
+            --cherry-pulse: #4a0404;
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.06); 
         }
@@ -21,8 +21,6 @@
             font-family: 'Segoe UI', sans-serif; height: 100vh;
             overflow: hidden; display: flex; flex-direction: column; perspective: 1200px; 
         }
-
-        /* [NEW LOGIC] ЛОББИ - ЭКРАН ВЫБОРА (Внедрено поверх твоего стиля) */
         #lobby-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, var(--nebula-core), #000);
@@ -50,19 +48,15 @@
             border-bottom: 2px solid rgba(255, 207, 64, 0.25);
             overflow: hidden; transform-style: preserve-3d; transform: rotateX(8deg); margin-top: 5px;
         }
-
         @keyframes tableBreathe {
             0%, 100% { background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%); filter: brightness(0.8); }
             50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%); filter: brightness(1.2); }
         }
-
         .arena-top::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 44px 44px; pointer-events: none; z-index: 0;
         }
-        
-        /* [RESTORED] Твои частицы, пыль и 3D анимации */
         .particle {
             position: absolute; width: 3px; height: 3px; background: var(--gold);
             border-radius: 50%; pointer-events: none; z-index: 1000; box-shadow: 0 0 8px var(--gold);
@@ -77,7 +71,6 @@
         }
         .card-node.face-up { background-image: none !important; background-color: var(--bg-card); transform: rotateY(0deg); border: 1px solid #fff; }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
-        
         .shuffling { transition: all 0.2s ease-in-out !important; }
 
         .trump-status { 
@@ -101,6 +94,14 @@
             z-index: 2000; border-top: 1px solid rgba(255, 207, 64, 0.2);
         }
         .suits-grid { display: flex; flex-direction: column; height: 100%; padding-left: 80px; align-items: center; }
+
+/* #############################################################
+#  КОНЕЦ ОКНА №1. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
+#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №2                                #
+############################################################# */
+/* #############################################################
+#  НАЧАЛО ОКНА №2. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
+############################################################# */
         .suit-row { display: flex; height: 44px; margin-top: -12px; }
         .slot { 
             width: 53px; height: 72px; background: rgba(255, 255, 255, 0.05); 
@@ -108,22 +109,6 @@
             margin-left: -28px; border-radius: 5px; transition: all 0.4s; backdrop-filter: blur(5px);
         }
         .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -7px 0 20px rgba(0,0,0,0.6); }
-    </style>
-</head>
-    <style>
-        #status-msg {
-            position: absolute; top: 40%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: rgba(16, 20, 32, 0.95); border: 1px solid var(--gold);
-            color: var(--gold); padding: 15px 35px; text-align: center;
-            z-index: 2100; box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(255, 207, 64, 0.3);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: bold; letter-spacing: 3px; pointer-events: none; backdrop-filter: blur(10px);
-        }
-        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
-        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
-        #chaos-deck { position: relative; width: 280px; height: 280px; }
-        
         .action-btns { position: absolute; bottom: 20px; left: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 2500; }
         button { 
             padding: 14px 22px; background: rgba(255, 207, 64, 0.05); 
@@ -137,11 +122,22 @@
             display: flex; align-items: center; justify-content: center; 
             background: linear-gradient(to bottom, rgba(0, 250, 154, 0.12), transparent); z-index: 50;
         }
+        #status-msg {
+            position: absolute; top: 40%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(16, 20, 32, 0.95); border: 1px solid var(--gold);
+            color: var(--gold); padding: 15px 35px; text-align: center;
+            z-index: 2100; box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(255, 207, 64, 0.3);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: bold; letter-spacing: 3px; pointer-events: none; backdrop-filter: blur(10px);
+        }
+        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
+        .chaos-deck-container { height: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 5; }
+        #chaos-deck { position: relative; width: 280px; height: 280px; }
     </style>
 </head>
 <body>
     <div id="lobby-overlay"></div>
-    
     <div id='status-msg'></div>
     <div class='arena-top' id='arena'>
         <div class='spark-zone'>
@@ -165,18 +161,23 @@
     </div>
 
 <script>
-    /* [Манифест Монолита: Код Искры. Совместимость с Pulsar Edition 100%] */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
     var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player', maxPlayers: 2 };
     
-    // [NEW] База столов
     var tables = [
         { id: 1, max: 2 }, { id: 2, max: 3 }, { id: 3, max: 4 }, 
         { id: 4, max: 5 }, { id: 5, max: 6 }, { id: 6, max: 2 }
     ];
 
+/* #############################################################
+#  КОНЕЦ ОКНА №2. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
+#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №3                                #
+############################################################# */
+/* #############################################################
+#  НАЧАЛО ОКНА №3. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
+############################################################# */
     var AudioCtx = window.AudioContext || window.webkitAudioContext;
     var ctx = null;
 
@@ -212,14 +213,13 @@
                 vchf.maxPlayers = t.max; 
                 lob.classList.add('hidden-lobby'); 
                 showMsg('СТОЛ: ' + t.max + ' ИГРОКОВ');
+                drawSparkVisual();
             };
-            d.innerHTML = `
-                <div class="table-id">0${t.id}</div>
-                <div class="table-status">MAX: ${t.max}</div>
-            `;
+            d.innerHTML = `<div class="table-id">0${t.id}</div><div class="table-status">MAX: ${t.max}</div>`;
             lob.appendChild(d);
         });
     }
+
     function createDust(x, y) {
         var arena = document.getElementById('arena');
         for(var i=0; i<20; i++) {
@@ -267,19 +267,19 @@
                 t.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
             });
         });
-
-        /* [ПРОТОКОЛ ТЕНЕЙ] Удаление карты при 5 игроках */
-        if(vchf.maxPlayers === 5) {
-            let shadow = Math.floor(Math.random() * t.length);
-            t.splice(shadow, 1);
-            console.log("Shadow Protocol: Одна карта аннигилирована.");
-        }
-
+        if(vchf.maxPlayers === 5) { t.splice(Math.floor(Math.random() * t.length), 1); }
         vchf.deck = t;
         renderChaos();
         setTimeout(visualShuffle, 100);
     }
 
+/* #############################################################
+#  КОНЕЦ ОКНА №3. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
+#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №4                                #
+############################################################# */
+/* #############################################################
+#  НАЧАЛО ОКНА №4. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
+############################################################# */
     function renderChaos() {
         var c = document.getElementById('chaos-deck');
         if(!c) return;
@@ -314,6 +314,7 @@
             if(elapsed > duration) { clearInterval(interval); finalizeShuffle(); }
         }, 80);
     }
+
     function finalizeShuffle() {
         vchf.deck.sort(function() { return Math.random() - 0.5; });
         vchf.trump = SUITS[Math.floor(Math.random() * 4)];
@@ -385,6 +386,14 @@
         el.appendChild(t); el.appendChild(m);
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
+
+/* #############################################################
+#  КОНЕЦ ОКНА №4. ДАЛЬШЕ НЕ КОПИРОВАТЬ!                      #
+#  СЛЕДУЮЩИЙ КУСОК В ОКНЕ №5                                #
+############################################################# */
+/* #############################################################
+#  НАЧАЛО ОКНА №5. КОПИРУЙ ОТСЮДА И КЛЕЙ К ПРЕДЫДУЩЕМУ      #
+############################################################# */
     function getTableCoords(index) {
         var isBottomRow = index >= 3;
         var colIndex = index % 3;
@@ -424,8 +433,7 @@
 
     function handleBito() {
         playSound('bito');
-        var tableCards = document.querySelectorAll('#battle-table .card-node');
-        tableCards.forEach(function(card) {
+        document.querySelectorAll('#battle-table .card-node').forEach(function(card) {
             var rect = card.getBoundingClientRect();
             createDust(rect.left + 28, rect.top + 38);
         });
@@ -460,28 +468,20 @@
             } else { sparkTake(); }
         } else {
             if(vchf.table.length === 0) {
-                playSound('slide');
                 var ch = vchf.eHand.sort(function(a,b) { return a.v - b.v; })[0];
                 vchf.table.push({card: ch, actor: 'enemy'});
                 removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
             } else { 
-                if(vchf.table.length < 12) {
-                    var activeRanks = vchf.table.map(function(m) { return m.card.r; });
-                    var cand = vchf.eHand.filter(function(c) { return activeRanks.indexOf(c.r) !== -1; });
-                    if(cand.length > 0) {
-                        playSound('slide');
-                        var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
-                        removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
-                        return;
-                    }
-                }
-                sparkBito(); 
+                var activeRanks = vchf.table.map(function(m) { return m.card.r; });
+                var cand = vchf.eHand.filter(function(c) { return activeRanks.indexOf(c.r) !== -1; });
+                if(cand.length > 0) {
+                    var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
+                    removeFromHand(ch, 'enemy'); renderTable(); vchf.turn = 'player'; checkEnd();
+                } else { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1200); }
             }
         }
         updateActionButtons();
     }
-
-    function sparkBito() { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1200); }
 
     function sparkTake() {
         showMsg('SPARK: БЕРУ');
@@ -515,11 +515,15 @@
         var cont = document.getElementById('spark-cards');
         if(!cont) return;
         cont.innerHTML = '';
-        vchf.eHand.forEach(function() {
+        var botCount = vchf.maxPlayers - 1; 
+        for (var i = 0; i < botCount; i++) {
             var m = document.createElement('div');
-            m.style.cssText = 'width:14px;height:20px;background:var(--spark-neon);opacity:0.6;border:1px solid #000;border-radius:2px;box-shadow:0 0 12px var(--spark-neon);';
+            m.style.cssText = 'width:12px; height:18px; background:var(--spark-neon); opacity:0.8; border:1px solid #000; border-radius:2px; box-shadow:0 0 10px var(--spark-neon); position:relative;';
+            var dot = document.createElement('div');
+            dot.style.cssText = 'width:3px; height:3px; background:#fff; border-radius:50%; position:absolute; top:3px; left:4px; opacity:0.6;';
+            m.appendChild(dot);
             cont.appendChild(m);
-        });
+        }
     }
 
     function updateActionButtons() {
@@ -547,10 +551,10 @@
         }
     }
 
-    window.onload = function() { 
-        initLayout(); 
-        initLobby(); 
-    };
+    window.onload = function() { initLayout(); initLobby(); };
 </script>
 </body>
 </html>
+/* #############################################################
+#  КОНЕЦ ОКНА №5. ФАЙЛ ЗАВЕРШЕН. МАНИФЕСТ МОНОЛИТА.        #
+############################################################# */
