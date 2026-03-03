@@ -40,23 +40,21 @@
             width: 45px;
             height: 62px;
             background-color: var(--velvet-bright);
-            background-image: url('1771489965074(1).png'); /* ТВОЯ РУБАШКА [cite: 2026-02-24] */
+            background-image: url('1771489965074(1).png');
             background-size: cover;
             border: 1px solid var(--gold);
             border-radius: 4px;
             box-shadow: var(--shadow-gold);
             cursor: pointer;
             z-index: 10;
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* ДИНАМИКА [cite: 2026-03-03] */
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        /* Лицо карты при раздаче */
         .card-node.face-up {
             background-image: none !important;
             background-color: var(--bg-card);
         }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5); }
         
-        /* ВНУТРЕННЕЕ СООБЩЕНИЕ [cite: 2026-03-03] */
         #status-msg {
             position: absolute;
             top: 50%; left: 50%;
@@ -123,6 +121,7 @@
 
     function showMsg(txt) {
         var m = document.getElementById('status-msg');
+        if(!m) return;
         m.textContent = txt;
         m.classList.add('active');
         setTimeout(function() { m.classList.remove('active'); }, 2500);
@@ -132,13 +131,15 @@
         var rows = {'♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts'};
         SUITS.forEach(function(s) {
             var r = document.getElementById(rows[s]);
-            r.innerHTML = '';
-            RANKS.forEach(function(rank) {
-                var sl = document.createElement('div');
-                sl.className = 'slot';
-                sl.id = 'slot-' + s + '-' + rank;
-                r.appendChild(sl);
-            });
+            if(r) {
+                r.innerHTML = '';
+                RANKS.forEach(function(rank) {
+                    var sl = document.createElement('div');
+                    sl.className = 'slot';
+                    sl.id = 'slot-' + s + '-' + rank;
+                    r.appendChild(sl);
+                });
+            }
         });
     }
 
@@ -171,9 +172,16 @@
             n.style.top = (105 + r * Math.sin(a)) + 'px';
             n.style.zIndex = i;
             n.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
-            n.onclick = function() { if(vchf.phase === 'PICK') pick(i, 'player'); };
+            n.onclick = function() { if(vchf.phase === 'PICK') pick(idxToDeck(card), 'player'); };
             c.appendChild(n);
         });
+    }
+
+    function idxToDeck(card) {
+        for(var i=0; i<vchf.deck.length; i++) {
+            if(vchf.deck[i].s === card.s && vchf.deck[i].r === card.r) return i;
+        }
+        return -1;
     }
 
     function pick(idx, actor) {
@@ -183,43 +191,46 @@
         var node = document.getElementById('node-' + idx);
         
         if(actor === 'player') {
-            // Анимация полета к слоту
-            var target = document.getElementById('slot-' + c.s + '-' + c.r);
-            var rect = target.getBoundingClientRect();
-            var parent = document.getElementById('chaos-deck').getBoundingClientRect();
-            node.style.left = (rect.left - parent.left) + 'px';
-            node.style.top = (rect.top - parent.top) + 'px';
-            node.style.transform = 'rotate(0deg) scale(1.1)';
-            node.style.zIndex = 1000;
-
-            setTimeout(function() {
-                node.classList.add('hide');
-                vchf.pHand.push(c);
-                updateSlot(c);
-                var av = [];
-                vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
-                if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
-                if(vchf.deck.every(function(x) { return x.used; })) finishChaos();
-            }, 500);
+            vchf.pHand.push(c);
+            if(node) {
+                var target = document.getElementById('slot-' + c.s + '-' + c.r);
+                var rect = target.getBoundingClientRect();
+                var parent = document.getElementById('chaos-deck').getBoundingClientRect();
+                node.style.left = (rect.left - parent.left) + 'px';
+                node.style.top = (rect.top - parent.top) + 'px';
+                node.style.zIndex = 1000;
+                setTimeout(function() {
+                    node.classList.add('hide');
+                    updateSlot(c);
+                    var av = [];
+                    vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
+                    if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
+                    checkFinal();
+                }, 500);
+            }
         } else {
-            // Полет к Spark
-            node.style.top = '-100px';
-            node.style.opacity = '0';
-            setTimeout(function() {
-                node.classList.add('hide');
-                vchf.eHand.push(c);
-                drawSparkVisual();
-                if(vchf.deck.every(function(x) { return x.used; })) finishChaos();
-            }, 500);
+            vchf.eHand.push(c);
+            if(node) {
+                node.style.top = '-150px';
+                node.style.opacity = '0';
+                setTimeout(function() { 
+                    node.classList.add('hide'); 
+                    drawSparkVisual();
+                    checkFinal();
+                }, 500);
+            }
         }
     }
 
-    function finishChaos() {
-        vchf.phase = 'BATTLE';
-        showMsg('ХАОС ЗАВЕРШЕН. КАРТЫ НА СТОЛЕ!'); [cite: 2026-03-03]
-        updateActionButtons();
+    function checkFinal() {
+        if(vchf.deck.every(function(x) { return x.used; })) {
+            if(vchf.phase !== 'BATTLE') {
+                vchf.phase = 'BATTLE';
+                showMsg('ХАОС ЗАВЕРШЕН. КАРТЫ НА СТОЛЕ!');
+                updateActionButtons();
+            }
+        }
     }
-
     function updateSlot(card) {
         var el = document.getElementById('slot-' + card.s + '-' + card.r);
         if(!el) return;
@@ -235,12 +246,14 @@
         el.appendChild(t); el.appendChild(m);
         el.onclick = function() { if(vchf.phase === 'BATTLE') selectFromHand(card); };
     }
+
     function drawSparkVisual() {
         var cont = document.getElementById('spark-cards');
+        if(!cont) return;
         cont.innerHTML = '';
         vchf.eHand.forEach(function() {
             var m = document.createElement('div');
-            m.style.cssText = 'width:8px;height:12px;background:var(--gold);opacity:0.5;border-radius:1px;box-shadow:0 0 3px var(--gold);';
+            m.style.cssText = 'width:8px;height:12px;background:var(--gold);opacity:0.5;border-radius:1px;';
             cont.appendChild(m);
         });
     }
@@ -274,11 +287,12 @@
 
     function renderTable() {
         var tc = document.getElementById('battle-table');
+        if(!tc) return;
         tc.innerHTML = '';
         vchf.table.forEach(function(move, i) {
             var c = move.card;
             var el = document.createElement('div');
-            el.className = 'card-node face-up'; // Проявление лица при ходе
+            el.className = 'card-node face-up';
             el.style.position = 'relative';
             el.style.display = 'inline-block';
             el.style.color = c.c;
@@ -288,8 +302,7 @@
             var s = document.createElement('div');
             s.style.cssText = 'font-size:22px;text-align:center;margin-top:12px;';
             s.textContent = c.s;
-            el.appendChild(r);
-            el.appendChild(s);
+            el.appendChild(r); el.appendChild(s);
             if(i % 2 !== 0) el.style.transform = 'translateY(-20px) translateX(-15px) rotate(8deg)';
             tc.appendChild(el);
         });
@@ -332,31 +345,26 @@
         updateActionButtons();
     }
 
-    function sparkBito() {
-        showMsg('SPARK: БИТО!');
-        setTimeout(handleBito, 1000);
-    }
-
+    function sparkBito() { showMsg('SPARK: БИТО!'); setTimeout(handleBito, 1000); }
     function sparkTake() {
         showMsg('SPARK: БЕРУ...');
         vchf.eHand = vchf.eHand.concat(vchf.table.map(function(m) { return m.card; }));
         vchf.table = [];
-        drawSparkVisual();
-        renderTable();
-        vchf.turn = 'player';
-        updateActionButtons();
+        drawSparkVisual(); renderTable();
+        vchf.turn = 'player'; updateActionButtons();
     }
 
     function updateActionButtons() {
         var bB = document.getElementById('btn-bito');
         var bT = document.getElementById('btn-take');
-        bB.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
-        bT.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
+        if(bB && bT) {
+            bB.style.display = (vchf.table.length > 0 && vchf.table.length % 2 === 0) ? 'block' : 'none';
+            bT.style.display = (vchf.table.length > 0 && vchf.table.length % 2 !== 0) ? 'block' : 'none';
+        }
     }
 
     function handleBito() { 
-        vchf.table = []; 
-        renderTable(); 
+        vchf.table = []; renderTable(); 
         vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player'; 
         updateActionButtons();
         if(vchf.turn === 'enemy') setTimeout(sparkThink, 600);
@@ -366,9 +374,7 @@
         vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
         vchf.table = [];
         vchf.pHand.forEach(function(c) { updateSlot(c); });
-        renderTable();
-        vchf.turn = 'enemy';
-        updateActionButtons();
+        renderTable(); vchf.turn = 'enemy'; updateActionButtons();
         setTimeout(sparkThink, 1000);
     }
 
@@ -379,7 +385,6 @@
             else if(vchf.eHand.length === 0) { showMsg('SPARK ВЗЯЛА ВЕРХ!'); setTimeout(function(){location.reload();}, 3000); }
         }
     }
-
     window.onload = function() { initLayout(); };
 </script>
 </body>
