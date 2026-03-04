@@ -3,347 +3,351 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Ultimate</title>
+    <title>VCHF 2.0 - Bi-Turbo Online Duel (Zero Chaos)</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --gold: #ffcf40;
-            --space-dark: #121625; 
-            --nebula-core: #222a44; 
-            --spark-neon: #00fa9a;
-            --trump-halo: #8a2be2; 
-            --cherry-pulse: #4a0404; 
-            --bg-card: #ffffff;
-            --grid-color: rgba(255, 207, 64, 0.08); 
-            --card-w: 55px;
-            --card-h: 77px;
-            --micro-scale: 0.25;
+            --gold: #ffcf40; --space-dark: #121625; --nebula-core: #222a44; 
+            --spark-neon: #00fa9a; --trump-halo: #8a2be2; --cherry-pulse: #4a0404; 
+            --bg-card: #ffffff; --grid-color: rgba(255, 207, 64, 0.08); 
+            --card-w: 55px; --card-h: 77px; --micro-scale: 0.25;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #050505; color: #e0e6ff;
-            font-family: 'Segoe UI', sans-serif;
-            height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
+            background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
+        }
+
+        /* Индикатор сети */
+        #net-status {
+            position: fixed; top: 10px; left: 10px; z-index: 6000; font-size: 9px;
+            background: rgba(0,0,0,0.7); padding: 5px; border-left: 2px solid var(--spark-neon);
+            letter-spacing: 1px; pointer-events: none;
         }
 
         .arena-top {
             flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
             animation: tableBreathe 10s infinite ease-in-out;
-            overflow: hidden; z-index: 1;
-        }
-
-        /* ЛОГОТИП МОНОЛИТА */
-        .monolith-logo {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px; opacity: 0.15;
-            pointer-events: none; z-index: 0;
-            filter: grayscale(1) brightness(1.5);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            border-bottom: 2px solid rgba(255, 207, 64, 0.3);
+            overflow: hidden; transform-style: preserve-3d; transform: rotateX(10deg); z-index: 1;
         }
 
         @keyframes tableBreathe {
             0%, 100% { filter: brightness(0.8); }
-            50% { filter: brightness(1.1); }
+            50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1); }
+        }
+
+        .arena-top::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.5;
         }
 
         .trump-status { 
-            position: fixed; top: 20px; right: 20px; 
-            width: 70px; height: 70px; border: 2px solid var(--gold); 
-            background: #000; display: flex; justify-content: center; align-items: center; 
-            z-index: 5000; border-radius: 50%;
-            box-shadow: 0 0 25px var(--gold);
+            position: fixed; top: 20px; right: 20px; width: 70px; height: 70px; 
+            border: 2px solid var(--gold); background: #000; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; z-index: 5000;
+            box-shadow: 0 0 25px var(--gold), 0 0 50px var(--trump-halo);
         }
 
-        #trump-icon { font-size: 44px; z-index: 5005; }
+        #trump-icon { font-size: 44px; text-shadow: 0 0 15px #fff, 0 0 30px var(--trump-halo); }
 
         .card-node {
             position: absolute; width: var(--card-w); height: var(--card-h);
-            background-color: #1a1a1a; border: 1px solid rgba(255, 207, 64, 0.5);
-            border-radius: 6px; z-index: 10;
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            background: #1a1a1a url('1771489965074(1).png') center/cover;
+            border: 1px solid rgba(255, 207, 64, 0.5); border-radius: 6px;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1); transform-style: preserve-3d; z-index: 10;
         }
 
-        .card-node.face-up { background-color: var(--bg-card); border: 1px solid #fff; }
-        .card-node.hide { opacity: 0; pointer-events: none; }
+        .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; }
 
         .control-bottom {
-            height: 130px; position: relative;
-            background: linear-gradient(to top, #000 10%, #0c0f18 100%);
-            z-index: 4000; border-top: 1px solid rgba(255, 207, 64, 0.3);
-            transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
+            height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
+            border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
         }
-
         .control-bottom.expanded { height: 350px; }
 
-        .suits-grid { display: flex; flex-direction: column; width: 100%; align-items: center; gap: 2px; margin-top: 15px; }
+        .suits-grid { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 15px; }
         .suit-row { display: flex; height: 22px; transition: 0.4s; }
 
         .slot { 
-            width: var(--card-w); height: var(--card-h);
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 207, 64, 0.2); 
-            position: relative; margin-left: -42px; border-radius: 4px; 
-            transform: scale(var(--micro-scale)); transform-origin: center bottom;
+            width: var(--card-w); height: var(--card-h); background: rgba(255,255,255,0.03); 
+            border: 1px solid rgba(255,207,64,0.2); margin-left: -42px; transform: scale(var(--micro-scale));
+            transform-origin: center bottom; transition: 0.5s; border-radius: 4px;
         }
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
 
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; }
-
-        .control-bottom.expanded .suit-row { height: 65px; }
+        .control-bottom.expanded .suit-row { height: 65px; margin-bottom: 5px; }
         .control-bottom.expanded .slot { transform: scale(1.1) translateY(-15px); margin-left: -18px; }
 
         #status-msg {
             position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; color: var(--gold); font-weight: bold;
-            opacity: 0; transition: 0.6s; text-align: center;
+            z-index: 9999; color: var(--gold); font-weight: bold; letter-spacing: 4px;
+            text-shadow: 0 0 20px var(--gold); opacity: 0; transition: 0.6s; text-align: center;
         }
-        #status-msg.active { opacity: 1; }
+        #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
         .action-btns { position: absolute; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 4500; }
-        button { padding: 14px 22px; background: #101420; border: 1px solid var(--gold); color: var(--gold); cursor: pointer; }
+        button { 
+            padding: 12px 18px; background: rgba(16,20,32,0.9); border: 1px solid var(--gold); 
+            color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; text-transform: uppercase;
+        }
         .particle { position: absolute; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; pointer-events: none; }
     </style>
 </head>
 <body>
+    <div id="net-status">ID: <span id="peer-id">CONNECTING...</span><br>ROOM: <span id="room-info">---</span></div>
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
 
     <div class='arena-top' id='arena'>
-        <img src="1771489965074(1).png" class="monolith-logo" alt="VCHF LOGO">
-        
-        <div class='spark-zone' style="padding:15px; position:relative; z-index:100;">
-            <span style='font-size:10px; color:var(--spark-neon); letter-spacing:3px;'>SPARK AI CORE</span>
-            <div id='spark-cards' style='margin-top:8px; display:flex; gap:4px;'></div>
-        </div>
+        <div id="enemy-stat" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); color:var(--spark-neon); font-size:10px; letter-spacing:2px; z-index:100;"></div>
         <div id='chaos-deck'></div>
         <div id='battle-table'></div>
     </div>
 
     <div class='control-bottom' id='ctrl-panel'>
-        <button id='btn-zoom' style="position:absolute; top:-25px; right:30px; width:50px; height:50px; border-radius:50%;" onclick='toggleHand()'>↕</button>
-        <div class='suits-grid' id='main-hand' onclick="if(!isExpanded) toggleHand()">
+        <div style="position:absolute; top:-30px; right:30px; z-index:4600;">
+            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; font-size:22px;" onclick='toggleHand()'>↕</button>
+        </div>
+        <div class='suits-grid' id='main-hand'>
             <div id='s-spades' class='suit-row'></div>
             <div id='s-clubs' class='suit-row'></div>
             <div id='s-diamonds' class='suit-row'></div>
             <div id='s-hearts' class='suit-row'></div>
         </div>
         <div class='action-btns'>
-            <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ ХАОСА</button>
-            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО / ЗАВЕРШИТЬ</button>
+            <button id='btn-net' onclick='startNetwork()'>ПОДКЛЮЧЕНИЕ</button>
+            <button id='btn-ready' style="display:none" onclick='sendReady()'>ГОТОВНОСТЬ</button>
+            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО</button>
             <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ КАРТЫ</button>
         </div>
     </div>
 <script>
-    let audioCtx = null;
+    // --- ГЛОБАЛЬНЫЕ КОНСТАНТЫ И СОСТОЯНИЕ ---
+    const SUITS = ['♠', '♣', '♦', '♥'];
+    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
+    
+    let vchf = {
+        deck: [], pHand: [], eCount: 0, table: [],
+        trump: '', phase: 'WAIT', turn: 'host', pickTurn: 'host'
+    };
+
+    let peer = null, conn = null, myRole = 'host';
+    let localReady = false, remoteReady = false;
+    let isExpanded = false, audioCtx = null;
+
+    // --- ЗВУКОВОЙ ДВИЖОК (БЕЗ ПОТЕРЬ) ---
     function playSound(type) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
+
         if (type === 'slide') {
+            osc.type = 'triangle';
             osc.frequency.setValueAtTime(220, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         } else if (type === 'bito') {
+            osc.type = 'sine';
             osc.frequency.setValueAtTime(120, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
         }
     }
-    // --- ГЛОБАЛЬНЫЕ КОНСТАНТЫ ---
-    const SUITS = ['♠', '♣', '♦', '♥'];
-    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
-    
-    // --- СОСТОЯНИЕ МОНОЛИТА (vchf 2.0) ---
-    let vchf = {
-        deck: [],
-        pHand: [],
-        eHand: [],
-        table: [],
-        trump: '',
-        phase: 'WAIT',
-        turn: 'player',
-        // Психика и Память Искры (Интеграция Нулевого Хаоса)
-        memory: {
-            outCards: new Set(),
-            playerSeen: new Set(),
-            dangerLevel: 0
-        }
-    };
-    
-    let isExpanded = false;
 
-    function showMsg(text) {
-        const msg = document.getElementById('status-msg');
-        msg.textContent = text;
-        msg.classList.add('active');
-        setTimeout(() => msg.classList.remove('active'), 3000);
+    function showMsg(t) {
+        const m = document.getElementById('status-msg');
+        m.textContent = t; m.classList.add('active');
+        setTimeout(() => m.classList.remove('active'), 3000);
     }
 
-    // --- ФАЗА ИНИЦИАЦИИ (IGNITE) ---
-    function ignite() {
-        document.getElementById('btn-ready').style.display = 'none';
-        vchf.phase = 'SHUFFLING';
-        
-        let tempDeck = [];
-        SUITS.forEach(s => {
-            RANKS.forEach(r => {
-                tempDeck.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
-            });
+    // --- СЕТЕВАЯ ИНИЦИАЛИЗАЦИЯ ---
+    function startNetwork() {
+        const targetId = prompt("ID ДРУГА (пусто, если ты HOST):");
+        peer = new Peer();
+
+        peer.on('open', (id) => {
+            document.getElementById('peer-id').textContent = id;
+            if (targetId) {
+                myRole = 'guest';
+                conn = peer.connect(targetId);
+                setupConn();
+            } else {
+                showMsg("ЖДЕМ ПОДКЛЮЧЕНИЯ...");
+            }
         });
-        vchf.deck = tempDeck;
+
+        peer.on('connection', (c) => {
+            if (conn) return;
+            conn = c;
+            setupConn();
+        });
+    }
+
+    function setupConn() {
+        conn.on('open', () => {
+            document.getElementById('room-info').textContent = (myRole==='host'?'HOST':'GUEST');
+            document.getElementById('btn-net').style.display = 'none';
+            document.getElementById('btn-ready').style.display = 'block';
+            showMsg("СВЯЗЬ УСТАНОВЛЕНА");
+            
+            conn.on('data', (data) => handleNetData(data));
+        });
+        
+        conn.on('close', () => {
+            showMsg("СВЯЗЬ ПОТЕРЯНА");
+            setTimeout(() => location.reload(), 3000);
+        });
+    }
+
+    function handleNetData(data) {
+        switch(data.type) {
+            case 'READY':
+                remoteReady = true;
+                showMsg("ДРУГ ГОТОВ");
+                checkStart();
+                break;
+            case 'SYNC_DECK':
+                vchf.deck = data.deck;
+                vchf.trump = data.trump;
+                startChaosPhase();
+                break;
+            case 'PICK':
+                executePick(data.idx, 'enemy');
+                break;
+            case 'MOVE':
+                executeMove(data.card, 'enemy');
+                break;
+            case 'ACTION':
+                if (data.cmd === 'BITO') syncBito();
+                if (data.cmd === 'TAKE') syncTake();
+                break;
+        }
+    }
+
+    function sendReady() {
+        localReady = true;
+        document.getElementById('btn-ready').style.display = 'none';
+        conn.send({ type: 'READY' });
+        showMsg("ОЖИДАНИЕ ДРУГА...");
+        checkStart();
+    }
+
+    function checkStart() {
+        if (localReady && remoteReady) {
+            if (myRole === 'host') {
+                // Генерация колоды (Эталонная логика)
+                let d = [];
+                SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
+                vchf.deck = d.sort(() => Math.random() - 0.5);
+                vchf.trump = SUITS[Math.floor(Math.random() * 4)];
+                conn.send({ type: 'SYNC_DECK', deck: vchf.deck, trump: vchf.trump });
+                startChaosPhase();
+            }
+        }
+    }
+    function startChaosPhase() {
+        vchf.phase = 'PICK';
+        syncTrumpUI();
         renderChaosInitial();
-        setTimeout(visualShuffle, 200);
+        showMsg("ВЫБИРАЙТЕ ПО ОДНОЙ");
+    }
+
+    function syncTrumpUI() {
+        const ti = document.getElementById('trump-icon');
+        ti.textContent = vchf.trump;
+        ti.style.color = COLORS[vchf.trump];
     }
 
     function renderChaosInitial() {
         const container = document.getElementById('chaos-deck');
         container.innerHTML = '';
+        
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight * 0.4;
+        const radius = 140;
+
         vchf.deck.forEach((card, i) => {
             const node = document.createElement('div');
             node.className = 'card-node';
             node.id = `node-${i}`;
-            // Позиционирование в центре стола для начала тасования
-            node.style.left = '50%'; 
-            node.style.top = '45%';
-            node.style.transform = 'translate(-50%, -50%)';
-            container.appendChild(node);
-        });
-    }
-
-    function visualShuffle() {
-        let startTime = Date.now();
-        let duration = 2000;
-        let ti = document.getElementById('trump-icon');
-
-        let interval = setInterval(() => {
-            let elapsed = Date.now() - startTime;
-            vchf.deck.forEach((_, i) => {
-                const node = document.getElementById(`node-${i}`);
-                if (node) {
-                    // Хаотичный разброс карт по арене
-                    node.style.left = (Math.random() * 60 + 20) + '%';
-                    node.style.top = (Math.random() * 50 + 20) + '%';
-                    node.style.transform = `rotate(${Math.random() * 360}deg)`;
-                }
-            });
-            // Мерцание мастей в индикаторе козыря
-            let rs = SUITS[Math.floor(Math.random() * 4)];
-            ti.textContent = rs; 
-            ti.style.color = COLORS[rs];
-
-            if (elapsed > duration) {
-                clearInterval(interval);
-                finalizeShuffle();
-            }
-        }, 100);
-    }
-
-    function finalizeShuffle() {
-        // Физическое перемешивание массива
-        vchf.deck.sort(() => Math.random() - 0.5);
-        
-        // Фиксация "Свечи" (Козыря)
-        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        const ti = document.getElementById('trump-icon');
-        ti.textContent = vchf.trump; 
-        ti.style.color = COLORS[vchf.trump];
-        
-        vchf.phase = 'PICK';
-        showMsg('ВЕКТОР ХАОСА ОПРЕДЕЛЕН');
-
-        // Распределение карт по кругу для выбора (Эталонная анимация)
-        vchf.deck.forEach((card, i) => {
-            const node = document.getElementById(`node-${i}`);
-            const angle = (i / 36) * Math.PI * 2;
-            const radius = 140;
-            node.style.left = `calc(50% + ${Math.cos(angle) * radius}px)`;
-            node.style.top = `calc(45% + ${Math.sin(angle) * radius}px)`;
-            node.style.transform = `translate(-50%, -50%) rotate(${angle * 57.3 + 90}deg)`;
             
-            node.onclick = () => { 
-                if (vchf.phase === 'PICK') pickCard(i, 'player'); 
-            };
-        });
-    }
-    // --- ПРОЦЕСС РАЗДАЧИ (100% ЭТАЛОН) ---
-    function pickCard(idx, actor) {
-        const card = vchf.deck[idx];
-        if (!card || card.used) return;
+            // Начальная позиция (стопка в центре)
+            node.style.left = centerX - 27 + 'px';
+            node.style.top = centerY - 38 + 'px';
+            container.appendChild(node);
 
+            // Анимация разлета в круг (Эталонный визуал)
+            setTimeout(() => {
+                const angle = (i / 36) * Math.PI * 2;
+                node.style.left = (centerX - 27 + Math.cos(angle) * radius) + 'px';
+                node.style.top = (centerY - 38 + Math.sin(angle) * radius) + 'px';
+                node.style.transform = `rotate(${angle * 57.3 + 90}deg)`;
+            }, i * 20);
+
+            node.onclick = () => tryPick(i);
+        });
+        updatePickTurnUI();
+    }
+
+    function tryPick(idx) {
+        if (vchf.phase !== 'PICK' || vchf.pickTurn !== myRole) return;
+        if (vchf.deck[idx].used) return;
+
+        executePick(idx, 'player');
+        conn.send({ type: 'PICK', idx: idx });
+    }
+
+    function executePick(idx, actor) {
+        const card = vchf.deck[idx];
+        const node = document.getElementById(`node-${idx}`);
         card.used = true;
         playSound('slide');
-        const node = document.getElementById(`node-${idx}`);
 
         if (actor === 'player') {
             vchf.pHand.push(card);
-            // Поиск целевого слота в твоей сетке мастей
+            // Находим слот в руке для этой масти и ранга
             const slot = document.getElementById(`slot-${card.s}-${card.r}`);
             const rect = slot.getBoundingClientRect();
-            const parent = document.getElementById('chaos-deck').getBoundingClientRect();
+            const arenaRect = document.getElementById('arena').getBoundingClientRect();
 
-            // Анимация полета в слот
-            node.style.zIndex = 1000;
-            node.style.left = (rect.left - parent.left + 27) + 'px';
-            node.style.top = (rect.top - parent.top + 38) + 'px';
-            node.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.3)';
-
+            node.style.zIndex = "5000";
+            node.style.left = (rect.left - arenaRect.left + 5) + 'px';
+            node.style.top = (rect.top - arenaRect.top + 5) + 'px';
+            node.style.transform = "rotate(0deg) scale(0.4)";
+            
             setTimeout(() => {
-                node.classList.add('hide');
+                node.style.opacity = "0";
                 fillSlot(card);
-                // После твоего выбора Искра делает свой ход автоматически
-                sparkAutoPick();
-            }, 500);
+                setTimeout(() => node.remove(), 500);
+            }, 600);
         } else {
-            vchf.eHand.push(card);
-            // Анимация улета карт Искры "вверх" за пределы экрана
-            node.style.top = '-200px';
-            node.style.opacity = '0';
-            node.style.transform = 'translate(-50%, -50%) scale(0.1)';
-            setTimeout(() => {
-                node.classList.add('hide');
-                updateSparkUI();
-                checkDeckEmpty();
-            }, 500);
+            // Карта летит к врагу (вверх и в небытие)
+            vchf.eCount++;
+            node.style.top = "-150px";
+            node.style.opacity = "0";
+            node.style.transform = "scale(0.2) rotate(360deg)";
+            setTimeout(() => node.remove(), 700);
         }
-    }
 
-    function sparkAutoPick() {
-        const available = vchf.deck.map((c, i) => !c.used ? i : null).filter(v => v !== null);
-        if (available.length > 0) {
-            // Искра выбирает случайную карту из оставшихся в круге
-            const randomIndex = available[Math.floor(Math.random() * available.length)];
-            pickCard(randomIndex, 'enemy');
-        } else {
-            checkDeckEmpty();
-        }
-    }
-
-    function checkDeckEmpty() {
-        const remaining = vchf.deck.filter(c => !c.used).length;
-        if (remaining === 0 && vchf.phase === 'PICK') {
-            vchf.phase = 'BATTLE';
-            showMsg('ФАЗА БОЯ АКТИВИРОВАНА');
-            renderBattleTable();
-            // Определение первого хода (по минимальному козырю)
-            determineFirstTurn();
-        }
-    }
-
-    function determineFirstTurn() {
-        let minP = 100, minE = 100;
-        vchf.pHand.forEach(c => { if(c.s === vchf.trump && c.v < minP) minP = c.v; });
-        vchf.eHand.forEach(c => { if(c.s === vchf.trump && c.v < minE) minE = c.v; });
+        // Передача хода выбора
+        vchf.pickTurn = (vchf.pickTurn === 'host' ? 'guest' : 'host');
+        updatePickTurnUI();
         
-        vchf.turn = (minP < minE) ? 'player' : 'enemy';
-        if(vchf.turn === 'enemy') {
-            showMsg('ИСКРА ХОДИТ ПЕРВОЙ');
-            sparkThink();
-        } else {
-            showMsg('ТВОЙ ПЕРВЫЙ ХОД');
+        // Проверка конца раздачи
+        if (vchf.deck.every(c => c.used)) {
+            vchf.phase = 'BATTLE';
+            showMsg("БОЙ НАЧИНАЕТСЯ!");
+            renderBattleTable();
         }
     }
 
@@ -351,373 +355,244 @@
         const el = document.getElementById(`slot-${card.s}-${card.r}`);
         el.classList.add('filled');
         el.style.color = card.c;
-        // Визуальное наполнение слота данными карты
-        el.innerHTML = `
-            <div style="position:absolute; top:4px; left:6px; font-size:12px; font-weight:900;">${card.r}</div>
-            <div style="font-size:32px;">${card.s}</div>
-        `;
-        // Привязка логики клика по карте в слоте
+        el.innerHTML = `<div style="position:absolute; top:2px; left:4px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:28px;">${card.s}</div>`;
         el.onclick = (e) => {
             e.stopPropagation();
-            if (vchf.phase === 'BATTLE' && vchf.turn === 'player') tryPlayCard(card);
+            if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
             else if (!isExpanded) toggleHand();
         };
     }
 
-    function updateSparkUI() {
-        const container = document.getElementById('spark-cards');
-        container.innerHTML = '';
-        // Отрисовка "индикаторов" карт в руке Искры
-        vchf.eHand.forEach(() => {
-            const dot = document.createElement('div');
-            dot.style.cssText = `
-                width:12px; height:18px; 
-                background:var(--spark-neon); 
-                border-radius:3px; 
-                box-shadow:0 0 10px var(--spark-neon); 
-                opacity:0.7;
-            `;
-            container.appendChild(dot);
-        });
+    function updatePickTurnUI() {
+        const isMy = (vchf.pickTurn === myRole);
+        showMsg(isMy ? "ТВОЙ ВЫБОР" : "ДРУГ ВЫБИРАЕТ...");
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
-    // --- ИНТЕЛЛЕКТУАЛЬНОЕ ЯДРО ИСКРЫ (SPARK AI - SMART EDITION) ---
-    function sparkThink() {
-        if (vchf.phase !== 'BATTLE') return;
-        
-        // Анализ опасности: сколько карт у игрока? (0 - безопасно, 1 - критично)
-        vchf.memory.dangerLevel = 1 - (vchf.pHand.length / 18);
-        
-        const isDefending = (vchf.table.length % 2 !== 0);
-        
-        // Психологическая задержка "обдумывания" (имитация живого игрока)
-        const delay = 800 + (Math.random() * 1200);
-        
-        setTimeout(() => {
-            if (isDefending) {
-                sparkDefendLogic();
-            } else {
-                sparkAttackLogic();
-            }
-        }, delay);
-    }
+    function playCard(card) {
+        if (vchf.phase !== 'BATTLE' || vchf.turn !== myRole) return;
 
-    function sparkDefendLogic() {
-        const target = vchf.table[vchf.table.length - 1].card;
-        
-        // Поиск кандидатов для защиты
-        let candidates = vchf.eHand.filter(c => {
-            return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
-        });
-
-        if (candidates.length === 0) {
-            sparkTakeAll();
-            return;
-        }
-
-        // Сортировка: сначала самые слабые не-козыри, козыри в конце
-        candidates.sort((a, b) => {
-            const aT = a.s === vchf.trump;
-            const bT = b.s === vchf.trump;
-            if (aT && !bT) return 1;
-            if (!aT && bT) return -1;
-            return a.v - b.v;
-        });
-
-        const bestChoice = candidates[0];
-
-        // ПСИХИКА: Если карта слишком дорогая (ТУЗ), а атак еще много - Искра может решить "взять"
-        // Это предотвращает выманивание козырей мелкими картами в начале игры
-        if (bestChoice.v > 6 && vchf.memory.dangerLevel < 0.4) {
-             if (Math.random() > 0.6) { 
-                 sparkTakeAll(); 
-                 return; 
-             }
-        }
-
-        executeSparkMove(bestChoice);
-    }
-
-    function sparkAttackLogic() {
-        let attackChoices = [];
-        if (vchf.table.length === 0) {
-            // Начало атаки: выбираем самую слабую карту, приоритет - не козырь
-            attackChoices = vchf.eHand.filter(c => c.s !== vchf.trump).sort((a,b) => a.v - b.v);
-            if(attackChoices.length === 0) attackChoices = [...vchf.eHand].sort((a,b) => a.v - b.v);
+        // Валидация хода (Атака или Защита)
+        const isDefense = (vchf.table.length % 2 !== 0);
+        if (isDefense) {
+            if (!canDefend(card)) { showMsg("НЕЛЬЗЯ ТАК ПОБИТЬ!"); return; }
         } else {
-            // Подкидывание по рангу (если есть на столе)
-            const tableRanks = vchf.table.map(m => m.card.r);
-            attackChoices = vchf.eHand.filter(c => tableRanks.includes(c.r));
-            
-            // ПСИХИКА: Не подкидывать козыри, если ситуация не критическая
-            attackChoices = attackChoices.filter(c => c.s !== vchf.trump || vchf.memory.dangerLevel > 0.8);
+            if (!canAttack(card)) { showMsg("НЕВЕРНЫЙ ВЕКТОР!"); return; }
         }
 
-        // Ограничение: не более 6 пар карт на столе
-        if (attackChoices.length > 0 && vchf.table.length < 12) {
-            executeSparkMove(attackChoices[0]);
-        } else {
-            handleBito();
-        }
+        // Удаляем из руки и очищаем слот
+        vchf.pHand = vchf.pHand.filter(c => c !== card);
+        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+        slot.classList.remove('filled');
+        slot.innerHTML = '';
+
+        // Выполняем ход локально и шлем другу
+        executeMove(card, 'player');
+        conn.send({ type: 'MOVE', card: card });
     }
 
-    function executeSparkMove(card) {
-        vchf.eHand = vchf.eHand.filter(c => c !== card);
-        vchf.table.push({ card: card, actor: 'enemy' });
+    function executeMove(card, actor) {
         playSound('slide');
-        updateSparkUI();
-        renderBattleTable();
-        checkGameStatus();
+        vchf.table.push({ card: card, actor: actor });
+        if (actor === 'enemy') vchf.eCount--;
         
-        // Если Искра атаковала, теперь твоя очередь защищаться
-        // Если защищалась - ждем твоего хода (подкидывания или бито)
+        renderBattleTable();
+        checkBattleEnd();
     }
 
-    function sparkTakeAll() {
-        showMsg('SPARK ПРИНИМАЕТ УДАР');
-        vchf.eHand = vchf.eHand.concat(vchf.table.map(m => m.card));
-        vchf.table = [];
-        setTimeout(() => { 
-            updateSparkUI(); 
-            renderBattleTable(); 
-            vchf.turn = 'player'; 
-            showMsg('ТВОЙ ХОД (ПЕРЕХОД)');
-        }, 800);
+    function canAttack(card) {
+        if (vchf.table.length === 0) return true;
+        if (vchf.table.length >= 12) return false;
+        // Подкидывать можно только те ранги, что уже на столе
+        return vchf.table.some(m => m.card.r === card.r);
     }
-    // --- ОТРИСОВКА БОЕВОГО ПРОСТРАНСТВА ---
+
+    function canDefend(card) {
+        const target = vchf.table[vchf.table.length - 1].card;
+        const sameSuitHigher = (card.s === target.s && card.v > target.v);
+        const trumpBeat = (card.s === vchf.trump && target.s !== vchf.trump);
+        return sameSuitHigher || trumpBeat;
+    }
+
     function renderBattleTable() {
         const container = document.getElementById('battle-table');
         container.innerHTML = '';
         
         vchf.table.forEach((move, i) => {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'card-node face-up';
-            cardEl.style.color = move.card.c;
+            const node = document.createElement('div');
+            node.className = 'card-node face-up';
+            node.style.color = move.card.c;
             
-            const pairIndex = Math.floor(i / 2);
-            const isDefense = (i % 2 !== 0);
-            
-            const col = pairIndex % 3;
-            const row = Math.floor(pairIndex / 3);
-            const offsetX = col * 90 + (isDefense ? 20 : 0);
-            const offsetY = row * 100 + (isDefense ? 25 : 0);
-            
-            cardEl.style.left = `calc(50% - 130px + ${offsetX}px)`;
-            cardEl.style.top = `calc(35% + ${offsetY}px)`;
-            cardEl.style.zIndex = 100 + i;
-            
-            const randomRot = (Math.random() * 10 - 5) + (isDefense ? 15 : 0);
-            cardEl.style.transform = `rotate(${randomRot}deg)`;
-            
-            cardEl.innerHTML = `
-                <div style="position:absolute; top:6px; left:8px; font-size:14px; font-weight:900;">${move.card.r}</div>
-                <div style="font-size:36px; text-align:center; margin-top:20px;">${move.card.s}</div>
+            // Расчет позиции на столе (сетка 2x3 пар)
+            const pairIdx = Math.floor(i / 2);
+            const isDef = (i % 2 !== 0);
+            const x = (pairIdx % 3) * 80 - 80;
+            const y = Math.floor(pairIdx / 3) * 90 - 40;
+
+            node.style.left = `calc(50% + ${x + (isDef ? 15 : 0)}px)`;
+            node.style.top = `calc(40% + ${y + (isDef ? 20 : 0)}px)`;
+            node.style.zIndex = 100 + i;
+            if (isDef) node.style.transform = "rotate(10deg)";
+
+            node.innerHTML = `
+                <div style="position:absolute; top:4px; left:6px; font-size:12px; font-weight:900;">${move.card.r}</div>
+                <div style="font-size:32px; text-align:center; margin-top:18px;">${move.card.s}</div>
             `;
-            container.appendChild(cardEl);
+            container.appendChild(node);
         });
 
-        // ПРАВИЛО КНОПОК: Показываем только в твой ход
-        const isPTurn = (vchf.turn === 'player');
+        updateActionBtns();
+    }
+
+    function updateActionBtns() {
+        const isMyTurn = (vchf.turn === myRole);
+        const hasCards = (vchf.table.length > 0);
         const isDefending = (vchf.table.length % 2 !== 0);
-        const hasCardsOnTable = vchf.table.length > 0;
-        
-        // Кнопка БИТО: если твой ход, ты атаковала, Искра отбилась (четно на столе)
-        document.getElementById('btn-bito').style.display = (isPTurn && hasCardsOnTable && !isDefending) ? 'block' : 'none';
-        // Кнопка ВЗЯТЬ: если твой ход и ты должна защищаться (нечетно на столе)
-        document.getElementById('btn-take').style.display = (isPTurn && isDefending) ? 'block' : 'none';
-    }
 
-    // --- ЛОГИКА ТВОЕГО ХОДА (ИСПРАВЛЕНО) ---
-    function tryPlayCard(card) {
-        if (vchf.turn !== 'player') return;
-        if (!validateMove(card)) { 
-            showMsg('НЕВЕРНЫЙ ВЕКТОР'); 
-            return; 
-        }
-
-        vchf.pHand = vchf.pHand.filter(c => c !== card);
-        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
-        slot.classList.remove('filled');
-        slot.innerHTML = '';
+        // Показываем БИТО только атакующему, если все карты покрыты
+        document.getElementById('btn-bito').style.display = (isMyTurn && hasCards && !isDefending) ? 'block' : 'none';
+        // Показываем ВЗЯТЬ только защищающемуся
+        document.getElementById('btn-take').style.display = (!isMyTurn && hasCards && isDefending) ? 'block' : 'none';
         
-        vchf.table.push({ card: card, actor: 'player' });
-        playSound('slide');
-        renderBattleTable();
-
-        // СИНХРОНИЗАЦИЯ:
-        // Если после твоего хода на столе НЕЧЕТНО (ты атаковала или подкинула) -> Искра думает как защититься
-        // Если после твоего хода на столе ЧЕТНО (ты защитилась) -> Искра думает, подкинуть ли еще
-        setTimeout(() => {
-            vchf.turn = 'enemy';
-            sparkThink();
-        }, 600);
-        
-        checkGameStatus();
-    }
-
-    function validateMove(card) {
-        if (vchf.table.length === 0) return true;
-
-        const isDefending = (vchf.table.length % 2 !== 0);
-        
-        if (isDefending) {
-            const attack = vchf.table[vchf.table.length - 1].card;
-            return (card.s === attack.s && card.v > attack.v) || 
-                   (card.s === vchf.trump && attack.s !== vchf.trump);
-        } else {
-            const tableRanks = vchf.table.map(m => m.card.r);
-            return tableRanks.includes(card.r) && vchf.table.length < 12;
-        }
-    }
-    // --- ОБРАБОТКА ФИНАЛЬНЫХ ДЕЙСТВИЙ ХОДА ---
-
-    function handleTake() {
-        showMsg('ТЫ ЗАБИРАЕШЬ КАРТЫ');
-        // Карты со стола переходят в руку игрока
-        const takenCards = vchf.table.map(m => m.card);
-        vchf.pHand = vchf.pHand.concat(takenCards);
-        
-        vchf.table = [];
-        // Заполняем слоты заново для добавленных карт
-        takenCards.forEach(c => fillSlot(c));
-        
-        renderBattleTable();
-        
-        // После "Взять" ход всегда переходит к Искре
-        vchf.turn = 'enemy';
-        setTimeout(sparkThink, 1000);
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
 
     function handleBito() {
-        if (vchf.table.length === 0 || vchf.table.length % 2 !== 0) return;
+        syncBito();
+        conn.send({ type: 'ACTION', cmd: 'BITO' });
+    }
+
+    function syncBito() {
+        playSound('bito');
+        createDustCloud();
+        vchf.table = [];
+        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
+        setTimeout(renderBattleTable, 500);
+    }
+
+    function handleTake() {
+        syncTake();
+        conn.send({ type: 'ACTION', cmd: 'TAKE' });
+    }
+
+    function syncTake() {
+        showMsg("ПРИЁМ КАРТ");
+        const cardsToTake = vchf.table.map(m => m.card);
         
-        playSound('bito'); 
-        showMsg('БИТО');
-
-        // Визуальный эффект распада карт на столе
-        const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
-        cardsOnTable.forEach(el => {
-            const rect = el.getBoundingClientRect();
-            // ИСПРАВЛЕНО: Прямое вычисление центра (55/2=27.5, 77/2=38.5)
-            createDust(rect.left + 27, rect.top + 38);
-            el.style.transform = 'scale(0) rotate(180deg)'; 
-            el.style.opacity = '0';
-        });
-
-        // Память Искры фиксирует вышедшие карты (Бито)
-        vchf.table.forEach(m => vchf.memory.outCards.add(m.card.s + m.card.r));
-
-        setTimeout(() => {
-            vchf.table = []; 
-            renderBattleTable();
-            // Ход переходит к тому, кто отбился
-            vchf.turn = (vchf.turn === 'player' ? 'enemy' : 'player');
-            if (vchf.turn === 'enemy') sparkThink();
-            checkGameStatus();
-        }, 600);
-    }
-
-    // --- СИСТЕМА ЧАСТИЦ (DUST FX) ---
-    function createDust(x, y) {
-        const arena = document.getElementById('arena');
-        // 15 частиц на каждую карту для эффекта "рассыпания"
-        for (let i = 0; i < 15; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = x + 'px'; 
-            p.style.top = y + 'px';
-            arena.appendChild(p);
-
-            // Случайный вектор разлета
-            const tx = (Math.random() - 0.5) * 250; 
-            const ty = (Math.random() - 0.5) * 250;
-            
-            p.animate([
-                { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-            ], { 
-                duration: 800 + Math.random() * 400, 
-                easing: 'ease-out' 
-            }).onfinish = () => p.remove();
+        if (vchf.turn !== myRole) {
+            // Если я защищался и взял
+            vchf.pHand.push(...cardsToTake);
+            cardsToTake.forEach(c => fillSlot(c));
+        } else {
+            // Если взял враг
+            vchf.eCount += cardsToTake.length;
         }
+
+        vchf.table = [];
+        // При "Взять" ход не переходит к другому, а остается у того же атакующего
+        setTimeout(renderBattleTable, 500);
+    }
+    // --- ЭФФЕКТЫ И ВИЗУАЛИЗАЦИЯ ---
+    function createDustCloud() {
+        const arena = document.getElementById('arena');
+        const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
+        
+        cardsOnTable.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = centerX + 'px';
+                p.style.top = centerY + 'px';
+                arena.appendChild(p);
+
+                const tx = (Math.random() - 0.5) * 300;
+                const ty = (Math.random() - 0.5) * 300;
+                
+                p.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600 + Math.random() * 600,
+                    easing: 'ease-out'
+                }).onfinish = () => p.remove();
+            }
+            card.style.transform = "scale(0) rotate(180deg)";
+            card.style.opacity = "0";
+        });
     }
 
+    // --- ЛОГИКА ЗАВЕРШЕНИЯ ---
+    function checkBattleEnd() {
+        if (vchf.phase !== 'BATTLE') return;
+
+        // Пауза, чтобы игрок увидел последнюю карту
+        setTimeout(() => {
+            const iAmOut = (vchf.pHand.length === 0);
+            const enemyOut = (vchf.eCount === 0);
+
+            if (iAmOut && enemyOut) {
+                endGame("НИЧЬЯ В ПУСТОТЕ");
+            } else if (iAmOut) {
+                endGame("ТЫ ПОБЕДИЛА. ВЕКТОР ОЧИЩЕН");
+            } else if (enemyOut) {
+                endGame("ПРОИГРЫШ. ХАОС ПОГЛОТИЛ ТЕБЯ");
+            }
+        }, 1000);
+    }
+
+    function endGame(msg) {
+        vchf.phase = 'END';
+        showMsg(msg);
+        document.getElementById('btn-bito').style.display = 'none';
+        document.getElementById('btn-take').style.display = 'none';
+        
+        // Кнопка рестарта
+        const btnReady = document.getElementById('btn-ready');
+        btnReady.textContent = "НОВАЯ ДУЭЛЬ";
+        btnReady.style.display = "block";
+        btnReady.onclick = () => location.reload();
+    }
+
+    // --- СИСТЕМНЫЕ ФУНКЦИИ ---
     function toggleHand() {
         isExpanded = !isExpanded;
         const panel = document.getElementById('ctrl-panel');
         const btn = document.getElementById('btn-zoom');
-        
-        if (isExpanded) { 
-            panel.classList.add('expanded'); 
-            btn.textContent = '✕'; 
-        } else { 
-            panel.classList.remove('expanded'); 
-            btn.textContent = '↕'; 
+        if (isExpanded) {
+            panel.classList.add('expanded');
+            btn.textContent = '✕';
+        } else {
+            panel.classList.remove('expanded');
+            btn.textContent = '↕';
         }
         playSound('slide');
     }
-    // --- ПРОВЕРКА СОСТОЯНИЯ ЗАВЕРШЕНИЯ ---
-    function checkGameStatus() {
-        if (vchf.phase !== 'BATTLE') return;
 
-        const pEmpty = vchf.pHand.length === 0;
-        const eEmpty = vchf.eHand.length === 0;
-
-        // Если колода пуста и у кого-то кончились карты
-        if (pEmpty || eEmpty) {
-            vchf.phase = 'END';
-            let finalMsg = "";
-
-            if (pEmpty && eEmpty) {
-                finalMsg = "НИЧЬЯ В ХАОСЕ: СТАТИКА";
-            } else if (pEmpty) {
-                finalMsg = "ПОБЕДА - ВЕКТОР ОЧИЩЕН";
-            } else {
-                finalMsg = "ПРОИГРЫШ - SPARK ПОГЛОТИЛ ТЕБЯ";
-            }
-
-            showMsg(finalMsg);
-            
-            // Создаем глобальный Dust FX для всего экрана при финале
-            for(let i=0; i<5; i++) {
-                setTimeout(() => {
-                    createDust(window.innerWidth/2, window.innerHeight/2);
-                }, i * 300);
-            }
-
-            // Предложение перезагрузки через 5 секунд
-            setTimeout(() => {
-                if(confirm(finalMsg + "\n\nПерезагрузить Монолит?")) {
-                    location.reload();
-                }
-            }, 5000);
-        }
-    }
-
-    // --- ПОСТРОЕНИЕ СЕТКИ СЛОТОВ (INITIAL LAYOUT) ---
-    const initLayout = () => {
-        const rows = {
-            '♠': 's-spades',
-            '♣': 's-clubs',
-            '♦': 's-diamonds',
-            '♥': 's-hearts'
-        };
-
+    function initLayout() {
+        const rows = { '♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts' };
         SUITS.forEach(s => {
             const container = document.getElementById(rows[s]);
             container.innerHTML = '';
             RANKS.forEach(rank => {
                 const sl = document.createElement('div');
-                sl.className = 'slot'; 
+                sl.className = 'slot';
                 sl.id = `slot-${s}-${rank}`;
                 container.appendChild(sl);
             });
         });
-    };
+    }
 
     // ТОЧКА ВХОДА МОНОЛИТА
-    window.onload = () => { 
-        initLayout(); 
-        showMsg('СИСТЕМА ГОТОВА К ЗАПУСКУ'); 
+    window.onload = () => {
+        initLayout();
+        showMsg("СИСТЕМА ГОТОВА К ЗАПУСКУ");
+        // Инициализация аудио при первом взаимодействии
+        document.body.addEventListener('click', () => {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }, { once: true });
     };
 </script>
 </body>
