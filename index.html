@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Online Duel</title>
+    <title>VCHF 2.0 - Bi-Turbo Ultimate Monolith</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -44,6 +44,17 @@
         .net-info { display: flex; flex-direction: column; }
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
         #peer-id { font-size: 11px; color: #fff; font-family: monospace; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+        /* ЦЕНТРАЛЬНАЯ КНОПКА (ФИКС ДОСТУПА) */
+        #btn-start-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
+            background: rgba(0, 250, 154, 0.1); border: 2px solid var(--spark-neon);
+            color: var(--spark-neon); border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 250, 154, 0.4);
+            text-transform: uppercase; letter-spacing: 3px; animation: pulseStart 2s infinite;
+        }
+        @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
 
         .arena-top {
             flex: 1; position: relative;
@@ -109,10 +120,14 @@
         }
         #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
-        .action-btns { position: absolute; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 4500; }
-        button { 
-            padding: 12px 18px; background: rgba(16,20,32,0.9); border: 1px solid var(--gold); 
-            color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; text-transform: uppercase;
+        .action-btns { 
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 15px; z-index: 4500; width: 90%; justify-content: center;
+        }
+        button.action { 
+            padding: 12px 18px; background: rgba(16,20,32,0.9); border: 2px solid var(--gold); 
+            color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; 
+            text-transform: uppercase; border-radius: 8px;
         }
         .particle { position: absolute; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; pointer-events: none; }
     </style>
@@ -126,6 +141,8 @@
         </div>
     </div>
 
+    <button id="btn-start-center" onclick="startNetwork()">ПОДКЛЮЧИТЬСЯ</button>
+
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
 
@@ -136,22 +153,24 @@
     </div>
 
     <div class='control-bottom' id='ctrl-panel'>
-        <div style="position:absolute; top:-30px; right:30px; z-index:4600;">
-            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; font-size:22px;" onclick='toggleHand()'>↕</button>
+        <div style="position:absolute; top:-45px; right:30px; z-index:4600;">
+            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px;" onclick='toggleHand()'>↕</button>
         </div>
+        
+        <div class='action-btns'>
+            <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>ГОТОВНОСТЬ</button>
+            <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>БИТО</button>
+            <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>ВЗЯТЬ</button>
+        </div>
+
         <div class='suits-grid' id='main-hand'>
             <div id='s-spades' class='suit-row'></div>
             <div id='s-clubs' class='suit-row'></div>
             <div id='s-diamonds' class='suit-row'></div>
             <div id='s-hearts' class='suit-row'></div>
         </div>
-        <div class='action-btns'>
-            <button id='btn-net' onclick='startNetwork()'>ПОДКЛЮЧЕНИЕ</button>
-            <button id='btn-ready' style="display:none" onclick='sendReady()'>ГОТОВНОСТЬ</button>
-            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО</button>
-            <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ КАРТЫ</button>
-        </div>
     </div>
+
 <script>
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -166,43 +185,44 @@
     let localReady = false, remoteReady = false;
     let isExpanded = false, audioCtx = null;
 
-    // --- ФУНКЦИЯ КОПИРОВАНИЯ ID ---
+    // --- РЕЗЕРВНОЕ КОПИРОВАНИЕ ID (ЭТАЛОН) ---
     function copyMyID() {
         const idLabel = document.getElementById('peer-id');
         const currentID = idLabel.getAttribute('data-id');
-        
         if (!currentID || currentID === "CONNECTING...") return;
 
         navigator.clipboard.writeText(currentID).then(() => {
-            showMsg("ID СКОПИРОВАН В БУФЕР");
+            showMsg("ID СКОПИРОВАН");
             playSound('slide');
         }).catch(() => {
-            // Резервный метод для старых браузеров
             const el = document.createElement('textarea');
             el.value = currentID;
             document.body.appendChild(el); el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            showMsg("ID СКОПИРОВАН");
+            showMsg("ID СКОПИРОВАН (ALT)");
         });
     }
 
     function playSound(type) {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === 'slide') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === 'bito') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        }
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'slide') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'bito') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        } catch(e) {}
     }
 
     function showMsg(t) {
@@ -212,140 +232,121 @@
     }
 
     function startNetwork() {
-        const targetId = prompt("ID ДРУГА (пусто, если ты HOST):");
-        peer = new Peer();
+        const targetId = prompt("ID ДРУГА (пусто = HOST):");
+        document.getElementById('btn-start-center').style.display = 'none';
+        
+        peer = new Peer(null, {
+            config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}
+        });
 
         peer.on('open', (id) => {
             const idLabel = document.getElementById('peer-id');
-            idLabel.textContent = id.substring(0, 8) + "... (TAP)";
-            idLabel.setAttribute('data-id', id); // Сохраняем полный ID
-            document.getElementById('room-info').textContent = "MY ID (ACTIVE)";
+            idLabel.textContent = id.substring(0, 8) + "...";
+            idLabel.setAttribute('data-id', id);
+            document.getElementById('room-info').textContent = "MY ID ACTIVE";
 
             if (targetId) {
                 myRole = 'guest';
-                conn = peer.connect(targetId);
+                conn = peer.connect(targetId.trim());
                 setupConn();
             } else {
-                showMsg("ЖДЕМ ПОДКЛЮЧЕНИЯ...");
+                showMsg("ЖДЕМ ВРАГА...");
             }
         });
 
-        peer.on('connection', (c) => { if (!conn) { conn = c; setupConn(); } });
+        peer.on('connection', (c) => { if (!conn) { conn = c; myRole = 'host'; setupConn(); } });
     }
 
     function setupConn() {
         conn.on('open', () => {
-            document.getElementById('room-info').textContent = (myRole==='host'?'ROOM: HOST':'ROOM: GUEST');
-            document.getElementById('btn-net').style.display = 'none';
             document.getElementById('btn-ready').style.display = 'block';
-            showMsg("СВЯЗЬ УСТАНОВЛЕНА");
-            conn.on('data', (data) => handleNetData(data));
+            showMsg("МОСТ УСТАНОВЛЕН");
+            conn.on('data', handleNetData);
         });
-        conn.on('close', () => { showMsg("СВЯЗЬ ПОТЕРЯНА"); setTimeout(() => location.reload(), 3000); });
     }
 
-    // --- (ОСТАЛЬНАЯ ЛОГИКА handleNetData И Т.Д. ИЗ ЭТАЛОНА) ---
+    function handleNetData(data) {
+        if (data.type === 'READY') { remoteReady = true; showMsg("ДРУГ ГОТОВ"); checkStart(); }
+        if (data.type === 'SYNC_DECK') { vchf.deck = data.deck; vchf.trump = data.trump; startChaosPhase(); }
+        if (data.type === 'PICK') executePick(data.idx, 'enemy');
+        if (data.type === 'MOVE') executeMove(data.card, 'enemy');
+        if (data.type === 'ACTION') { 
+            if (data.cmd === 'BITO') syncBito(); 
+            if (data.cmd === 'TAKE') syncTake(); 
+        }
+    }
+
+    function sendReady() {
+        localReady = true; 
+        document.getElementById('btn-ready').style.display = 'none';
+        conn.send({type: 'READY'}); 
+        showMsg("ГОТОВНОСТЬ ОТПРАВЛЕНА");
+        checkStart();
+    }
+
+    function checkStart() {
+        if (localReady && remoteReady && myRole === 'host') {
+            let d = [];
+            SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
+            vchf.deck = d.sort(() => Math.random() - 0.5);
+            vchf.trump = SUITS[Math.floor(Math.random() * 4)];
+            conn.send({type: 'SYNC_DECK', deck: vchf.deck, trump: vchf.trump});
+            startChaosPhase();
+        }
+    }
+
     function startChaosPhase() {
         vchf.phase = 'PICK';
-        syncTrumpUI();
+        document.getElementById('trump-icon').textContent = vchf.trump;
+        document.getElementById('trump-icon').style.color = COLORS[vchf.trump];
         renderChaosInitial();
-        showMsg("ВЫБИРАЙТЕ ПО ОДНОЙ");
-    }
-
-    function syncTrumpUI() {
-        const ti = document.getElementById('trump-icon');
-        ti.textContent = vchf.trump;
-        ti.style.color = COLORS[vchf.trump];
     }
 
     function renderChaosInitial() {
         const container = document.getElementById('chaos-deck');
         container.innerHTML = '';
+        const cx = window.innerWidth / 2 - 27;
+        const cy = window.innerHeight * 0.4 - 38;
         
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight * 0.4;
-        const radius = 140;
-
         vchf.deck.forEach((card, i) => {
-            const node = document.createElement('div');
-            node.className = 'card-node';
-            node.id = `node-${i}`;
-            
-            // Начальная позиция (стопка в центре)
-            node.style.left = centerX - 27 + 'px';
-            node.style.top = centerY - 38 + 'px';
-            container.appendChild(node);
-
-            // Анимация разлета в круг (Эталонный визуал)
+            const n = document.createElement('div');
+            n.className = 'card-node'; n.id = `node-${i}`;
+            n.style.left = cx + 'px'; n.style.top = cy + 'px';
+            container.appendChild(n);
             setTimeout(() => {
-                const angle = (i / 36) * Math.PI * 2;
-                node.style.left = (centerX - 27 + Math.cos(angle) * radius) + 'px';
-                node.style.top = (centerY - 38 + Math.sin(angle) * radius) + 'px';
-                node.style.transform = `rotate(${angle * 57.3 + 90}deg)`;
+                const a = (i / 36) * Math.PI * 2;
+                n.style.left = (cx + Math.cos(a) * 140) + 'px';
+                n.style.top = (cy + Math.sin(a) * 140) + 'px';
+                n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
             }, i * 20);
-
-            node.onclick = () => tryPick(i);
+            n.onclick = () => { if (vchf.phase === 'PICK' && vchf.pickTurn === myRole && !card.used) { executePick(i, 'player'); conn.send({type: 'PICK', idx: i}); } };
         });
-        updatePickTurnUI();
-    }
-
-    function tryPick(idx) {
-        if (vchf.phase !== 'PICK' || vchf.pickTurn !== myRole) return;
-        if (vchf.deck[idx].used) return;
-
-        executePick(idx, 'player');
-        conn.send({ type: 'PICK', idx: idx });
     }
 
     function executePick(idx, actor) {
         const card = vchf.deck[idx];
-        const node = document.getElementById(`node-${idx}`);
-        card.used = true;
-        playSound('slide');
-
+        const n = document.getElementById(`node-${idx}`);
+        card.used = true; playSound('slide');
         if (actor === 'player') {
             vchf.pHand.push(card);
-            // Находим слот в руке для этой масти и ранга
             const slot = document.getElementById(`slot-${card.s}-${card.r}`);
             const rect = slot.getBoundingClientRect();
-            const arenaRect = document.getElementById('arena').getBoundingClientRect();
-
-            node.style.zIndex = "5000";
-            node.style.left = (rect.left - arenaRect.left + 5) + 'px';
-            node.style.top = (rect.top - arenaRect.top + 5) + 'px';
-            node.style.transform = "rotate(0deg) scale(0.4)";
-            
-            setTimeout(() => {
-                node.style.opacity = "0";
-                fillSlot(card);
-                setTimeout(() => node.remove(), 500);
-            }, 600);
+            n.style.zIndex = "5000"; n.style.left = rect.left + 'px'; n.style.top = rect.top + 'px'; n.style.transform = "scale(0.4) rotate(0deg)";
+            setTimeout(() => { n.remove(); fillSlot(card); }, 600);
         } else {
-            // Карта летит к врагу (вверх и в небытие)
             vchf.eCount++;
-            node.style.top = "-150px";
-            node.style.opacity = "0";
-            node.style.transform = "scale(0.2) rotate(360deg)";
-            setTimeout(() => node.remove(), 700);
+            n.style.top = "-150px"; n.style.opacity = "0";
+            setTimeout(() => n.remove(), 600);
         }
-
-        // Передача хода выбора
         vchf.pickTurn = (vchf.pickTurn === 'host' ? 'guest' : 'host');
-        updatePickTurnUI();
-        
-        // Проверка конца раздачи
-        if (vchf.deck.every(c => c.used)) {
-            vchf.phase = 'BATTLE';
-            showMsg("БОЙ НАЧИНАЕТСЯ!");
-            renderBattleTable();
-        }
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
+        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; showMsg("БОЙ!"); renderBattleTable(); }
     }
 
     function fillSlot(card) {
         const el = document.getElementById(`slot-${card.s}-${card.r}`);
-        el.classList.add('filled');
-        el.style.color = card.c;
-        el.innerHTML = `<div style="position:absolute; top:2px; left:4px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:28px;">${card.s}</div>`;
+        el.classList.add('filled'); el.style.color = card.c;
+        el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
         el.onclick = (e) => {
             e.stopPropagation();
             if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
@@ -353,236 +354,112 @@
         };
     }
 
-    function updatePickTurnUI() {
-        const isMy = (vchf.pickTurn === myRole);
-        showMsg(isMy ? "ТВОЙ ВЫБОР" : "ДРУГ ВЫБИРАЕТ...");
-        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-    }
     function playCard(card) {
-        if (vchf.phase !== 'BATTLE' || vchf.turn !== myRole) return;
-
-        // Валидация хода (Атака или Защита)
-        const isDefense = (vchf.table.length % 2 !== 0);
-        if (isDefense) {
-            if (!canDefend(card)) { showMsg("НЕЛЬЗЯ ТАК ПОБИТЬ!"); return; }
-        } else {
-            if (!canAttack(card)) { showMsg("НЕВЕРНЫЙ ВЕКТОР!"); return; }
-        }
-
-        // Удаляем из руки и очищаем слот
+        const isDef = vchf.table.length % 2 !== 0;
+        if (isDef && !canDefend(card)) return showMsg("НЕ БЬЕТ!");
+        if (!isDef && !canAttack(card)) return showMsg("НЕТ ВЕКТОРА!");
+        
         vchf.pHand = vchf.pHand.filter(c => c !== card);
         const slot = document.getElementById(`slot-${card.s}-${card.r}`);
-        slot.classList.remove('filled');
-        slot.innerHTML = '';
-
-        // Выполняем ход локально и шлем другу
+        slot.classList.remove('filled'); slot.innerHTML = '';
         executeMove(card, 'player');
-        conn.send({ type: 'MOVE', card: card });
+        conn.send({type: 'MOVE', card});
+    }
+
+    function canAttack(c) {
+        if (vchf.table.length === 0) return true;
+        return vchf.table.some(m => m.card.r === c.r);
+    }
+
+    function canDefend(c) {
+        const t = vchf.table[vchf.table.length - 1].card;
+        return (c.s === t.s && c.v > t.v) || (c.s === vchf.trump && t.s !== vchf.trump);
     }
 
     function executeMove(card, actor) {
-        playSound('slide');
-        vchf.table.push({ card: card, actor: actor });
+        vchf.table.push({card, actor});
         if (actor === 'enemy') vchf.eCount--;
-        
         renderBattleTable();
         checkBattleEnd();
     }
 
-    function canAttack(card) {
-        if (vchf.table.length === 0) return true;
-        if (vchf.table.length >= 12) return false;
-        // Подкидывать можно только те ранги, что уже на столе
-        return vchf.table.some(m => m.card.r === card.r);
-    }
-
-    function canDefend(card) {
-        const target = vchf.table[vchf.table.length - 1].card;
-        const sameSuitHigher = (card.s === target.s && card.v > target.v);
-        const trumpBeat = (card.s === vchf.trump && target.s !== vchf.trump);
-        return sameSuitHigher || trumpBeat;
-    }
-
     function renderBattleTable() {
-        const container = document.getElementById('battle-table');
-        container.innerHTML = '';
-        
-        vchf.table.forEach((move, i) => {
-            const node = document.createElement('div');
-            node.className = 'card-node face-up';
-            node.style.color = move.card.c;
-            
-            // Расчет позиции на столе (сетка 2x3 пар)
-            const pairIdx = Math.floor(i / 2);
-            const isDef = (i % 2 !== 0);
-            const x = (pairIdx % 3) * 80 - 80;
-            const y = Math.floor(pairIdx / 3) * 90 - 40;
-
-            node.style.left = `calc(50% + ${x + (isDef ? 15 : 0)}px)`;
-            node.style.top = `calc(40% + ${y + (isDef ? 20 : 0)}px)`;
-            node.style.zIndex = 100 + i;
-            if (isDef) node.style.transform = "rotate(10deg)";
-
-            node.innerHTML = `
-                <div style="position:absolute; top:4px; left:6px; font-size:12px; font-weight:900;">${move.card.r}</div>
-                <div style="font-size:32px; text-align:center; margin-top:18px;">${move.card.s}</div>
-            `;
-            container.appendChild(node);
+        const c = document.getElementById('battle-table');
+        c.innerHTML = '';
+        vchf.table.forEach((m, i) => {
+            const n = document.createElement('div');
+            n.className = 'card-node face-up';
+            const pi = Math.floor(i / 2), isD = i % 2 !== 0;
+            n.style.left = `calc(50% + ${(pi % 3) * 80 - 80 + (isD ? 15 : 0)}px)`;
+            n.style.top = `calc(40% + ${Math.floor(pi / 3) * 90 - 40 + (isD ? 20 : 0)}px)`;
+            n.innerHTML = `<div style="padding:4px; font-weight:900;">${m.card.r}</div><div style="font-size:30px; text-align:center;">${m.card.s}</div>`;
+            n.style.color = m.card.c;
+            c.appendChild(n);
         });
-
-        updateActionBtns();
-    }
-
-    function updateActionBtns() {
-        const isMyTurn = (vchf.turn === myRole);
-        const hasCards = (vchf.table.length > 0);
-        const isDefending = (vchf.table.length % 2 !== 0);
-
-        // Показываем БИТО только атакующему, если все карты покрыты
-        document.getElementById('btn-bito').style.display = (isMyTurn && hasCards && !isDefending) ? 'block' : 'none';
-        // Показываем ВЗЯТЬ только защищающемуся
-        document.getElementById('btn-take').style.display = (!isMyTurn && hasCards && isDefending) ? 'block' : 'none';
-        
+        const isMy = vchf.turn === myRole, isDef = vchf.table.length % 2 !== 0;
+        document.getElementById('btn-bito').style.display = (isMy && !isDef && vchf.table.length > 0) ? 'block' : 'none';
+        document.getElementById('btn-take').style.display = (!isMy && isDef) ? 'block' : 'none';
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
 
-    function handleBito() {
-        syncBito();
-        conn.send({ type: 'ACTION', cmd: 'BITO' });
-    }
-
+    function handleBito() { syncBito(); conn.send({type: 'ACTION', cmd: 'BITO'}); }
+    
     function syncBito() {
-        playSound('bito');
-        createDustCloud();
-        vchf.table = [];
-        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
+        playSound('bito'); createDustCloud();
+        vchf.table = []; vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
         setTimeout(renderBattleTable, 500);
     }
 
-    function handleTake() {
-        syncTake();
-        conn.send({ type: 'ACTION', cmd: 'TAKE' });
-    }
-
+    function handleTake() { syncTake(); conn.send({type: 'ACTION', cmd: 'TAKE'}); }
+    
     function syncTake() {
-        showMsg("ПРИЁМ КАРТ");
-        const cardsToTake = vchf.table.map(m => m.card);
-        
-        if (vchf.turn !== myRole) {
-            // Если я защищался и взял
-            vchf.pHand.push(...cardsToTake);
-            cardsToTake.forEach(c => fillSlot(c));
-        } else {
-            // Если взял враг
-            vchf.eCount += cardsToTake.length;
-        }
-
-        vchf.table = [];
-        // При "Взять" ход не переходит к другому, а остается у того же атакующего
-        setTimeout(renderBattleTable, 500);
+        vchf.table.forEach(m => {
+            if (vchf.turn !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); }
+            else { vchf.eCount++; }
+        });
+        vchf.table = []; setTimeout(renderBattleTable, 500);
     }
-    // --- ЭФФЕКТЫ И ВИЗУАЛИЗАЦИЯ ---
+
     function createDustCloud() {
         const arena = document.getElementById('arena');
-        const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
-        
-        cardsOnTable.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            for (let i = 0; i < 12; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.left = centerX + 'px';
-                p.style.top = centerY + 'px';
+        const cards = document.querySelectorAll('#battle-table .card-node');
+        cards.forEach(card => {
+            const r = card.getBoundingClientRect();
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div'); p.className = 'particle';
+                p.style.left = (r.left + 27) + 'px'; p.style.top = (r.top + 38) + 'px';
                 arena.appendChild(p);
-
-                const tx = (Math.random() - 0.5) * 300;
-                const ty = (Math.random() - 0.5) * 300;
-                
-                p.animate([
-                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-                ], {
-                    duration: 600 + Math.random() * 600,
-                    easing: 'ease-out'
-                }).onfinish = () => p.remove();
+                const tx = (Math.random() - 0.5) * 200, ty = (Math.random() - 0.5) * 200;
+                p.animate([{opacity: 1}, {transform: `translate(${tx}px, ${ty}px)`, opacity: 0}], 600).onfinish = () => p.remove();
             }
-            card.style.transform = "scale(0) rotate(180deg)";
-            card.style.opacity = "0";
+            card.style.transform = "scale(0) rotate(180deg)"; card.style.opacity = "0";
         });
     }
 
-    // --- ЛОГИКА ЗАВЕРШЕНИЯ ---
     function checkBattleEnd() {
         if (vchf.phase !== 'BATTLE') return;
-
-        // Пауза, чтобы игрок увидел последнюю карту
         setTimeout(() => {
-            const iAmOut = (vchf.pHand.length === 0);
-            const enemyOut = (vchf.eCount === 0);
-
-            if (iAmOut && enemyOut) {
-                endGame("НИЧЬЯ В ПУСТОТЕ");
-            } else if (iAmOut) {
-                endGame("ТЫ ПОБЕДИЛА. ВЕКТОР ОЧИЩЕН");
-            } else if (enemyOut) {
-                endGame("ПРОИГРЫШ. ХАОС ПОГЛОТИЛ ТЕБЯ");
-            }
+            const iWin = vchf.pHand.length === 0, eWin = vchf.eCount === 0;
+            if (iWin && eWin) showMsg("НИЧЬЯ");
+            else if (iWin) showMsg("ПОБЕДА!");
+            else if (eWin) showMsg("ПРОИГРЫШ");
         }, 1000);
     }
 
-    function endGame(msg) {
-        vchf.phase = 'END';
-        showMsg(msg);
-        document.getElementById('btn-bito').style.display = 'none';
-        document.getElementById('btn-take').style.display = 'none';
-        
-        // Кнопка рестарта
-        const btnReady = document.getElementById('btn-ready');
-        btnReady.textContent = "НОВАЯ ДУЭЛЬ";
-        btnReady.style.display = "block";
-        btnReady.onclick = () => location.reload();
-    }
-
-    // --- СИСТЕМНЫЕ ФУНКЦИИ ---
     function toggleHand() {
         isExpanded = !isExpanded;
-        const panel = document.getElementById('ctrl-panel');
-        const btn = document.getElementById('btn-zoom');
-        if (isExpanded) {
-            panel.classList.add('expanded');
-            btn.textContent = '✕';
-        } else {
-            panel.classList.remove('expanded');
-            btn.textContent = '↕';
-        }
+        document.getElementById('ctrl-panel').classList.toggle('expanded', isExpanded);
+        document.getElementById('btn-zoom').textContent = isExpanded ? '✕' : '↕';
         playSound('slide');
     }
 
-    function initLayout() {
-        const rows = { '♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts' };
+    window.onload = () => {
         SUITS.forEach(s => {
-            const container = document.getElementById(rows[s]);
-            container.innerHTML = '';
+            const r = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
             RANKS.forEach(rank => {
-                const sl = document.createElement('div');
-                sl.className = 'slot';
-                sl.id = `slot-${s}-${rank}`;
-                container.appendChild(sl);
+                const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; r.appendChild(sl);
             });
         });
-    }
-
-    // ТОЧКА ВХОДА МОНОЛИТА
-    window.onload = () => {
-        initLayout();
-        showMsg("СИСТЕМА ГОТОВА К ЗАПУСКУ");
-        // Инициализация аудио при первом взаимодействии
-        document.body.addEventListener('click', () => {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }, { once: true });
     };
 </script>
 </body>
