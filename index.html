@@ -660,8 +660,8 @@
         const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
         cardsOnTable.forEach(el => {
             const rect = el.getBoundingClientRect();
-            // Генерируем пыль из центра каждой карты
-            createDust(rect.left + (var(--card-w)/2), rect.top + (var(--card-h)/2));
+            // ИСПРАВЛЕНО: Прямое вычисление центра (55/2=27.5, 77/2=38.5)
+            createDust(rect.left + 27, rect.top + 38);
             el.style.transform = 'scale(0) rotate(180deg)'; 
             el.style.opacity = '0';
         });
@@ -672,7 +672,7 @@
         setTimeout(() => {
             vchf.table = []; 
             renderBattleTable();
-            // Ход переходит к тому, кто отбился (или по логике игры)
+            // Ход переходит к тому, кто отбился
             vchf.turn = (vchf.turn === 'player' ? 'enemy' : 'player');
             if (vchf.turn === 'enemy') sparkThink();
             checkGameStatus();
