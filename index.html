@@ -14,44 +14,33 @@
             --cherry-pulse: #4a0404; 
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.08); 
-            /* Параметры микро-карт для мобильной эргономики */
             --card-w: 55px;
             --card-h: 77px;
             --micro-scale: 0.25;
-            /* Психическое состояние Искры (Визуальный отклик) */
             --spark-glow: 0 0 15px var(--spark-neon);
         }
 
         * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+            margin: 0; padding: 0; box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
         }
 
         body {
-            background-color: #050505; 
-            color: #e0e6ff;
+            background-color: #050505; color: #e0e6ff;
             font-family: 'Segoe UI', Roboto, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
             perspective: 1500px; 
         }
 
-        /* --- ВЕРХНЯЯ АРЕНА (3D СТОЛ С ЭФФЕКТОМ ПРИСУТСТВИЯ) --- */
         .arena-top {
-            flex: 1;
-            position: relative;
+            flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
             animation: tableBreathe 10s infinite ease-in-out;
             box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
             border-bottom: 2px solid rgba(255, 207, 64, 0.3);
-            overflow: hidden;
-            transform-style: preserve-3d;
-            transform: rotateX(10deg);
-            z-index: 1;
+            overflow: hidden; transform-style: preserve-3d;
+            transform: rotateX(10deg); z-index: 1;
         }
 
         @keyframes tableBreathe {
@@ -60,50 +49,31 @@
         }
 
         .arena-top::after {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 50px 50px; 
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.5;
+            background-size: 50px 50px; opacity: 0.5;
         }
 
-        /* --- КОЗЫРЬ (СИСТЕМА ТРАМПА) --- */
         .trump-status { 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            width: 70px; 
-            height: 70px; 
-            border: 2px solid var(--gold); 
-            background: #000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 5000;
-            border-radius: 50%;
+            position: fixed; top: 20px; right: 20px; 
+            width: 70px; height: 70px; border: 2px solid var(--gold); 
+            background: #000; display: flex; justify-content: center; align-items: center; 
+            z-index: 5000; border-radius: 50%;
             box-shadow: 0 0 25px var(--gold), 0 0 50px var(--trump-halo);
             transform: rotateZ(-5deg);
         }
 
         #trump-icon {
-            font-size: 44px; 
-            position: relative;
-            z-index: 5005;
+            font-size: 44px; position: relative; z-index: 5005;
             text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px var(--trump-halo);
         }
 
         .trump-status::after {
-            content: ''; 
-            position: absolute; 
-            width: 86px; 
-            height: 86px;
-            border-radius: 50%;
-            border: 3px solid var(--trump-halo);
+            content: ''; position: absolute; width: 86px; height: 86px;
+            border-radius: 50%; border: 3px solid var(--trump-halo);
             animation: haloPulse 2.5s infinite alternate;
         }
 
@@ -112,104 +82,62 @@
             100% { transform: scale(1.15); opacity: 0.8; box-shadow: 0 0 20px var(--trump-halo); }
         }
 
-        /* --- КАРТЫ (NODE - ОБЪЕКТЫ ХАОСА) --- */
         .card-node {
-            position: absolute;
-            width: var(--card-w); 
-            height: var(--card-h);
-            background-color: #1a1a1a;
-            background-image: url('1771489965074(1).png');
-            background-size: cover;
-            border: 1px solid rgba(255, 207, 64, 0.5);
-            border-radius: 6px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-            cursor: pointer;
-            z-index: 10;
+            position: absolute; width: var(--card-w); height: var(--card-h);
+            background-color: #1a1a1a; background-image: url('1771489965074(1).png');
+            background-size: cover; border: 1px solid rgba(255, 207, 64, 0.5);
+            border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            cursor: pointer; z-index: 10;
             transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
             transform-style: preserve-3d;
         }
 
         .card-node.face-up { 
-            background-image: none !important; 
-            background-color: var(--bg-card);
-            border: 1px solid #fff;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.1);
+            background-image: none !important; background-color: var(--bg-card);
+            border: 1px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        .card-node.hide { 
-            opacity: 0; 
-            pointer-events: none; 
-            transform: scale(0.2) rotateY(180deg); 
-        }
+        .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.2) rotateY(180deg); }
 
-        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ (MOBILE DOCK) --- */
         .control-bottom {
-            height: 130px;
-            position: relative;
+            height: 130px; position: relative;
             background: linear-gradient(to top, #000 10%, #0c0f18 100%);
-            padding: 10px;
-            border-top-left-radius: 40px;
-            border-top-right-radius: 40px;
-            z-index: 4000;
-            border-top: 1px solid rgba(255, 207, 64, 0.3);
+            padding: 10px; border-top-left-radius: 40px; border-top-right-radius: 40px;
+            z-index: 4000; border-top: 1px solid rgba(255, 207, 64, 0.3);
             transition: all 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
         }
 
-        .control-bottom.expanded {
-            height: 350px;
-            background: linear-gradient(to top, #000 30%, #1a1a1a 100%);
-        }
+        .control-bottom.expanded { height: 350px; background: linear-gradient(to top, #000 30%, #1a1a1a 100%); }
 
-        .suits-grid { 
-            display: flex; 
-            flex-direction: column; 
-            width: 100%; 
-            align-items: center; 
-            gap: 2px;
-            margin-top: 15px;
-        }
+        .suits-grid { display: flex; flex-direction: column; width: 100%; align-items: center; gap: 2px; margin-top: 15px; }
 
-        .suit-row { 
-            display: flex; 
-            height: 22px; 
-            transition: all 0.4s ease; 
-        }
+        .suit-row { display: flex; height: 22px; transition: all 0.4s ease; }
 
         .slot { 
-            width: var(--card-w); 
-            height: var(--card-h);
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 207, 64, 0.2); 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            margin-left: -42px; 
-            border-radius: 4px;
-            transform: scale(var(--micro-scale));
-            transform-origin: center bottom;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: var(--card-w); height: var(--card-h);
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 207, 64, 0.2); 
+            position: relative; display: flex; align-items: center; justify-content: center;
+            margin-left: -42px; border-radius: 4px; transform: scale(var(--micro-scale));
+            transform-origin: center bottom; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             backdrop-filter: blur(2px);
         }
 
-        .slot:first-child { margin-left: 0; }
-        .slot.filled { 
-            background: var(--bg-card); 
-            border: 1px solid #fff; 
-            z-index: 5; 
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5); 
-        }
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
 
         .control-bottom.expanded .suit-row { height: 65px; margin-bottom: 5px; }
-        .control-bottom.expanded .slot { 
-            transform: scale(1.1) translateY(-15px); 
-            margin-left: -18px;
-            z-index: 10;
+        .control-bottom.expanded .slot { transform: scale(1.1) translateY(-15px); margin-left: -18px; z-index: 10; }
+        
+        .control-bottom.expanded .slot.filled:hover { 
+            transform: scale(1.5) translateY(-50px); z-index: 6000 !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--gold);
         }
-
-        /* Продолжение стилей и структуры UI в Window 2... */
     </style>
 </head>
+
+
+
+
+
         /* Дополнение стилей из Window 1 */
         .control-bottom.expanded .slot.filled:hover { 
             transform: scale(1.5) translateY(-50px);
@@ -313,7 +241,13 @@
     
     let isExpanded = false;
     let audioCtx = null;
-    // --- ЗВУКОВОЙ ДВИЖОК И UI ---
+
+
+
+
+
+
+        // --- ЗВУКОВОЙ ДВИЖОК И UI ---
     function showMsg(text) {
         const msg = document.getElementById('status-msg');
         msg.textContent = text;
@@ -420,7 +354,16 @@
             handleBito();
         }
     }
-    function ignite() {
+
+
+
+
+
+
+
+
+
+        function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
         
@@ -492,7 +435,15 @@
             node.onclick = () => { if (vchf.phase === 'PICK') pickCard(i, 'player'); };
         });
     }
-    // --- ПРОЦЕСС РАЗДАЧИ ---
+
+
+
+
+
+
+
+
+        // --- ПРОЦЕСС РАЗДАЧИ ---
     function pickCard(idx, actor) {
         const card = vchf.deck[idx];
         if (!card || card.used) return;
@@ -602,7 +553,13 @@
         document.getElementById('btn-bito').style.display = (isPTurn && hasT && !isDef) ? 'block' : 'none';
         document.getElementById('btn-take').style.display = (isPTurn && hasT && isDef) ? 'block' : 'none';
     }
-    function tryPlayCard(card) {
+
+
+
+
+
+
+        function tryPlayCard(card) {
         if (!validateMove(card)) { showMsg('НЕВЕРНЫЙ ВЕКТОР'); return; }
         vchf.pHand = vchf.pHand.filter(c => c !== card);
         document.getElementById(`slot-${card.s}-${card.r}`).classList.remove('filled');
@@ -709,3 +666,4 @@
 </script>
 </body>
 </html>
+
