@@ -21,14 +21,12 @@
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
         }
 
-        /* МАНИФЕСТ МОНОЛИТА: СТАТУС-БАР ТЕЛЕГРАМ */
         #net-status {
             position: fixed; top: 15px; left: 15px; z-index: 6000;
             background: rgba(12, 15, 24, 0.85);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(36, 161, 222, 0.4);
-            border-radius: 12px;
-            padding: 10px 15px;
+            border-radius: 12px; padding: 10px 15px;
             display: flex; align-items: center; gap: 12px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(36, 161, 222, 0.1);
             cursor: pointer; transition: 0.3s;
@@ -45,7 +43,6 @@
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
         #peer-id { font-size: 11px; color: #fff; font-family: monospace; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 
-        /* КНОПКА ВХОДА - ЦЕНТРАЛЬНЫЙ ПОРТАЛ */
         #btn-start-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
@@ -56,7 +53,6 @@
         }
         @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
 
-        /* АРЕНА С ЭФФЕКТОМ ГЛУБИНЫ */
         .arena-top {
             flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
@@ -71,7 +67,6 @@
             50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1); }
         }
 
-        /* СЕТКА ХАОСА */
         .arena-top::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -96,7 +91,6 @@
 
         .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
 
-        /* НИЖНЯЯ ПАНЕЛЬ С УПРАВЛЕНИЕМ */
         .control-bottom {
             height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
             border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
@@ -143,29 +137,23 @@
             <span id="peer-id">TAP TO COPY LINK</span>
         </div>
     </div>
-
     <button id="btn-start-center" onclick="startNetwork()">ВХОД В МОНОЛИТ</button>
-
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
-
     <div class='arena-top' id='arena'>
         <div id="enemy-stat" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); color:var(--spark-neon); font-size:10px; letter-spacing:2px; z-index:100;"></div>
         <div id='chaos-deck'></div>
         <div id='battle-table'></div>
     </div>
-
     <div class='control-bottom' id='ctrl-panel'>
         <div style="position:absolute; top:-45px; right:30px; z-index:4600;">
             <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px; cursor:pointer;" onclick='toggleHand()'>↕</button>
         </div>
-        
         <div class='action-btns'>
             <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>ГОТОВНОСТЬ</button>
             <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>БИТО</button>
             <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>ВЗЯТЬ</button>
         </div>
-
         <div class='suits-grid' id='main-hand'>
             <div id='s-spades' class='suit-row'></div>
             <div id='s-clubs' class='suit-row'></div>
@@ -188,7 +176,7 @@
     let localReady = false, remoteReady = false;
     let isExpanded = false, audioCtx = null;
 
-    // --- СЕТЕВОЙ УЗЕЛ "WANDERER" (Твой старый старт + Авто-URL) ---
+    // --- СЕТЕВОЙ УЗЕЛ "НУЛЕВОЙ ХАОС" ---
     function startNetwork() {
         const urlParams = new URLSearchParams(window.location.search);
         let roomNum = urlParams.get('room');
@@ -196,7 +184,6 @@
         if (!roomNum) {
             roomNum = prompt("НОМЕР КОМНАТЫ (например: 23):");
             if (!roomNum) return;
-            // Добавляем номер в URL для удобства
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
             window.history.pushState({path: newUrl}, '', newUrl);
         }
@@ -208,27 +195,26 @@
             debug: 2,
             config: {'iceServers': [
                 { 'urls': 'stun:stun.l.google.com:19302' },
-                { 'urls': 'stun:stun1.l.google.com:19302' },
-                { 'urls': 'stun:stun.services.mozilla.com' }
+                { 'urls': 'stun:stun1.l.google.com:19302' }
             ]}
         });
 
         peer.on('open', () => {
-            showMsg("ПОИСК КОМНАТЫ " + roomNum);
+            showMsg("ПОИСК: " + roomNum);
             conn = peer.connect(finalID, { reliable: true });
             
-            let checkTimeout = setTimeout(() => {
+            setTimeout(() => {
                 if (!conn || !conn.open) {
                     peer.destroy();
                     createHostRoom(finalID, roomNum);
                 }
-            }, 3000);
+            }, 2500);
 
             setupConn();
         });
 
         peer.on('error', (err) => {
-            if (err.type !== 'peer-unavailable') showMsg("ОШИБКА: " + err.type);
+            if (err.type !== 'peer-unavailable') showMsg("СЕТЬ: " + err.type);
         });
     }
 
@@ -241,12 +227,12 @@
             myRole = 'host';
             document.getElementById('room-info').textContent = "КОМНАТА: " + originalNum;
             document.getElementById('peer-id').textContent = "TAP TO COPY LINK";
-            showMsg("ВЫ ХОЗЯИН ЗАЛА");
+            showMsg("ВЫ ХОЗЯИН");
         });
         peer.on('connection', (c) => {
             conn = c;
             setupConn();
-            showMsg("ВРАГ ОБНАРУЖЕН");
+            showMsg("ИГРОК ВОШЕЛ");
         });
     }
 
@@ -254,7 +240,7 @@
         if (!conn) return;
         conn.on('open', () => {
             document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "СВЯЗЬ УСТАНОВЛЕНА";
+            document.getElementById('peer-id').textContent = "СВЯЗЬ ОК";
             showMsg("МОСТ ГОТОВ");
             conn.on('data', handleNetData);
         });
@@ -262,7 +248,7 @@
 
     function copyMyID() {
         navigator.clipboard.writeText(window.location.href);
-        showMsg("ССЫЛКА СКОПИРОВАНА!");
+        showMsg("ССЫЛКА В БУФЕРЕ");
     }
 
     function playSound(type) {
@@ -274,12 +260,11 @@
             if (type === 'slide') {
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.15);
             } else if (type === 'bito') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             }
         } catch(e) {}
@@ -292,7 +277,7 @@
     }
 
     function handleNetData(data) {
-        if (data.type === 'READY') { remoteReady = true; showMsg("ДРУГ ГОТОВ"); checkStart(); }
+        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
         if (data.type === 'SYNC_DECK') { vchf.deck = data.deck; vchf.trump = data.trump; startChaosPhase(); }
         if (data.type === 'PICK') executePick(data.idx, 'enemy');
         if (data.type === 'MOVE') executeMove(data.card, 'enemy');
@@ -306,7 +291,7 @@
         localReady = true; 
         document.getElementById('btn-ready').style.display = 'none';
         if(conn) conn.send({type: 'READY'}); 
-        showMsg("ГОТОВНОСТЬ ОТПРАВЛЕНА");
+        showMsg("ОЖИДАНИЕ ВРАГА");
         checkStart();
     }
 
@@ -343,11 +328,15 @@
                 n.style.left = (cx + Math.cos(a) * 140) + 'px';
                 n.style.top = (cy + Math.sin(a) * 140) + 'px';
                 n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
-            }, i * 20);
+            }, i * 15);
             n.onclick = () => { 
                 if (vchf.phase === 'PICK' && vchf.pickTurn === myRole && !card.used) { 
-                    executePick(i, 'player'); 
-                    conn.send({type: 'PICK', idx: i}); 
+                    if (conn && conn.open) {
+                        conn.send({type: 'PICK', idx: i}); 
+                        executePick(i, 'player'); 
+                    } else {
+                        showMsg("ПОТЕРЯ СВЯЗИ");
+                    }
                 } 
             };
         });
@@ -356,6 +345,7 @@
     function executePick(idx, actor) {
         const card = vchf.deck[idx];
         const n = document.getElementById(`node-${idx}`);
+        if (!n) return;
         card.used = true; playSound('slide');
         if (actor === 'player') {
             vchf.pHand.push(card);
@@ -370,11 +360,16 @@
         }
         vchf.pickTurn = (vchf.pickTurn === 'host' ? 'guest' : 'host');
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; showMsg("БОЙ НАЧАТ!"); renderBattleTable(); }
+        if (vchf.deck.every(c => c.used)) { 
+            vchf.phase = 'BATTLE'; 
+            showMsg("БОЙ!"); 
+            renderBattleTable(); 
+        }
     }
 
     function fillSlot(card) {
         const el = document.getElementById(`slot-${card.s}-${card.r}`);
+        if (!el) return;
         el.classList.add('filled'); el.style.color = card.c;
         el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
         el.onclick = (e) => {
@@ -387,12 +382,12 @@
     function playCard(card) {
         const isDef = vchf.table.length % 2 !== 0;
         if (isDef && !canDefend(card)) return showMsg("НЕ БЬЕТ!");
-        if (!isDef && !canAttack(card)) return showMsg("НЕТ ВЕКТОРА!");
+        if (!isDef && !canAttack(card)) return showMsg("НЕТ КАРТЫ!");
         vchf.pHand = vchf.pHand.filter(c => c !== card);
         const slot = document.getElementById(`slot-${card.s}-${card.r}`);
         slot.classList.remove('filled'); slot.innerHTML = '';
         executeMove(card, 'player');
-        conn.send({type: 'MOVE', card});
+        if(conn) conn.send({type: 'MOVE', card});
     }
 
     function canAttack(c) { return vchf.table.length === 0 || vchf.table.some(m => m.card.r === c.r); }
@@ -430,7 +425,7 @@
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
 
-    function handleBito() { syncBito(); conn.send({type: 'ACTION', cmd: 'BITO'}); }
+    function handleBito() { syncBito(); if(conn) conn.send({type: 'ACTION', cmd: 'BITO'}); }
     function syncBito() {
         playSound('bito'); createDustCloud();
         vchf.table = []; vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
@@ -438,11 +433,11 @@
         showMsg("БИТО");
     }
 
-    function handleTake() { syncTake(); conn.send({type: 'ACTION', cmd: 'TAKE'}); }
+    function handleTake() { syncTake(); if(conn) conn.send({type: 'ACTION', cmd: 'TAKE'}); }
     function syncTake() {
         vchf.table.forEach(m => { if (vchf.turn !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); } else { vchf.eCount++; } });
         vchf.table = []; setTimeout(renderBattleTable, 600);
-        showMsg("ЗАБРАЛ");
+        showMsg("ВЗЯТО");
     }
 
     function createDustCloud() {
@@ -453,7 +448,7 @@
                 const p = document.createElement('div'); p.className = 'particle';
                 p.style.left = (r.left + 27) + 'px'; p.style.top = (r.top + 38) + 'px';
                 p.style.background = card.style.color || 'var(--gold)'; arena.appendChild(p);
-                const tx = (Math.random() - 0.5) * 250, ty = (Math.random() - 0.5) * 250;
+                const tx = (Math.random() - 0.5) * 200, ty = (Math.random() - 0.5) * 200;
                 p.animate([{ opacity: 1, transform: 'scale(1)' }, { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }], 800).onfinish = () => p.remove();
             }
             card.style.transition = "0.5s"; card.style.transform = "scale(0) rotate(180deg)"; card.style.opacity = "0";
@@ -465,8 +460,8 @@
         setTimeout(() => {
             const iWin = vchf.pHand.length === 0, eWin = vchf.eCount === 0;
             if (iWin && eWin) showMsg("НИЧЬЯ");
-            else if (iWin) showMsg("ТВОЯ ПОБЕДА!");
-            else if (eWin) showMsg("ВРАГ ОДОЛЕЛ");
+            else if (iWin) showMsg("ПОБЕДА!");
+            else if (eWin) showMsg("ПОРАЖЕНИЕ");
         }, 1500);
     }
 
@@ -479,7 +474,8 @@
 
     window.onload = () => {
         SUITS.forEach(s => {
-            const row = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
+            const rowStr = (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts');
+            const row = document.getElementById('s-' + rowStr);
             RANKS.forEach(rank => {
                 const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; row.appendChild(sl);
             });
