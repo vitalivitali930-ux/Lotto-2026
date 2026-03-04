@@ -21,7 +21,7 @@
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
         }
 
-        /* КРАСИВАЯ РАМКА ID (Telegram Style) */
+        /* МАНИФЕСТ МОНОЛИТА: СТАТУС-БАР ТЕЛЕГРАМ */
         #net-status {
             position: fixed; top: 15px; left: 15px; z-index: 6000;
             background: rgba(12, 15, 24, 0.85);
@@ -45,7 +45,7 @@
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
         #peer-id { font-size: 11px; color: #fff; font-family: monospace; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 
-        /* ЦЕНТРАЛЬНАЯ КНОПКА (ФИКС ДОСТУПА) */
+        /* КНОПКА ВХОДА - ЦЕНТРАЛЬНЫЙ ПОРТАЛ */
         #btn-start-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
@@ -56,6 +56,7 @@
         }
         @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
 
+        /* АРЕНА С ЭФФЕКТОМ ГЛУБИНЫ */
         .arena-top {
             flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
@@ -70,6 +71,7 @@
             50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1); }
         }
 
+        /* СЕТКА ХАОСА */
         .arena-top::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -92,8 +94,9 @@
             transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1); transform-style: preserve-3d; z-index: 10;
         }
 
-        .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; }
+        .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
 
+        /* НИЖНЯЯ ПАНЕЛЬ С УПРАВЛЕНИЕМ */
         .control-bottom {
             height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
             border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
@@ -106,9 +109,9 @@
         .slot { 
             width: var(--card-w); height: var(--card-h); background: rgba(255,255,255,0.03); 
             border: 1px solid rgba(255,207,64,0.2); margin-left: -42px; transform: scale(var(--micro-scale));
-            transform-origin: center bottom; transition: 0.5s; border-radius: 4px;
+            transform-origin: center bottom; transition: 0.5s; border-radius: 4px; overflow: hidden;
         }
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.5); color: #000; }
 
         .control-bottom.expanded .suit-row { height: 65px; margin-bottom: 5px; }
         .control-bottom.expanded .slot { transform: scale(1.1) translateY(-15px); margin-left: -18px; }
@@ -116,7 +119,7 @@
         #status-msg {
             position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
             z-index: 9999; color: var(--gold); font-weight: bold; letter-spacing: 4px;
-            text-shadow: 0 0 20px var(--gold); opacity: 0; transition: 0.6s; text-align: center;
+            text-shadow: 0 0 20px var(--gold); opacity: 0; transition: 0.6s; text-align: center; pointer-events: none;
         }
         #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
@@ -127,7 +130,7 @@
         button.action { 
             padding: 12px 18px; background: rgba(16,20,32,0.9); border: 2px solid var(--gold); 
             color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; 
-            text-transform: uppercase; border-radius: 8px;
+            text-transform: uppercase; border-radius: 8px; cursor: pointer;
         }
         .particle { position: absolute; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; pointer-events: none; }
     </style>
@@ -136,12 +139,12 @@
     <div id="net-status" onclick="copyMyID()">
         <div class="net-logo"></div>
         <div class="net-info">
-            <span id="room-info">CONNECTING...</span>
+            <span id="room-info">ОЖИДАНИЕ...</span>
             <span id="peer-id">TAP TO COPY ID</span>
         </div>
     </div>
 
-    <button id="btn-start-center" onclick="startNetwork()">ПОДКЛЮЧИТЬСЯ</button>
+    <button id="btn-start-center" onclick="startNetwork()">ВХОД В МОНОЛИТ</button>
 
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
@@ -154,7 +157,7 @@
 
     <div class='control-bottom' id='ctrl-panel'>
         <div style="position:absolute; top:-45px; right:30px; z-index:4600;">
-            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px;" onclick='toggleHand()'>↕</button>
+            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px; cursor:pointer;" onclick='toggleHand()'>↕</button>
         </div>
         
         <div class='action-btns'>
@@ -172,6 +175,7 @@
     </div>
 
 <script>
+    // --- ПАРАМЕТРЫ МОНОЛИТА ---
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -185,25 +189,75 @@
     let localReady = false, remoteReady = false;
     let isExpanded = false, audioCtx = null;
 
-    // --- РЕЗЕРВНОЕ КОПИРОВАНИЕ ID (ЭТАЛОН) ---
-    function copyMyID() {
-        const idLabel = document.getElementById('peer-id');
-        const currentID = idLabel.getAttribute('data-id');
-        if (!currentID || currentID === "CONNECTING...") return;
+    // --- СЕТЕВОЙ УЗЕЛ "БРОНЕБОЙНЫЙ" (КОМНАТЫ) ---
+    function startNetwork() {
+        const roomNum = prompt("НОМЕР КОМНАТЫ (например: 23):");
+        if (!roomNum) return;
 
-        navigator.clipboard.writeText(currentID).then(() => {
-            showMsg("ID СКОПИРОВАН");
-            playSound('slide');
-        }).catch(() => {
-            const el = document.createElement('textarea');
-            el.value = currentID;
-            document.body.appendChild(el); el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showMsg("ID СКОПИРОВАН (ALT)");
+        const finalID = "VCHF_MONO_" + roomNum.trim();
+        document.getElementById('btn-start-center').style.display = 'none';
+        
+        // TURN/STUN серверы для пробоя Wi-Fi/Firewall
+        peer = new Peer(null, {
+            debug: 2,
+            config: {'iceServers': [
+                { 'urls': 'stun:stun.l.google.com:19302' },
+                { 'urls': 'stun:stun1.l.google.com:19302' },
+                { 'urls': 'stun:stun.services.mozilla.com' }
+            ]}
+        });
+
+        peer.on('open', (myStaticId) => {
+            showMsg("ПОИСК КОМНАТЫ " + roomNum);
+            
+            // Пробуем подключиться к ID комнаты
+            conn = peer.connect(finalID, { reliable: true });
+            
+            // Если через 3 сек связи нет, значит мы первые — создаем комнату сами
+            let checkTimeout = setTimeout(() => {
+                if (!conn.open) {
+                    peer.destroy();
+                    createHostRoom(finalID, roomNum);
+                }
+            }, 3000);
+
+            setupConn();
+        });
+
+        peer.on('error', (err) => {
+            console.log("Сетевой статус:", err.type);
+            if (err.type !== 'peer-unavailable') showMsg("ОШИБКА: " + err.type);
         });
     }
 
+    function createHostRoom(targetID, originalNum) {
+        peer = new Peer(targetID, {
+            debug: 2,
+            config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}
+        });
+        peer.on('open', () => {
+            myRole = 'host';
+            document.getElementById('room-info').textContent = "КОМНАТА: " + originalNum;
+            showMsg("ВЫ ХОЗЯИН ЗАЛА");
+            document.getElementById('peer-id').textContent = "ЖДЕМ ИГРОКА...";
+        });
+        peer.on('connection', (c) => {
+            conn = c;
+            setupConn();
+            showMsg("ВРАГ ОБНАРУЖЕН");
+        });
+    }
+
+    function setupConn() {
+        conn.on('open', () => {
+            document.getElementById('btn-ready').style.display = 'block';
+            document.getElementById('peer-id').textContent = "СВЯЗЬ УСТАНОВЛЕНА";
+            showMsg("МОСТ ГОТОВ");
+            conn.on('data', handleNetData);
+        });
+    }
+
+    // --- ЗВУКОВОЙ ДВИЖОК ---
     function playSound(type) {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -230,41 +284,7 @@
         m.textContent = t; m.classList.add('active');
         setTimeout(() => m.classList.remove('active'), 3000);
     }
-
-    function startNetwork() {
-        const targetId = prompt("ID ДРУГА (пусто = HOST):");
-        document.getElementById('btn-start-center').style.display = 'none';
-        
-        peer = new Peer(null, {
-            config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}
-        });
-
-        peer.on('open', (id) => {
-            const idLabel = document.getElementById('peer-id');
-            idLabel.textContent = id.substring(0, 8) + "...";
-            idLabel.setAttribute('data-id', id);
-            document.getElementById('room-info').textContent = "MY ID ACTIVE";
-
-            if (targetId) {
-                myRole = 'guest';
-                conn = peer.connect(targetId.trim());
-                setupConn();
-            } else {
-                showMsg("ЖДЕМ ВРАГА...");
-            }
-        });
-
-        peer.on('connection', (c) => { if (!conn) { conn = c; myRole = 'host'; setupConn(); } });
-    }
-
-    function setupConn() {
-        conn.on('open', () => {
-            document.getElementById('btn-ready').style.display = 'block';
-            showMsg("МОСТ УСТАНОВЛЕН");
-            conn.on('data', handleNetData);
-        });
-    }
-
+    // --- ОБРАБОТКА СЕТЕВЫХ КОМАНД ---
     function handleNetData(data) {
         if (data.type === 'READY') { remoteReady = true; showMsg("ДРУГ ГОТОВ"); checkStart(); }
         if (data.type === 'SYNC_DECK') { vchf.deck = data.deck; vchf.trump = data.trump; startChaosPhase(); }
@@ -295,6 +315,7 @@
         }
     }
 
+    // --- ФАЗА ХАОСА (ВЫБОР КАРТ) ---
     function startChaosPhase() {
         vchf.phase = 'PICK';
         document.getElementById('trump-icon').textContent = vchf.trump;
@@ -319,34 +340,55 @@
                 n.style.top = (cy + Math.sin(a) * 140) + 'px';
                 n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
             }, i * 20);
-            n.onclick = () => { if (vchf.phase === 'PICK' && vchf.pickTurn === myRole && !card.used) { executePick(i, 'player'); conn.send({type: 'PICK', idx: i}); } };
+            n.onclick = () => { 
+                if (vchf.phase === 'PICK' && vchf.pickTurn === myRole && !card.used) { 
+                    executePick(i, 'player'); 
+                    conn.send({type: 'PICK', idx: i}); 
+                } 
+            };
         });
     }
 
     function executePick(idx, actor) {
         const card = vchf.deck[idx];
         const n = document.getElementById(`node-${idx}`);
-        card.used = true; playSound('slide');
+        card.used = true; 
+        playSound('slide');
+        
         if (actor === 'player') {
             vchf.pHand.push(card);
             const slot = document.getElementById(`slot-${card.s}-${card.r}`);
             const rect = slot.getBoundingClientRect();
-            n.style.zIndex = "5000"; n.style.left = rect.left + 'px'; n.style.top = rect.top + 'px'; n.style.transform = "scale(0.4) rotate(0deg)";
+            n.style.zIndex = "5000"; 
+            n.style.left = rect.left + 'px'; 
+            n.style.top = rect.top + 'px'; 
+            n.style.transform = "scale(0.4) rotate(0deg)";
             setTimeout(() => { n.remove(); fillSlot(card); }, 600);
         } else {
             vchf.eCount++;
-            n.style.top = "-150px"; n.style.opacity = "0";
+            n.style.top = "-150px"; 
+            n.style.opacity = "0";
             setTimeout(() => n.remove(), 600);
         }
+        
         vchf.pickTurn = (vchf.pickTurn === 'host' ? 'guest' : 'host');
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; showMsg("БОЙ!"); renderBattleTable(); }
+        
+        if (vchf.deck.every(c => c.used)) { 
+            vchf.phase = 'BATTLE'; 
+            showMsg("БОЙ НАЧАТ!"); 
+            renderBattleTable(); 
+        }
     }
 
     function fillSlot(card) {
         const el = document.getElementById(`slot-${card.s}-${card.r}`);
-        el.classList.add('filled'); el.style.color = card.c;
-        el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
+        el.classList.add('filled'); 
+        el.style.color = card.c;
+        el.innerHTML = `
+            <div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div>
+            <div style="font-size:24px; text-align:center;">${card.s}</div>
+        `;
         el.onclick = (e) => {
             e.stopPropagation();
             if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
@@ -354,6 +396,7 @@
         };
     }
 
+    // --- ЛОГИКА БОЯ ---
     function playCard(card) {
         const isDef = vchf.table.length % 2 !== 0;
         if (isDef && !canDefend(card)) return showMsg("НЕ БЬЕТ!");
@@ -361,7 +404,8 @@
         
         vchf.pHand = vchf.pHand.filter(c => c !== card);
         const slot = document.getElementById(`slot-${card.s}-${card.r}`);
-        slot.classList.remove('filled'); slot.innerHTML = '';
+        slot.classList.remove('filled'); 
+        slot.innerHTML = '';
         executeMove(card, 'player');
         conn.send({type: 'MOVE', card});
     }
@@ -373,9 +417,13 @@
 
     function canDefend(c) {
         const t = vchf.table[vchf.table.length - 1].card;
-        return (c.s === t.s && c.v > t.v) || (c.s === vchf.trump && t.s !== vchf.trump);
+        const isTrump = c.s === vchf.trump;
+        const targetTrump = t.s === vchf.trump;
+        
+        if (c.s === t.s) return c.v > t.v;
+        if (isTrump && !targetTrump) return true;
+        return false;
     }
-
     function executeMove(card, actor) {
         vchf.table.push({card, actor});
         if (actor === 'enemy') vchf.eCount--;
@@ -390,60 +438,101 @@
             const n = document.createElement('div');
             n.className = 'card-node face-up';
             const pi = Math.floor(i / 2), isD = i % 2 !== 0;
-            n.style.left = `calc(50% + ${(pi % 3) * 80 - 80 + (isD ? 15 : 0)}px)`;
-            n.style.top = `calc(40% + ${Math.floor(pi / 3) * 90 - 40 + (isD ? 20 : 0)}px)`;
-            n.innerHTML = `<div style="padding:4px; font-weight:900;">${m.card.r}</div><div style="font-size:30px; text-align:center;">${m.card.s}</div>`;
+            // Раскладка карт на столе со смещением для битых карт
+            n.style.left = `calc(50% + ${(pi % 3) * 85 - 85 + (isD ? 18 : 0)}px)`;
+            n.style.top = `calc(40% + ${Math.floor(pi / 3) * 95 - 40 + (isD ? 25 : 0)}px)`;
+            n.innerHTML = `
+                <div style="padding:4px; font-weight:900; font-size:12px;">${m.card.r}</div>
+                <div style="font-size:32px; text-align:center;">${m.card.s}</div>
+            `;
             n.style.color = m.card.c;
             c.appendChild(n);
         });
-        const isMy = vchf.turn === myRole, isDef = vchf.table.length % 2 !== 0;
-        document.getElementById('btn-bito').style.display = (isMy && !isDef && vchf.table.length > 0) ? 'block' : 'none';
-        document.getElementById('btn-take').style.display = (!isMy && isDef) ? 'block' : 'none';
+
+        // Управление видимостью кнопок действий
+        const isMyTurn = vchf.turn === myRole;
+        const isTableAttack = vchf.table.length % 2 === 0; // Четное = кто-то походил, ждем защиты
+        
+        // БИТО: Мой ход, на столе есть карты, и они все отбиты
+        document.getElementById('btn-bito').style.display = (isMyTurn && isTableAttack && vchf.table.length > 0) ? 'block' : 'none';
+        // ВЗЯТЬ: Не мой ход, и на столе лежит карта, которую надо побить
+        document.getElementById('btn-take').style.display = (!isMyTurn && !isTableAttack) ? 'block' : 'none';
+        
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
 
-    function handleBito() { syncBito(); conn.send({type: 'ACTION', cmd: 'BITO'}); }
+    // --- СИНХРОНИЗАЦИЯ ДЕЙСТВИЙ ---
+    function handleBito() { 
+        syncBito(); 
+        conn.send({type: 'ACTION', cmd: 'BITO'}); 
+    }
     
     function syncBito() {
-        playSound('bito'); createDustCloud();
-        vchf.table = []; vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
-        setTimeout(renderBattleTable, 500);
+        playSound('bito'); 
+        createDustCloud();
+        vchf.table = []; 
+        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
+        setTimeout(renderBattleTable, 600);
+        showMsg("БИТО");
     }
 
-    function handleTake() { syncTake(); conn.send({type: 'ACTION', cmd: 'TAKE'}); }
+    function handleTake() { 
+        syncTake(); 
+        conn.send({type: 'ACTION', cmd: 'TAKE'}); 
+    }
     
     function syncTake() {
         vchf.table.forEach(m => {
-            if (vchf.turn !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); }
-            else { vchf.eCount++; }
+            if (vchf.turn !== myRole) { 
+                vchf.pHand.push(m.card); 
+                fillSlot(m.card); 
+            } else { 
+                vchf.eCount++; 
+            }
         });
-        vchf.table = []; setTimeout(renderBattleTable, 500);
+        vchf.table = []; 
+        // При "Взять" ход не меняется
+        setTimeout(renderBattleTable, 600);
+        showMsg("ЗАБРАЛ");
     }
 
+    // --- ВИЗУАЛЬНЫЕ ЧАСТИЦЫ (ЭТАЛОН) ---
     function createDustCloud() {
         const arena = document.getElementById('arena');
         const cards = document.querySelectorAll('#battle-table .card-node');
         cards.forEach(card => {
             const r = card.getBoundingClientRect();
-            for (let i = 0; i < 8; i++) {
-                const p = document.createElement('div'); p.className = 'particle';
-                p.style.left = (r.left + 27) + 'px'; p.style.top = (r.top + 38) + 'px';
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div'); 
+                p.className = 'particle';
+                p.style.left = (r.left + 27) + 'px'; 
+                p.style.top = (r.top + 38) + 'px';
+                p.style.background = card.style.color || 'var(--gold)';
                 arena.appendChild(p);
-                const tx = (Math.random() - 0.5) * 200, ty = (Math.random() - 0.5) * 200;
-                p.animate([{opacity: 1}, {transform: `translate(${tx}px, ${ty}px)`, opacity: 0}], 600).onfinish = () => p.remove();
+                
+                const tx = (Math.random() - 0.5) * 250;
+                const ty = (Math.random() - 0.5) * 250;
+                
+                p.animate([
+                    { opacity: 1, transform: 'scale(1)' },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], 800).onfinish = () => p.remove();
             }
-            card.style.transform = "scale(0) rotate(180deg)"; card.style.opacity = "0";
+            card.style.transition = "0.5s";
+            card.style.transform = "scale(0) rotate(180deg)"; 
+            card.style.opacity = "0";
         });
     }
 
     function checkBattleEnd() {
         if (vchf.phase !== 'BATTLE') return;
         setTimeout(() => {
-            const iWin = vchf.pHand.length === 0, eWin = vchf.eCount === 0;
-            if (iWin && eWin) showMsg("НИЧЬЯ");
-            else if (iWin) showMsg("ПОБЕДА!");
-            else if (eWin) showMsg("ПРОИГРЫШ");
-        }, 1000);
+            const iWin = vchf.pHand.length === 0;
+            const eWin = vchf.eCount === 0;
+            if (iWin && eWin) showMsg("НИЧЬЯ — МОНОЛИТ ПУСТ");
+            else if (iWin) showMsg("ТВОЯ ПОБЕДА!");
+            else if (eWin) showMsg("ВРАГ ОДОЛЕЛ ТЕБЯ");
+        }, 1500);
     }
 
     function toggleHand() {
@@ -453,11 +542,15 @@
         playSound('slide');
     }
 
+    // Инициализация пустых слотов при загрузке
     window.onload = () => {
         SUITS.forEach(s => {
-            const r = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
+            const row = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
             RANKS.forEach(rank => {
-                const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; r.appendChild(sl);
+                const sl = document.createElement('div'); 
+                sl.className = 'slot'; 
+                sl.id = `slot-${s}-${rank}`; 
+                row.appendChild(sl);
             });
         });
     };
