@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Zero Chaos Corrected)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Full Weight)</title>
     <style>
         :root {
             --gold: #ffcf40;
@@ -13,46 +13,50 @@
             --trump-halo: #8a2be2; 
             --cherry-pulse: #4a0404; 
             --bg-card: #ffffff;
-            --grid-color: rgba(255, 207, 64, 0.06); 
-            /* Параметры микро-карт (25% от эталона 55x77) */
+            --grid-color: rgba(255, 207, 64, 0.08); 
+            /* Параметры микро-карт */
             --card-w: 55px;
             --card-h: 77px;
             --micro-scale: 0.25;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
         body {
             background-color: #050505; 
             color: #e0e6ff;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
             overflow: hidden;
             display: flex;
-            flex-direction: column; /* Вертикальный стек для Z Flip */
-            perspective: 1200px; 
+            flex-direction: column;
+            perspective: 1500px; 
         }
+
+        /* --- ВЕРХНЯЯ АРЕНА (3D СТОЛ) --- */
         .arena-top {
-            flex: 1; /* Занимает всё свободное место, сжимаясь при раскрытии руки */
+            flex: 1;
             position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
-            animation: tableBreathe 8s infinite ease-in-out;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
-            border-bottom: 2px solid rgba(255, 207, 64, 0.25);
+            animation: tableBreathe 10s infinite ease-in-out;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            border-bottom: 2px solid rgba(255, 207, 64, 0.3);
             overflow: hidden;
             transform-style: preserve-3d;
-            transform: rotateX(8deg);
-            margin-top: 5px;
+            transform: rotateX(10deg);
             z-index: 1;
         }
+
         @keyframes tableBreathe {
-            0%, 100% { 
-                background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
-                filter: brightness(0.8);
-            }
-            50% { 
-                background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%);
-                filter: brightness(1.2);
-            }
+            0%, 100% { filter: brightness(0.8) contrast(1); }
+            50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1) contrast(1.1); }
         }
+
         .arena-top::after {
             content: '';
             position: absolute;
@@ -60,182 +64,283 @@
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 44px 44px; 
+            background-size: 50px 50px; 
             pointer-events: none;
             z-index: 0;
+            opacity: 0.5;
         }
-        .arena-top::before {
-            content: ''; position: absolute; top: 50%; left: 50%;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(255, 207, 64, 0.1) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            animation: nebulaPulse 10s infinite alternate;
-            pointer-events: none;
-            z-index: 1;
-        }
-        @keyframes nebulaPulse {
-            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
-            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
-        }
-        /* ИЗОЛЯЦИЯ КОЗЫРЯ: Вынесен из зоны 3D трансформаций */
+
+        /* --- КОЗЫРЬ (ФИКСИРОВАННЫЙ) --- */
         .trump-status { 
-            position: fixed; top: 15px; right: 15px; width: 66px; height: 66px; 
-            border: 2px solid var(--gold); background: #000; 
-            display: flex; justify-content: center; align-items: center; z-index: 5000;
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            width: 70px; 
+            height: 70px; 
+            border: 2px solid var(--gold); 
+            background: #000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 5000;
             border-radius: 50%;
-            box-shadow: 0 0 20px var(--gold), 0 0 40px var(--trump-halo);
+            box-shadow: 0 0 25px var(--gold), 0 0 50px var(--trump-halo);
             transform: rotateZ(-5deg);
-            pointer-events: none;
         }
+
         #trump-icon {
-            font-size: 42px; 
+            font-size: 44px; 
             position: relative;
             z-index: 5005;
-            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px var(--trump-halo);
+            text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px var(--trump-halo);
         }
+
         .trump-status::after {
-            content: ''; position: absolute; top: -10px; left: -10px; width: 82px; height: 82px;
+            content: ''; 
+            position: absolute; 
+            width: 86px; 
+            height: 86px;
             border-radius: 50%;
-            border: 4px solid var(--trump-halo);
-            animation: haloPulse 2s infinite alternate;
-            z-index: 4999;
+            border: 3px solid var(--trump-halo);
+            animation: haloPulse 2.5s infinite alternate;
         }
+
         @keyframes haloPulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.1); opacity: 1; }
+            0% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 0px var(--trump-halo); }
+            100% { transform: scale(1.15); opacity: 0.8; box-shadow: 0 0 20px var(--trump-halo); }
         }
-        .control-bottom {
-            height: auto;
-            min-height: 120px;
-            position: relative;
-            background: linear-gradient(to top, #000 0%, #0c0f18 100%);
-            padding: 5px;
-            border-top-left-radius: 50% 30px;
-            border-top-right-radius: 50% 30px;
-            z-index: 4000;
-            border-top: 1px solid rgba(255, 207, 64, 0.2);
-            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .control-bottom.expanded {
-            min-height: 320px;
-            background: linear-gradient(to top, #000 20%, #1a1a1a 100%);
-        }
+
+        /* --- КАРТЫ (NODE) --- */
         .card-node {
             position: absolute;
-            width: var(--card-w); height: var(--card-h);
+            width: var(--card-w); 
+            height: var(--card-h);
             background-color: #1a1a1a;
             background-image: url('1771489965074(1).png');
             background-size: cover;
-            border: 1px solid rgba(255, 207, 64, 0.4);
-            border-radius: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255, 207, 64, 0.5);
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
             cursor: pointer;
             z-index: 10;
-            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
             transform-style: preserve-3d;
         }
+
         .card-node.face-up { 
             background-image: none !important; 
             background-color: var(--bg-card);
             border: 1px solid #fff;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.1);
         }
-        .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
+
+        .card-node.hide { 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: scale(0.2) rotateY(180deg); 
+        }
+
+        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ --- */
+        .control-bottom {
+            height: 130px;
+            position: relative;
+            background: linear-gradient(to top, #000 10%, #0c0f18 100%);
+            padding: 10px;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            z-index: 4000;
+            border-top: 1px solid rgba(255, 207, 64, 0.3);
+            transition: all 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+
+        .control-bottom.expanded {
+            height: 350px;
+            background: linear-gradient(to top, #000 30%, #1a1a1a 100%);
+        }
 
         .suits-grid { 
-            display: flex; flex-direction: column; width: 100%; position: relative; 
-            align-items: center; justify-content: center; margin-top: 20px;
-            transition: transform 0.4s;
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            align-items: center; 
+            gap: 2px;
+            margin-top: 15px;
         }
-        .suit-row { display: flex; height: 25px; margin-top: -8px; transition: all 0.4s ease; }
-        
-        /* СЛОТЫ: Изначально уменьшены на 75% (scale 0.25) */
-        .slot { 
-            width: var(--card-w); height: var(--card-h);
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 207, 64, 0.25); 
-            position: relative; display: flex; align-items: center; justify-content: center;
-            margin-left: -40px; border-radius: 5px;
-            transform: scale(var(--micro-scale)); /* Тот самый эффект 75% уменьшения */
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(5px);
-            transform-origin: center bottom;
-        }
-        .slot:first-child { margin-left: 0; }
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -7px 0 20px rgba(0,0,0,0.6); }
 
-        /* РАСКРЫТИЕ РУКИ */
-        .control-bottom.expanded .suit-row { height: 60px; margin-top: 5px; }
+        .suit-row { 
+            display: flex; 
+            height: 22px; 
+            transition: all 0.4s ease; 
+        }
+
+        .slot { 
+            width: var(--card-w); 
+            height: var(--card-h);
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 207, 64, 0.2); 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin-left: -42px; 
+            border-radius: 4px;
+            transform: scale(var(--micro-scale));
+            transform-origin: center bottom;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(2px);
+        }
+
+        .slot:first-child { margin-left: 0; }
+        .slot.filled { 
+            background: var(--bg-card); 
+            border: 1px solid #fff; 
+            z-index: 5; 
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5); 
+        }
+
+        .control-bottom.expanded .suit-row { height: 65px; margin-bottom: 5px; }
         .control-bottom.expanded .slot { 
-            transform: scale(1.1) translateY(-10px); /* Возврат к полному размеру + акцент */
-            margin-left: -20px;
+            transform: scale(1.1) translateY(-15px); 
+            margin-left: -18px;
             z-index: 10;
         }
+
         .control-bottom.expanded .slot.filled:hover { 
-            transform: scale(1.4) translateY(-40px);
-            z-index: 5000 !important;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 15px var(--gold);
+            transform: scale(1.5) translateY(-50px);
+            z-index: 6000 !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--gold);
         }
 
-        .action-btns { position: absolute; bottom: 15px; left: 10px; display: flex; flex-direction: column; gap: 8px; z-index: 4500; }
-        .ui-toggle { position: absolute; top: -20px; right: 25px; z-index: 4600; }
-        
-        button { 
-            padding: 12px 18px; background: rgba(16, 20, 32, 0.8); 
-            backdrop-filter: blur(10px); border: 1px solid var(--gold); color: var(--gold); 
-            font-size: 10px; letter-spacing: 2px; font-weight: bold; 
-            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+        /* --- UI ЭЛЕМЕНТЫ --- */
+        #status-msg {
+            position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; color: var(--gold); font-size: 16px; font-weight: bold;
+            letter-spacing: 4px; text-shadow: 0 0 20px var(--gold);
+            opacity: 0; transition: 0.6s; pointer-events: none;
+            text-align: center; width: 100%;
         }
-        .btn-close { width: 44px; height: 44px; border-radius: 50%; padding: 0; font-size: 20px; box-shadow: 0 0 15px var(--gold); }
-</style>
+        #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+        .action-btns { 
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            z-index: 4500; 
+        }
+
+        button { 
+            padding: 14px 22px; 
+            background: rgba(16, 20, 32, 0.9); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid var(--gold); 
+            color: var(--gold); 
+            font-size: 11px; 
+            letter-spacing: 2px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(255, 207, 64, 0.2);
+        }
+        button:active { transform: scale(0.95); background: var(--gold); color: #000; }
+
+        .particle { position: absolute; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; pointer-events: none; }
+    </style>
 </head>
 <body>
-    <div id='status-msg'></div>
-    
+    <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
 
     <div class='arena-top' id='arena'>
-        <div class='spark-zone'>
-            <span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span>
-            <div id='spark-cards' style='margin-left:15px;'></div>
+        <div class='spark-zone' style="padding:15px; display:flex; align-items:center; position:relative; z-index:100;">
+            <div style="display:flex; flex-direction:column;">
+                <span style='font-size:10px; color:var(--spark-neon); letter-spacing:3px; font-weight:bold;'>SPARK AI CORE</span>
+                <div id='spark-cards' style='margin-top:8px; display:flex; gap:4px;'></div>
+            </div>
         </div>
-        <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
+        <div id='chaos-deck'></div>
         <div id='battle-table'></div>
     </div>
 
     <div class='control-bottom' id='ctrl-panel'>
-        <div class='ui-toggle'>
-            <button id='btn-zoom' class='btn-close' onclick='toggleHand()'>↕</button>
+        <div style="position:absolute; top:-30px; right:30px; z-index:4600;">
+            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; padding:0; font-size:22px; box-shadow:0 0 20px var(--gold);" onclick='toggleHand()'>↕</button>
         </div>
-        <div class='suits-grid' id='main-hand' onclick='if(!isExpanded) toggleHand()'>
+        <div class='suits-grid' id='main-hand' onclick="if(!isExpanded) toggleHand()">
             <div id='s-spades' class='suit-row'></div>
             <div id='s-clubs' class='suit-row'></div>
             <div id='s-diamonds' class='suit-row'></div>
             <div id='s-hearts' class='suit-row'></div>
         </div>
         <div class='action-btns'>
-            <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ</button>
-            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО</button>
-            <button id='btn-pass' style='display:none' onclick='handlePass()'>ПАСС</button>
-            <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ</button>
+            <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ ХАОСА</button>
+            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО / ЗАВЕРШИТЬ</button>
+            <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ КАРТЫ</button>
         </div>
     </div>
 
 <script>
-    var SUITS = ['♠', '♣', '♦', '♥'];
-    var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
-    var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
-    var isExpanded = false;
+    // --- ГЛОБАЛЬНЫЕ КОНСТАНТЫ ---
+    const SUITS = ['♠', '♣', '♦', '♥'];
+    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
     
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-    var ctx = null;
+    // --- СОСТОЯНИЕ МОНОЛИТА ---
+    let vchf = {
+        deck: [],
+        pHand: [],
+        eHand: [],
+        table: [],
+        trump: '',
+        phase: 'WAIT',
+        turn: 'player'
+    };
+    
+    let isExpanded = false;
+    let audioCtx = null;
 
+    // --- СИСТЕМА УВЕДОМЛЕНИЙ ---
+    function showMsg(text) {
+        const msg = document.getElementById('status-msg');
+        msg.textContent = text;
+        msg.classList.add('active');
+        setTimeout(() => msg.classList.remove('active'), 3000);
+    }
+
+    // --- ЗВУКОВОЙ ДВИЖОК ---
+    function playSound(type) {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'slide') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        } else if (type === 'bito') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1, audioCtx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+    }
+
+    // --- ЛОГИКА ИНТЕРФЕЙСА ---
     function toggleHand() {
         isExpanded = !isExpanded;
-        var panel = document.getElementById('ctrl-panel');
-        var btn = document.getElementById('btn-zoom');
-        if(isExpanded) {
+        const panel = document.getElementById('ctrl-panel');
+        const btn = document.getElementById('btn-zoom');
+        if (isExpanded) {
             panel.classList.add('expanded');
             btn.textContent = '✕';
         } else {
@@ -245,301 +350,434 @@
         playSound('slide');
     }
 
-    function playSound(type) {
-        if(!ctx) ctx = new AudioCtx();
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        if(type === 'slide') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(160, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
-            osc.start(); osc.stop(ctx.currentTime + 0.12);
-        } else if(type === 'bito') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(110, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-            gain.gain.setValueAtTime(0.35, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
-            osc.start(); osc.stop(ctx.currentTime + 0.35);
-        }
-    }
-    function createDust(x, y) {
-        var arena = document.getElementById('arena');
-        for(var i=0; i<20; i++) {
-            var p = document.createElement('div');
-            p.className = 'particle'; p.style.left = x + 'px'; p.style.top = y + 'px';
-            arena.appendChild(p);
-            var tx = (Math.random() - 0.5) * 200, ty = (Math.random() - 0.5) * 200;
-            p.animate([{ transform: 'translate(0, 0) scale(1.5)', opacity: 1 }, { transform: 'translate('+tx+'px,'+ty+'px) scale(0)', opacity: 0 }], 
-            { duration: 1000 + Math.random() * 500, easing: 'ease-out' }).onfinish = function() { this.effect.target.remove(); };
-        }
-    }
-
-    function showMsg(txt) {
-        var m = document.getElementById('status-msg');
-        if(!m) return;
-        m.textContent = txt; m.classList.add('active');
-        setTimeout(function() { m.classList.remove('active'); }, 2000);
-    }
-
+    // --- ПОДГОТОВКА СЛОТОВ ---
     function initLayout() {
-        var rows = {'♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts'};
-        SUITS.forEach(function(s) {
-            var r = document.getElementById(rows[s]);
-            if(r) {
-                r.innerHTML = '';
-                RANKS.forEach(function(rank) {
-                    var sl = document.createElement('div');
-                    sl.className = 'slot'; sl.id = 'slot-' + s + '-' + rank;
-                    r.appendChild(sl);
-                });
-            }
+        const rows = {'♠': 's-spades', '♣': 's-clubs', '♦': 's-diamonds', '♥': 's-hearts'};
+        SUITS.forEach(s => {
+            const container = document.getElementById(rows[s]);
+            container.innerHTML = '';
+            RANKS.forEach(rank => {
+                const sl = document.createElement('div');
+                sl.className = 'slot';
+                sl.id = `slot-${s}-${rank}`;
+                container.appendChild(sl);
+            });
         });
     }
 
+    // --- СТАРТ: ГЕНЕРАЦИЯ ДЕКИ ---
     function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
-        var t = [];
-        SUITS.forEach(function(s) {
-            RANKS.forEach(function(rank) {
-                t.push({ s: s, r: rank, v: RANKS.indexOf(rank), c: COLORS[s], used: false });
+        
+        let tempDeck = [];
+        SUITS.forEach(s => {
+            RANKS.forEach(r => {
+                tempDeck.push({
+                    s: s, 
+                    r: r, 
+                    v: RANKS.indexOf(r), 
+                    c: COLORS[s], 
+                    used: false
+                });
             });
         });
-        vchf.deck = t;
-        renderChaos();
-        setTimeout(visualShuffle, 100);
+        vchf.deck = tempDeck;
+        renderChaosInitial();
+        setTimeout(visualShuffle, 200);
     }
 
-    function renderChaos() {
-        var c = document.getElementById('chaos-deck');
-        if(!c) return;
-        c.innerHTML = '';
-        vchf.deck.forEach(function(card, i) {
-            var n = document.createElement('div');
-            n.className = 'card-node'; n.id = 'node-' + i;
-            n.style.left = '112px'; n.style.top = '100px'; 
-            c.appendChild(n);
+    function renderChaosInitial() {
+        const container = document.getElementById('chaos-deck');
+        container.innerHTML = '';
+        vchf.deck.forEach((card, i) => {
+            const node = document.createElement('div');
+            node.className = 'card-node';
+            node.id = `node-${i}`;
+            // Центрирование стопки
+            node.style.left = '50%';
+            node.style.top = '45%';
+            node.style.transform = 'translate(-50%, -50%)';
+            container.appendChild(node);
         });
     }
-
     function visualShuffle() {
-        var startTime = Date.now(), duration = 2500;
-        var trumpEl = document.getElementById('trump-icon');
-        trumpEl.parentElement.classList.add('trump-shuffling');
-        var interval = setInterval(function() {
-            var elapsed = Date.now() - startTime;
-            if(Math.random() > 0.8) playSound('slide');
-            vchf.deck.forEach(function(card, i) {
-                var node = document.getElementById('node-' + i);
-                if(node) {
-                    node.classList.add('shuffling');
-                    node.style.left = (Math.random() * 225) + 'px';
-                    node.style.top = (Math.random() * 200) + 'px';
-                    node.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+        let startTime = Date.now();
+        let duration = 2500;
+        let trumpIcon = document.getElementById('trump-icon');
+
+        let interval = setInterval(() => {
+            let elapsed = Date.now() - startTime;
+            
+            vchf.deck.forEach((_, i) => {
+                const node = document.getElementById(`node-${i}`);
+                if (node) {
+                    node.style.left = (Math.random() * 60 + 20) + '%';
+                    node.style.top = (Math.random() * 50 + 20) + '%';
+                    node.style.transform = `rotate(${Math.random() * 360}deg) translateZ(${Math.random() * 50}px)`;
                 }
             });
-            var rs = SUITS[Math.floor(Math.random() * 4)];
-            trumpEl.textContent = rs; trumpEl.style.color = COLORS[rs];
-            if(elapsed > duration) { clearInterval(interval); finalizeShuffle(); }
-        }, 80);
+
+            // Мерцание козыря в процессе тасовки
+            let randomSuit = SUITS[Math.floor(Math.random() * 4)];
+            trumpIcon.textContent = randomSuit;
+            trumpIcon.style.color = COLORS[randomSuit];
+
+            if (elapsed > duration) {
+                clearInterval(interval);
+                finalizeShuffle();
+            }
+        }, 100);
     }
+
     function finalizeShuffle() {
-        vchf.deck.sort(function() { return Math.random() - 0.5; });
+        // Честная случайная тасовка
+        vchf.deck.sort(() => Math.random() - 0.5);
+        
+        // Установка финального козыря
         vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        var te = document.getElementById('trump-icon');
-        te.parentElement.classList.remove('trump-shuffling');
-        te.textContent = vchf.trump; te.style.color = COLORS[vchf.trump];
+        const ti = document.getElementById('trump-icon');
+        ti.textContent = vchf.trump;
+        ti.style.color = COLORS[vchf.trump];
+        
         vchf.phase = 'PICK';
-        vchf.deck.forEach(function(card, i) {
-            var n = document.getElementById('node-' + i);
-            if(n) {
-                n.classList.remove('shuffling');
-                var a = (i / 36) * 6.283, r = 115;
-                n.style.left = (112 + r * Math.cos(a)) + 'px';
-                n.style.top = (100 + r * Math.sin(a)) + 'px';
-                n.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
-                n.onclick = function() { if(vchf.phase === 'PICK') pick(idxToDeck(card), 'player'); };
-            }
+        showMsg('ВЫБЕРИ СВОЙ ВЕКТОР (18 КАРТ)');
+
+        // Раскладка колоды в круг для выбора
+        vchf.deck.forEach((card, i) => {
+            const node = document.getElementById(`node-${i}`);
+            const angle = (i / 36) * Math.PI * 2;
+            const radius = 140;
+            node.style.left = `calc(50% + ${Math.cos(angle) * radius}px)`;
+            node.style.top = `calc(45% + ${Math.sin(angle) * radius}px)`;
+            node.style.transform = `translate(-50%, -50%) rotate(${angle * 57.3 + 90}deg)`;
+            
+            node.onclick = () => {
+                if (vchf.phase === 'PICK') pickCard(i, 'player');
+            };
         });
-        showMsg('ВЫБЕРИ СВОЙ ВЕКТОР');
     }
 
-    function idxToDeck(card) {
-        for(var i=0; i<vchf.deck.length; i++) {
-            if(vchf.deck[i].s === card.s && vchf.deck[i].r === card.r) return i;
-        }
-        return -1;
-    }
+    // --- ПРОЦЕСС РАЗДАЧИ ---
+    function pickCard(idx, actor) {
+        const card = vchf.deck[idx];
+        if (!card || card.used) return;
 
-    function pick(idx, actor) {
-        var c = vchf.deck[idx];
-        if(!c || c.used) return;
-        c.used = true; playSound('slide');
-        var node = document.getElementById('node-' + idx);
-        if(actor === 'player') {
-            vchf.pHand.push(c);
-            if(node) {
-                var target = document.getElementById('slot-' + c.s + '-' + c.r);
-                var rect = target.getBoundingClientRect();
-                var parent = document.getElementById('chaos-deck').getBoundingClientRect();
-                node.style.left = (rect.left - parent.left) + 'px';
-                node.style.top = (rect.top - parent.top) + 'px';
-                setTimeout(function() {
-                    node.classList.add('hide'); updateSlot(c);
-                    var av = []; vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
-                    if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
-                    checkFinal();
-                }, 450);
-            }
+        card.used = true;
+        playSound('slide');
+        const node = document.getElementById(`node-${idx}`);
+
+        if (actor === 'player') {
+            vchf.pHand.push(card);
+            const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+            const rect = slot.getBoundingClientRect();
+            const parent = document.getElementById('chaos-deck').getBoundingClientRect();
+
+            node.style.zIndex = 1000;
+            node.style.left = (rect.left - parent.left + 27) + 'px';
+            node.style.top = (rect.top - parent.top + 38) + 'px';
+            node.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.3)';
+
+            setTimeout(() => {
+                node.classList.add('hide');
+                fillSlot(card);
+                // После игрока — Spark делает ход автоматически
+                sparkAutoPick();
+            }, 500);
         } else {
-            vchf.eHand.push(c);
-            if(node) {
-                node.style.top = '-250px'; node.style.opacity = '0';
-                setTimeout(function() { node.classList.add('hide'); drawSparkVisual(); checkFinal(); }, 450);
-            }
+            vchf.eHand.push(card);
+            node.style.top = '-200px';
+            node.style.opacity = '0';
+            node.style.transform = 'translate(-50%, -50%) scale(0.1)';
+            setTimeout(() => {
+                node.classList.add('hide');
+                updateSparkUI();
+                checkDeckEmpty();
+            }, 500);
         }
     }
 
-    function updateSlot(card) {
-        var el = document.getElementById('slot-' + card.s + '-' + card.r);
-        if(!el) return;
-        el.classList.add('filled'); el.style.color = card.c; el.innerHTML = '';
-        var t = document.createElement('div');
-        t.style.cssText = 'position:absolute;top:5px;left:6px;font-size:14px;font-weight:900;pointer-events:none;';
-        t.textContent = card.r;
-        var m = document.createElement('div');
-        m.style.cssText = 'font-size:32px;pointer-events:none;'; m.textContent = card.s;
-        el.appendChild(t); el.appendChild(m);
-        el.onclick = function(e) { 
+    function sparkAutoPick() {
+        const available = vchf.deck
+            .map((c, i) => !c.used ? i : null)
+            .filter(v => v !== null);
+            
+        if (available.length > 0) {
+            const randomIndex = available[Math.floor(Math.random() * available.length)];
+            pickCard(randomIndex, 'enemy');
+        } else {
+            checkDeckEmpty();
+        }
+    }
+
+    function checkDeckEmpty() {
+        const remaining = vchf.deck.filter(c => !c.used).length;
+        if (remaining === 0 && vchf.phase === 'PICK') {
+            vchf.phase = 'BATTLE';
+            showMsg('ФАЗА БОЯ АКТИВИРОВАНА');
+            renderBattleTable();
+            if (vchf.turn === 'enemy') setTimeout(sparkAction, 1200);
+        }
+    }
+
+    // --- ВИЗУАЛИЗАЦИЯ РУКИ ---
+    function fillSlot(card) {
+        const el = document.getElementById(`slot-${card.s}-${card.r}`);
+        el.classList.add('filled');
+        el.style.color = card.c;
+        el.innerHTML = `
+            <div style="position:absolute; top:4px; left:6px; font-size:12px; font-weight:900;">${card.r}</div>
+            <div style="font-size:32px;">${card.s}</div>
+        `;
+        el.onclick = (e) => {
             e.stopPropagation();
-            if(vchf.phase === 'BATTLE' && isExpanded) selectFromHand(card); 
-            else if(!isExpanded) toggleHand();
+            if (vchf.phase === 'BATTLE' && vchf.turn === 'player') {
+                tryPlayCard(card);
+            } else if (!isExpanded) {
+                toggleHand();
+            }
         };
     }
-    function renderTable() {
-        var tc = document.getElementById('battle-table');
-        if(!tc) return; tc.innerHTML = '';
-        vchf.table.forEach(function(move, i) {
-            var pairIndex = Math.floor(i / 2), isDefense = i % 2 !== 0;
-            var pos = getTableCoords(pairIndex);
-            var el = document.createElement('div');
-            el.className = 'card-node face-up'; el.style.color = move.card.c;
-            el.style.left = pos.x + (isDefense ? 20 : 0) + 'px';
-            el.style.top = pos.y + (isDefense ? 30 : 0) + 'px';
-            el.style.zIndex = 100 + i;
-            var finalRotate = isDefense ? (pos.rotate + 12) : pos.rotate;
-            el.style.transform = 'rotate(' + finalRotate + 'deg)';
-            el.innerHTML = `<div style="position:absolute;top:4px;left:4px;font-size:12px;font-weight:bold;">${move.card.r}</div><div style="font-size:28px;text-align:center;margin-top:15px;">${move.card.s}</div>`;
-            tc.appendChild(el);
+
+    function updateSparkUI() {
+        const container = document.getElementById('spark-cards');
+        container.innerHTML = '';
+        vchf.eHand.forEach(() => {
+            const dot = document.createElement('div');
+            dot.style.cssText = `
+                width: 12px; height: 18px; 
+                background: var(--spark-neon); 
+                border-radius: 3px; 
+                box-shadow: 0 0 10px var(--spark-neon);
+                opacity: 0.7;
+            `;
+            container.appendChild(dot);
         });
-        updateActionButtons();
+    }
+    // --- ЛОГИКА СРАЖЕНИЯ ---
+    function tryPlayCard(card) {
+        if (!validateMove(card)) {
+            showMsg('НЕВЕРНЫЙ ВЕКТОР');
+            return;
+        }
+
+        // Удаление из руки
+        vchf.pHand = vchf.pHand.filter(c => c !== card);
+        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+        slot.classList.remove('filled');
+        slot.innerHTML = '';
+
+        // На стол
+        vchf.table.push({ card: card, actor: 'player' });
+        playSound('slide');
+        renderBattleTable();
+
+        // Если это была атака игрока — ждем ответа Spark
+        if (vchf.table.length % 2 !== 0) {
+            setTimeout(sparkAction, 1000);
+        }
+        
+        checkGameStatus();
     }
 
-    function getTableCoords(index) {
-        var isBottomRow = index >= 3, colIndex = index % 3;
-        var screenW = window.innerWidth;
-        var startX = screenW / 2 - 110, stepX = 100, startY = isBottomRow ? 180 : 80;
-        return { x: startX + (colIndex * stepX), y: startY, rotate: (Math.random() * 16 - 8) };
+    function validateMove(card) {
+        // Если стол пуст — любой ход легален (если твой ход)
+        if (vchf.table.length === 0) return true;
+
+        const lastMove = vchf.table[vchf.table.length - 1];
+        
+        // Если игрок защищается (Spark атаковал)
+        if (vchf.table.length % 2 !== 0) {
+            const target = lastMove.card;
+            // Бьем той же мастью выше или козырем
+            const canBeatSameSuit = (card.s === target.s && card.v > target.v);
+            const canBeatWithTrump = (card.s === vchf.trump && target.s !== vchf.trump);
+            return canBeatSameSuit || canBeatWithTrump;
+        } 
+        
+        // Если игрок подкидывает в атаку
+        const ranksOnTable = vchf.table.map(m => m.card.r);
+        return ranksOnTable.includes(card.r) && vchf.table.length < 12;
+    }
+
+    function sparkAction() {
+        if (vchf.phase !== 'BATTLE') return;
+
+        const isSparkDefending = (vchf.table.length % 2 !== 0);
+
+        if (isSparkDefending) {
+            // SPARK ЗАЩИЩАЕТСЯ
+            const target = vchf.table[vchf.table.length - 1].card;
+            let candidates = vchf.eHand.filter(c => {
+                return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
+            });
+
+            // Интеллектуальная сортировка: сначала слабые не-козыри
+            candidates.sort((a, b) => {
+                if (a.s === vchf.trump && b.s !== vchf.trump) return 1;
+                if (a.s !== vchf.trump && b.s === vchf.trump) return -1;
+                return a.v - b.v;
+            });
+
+            if (candidates.length > 0) {
+                const choice = candidates[0];
+                executeSparkMove(choice);
+            } else {
+                sparkTakeAll();
+            }
+        } else {
+            // SPARK АТАКУЕТ
+            let attackChoices = [];
+            if (vchf.table.length === 0) {
+                // Начинает с самой слабой
+                attackChoices = [...vchf.eHand].sort((a, b) => a.v - b.v);
+            } else {
+                // Подкидывает по рангу
+                const tableRanks = vchf.table.map(m => m.card.r);
+                attackChoices = vchf.eHand.filter(c => tableRanks.includes(c.r));
+            }
+
+            if (attackChoices.length > 0 && vchf.table.length < 12) {
+                executeSparkMove(attackChoices[0]);
+            } else {
+                // Больше нечего подкинуть — БИТО
+                setTimeout(handleBito, 800);
+            }
+        }
+    }
+
+    function executeSparkMove(card) {
+        vchf.eHand = vchf.eHand.filter(c => c !== card);
+        vchf.table.push({ card: card, actor: 'enemy' });
+        playSound('slide');
+        updateSparkUI();
+        renderBattleTable();
+        checkGameStatus();
+    }
+
+    function sparkTakeAll() {
+        showMsg('SPARK ПРИНИМАЕТ УДАР');
+        vchf.eHand = vchf.eHand.concat(vchf.table.map(m => m.card));
+        vchf.table = [];
+        setTimeout(() => {
+            updateSparkUI();
+            renderBattleTable();
+            vchf.turn = 'player'; // Ход остается у игрока
+        }, 800);
+    }
+
+    function handleTake() {
+        showMsg('ТЫ ЗАБИРАЕШЬ КАРТЫ');
+        vchf.pHand = vchf.pHand.concat(vchf.table.map(m => m.card));
+        vchf.table = [];
+        vchf.pHand.forEach(c => fillSlot(c));
+        renderBattleTable();
+        vchf.turn = 'enemy';
+        setTimeout(sparkAction, 1200);
     }
 
     function handleBito() {
-        if(vchf.table.length % 2 !== 0) return;
+        if (vchf.table.length % 2 !== 0) return;
+        
         playSound('bito');
-        document.querySelectorAll('#battle-table .card-node').forEach(function(card) {
-            var rect = card.getBoundingClientRect();
-            createDust(rect.left + 28, rect.top + 38);
+        showMsg('БИТО');
+        
+        // Анимация ухода карт (пыль)
+        const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
+        cardsOnTable.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            createDust(rect.left + 25, rect.top + 35);
+            el.style.transform = 'scale(0) rotate(180deg)';
+            el.style.opacity = '0';
         });
-        vchf.table = []; renderTable(); 
-        vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player'; 
-        if(vchf.turn === 'enemy') setTimeout(sparkThink, 1300);
+
+        setTimeout(() => {
+            vchf.table = [];
+            renderBattleTable();
+            vchf.turn = (vchf.turn === 'player' ? 'enemy' : 'player');
+            if (vchf.turn === 'enemy') setTimeout(sparkAction, 1000);
+        }, 600);
     }
 
-    function handlePass() { if(vchf.table.length > 0 && vchf.table.length % 2 === 0) handleBito(); }
-
-    function handleTake() {
-        vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
-        vchf.table = []; vchf.pHand.forEach(function(c) { updateSlot(c); });
-        renderTable(); vchf.turn = 'enemy'; setTimeout(sparkThink, 1500);
-    }
-
-    function selectFromHand(card) {
-        if(vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
-        if(canPlay(card)) {
-            playSound('slide'); vchf.table.push({card: card, actor: 'player'});
-            removeFromHand(card, 'player'); renderTable();
-            if(vchf.table.length % 2 !== 0) { setTimeout(sparkThink, 1100); }
-        }
-    }
-
-    function canPlay(card) {
-        if(vchf.table.length === 0) return vchf.turn === 'player';
-        var last = vchf.table[vchf.table.length - 1].card;
-        if(vchf.table.length % 2 !== 0) return (card.s === last.s && card.v > last.v) || (card.s === vchf.trump && last.s !== vchf.trump);
-        return vchf.table.some(m => m.card.r === card.r) && vchf.table.length < 12;
-    }
-
-    function sparkThink() {
-        if(vchf.table.length % 2 !== 0) {
-            var target = vchf.table[vchf.table.length - 1].card;
-            var cand = vchf.eHand.filter(c => (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump)).sort((a,b)=>a.v-b.v);
-            if(cand.length > 0) {
-                var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
-                removeFromHand(ch, 'enemy'); playSound('slide'); renderTable();
-            } else { sparkTake(); }
-        } else {
-            if(vchf.table.length === 0) {
-                var ch = vchf.eHand.sort((a,b)=>a.v-b.v)[0];
-                vchf.table.push({card: ch, actor: 'enemy'});
-                removeFromHand(ch, 'enemy'); renderTable();
-            } else {
-                var activeRanks = vchf.table.map(m => m.card.r);
-                var cand = vchf.eHand.filter(c => activeRanks.indexOf(c.r) !== -1);
-                if(cand.length > 0 && vchf.table.length < 12) {
-                    var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
-                    removeFromHand(ch, 'enemy'); renderTable();
-                } else { setTimeout(handleBito, 1200); }
-            }
-        }
-    }
-
-    function sparkTake() {
-        showMsg('SPARK: БЕРУ');
-        vchf.eHand = vchf.eHand.concat(vchf.table.map(m => m.card));
-        vchf.table = []; drawSparkVisual(); renderTable(); vchf.turn = 'player';
-    }
-
-    function removeFromHand(card, actor) {
-        if(actor === 'player') {
-            vchf.pHand = vchf.pHand.filter(c => !(c.s === card.s && c.r === card.r));
-            var slot = document.getElementById('slot-' + card.s + '-' + card.r);
-            if(slot) { slot.classList.remove('filled'); slot.innerHTML = ''; }
-        } else {
-            vchf.eHand = vchf.eHand.filter(c => !(c.s === card.s && c.r === card.r));
-            drawSparkVisual();
-        }
-    }
-
-    function drawSparkVisual() {
-        var cont = document.getElementById('spark-cards'); if(!cont) return; cont.innerHTML = '';
-        vchf.eHand.forEach(() => {
-            var m = document.createElement('div');
-            m.style.cssText = 'width:14px;height:20px;background:var(--spark-neon);opacity:0.6;border-radius:2px;box-shadow:0 0 12px var(--spark-neon);';
-            cont.appendChild(m);
+    function renderBattleTable() {
+        const container = document.getElementById('battle-table');
+        container.innerHTML = '';
+        
+        vchf.table.forEach((move, i) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card-node face-up';
+            cardEl.style.color = move.card.c;
+            
+            const pairIndex = Math.floor(i / 2);
+            const isDefense = (i % 2 !== 0);
+            
+            // Расчет позиции на столе
+            const col = pairIndex % 3;
+            const row = Math.floor(pairIndex / 3);
+            const offsetX = col * 90 + (isDefense ? 20 : 0);
+            const offsetY = row * 100 + (isDefense ? 25 : 0);
+            
+            cardEl.style.left = `calc(50% - 130px + ${offsetX}px)`;
+            cardEl.style.top = `calc(35% + ${offsetY}px)`;
+            cardEl.style.zIndex = 100 + i;
+            cardEl.style.transform = `rotate(${(Math.random() * 10 - 5) + (isDefense ? 15 : 0)}deg)`;
+            
+            cardEl.innerHTML = `
+                <div style="position:absolute; top:6px; left:8px; font-size:14px; font-weight:900;">${move.card.r}</div>
+                <div style="font-size:36px; text-align:center; margin-top:20px;">${move.card.s}</div>
+            `;
+            container.appendChild(cardEl);
         });
+
+        // Обновление кнопок
+        const isPlayerTurn = (vchf.turn === 'player');
+        const hasCardsOnTable = (vchf.table.length > 0);
+        const isDefending = (vchf.table.length % 2 !== 0);
+
+        document.getElementById('btn-bito').style.display = (isPlayerTurn && hasCardsOnTable && !isDefending) ? 'block' : 'none';
+        document.getElementById('btn-take').style.display = (isPlayerTurn && hasCardsOnTable && isDefending) ? 'block' : 'none';
     }
 
-    function updateActionButtons() {
-        var isP = vchf.turn === 'player', hasT = vchf.table.length > 0, isDef = vchf.table.length % 2 !== 0;
-        document.getElementById('btn-bito').style.display = (hasT && !isDef && isP) ? 'block' : 'none';
-        document.getElementById('btn-pass').style.display = (hasT && !isDef && isP) ? 'block' : 'none';
-        document.getElementById('btn-take').style.display = (hasT && isDef) ? 'block' : 'none';
+    function createDust(x, y) {
+        const arena = document.getElementById('arena');
+        for (let i = 0; i < 15; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            arena.appendChild(p);
+            
+            const tx = (Math.random() - 0.5) * 250;
+            const ty = (Math.random() - 0.5) * 250;
+            
+            p.animate([
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 800 + Math.random() * 400,
+                easing: 'ease-out'
+            }).onfinish = () => p.remove();
+        }
     }
 
-    window.onload = function() { initLayout(); };
+    function checkGameStatus() {
+        if (vchf.phase !== 'BATTLE') return;
+        if (vchf.pHand.length === 0 && vchf.eHand.length === 0) {
+            showMsg('НИЧЬЯ В ПОТОКЕ ХАОСА');
+            vchf.phase = 'END';
+        } else if (vchf.pHand.length === 0) {
+            showMsg('ТЫ ОЧИСТИЛ СВОЙ ВЕКТОР - ПОБЕДА');
+            vchf.phase = 'END';
+        } else if (vchf.eHand.length === 0) {
+            showMsg('SPARK AI ПОГЛОТИЛ ТЕБЯ - ПРОИГРЫШ');
+            vchf.phase = 'END';
+        }
+    }
+
+    window.onload = () => {
+        initLayout();
+        showMsg('СИСТЕМА ГОТОВА К ЗАПУСКУ');
+    };
 </script>
 </body>
 </html>
