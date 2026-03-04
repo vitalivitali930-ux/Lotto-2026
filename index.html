@@ -21,7 +21,7 @@
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
         }
 
-        /* СТАТУС-БАР ТЕЛЕГРАМ */
+        /* МАНИФЕСТ МОНОЛИТА: СТАТУС-БАР ТЕЛЕГРАМ */
         #net-status {
             position: fixed; top: 15px; left: 15px; z-index: 6000;
             background: rgba(12, 15, 24, 0.85);
@@ -45,6 +45,7 @@
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
         #peer-id { font-size: 11px; color: #fff; font-family: monospace; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 
+        /* КНОПКА ВХОДА - ЦЕНТРАЛЬНЫЙ ПОРТАЛ */
         #btn-start-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
@@ -55,6 +56,7 @@
         }
         @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
 
+        /* АРЕНА С ЭФФЕКТОМ ГЛУБИНЫ */
         .arena-top {
             flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
@@ -69,6 +71,7 @@
             50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1); }
         }
 
+        /* СЕТКА ХАОСА */
         .arena-top::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -93,6 +96,7 @@
 
         .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
 
+        /* НИЖНЯЯ ПАНЕЛЬ С УПРАВЛЕНИЕМ */
         .control-bottom {
             height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
             border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
@@ -136,7 +140,7 @@
         <div class="net-logo"></div>
         <div class="net-info">
             <span id="room-info">ОЖИДАНИЕ...</span>
-            <span id="peer-id">TAP TO COPY LINK</span>
+            <span id="peer-id">TAP TO COPY ID</span>
         </div>
     </div>
 
@@ -169,6 +173,7 @@
             <div id='s-hearts' class='suit-row'></div>
         </div>
     </div>
+
 <script>
     // --- ПАРАМЕТРЫ МОНОЛИТА ---
     const SUITS = ['♠', '♣', '♦', '♥'];
@@ -184,83 +189,82 @@
     let localReady = false, remoteReady = false;
     let isExpanded = false, audioCtx = null;
 
-    // --- СЕТЕВОЙ МОСТ "WANDERER" ---
+    // --- СЕТЕВОЙ УЗЕЛ "БРОНЕБОЙНЫЙ" (КОМНАТЫ) ---
     function startNetwork() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let roomNum = urlParams.get('room');
-
-        if (!roomNum) {
-            roomNum = prompt("НОМЕР КОМНАТЫ (ИЛИ OK ДЛЯ АВТО):", Math.floor(100 + Math.random() * 899));
-            if (!roomNum) return;
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
-            window.history.pushState({path: newUrl}, '', newUrl);
-        }
+        const roomNum = prompt("НОМЕР КОМНАТЫ (например: 23):");
+        if (!roomNum) return;
 
         const finalID = "VCHF_MONO_" + roomNum.trim();
         document.getElementById('btn-start-center').style.display = 'none';
         
+        // TURN/STUN серверы для пробоя Wi-Fi/Firewall
         peer = new Peer(null, {
-            debug: 1,
-            config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}
+            debug: 2,
+            config: {'iceServers': [
+                { 'urls': 'stun:stun.l.google.com:19302' },
+                { 'urls': 'stun:stun1.l.google.com:19302' },
+                { 'urls': 'stun:stun.services.mozilla.com' }
+            ]}
         });
 
-        peer.on('open', () => {
-            showMsg("ПОИСК " + roomNum);
+        peer.on('open', (myStaticId) => {
+            showMsg("ПОИСК КОМНАТЫ " + roomNum);
+            
+            // Пробуем подключиться к ID комнаты
             conn = peer.connect(finalID, { reliable: true });
             
+            // Если через 3 сек связи нет, значит мы первые — создаем комнату сами
             let checkTimeout = setTimeout(() => {
-                if (!conn || !conn.open) {
+                if (!conn.open) {
                     peer.destroy();
                     createHostRoom(finalID, roomNum);
                 }
-            }, 2500);
+            }, 3000);
 
             setupConn();
         });
 
         peer.on('error', (err) => {
-            if (err.type !== 'peer-unavailable') showMsg("СЕТЬ: " + err.type);
+            console.log("Сетевой статус:", err.type);
+            if (err.type !== 'peer-unavailable') showMsg("ОШИБКА: " + err.type);
         });
     }
 
     function createHostRoom(targetID, originalNum) {
         peer = new Peer(targetID, {
-            debug: 1,
+            debug: 2,
             config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}
         });
         peer.on('open', () => {
             myRole = 'host';
-            document.getElementById('room-info').textContent = "ROOM: " + originalNum;
-            document.getElementById('peer-id').textContent = "TAP TO COPY LINK";
+            document.getElementById('room-info').textContent = "КОМНАТА: " + originalNum;
             showMsg("ВЫ ХОЗЯИН ЗАЛА");
+            document.getElementById('peer-id').textContent = "ЖДЕМ ИГРОКА...";
         });
         peer.on('connection', (c) => {
             conn = c;
             setupConn();
-            showMsg("ВРАГ ПОДКЛЮЧИЛСЯ");
+            showMsg("ВРАГ ОБНАРУЖЕН");
         });
     }
 
     function setupConn() {
         conn.on('open', () => {
             document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "CONNECTED: " + (myRole === 'host' ? 'SERVER' : 'CLIENT');
+            document.getElementById('peer-id').textContent = "СВЯЗЬ УСТАНОВЛЕНА";
             showMsg("МОСТ ГОТОВ");
             conn.on('data', handleNetData);
         });
     }
 
-    function copyMyID() {
-        navigator.clipboard.writeText(window.location.href);
-        showMsg("ССЫЛКА СКОПИРОВАНА!");
-    }
-
+    // --- ЗВУКОВОЙ ДВИЖОК ---
     function playSound(type) {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
+            
             if (type === 'slide') {
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
@@ -280,7 +284,7 @@
         m.textContent = t; m.classList.add('active');
         setTimeout(() => m.classList.remove('active'), 3000);
     }
-
+    // --- ОБРАБОТКА СЕТЕВЫХ КОМАНД ---
     function handleNetData(data) {
         if (data.type === 'READY') { remoteReady = true; showMsg("ДРУГ ГОТОВ"); checkStart(); }
         if (data.type === 'SYNC_DECK') { vchf.deck = data.deck; vchf.trump = data.trump; startChaosPhase(); }
@@ -311,6 +315,7 @@
         }
     }
 
+    // --- ФАЗА ХАОСА (ВЫБОР КАРТ) ---
     function startChaosPhase() {
         vchf.phase = 'PICK';
         document.getElementById('trump-icon').textContent = vchf.trump;
@@ -323,6 +328,7 @@
         container.innerHTML = '';
         const cx = window.innerWidth / 2 - 27;
         const cy = window.innerHeight * 0.4 - 38;
+        
         vchf.deck.forEach((card, i) => {
             const n = document.createElement('div');
             n.className = 'card-node'; n.id = `node-${i}`;
@@ -333,14 +339,12 @@
                 n.style.left = (cx + Math.cos(a) * 140) + 'px';
                 n.style.top = (cy + Math.sin(a) * 140) + 'px';
                 n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
-            }, i * 15);
+            }, i * 20);
             n.onclick = () => { 
                 if (vchf.phase === 'PICK' && vchf.pickTurn === myRole && !card.used) { 
                     executePick(i, 'player'); 
                     conn.send({type: 'PICK', idx: i}); 
-                } else if (vchf.phase === 'PICK' && vchf.pickTurn !== myRole) {
-                    showMsg("ХОД ВРАГА");
-                }
+                } 
             };
         });
     }
@@ -348,26 +352,43 @@
     function executePick(idx, actor) {
         const card = vchf.deck[idx];
         const n = document.getElementById(`node-${idx}`);
-        card.used = true; playSound('slide');
+        card.used = true; 
+        playSound('slide');
+        
         if (actor === 'player') {
             vchf.pHand.push(card);
             const slot = document.getElementById(`slot-${card.s}-${card.r}`);
             const rect = slot.getBoundingClientRect();
-            n.style.zIndex = "5000"; n.style.left = rect.left + 'px'; n.style.top = rect.top + 'px'; n.style.transform = "scale(0.4) rotate(0deg)";
+            n.style.zIndex = "5000"; 
+            n.style.left = rect.left + 'px'; 
+            n.style.top = rect.top + 'px'; 
+            n.style.transform = "scale(0.4) rotate(0deg)";
             setTimeout(() => { n.remove(); fillSlot(card); }, 600);
         } else {
             vchf.eCount++;
-            n.style.top = "-150px"; n.style.opacity = "0";
+            n.style.top = "-150px"; 
+            n.style.opacity = "0";
             setTimeout(() => n.remove(), 600);
         }
+        
         vchf.pickTurn = (vchf.pickTurn === 'host' ? 'guest' : 'host');
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; showMsg("БОЙ!"); renderBattleTable(); }
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
+        
+        if (vchf.deck.every(c => c.used)) { 
+            vchf.phase = 'BATTLE'; 
+            showMsg("БОЙ НАЧАТ!"); 
+            renderBattleTable(); 
+        }
     }
 
     function fillSlot(card) {
         const el = document.getElementById(`slot-${card.s}-${card.r}`);
-        el.classList.add('filled'); el.style.color = card.c;
-        el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
+        el.classList.add('filled'); 
+        el.style.color = card.c;
+        el.innerHTML = `
+            <div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div>
+            <div style="font-size:24px; text-align:center;">${card.s}</div>
+        `;
         el.onclick = (e) => {
             e.stopPropagation();
             if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
@@ -375,23 +396,34 @@
         };
     }
 
+    // --- ЛОГИКА БОЯ ---
     function playCard(card) {
         const isDef = vchf.table.length % 2 !== 0;
         if (isDef && !canDefend(card)) return showMsg("НЕ БЬЕТ!");
         if (!isDef && !canAttack(card)) return showMsg("НЕТ ВЕКТОРА!");
+        
         vchf.pHand = vchf.pHand.filter(c => c !== card);
-        document.getElementById(`slot-${card.s}-${card.r}`).classList.remove('filled');
-        document.getElementById(`slot-${card.s}-${card.r}`).innerHTML = '';
+        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+        slot.classList.remove('filled'); 
+        slot.innerHTML = '';
         executeMove(card, 'player');
         conn.send({type: 'MOVE', card});
     }
 
-    function canAttack(c) { return vchf.table.length === 0 || vchf.table.some(m => m.card.r === c.r); }
-    function canDefend(c) {
-        const t = vchf.table[vchf.table.length - 1].card;
-        return (c.s === t.s && c.v > t.v) || (c.s === vchf.trump && t.s !== vchf.trump);
+    function canAttack(c) {
+        if (vchf.table.length === 0) return true;
+        return vchf.table.some(m => m.card.r === c.r);
     }
 
+    function canDefend(c) {
+        const t = vchf.table[vchf.table.length - 1].card;
+        const isTrump = c.s === vchf.trump;
+        const targetTrump = t.s === vchf.trump;
+        
+        if (c.s === t.s) return c.v > t.v;
+        if (isTrump && !targetTrump) return true;
+        return false;
+    }
     function executeMove(card, actor) {
         vchf.table.push({card, actor});
         if (actor === 'enemy') vchf.eCount--;
@@ -406,65 +438,131 @@
             const n = document.createElement('div');
             n.className = 'card-node face-up';
             const pi = Math.floor(i / 2), isD = i % 2 !== 0;
+            // Раскладка карт на столе со смещением для битых карт
             n.style.left = `calc(50% + ${(pi % 3) * 85 - 85 + (isD ? 18 : 0)}px)`;
             n.style.top = `calc(40% + ${Math.floor(pi / 3) * 95 - 40 + (isD ? 25 : 0)}px)`;
-            n.innerHTML = `<div style="padding:4px; font-weight:900; font-size:12px;">${m.card.r}</div><div style="font-size:32px; text-align:center;">${m.card.s}</div>`;
+            n.innerHTML = `
+                <div style="padding:4px; font-weight:900; font-size:12px;">${m.card.r}</div>
+                <div style="font-size:32px; text-align:center;">${m.card.s}</div>
+            `;
             n.style.color = m.card.c;
             c.appendChild(n);
         });
+
+        // Управление видимостью кнопок действий
         const isMyTurn = vchf.turn === myRole;
-        const isTableAttack = vchf.table.length % 2 === 0;
+        const isTableAttack = vchf.table.length % 2 === 0; // Четное = кто-то походил, ждем защиты
+        
+        // БИТО: Мой ход, на столе есть карты, и они все отбиты
         document.getElementById('btn-bito').style.display = (isMyTurn && isTableAttack && vchf.table.length > 0) ? 'block' : 'none';
+        // ВЗЯТЬ: Не мой ход, и на столе лежит карта, которую надо побить
         document.getElementById('btn-take').style.display = (!isMyTurn && !isTableAttack) ? 'block' : 'none';
+        
         document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
     }
 
-    function handleBito() { syncBito(); conn.send({type: 'ACTION', cmd: 'BITO'}); }
+    // --- СИНХРОНИЗАЦИЯ ДЕЙСТВИЙ ---
+    function handleBito() { 
+        syncBito(); 
+        conn.send({type: 'ACTION', cmd: 'BITO'}); 
+    }
+    
     function syncBito() {
-        playSound('bito'); createDustCloud();
-        vchf.table = []; vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
+        playSound('bito'); 
+        createDustCloud();
+        vchf.table = []; 
+        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host');
         setTimeout(renderBattleTable, 600);
+        showMsg("БИТО");
     }
 
-    function handleTake() { syncTake(); conn.send({type: 'ACTION', cmd: 'TAKE'}); }
+    function handleTake() { 
+        syncTake(); 
+        conn.send({type: 'ACTION', cmd: 'TAKE'}); 
+    }
+    
     function syncTake() {
-        vchf.table.forEach(m => { if (vchf.turn !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); } else { vchf.eCount++; } });
-        vchf.table = []; setTimeout(renderBattleTable, 600);
+        vchf.table.forEach(m => {
+            if (vchf.turn !== myRole) { 
+                vchf.pHand.push(m.card); 
+                fillSlot(m.card); 
+            } else { 
+                vchf.eCount++; 
+            }
+        });
+        vchf.table = []; 
+        // При "Взять" ход не меняется
+        setTimeout(renderBattleTable, 600);
+        showMsg("ЗАБРАЛ");
     }
 
+    // --- ВИЗУАЛЬНЫЕ ЧАСТИЦЫ (ЭТАЛОН) ---
     function createDustCloud() {
         const arena = document.getElementById('arena');
-        document.querySelectorAll('#battle-table .card-node').forEach(card => {
+        const cards = document.querySelectorAll('#battle-table .card-node');
+        cards.forEach(card => {
             const r = card.getBoundingClientRect();
             for (let i = 0; i < 10; i++) {
-                const p = document.createElement('div'); p.className = 'particle';
-                p.style.left = (r.left + 27) + 'px'; p.style.top = (r.top + 38) + 'px';
-                p.style.background = card.style.color; arena.appendChild(p);
-                const tx = (Math.random() - 0.5) * 200, ty = (Math.random() - 0.5) * 200;
-                p.animate([{ opacity: 1 }, { transform: `translate(${tx}px, ${ty}px)`, opacity: 0 }], 800).onfinish = () => p.remove();
+                const p = document.createElement('div'); 
+                p.className = 'particle';
+                p.style.left = (r.left + 27) + 'px'; 
+                p.style.top = (r.top + 38) + 'px';
+                p.style.background = card.style.color || 'var(--gold)';
+                arena.appendChild(p);
+                
+                const tx = (Math.random() - 0.5) * 250;
+                const ty = (Math.random() - 0.5) * 250;
+                
+                p.animate([
+                    { opacity: 1, transform: 'scale(1)' },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], 800).onfinish = () => p.remove();
             }
-            card.style.transform = "scale(0)"; setTimeout(() => card.remove(), 500);
+            card.style.transition = "0.5s";
+            card.style.transform = "scale(0) rotate(180deg)"; 
+            card.style.opacity = "0";
         });
     }
 
     function checkBattleEnd() {
-        if (vchf.pHand.length === 0 && vchf.deck.every(c => c.used)) showMsg("ПОБЕДА!");
+        if (vchf.phase !== 'BATTLE') return;
+        setTimeout(() => {
+            const iWin = vchf.pHand.length === 0;
+            const eWin = vchf.eCount === 0;
+            if (iWin && eWin) showMsg("НИЧЬЯ — МОНОЛИТ ПУСТ");
+            else if (iWin) showMsg("ТВОЯ ПОБЕДА!");
+            else if (eWin) showMsg("ВРАГ ОДОЛЕЛ ТЕБЯ");
+        }, 1500);
     }
 
     function toggleHand() {
         isExpanded = !isExpanded;
         document.getElementById('ctrl-panel').classList.toggle('expanded', isExpanded);
         document.getElementById('btn-zoom').textContent = isExpanded ? '✕' : '↕';
+        playSound('slide');
     }
 
+    // Инициализация пустых слотов при загрузке
     window.onload = () => {
         SUITS.forEach(s => {
-            const row = document.getElementById('s-' + (s==='♠'?'spades':s==='♣'?'clubs':s==='♦'?'diamonds':'hearts'));
+            const row = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
             RANKS.forEach(rank => {
-                const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; row.appendChild(sl);
+                const sl = document.createElement('div'); 
+                sl.className = 'slot'; 
+                sl.id = `slot-${s}-${rank}`; 
+                row.appendChild(sl);
             });
         });
     };
 </script>
 </body>
 </html>
+
+Это код эталонный..
+Делай в него... всё самое лучшее
+Простое и интересное..
+Я про соеденение..
+Жду вердикт))
+Ты и так всё знаешь..
+Но может есть в интернете что интересного))
+Жду вердикт))
