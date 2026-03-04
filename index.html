@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Pulsar Zoom Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Zero Chaos Corrected)</title>
     <style>
         :root {
             --gold: #ffcf40;
@@ -14,6 +14,10 @@
             --cherry-pulse: #4a0404; 
             --bg-card: #ffffff;
             --grid-color: rgba(255, 207, 64, 0.06); 
+            /* Параметры микро-карт (25% от эталона 55x77) */
+            --card-w: 55px;
+            --card-h: 77px;
+            --micro-scale: 0.25;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -23,11 +27,11 @@
             height: 100vh;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Вертикальный стек для Z Flip */
             perspective: 1200px; 
         }
         .arena-top {
-            height: 62%;
+            flex: 1; /* Занимает всё свободное место, сжимаясь при раскрытии руки */
             position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
             animation: tableBreathe 8s infinite ease-in-out;
@@ -37,6 +41,7 @@
             transform-style: preserve-3d;
             transform: rotateX(8deg);
             margin-top: 5px;
+            z-index: 1;
         }
         @keyframes tableBreathe {
             0%, 100% { 
@@ -72,25 +77,52 @@
             0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
             100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
         }
+        /* ИЗОЛЯЦИЯ КОЗЫРЯ: Вынесен из зоны 3D трансформаций */
+        .trump-status { 
+            position: fixed; top: 15px; right: 15px; width: 66px; height: 66px; 
+            border: 2px solid var(--gold); background: #000; 
+            display: flex; justify-content: center; align-items: center; z-index: 5000;
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--gold), 0 0 40px var(--trump-halo);
+            transform: rotateZ(-5deg);
+            pointer-events: none;
+        }
+        #trump-icon {
+            font-size: 42px; 
+            position: relative;
+            z-index: 5005;
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 25px var(--trump-halo);
+        }
+        .trump-status::after {
+            content: ''; position: absolute; top: -10px; left: -10px; width: 82px; height: 82px;
+            border-radius: 50%;
+            border: 4px solid var(--trump-halo);
+            animation: haloPulse 2s infinite alternate;
+            z-index: 4999;
+        }
+        @keyframes haloPulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
         .control-bottom {
-            height: 38%;
+            height: auto;
+            min-height: 120px;
             position: relative;
             background: linear-gradient(to top, #000 0%, #0c0f18 100%);
-            padding: 10px 5px;
+            padding: 5px;
             border-top-left-radius: 50% 30px;
             border-top-right-radius: 50% 30px;
-            z-index: 2000;
+            z-index: 4000;
             border-top: 1px solid rgba(255, 207, 64, 0.2);
-            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
         }
         .control-bottom.expanded {
-            height: 55%;
-            background: linear-gradient(to top, #000 0%, #1a1a1a 100%);
-            transform: translateY(-20px);
+            min-height: 320px;
+            background: linear-gradient(to top, #000 20%, #1a1a1a 100%);
         }
         .card-node {
             position: absolute;
-            width: 55px; height: 77px;
+            width: var(--card-w); height: var(--card-h);
             background-color: #1a1a1a;
             background-image: url('1771489965074(1).png');
             background-size: cover;
@@ -109,76 +141,77 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
         .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.5) rotateX(90deg); }
-        
-        .suits-grid { 
-            display: flex; flex-direction: column; height: 100%; position: relative; 
-            padding-left: 20px; align-items: center; justify-content: center;
-            transition: all 0.5s ease;
-        }
-        .suit-row { display: flex; height: 35px; margin-top: -5px; transition: all 0.4s ease; }
-        
-        .slot { 
-            width: 38px; height: 52px; 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 207, 64, 0.15); 
-            position: relative; display: flex; align-items: center; justify-content: center;
-            margin-left: -15px; border-radius: 4px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(2px);
-            font-size: 8px;
-        }
-        .slot.filled { 
-            background: var(--bg-card); border: 1px solid #fff; z-index: 5; 
-            box-shadow: -3px 0 10px rgba(0,0,0,0.5); 
-        }
 
-        /* ZOOM MODE */
-        .control-bottom.expanded .suit-row { height: 65px; margin-top: 5px; }
+        .suits-grid { 
+            display: flex; flex-direction: column; width: 100%; position: relative; 
+            align-items: center; justify-content: center; margin-top: 20px;
+            transition: transform 0.4s;
+        }
+        .suit-row { display: flex; height: 25px; margin-top: -8px; transition: all 0.4s ease; }
+        
+        /* СЛОТЫ: Изначально уменьшены на 75% (scale 0.25) */
+        .slot { 
+            width: var(--card-w); height: var(--card-h);
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 207, 64, 0.25); 
+            position: relative; display: flex; align-items: center; justify-content: center;
+            margin-left: -40px; border-radius: 5px;
+            transform: scale(var(--micro-scale)); /* Тот самый эффект 75% уменьшения */
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            transform-origin: center bottom;
+        }
+        .slot:first-child { margin-left: 0; }
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -7px 0 20px rgba(0,0,0,0.6); }
+
+        /* РАСКРЫТИЕ РУКИ */
+        .control-bottom.expanded .suit-row { height: 60px; margin-top: 5px; }
         .control-bottom.expanded .slot { 
-            width: 58px; height: 82px; margin-left: -10px; 
-            font-size: 14px; box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            transform: scale(1.1) translateY(-10px); /* Возврат к полному размеру + акцент */
+            margin-left: -20px;
+            z-index: 10;
         }
         .control-bottom.expanded .slot.filled:hover { 
-            transform: translateY(-40px) scale(1.3) rotate(0deg); 
-            z-index: 1000 !important; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--gold);
+            transform: scale(1.4) translateY(-40px);
+            z-index: 5000 !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 15px var(--gold);
         }
 
-        .action-btns { position: absolute; bottom: 20px; left: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 2500; }
-        .ui-controls { position: absolute; top: -15px; right: 20px; z-index: 2600; display: flex; gap: 10px; }
+        .action-btns { position: absolute; bottom: 15px; left: 10px; display: flex; flex-direction: column; gap: 8px; z-index: 4500; }
+        .ui-toggle { position: absolute; top: -20px; right: 25px; z-index: 4600; }
         
         button { 
-            padding: 12px 18px; background: rgba(0,0,0,0.7); 
-            backdrop-filter: blur(12px); border: 1px solid var(--gold); color: var(--gold); 
-            font-size: 9px; letter-spacing: 2px; font-weight: bold; 
+            padding: 12px 18px; background: rgba(16, 20, 32, 0.8); 
+            backdrop-filter: blur(10px); border: 1px solid var(--gold); color: var(--gold); 
+            font-size: 10px; letter-spacing: 2px; font-weight: bold; 
             text-transform: uppercase; cursor: pointer; transition: all 0.3s;
         }
-        .btn-circle { width: 40px; height: 40px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        
-        #status-msg {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            background: rgba(16, 20, 32, 0.95); border: 1px solid var(--gold); color: var(--gold);
-            padding: 15px 35px; text-align: center; z-index: 2100; font-weight: bold;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
+        .btn-close { width: 44px; height: 44px; border-radius: 50%; padding: 0; font-size: 20px; box-shadow: 0 0 15px var(--gold); }
 </style>
 </head>
 <body>
     <div id='status-msg'></div>
+    
+    <div class='trump-status'><div id='trump-icon'>?</div></div>
+
     <div class='arena-top' id='arena'>
-        <div class='spark-zone'><span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span><div id='spark-cards' style='margin-left:15px;'></div></div>
-        <div class='trump-status'><div id='trump-icon'>?</div></div>
+        <div class='spark-zone'>
+            <span style='font-size:9px; color:var(--spark-neon); letter-spacing:4px; font-weight:bold;'>SPARK CORE ONLINE</span>
+            <div id='spark-cards' style='margin-left:15px;'></div>
+        </div>
         <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
         <div id='battle-table'></div>
     </div>
+
     <div class='control-bottom' id='ctrl-panel'>
-        <div class='ui-controls'>
-            <button id='btn-zoom' class='btn-circle' onclick='toggleZoom()'>↕</button>
+        <div class='ui-toggle'>
+            <button id='btn-zoom' class='btn-close' onclick='toggleHand()'>↕</button>
         </div>
-        <div class='suits-grid' id='hand-grid' onclick='if(!isZoomed) toggleZoom()'>
-            <div id='s-spades' class='suit-row'></div><div id='s-clubs' class='suit-row'></div>
-            <div id='s-diamonds' class='suit-row'></div><div id='s-hearts' class='suit-row'></div>
+        <div class='suits-grid' id='main-hand' onclick='if(!isExpanded) toggleHand()'>
+            <div id='s-spades' class='suit-row'></div>
+            <div id='s-clubs' class='suit-row'></div>
+            <div id='s-diamonds' class='suit-row'></div>
+            <div id='s-hearts' class='suit-row'></div>
         </div>
         <div class='action-btns'>
             <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ</button>
@@ -193,19 +226,21 @@
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
     var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
-    var isZoomed = false;
+    var isExpanded = false;
     
     var AudioCtx = window.AudioContext || window.webkitAudioContext;
     var ctx = null;
 
-    function toggleZoom() {
-        isZoomed = !isZoomed;
-        var p = document.getElementById('ctrl-panel');
-        var b = document.getElementById('btn-zoom');
-        if(isZoomed) {
-            p.classList.add('expanded'); b.textContent = '✕';
+    function toggleHand() {
+        isExpanded = !isExpanded;
+        var panel = document.getElementById('ctrl-panel');
+        var btn = document.getElementById('btn-zoom');
+        if(isExpanded) {
+            panel.classList.add('expanded');
+            btn.textContent = '✕';
         } else {
-            p.classList.remove('expanded'); b.textContent = '↕';
+            panel.classList.remove('expanded');
+            btn.textContent = '↕';
         }
         playSound('slide');
     }
@@ -231,7 +266,6 @@
             osc.start(); osc.stop(ctx.currentTime + 0.35);
         }
     }
-
     function createDust(x, y) {
         var arena = document.getElementById('arena');
         for(var i=0; i<20; i++) {
@@ -243,6 +277,7 @@
             { duration: 1000 + Math.random() * 500, easing: 'ease-out' }).onfinish = function() { this.effect.target.remove(); };
         }
     }
+
     function showMsg(txt) {
         var m = document.getElementById('status-msg');
         if(!m) return;
@@ -270,8 +305,8 @@
         vchf.phase = 'SHUFFLING';
         var t = [];
         SUITS.forEach(function(s) {
-            RANKS.forEach(function(r) {
-                t.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
+            RANKS.forEach(function(rank) {
+                t.push({ s: s, r: rank, v: RANKS.indexOf(rank), c: COLORS[s], used: false });
             });
         });
         vchf.deck = t;
@@ -312,7 +347,6 @@
             if(elapsed > duration) { clearInterval(interval); finalizeShuffle(); }
         }, 80);
     }
-
     function finalizeShuffle() {
         vchf.deck.sort(function() { return Math.random() - 0.5; });
         vchf.trump = SUITS[Math.floor(Math.random() * 4)];
@@ -340,6 +374,7 @@
         }
         return -1;
     }
+
     function pick(idx, actor) {
         var c = vchf.deck[idx];
         if(!c || c.used) return;
@@ -369,29 +404,22 @@
         }
     }
 
-    function checkFinal() {
-        if(vchf.deck.every(function(x) { return x.used; })) {
-            if(vchf.phase !== 'BATTLE') { vchf.phase = 'BATTLE'; showMsg('БОЙ НАЧАТ'); updateActionButtons(); }
-        }
-    }
-
     function updateSlot(card) {
         var el = document.getElementById('slot-' + card.s + '-' + card.r);
         if(!el) return;
         el.classList.add('filled'); el.style.color = card.c; el.innerHTML = '';
         var t = document.createElement('div');
-        t.style.cssText = 'position:absolute;top:3px;left:4px;font-weight:900;pointer-events:none;';
+        t.style.cssText = 'position:absolute;top:5px;left:6px;font-size:14px;font-weight:900;pointer-events:none;';
         t.textContent = card.r;
         var m = document.createElement('div');
-        m.style.cssText = 'pointer-events:none;'; m.textContent = card.s;
+        m.style.cssText = 'font-size:32px;pointer-events:none;'; m.textContent = card.s;
         el.appendChild(t); el.appendChild(m);
         el.onclick = function(e) { 
             e.stopPropagation();
-            if(vchf.phase === 'BATTLE' && isZoomed) selectFromHand(card); 
-            else if(!isZoomed) toggleZoom();
+            if(vchf.phase === 'BATTLE' && isExpanded) selectFromHand(card); 
+            else if(!isExpanded) toggleHand();
         };
     }
-
     function renderTable() {
         var tc = document.getElementById('battle-table');
         if(!tc) return; tc.innerHTML = '';
@@ -417,6 +445,7 @@
         var startX = screenW / 2 - 110, stepX = 100, startY = isBottomRow ? 180 : 80;
         return { x: startX + (colIndex * stepX), y: startY, rotate: (Math.random() * 16 - 8) };
     }
+
     function handleBito() {
         if(vchf.table.length % 2 !== 0) return;
         playSound('bito');
@@ -469,7 +498,7 @@
             } else {
                 var activeRanks = vchf.table.map(m => m.card.r);
                 var cand = vchf.eHand.filter(c => activeRanks.indexOf(c.r) !== -1);
-                if(cand.length > 0 && vchf.table.length < 12 && vchf.table.length/2 < vchf.pHand.length + vchf.table.length/2) {
+                if(cand.length > 0 && vchf.table.length < 12) {
                     var ch = cand[0]; vchf.table.push({card: ch, actor: 'enemy'});
                     removeFromHand(ch, 'enemy'); renderTable();
                 } else { setTimeout(handleBito, 1200); }
