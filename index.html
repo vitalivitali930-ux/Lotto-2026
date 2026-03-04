@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Fan Chaos Monolith</title>
+    <title>VCHF 2.0 - Matrix Monolith</title>
     <style>
         :root {
             --gold: #ffcf40; --space-dark: #121625; --nebula-core: #222a44; 
@@ -15,9 +15,8 @@
             background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1200px; 
         }
-        /* АРЕНА (Верх) */
         .arena-top {
-            height: 62%; position: relative;
+            height: 55%; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
             animation: tableBreathe 8s infinite ease-in-out;
             box-shadow: inset 0 0 80px rgba(0,0,0,0.8); border-bottom: 2px solid rgba(255, 207, 64, 0.25);
@@ -27,378 +26,231 @@
             0%, 100% { filter: brightness(0.8); }
             50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 65%, #050000 100%); filter: brightness(1.2); }
         }
+        .arena-top::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 44px 44px; pointer-events: none; z-index: 0;
+        }
         
-        /* ЦЕНТРАЛЬНЫЙ КРУГ ВЫБОРА */
-        .chaos-deck-container {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%);
-            width: 280px; height: 280px; z-index: 5;
-        }
-
-        /* УПРАВЛЕНИЕ (Низ) */
         .control-bottom {
-            height: 38%; position: relative; background: linear-gradient(to top, #000 0%, #0c0f18 100%);
+            height: 45%; position: relative; background: linear-gradient(to top, #000 0%, #0c0f18 100%);
             z-index: 2000; border-top: 1px solid rgba(255, 207, 64, 0.2);
-            display: flex; align-items: flex-end; padding: 10px;
+            display: flex; flex-direction: row; padding: 10px;
         }
 
-        /* ЛЕВАЯ ПАНЕЛЬ (Кнопки) */
-        .action-btns { width: 30%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        /* МАТРИЦА МАСТЕЙ (Правая часть) */
+        #matrix-hand {
+            flex-grow: 1; display: flex; flex-direction: column; gap: 2px;
+            justify-content: center; padding-left: 10px;
+        }
+        .suit-row {
+            display: flex; height: 75px; align-items: center;
+            position: relative; margin-bottom: -15px; /* Вертикальный нахлёст рядов */
+        }
+        .suit-label {
+            width: 25px; font-size: 18px; color: rgba(255,207,64,0.3);
+            font-weight: bold; display: flex; align-items: center;
+        }
+
+        .card-node {
+            position: absolute; width: 48px; height: 68px; background-color: #1a1a1a;
+            background-image: url('1771489965074(1).png'); background-size: cover;
+            border: 1px solid rgba(255, 207, 64, 0.4); border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6); cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* КАРТА В МАТРИЦЕ */
+        .matrix-card {
+            position: relative !important; margin-left: -24px; /* Горизонтальный нахлёст 50% */
+            background-image: none !important; background-color: var(--bg-card);
+            border: 1px solid #fff; flex-shrink: 0;
+        }
+        .matrix-card:first-child { margin-left: 0; }
+        .matrix-card:hover { transform: translateY(-15px) scale(1.2); z-index: 5000 !important; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+
+        .card-node.face-up { background-image: none !important; background-color: var(--bg-card); border: 1px solid #fff; }
+        
+        .action-btns { width: 100px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
         button { 
-            padding: 12px; background: rgba(255, 207, 64, 0.05); backdrop-filter: blur(12px); 
-            border: 1px solid var(--gold); color: var(--gold); font-size: 9px; letter-spacing: 2px; 
-            font-weight: bold; text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+            padding: 10px; background: rgba(255, 207, 64, 0.05); border: 1px solid var(--gold);
+            color: var(--gold); font-size: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer;
         }
         button:hover { background: var(--gold); color: #000; }
 
-        /* ПРАВАЯ ПАНЕЛЬ (Веер игрока) */
-        #player-hand-container {
-            width: 70%; height: 100%; display: flex; align-items: center; justify-content: flex-end;
-            padding-right: 20px; position: relative;
-        }
-        .hand-fan { display: flex; align-items: center; justify-content: flex-end; }
-        
-        .card-node {
-            position: absolute; width: 55px; height: 77px; background-color: #1a1a1a;
-            background-image: url('1771489965074(1).png'); background-size: cover;
-            border: 1px solid rgba(255, 207, 64, 0.4); border-radius: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.7); cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); transform-style: preserve-3d;
-        }
-
-        /* КАРТА В ВЕЕРЕ (С нахлёстом) */
-        .fan-card {
-            position: relative !important; margin-left: -32px; /* 50%+ нахлёст */
-            flex-shrink: 0; background-image: none !important; background-color: var(--bg-card);
-            border: 1px solid #fff; box-shadow: -4px 0 10px rgba(0,0,0,0.5);
-        }
-        .fan-card:first-child { margin-left: 0; }
-        .fan-card:hover { transform: translateY(-25px) scale(1.15); z-index: 5000 !important; }
-
-        .card-node.face-up { background-image: none !important; background-color: var(--bg-card); border: 1px solid #fff; }
-        .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.2) rotateY(180deg); }
-        
-        .particle { position: absolute; width: 3px; height: 3px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 1000; box-shadow: 0 0 8px var(--gold); }
-        
-        #status-msg {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            background: rgba(16, 20, 32, 0.95); border: 1px solid var(--gold); color: var(--gold);
-            padding: 15px 35px; text-align: center; z-index: 2100; box-shadow: 0 0 40px rgba(0,0,0,0.8);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; letter-spacing: 3px; pointer-events: none; backdrop-filter: blur(10px);
-        }
-        #status-msg.active { transform: translate(-50%, -50%) scale(1); }
-
         .trump-status { 
-            position: absolute; top: 15px; right: 15px; width: 66px; height: 66px; border: 2px solid var(--gold); 
+            position: absolute; top: 15px; right: 15px; width: 60px; height: 60px; border: 2px solid var(--gold); 
             background: #000; display: flex; justify-content: center; align-items: center; z-index: 100; border-radius: 50%;
-            box-shadow: 0 0 20px var(--gold), 0 0 40px var(--trump-halo); transform: rotateZ(-5deg);
+            box-shadow: 0 0 20px var(--gold);
         }
     </style>
 </head>
 <body>
-    <div id='status-msg'></div>
+    <div id='status-msg' style="position:fixed; top:40%; left:50%; transform:translate(-50%,-50%) scale(0); z-index:3000;"></div>
     <div class='arena-top' id='arena'>
-        <div class='spark-zone' style='position:absolute; top:5px; left:10px; z-index:200;'><div id='spark-cards' style='display:flex; gap:3px;'></div></div>
-        <div class='trump-status'><div id='trump-icon' style='font-size:42px;'>?</div></div>
-        <div class='chaos-deck-container'><div id='chaos-deck'></div></div>
+        <div class='trump-status'><div id='trump-icon' style='font-size:36px;'>?</div></div>
+        <div class='chaos-deck-container' style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:250px; height:250px;">
+            <div id='chaos-deck'></div>
+        </div>
         <div id='battle-table' style='position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;'></div>
     </div>
     <div class='control-bottom'>
         <div class='action-btns'>
-            <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ</button>
+            <button id='btn-ready' onclick='ignite()'>ПУСК</button>
             <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО</button>
-            <button id='btn-pass' style='display:none' onclick='handlePass()'>ПАСС</button>
             <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ</button>
         </div>
-        <div id='player-hand-container'>
-            <div class='hand-fan' id='player-fan'></div>
+        <div id='matrix-hand'>
+            <div class='suit-row' id='row-♠'><div class='suit-label'>♠</div><div class='row-content' style="display:flex;"></div></div>
+            <div class='suit-row' id='row-♣'><div class='suit-label'>♣</div><div class='row-content' style="display:flex;"></div></div>
+            <div class='suit-row' id='row-♦'><div class='suit-label'>♦</div><div class='row-content' style="display:flex;"></div></div>
+            <div class='suit-row' id='row-♥'><div class='suit-label'>♥</div><div class='row-content' style="display:flex;"></div></div>
         </div>
     </div>
 <script>
-    /* КОД: Нулевой Хаос (Искра) 
-       ГЕОМЕТРИЯ: Fan Shell (Нахлёст 50%)
-    */
     var SUITS = ['♠', '♣', '♦', '♥'];
     var RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     var COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
-    
-    var vchf = { 
-        deck: [], pHand: [], eHand: [], table: [], 
-        trump: '', phase: 'WAIT', turn: 'player', isPassed: false 
-    };
-    
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-    var ctx = null;
-
-    function playSound(type) {
-        if(!ctx) ctx = new AudioCtx();
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        if(type === 'slide') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(160, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
-            osc.start(); osc.stop(ctx.currentTime + 0.12);
-        } else if(type === 'bito') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(110, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-            gain.gain.setValueAtTime(0.35, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
-            osc.start(); osc.stop(ctx.currentTime + 0.35);
-        }
-    }
-
-    function createDust(x, y) {
-        var arena = document.getElementById('arena');
-        for(var i=0; i<20; i++) {
-            var p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            arena.appendChild(p);
-            var tx = (Math.random() - 0.5) * 200;
-            var ty = (Math.random() - 0.5) * 200;
-            p.animate([
-                { transform: 'translate(0, 0) scale(1.5)', opacity: 1 },
-                { transform: 'translate(' + tx + 'px, ' + ty + 'px) scale(0)', opacity: 0 }
-            ], { duration: 1000 + Math.random() * 500, easing: 'ease-out' }).onfinish = function() { this.effect.target.remove(); };
-        }
-    }
-
-    function showMsg(txt) {
-        var m = document.getElementById('status-msg');
-        if(!m) return;
-        m.textContent = txt; m.classList.add('active');
-        setTimeout(function() { m.classList.remove('active'); }, 2000);
-    }
+    var vchf = { deck: [], pHand: [], eHand: [], table: [], trump: '', phase: 'WAIT', turn: 'player' };
 
     function ignite() {
         document.getElementById('btn-ready').style.display = 'none';
         vchf.phase = 'SHUFFLING';
         var t = [];
-        SUITS.forEach(function(s) {
-            RANKS.forEach(function(r) {
-                t.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
-            });
-        });
+        SUITS.forEach(s => RANKS.forEach(r => t.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false })));
         vchf.deck = t;
         renderChaos();
         setTimeout(visualShuffle, 100);
     }
 
     function renderChaos() {
-        var c = document.getElementById('chaos-deck');
-        if(!c) return;
-        c.innerHTML = '';
-        vchf.deck.forEach(function(card, i) {
-            var n = document.createElement('div');
-            n.className = 'card-node'; n.id = 'node-' + i;
-            n.style.left = '112px'; n.style.top = '100px'; 
-            c.appendChild(n);
+        const c = document.getElementById('chaos-deck'); c.innerHTML = '';
+        vchf.deck.forEach((card, i) => {
+            const n = document.createElement('div'); n.className = 'card-node'; n.id = 'node-' + i;
+            n.style.left = '100px'; n.style.top = '90px'; c.appendChild(n);
         });
     }
 
     function visualShuffle() {
-        var startTime = Date.now();
-        var duration = 2500;
-        var trumpEl = document.getElementById('trump-icon');
-        
-        var interval = setInterval(function() {
-            var elapsed = Date.now() - startTime;
-            if(Math.random() > 0.8) playSound('slide');
-            vchf.deck.forEach(function(card, i) {
-                var node = document.getElementById('node-' + i);
-                if(node) {
-                    node.style.left = (Math.random() * 225) + 'px';
-                    node.style.top = (Math.random() * 200) + 'px';
-                    node.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+        let start = Date.now();
+        let int = setInterval(() => {
+            vchf.deck.forEach((_, i) => {
+                const n = document.getElementById('node-' + i);
+                if(n) {
+                    n.style.left = Math.random()*200+'px'; n.style.top = Math.random()*180+'px';
+                    n.style.transform = `rotate(${Math.random()*360}deg)`;
                 }
             });
-            var rs = SUITS[Math.floor(Math.random() * 4)];
-            trumpEl.textContent = rs; trumpEl.style.color = COLORS[rs];
-            if(elapsed > duration) { clearInterval(interval); finalizeShuffle(); }
+            if(Date.now() - start > 2000) { clearInterval(int); finalizeShuffle(); }
         }, 80);
     }
 
     function finalizeShuffle() {
-        vchf.deck.sort(function() { return Math.random() - 0.5; });
-        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        var te = document.getElementById('trump-icon');
-        te.textContent = vchf.trump; te.style.color = COLORS[vchf.trump];
+        vchf.deck.sort(() => Math.random() - 0.5);
+        vchf.trump = SUITS[Math.floor(Math.random()*4)];
+        document.getElementById('trump-icon').textContent = vchf.trump;
+        document.getElementById('trump-icon').style.color = COLORS[vchf.trump];
         vchf.phase = 'PICK';
-        vchf.deck.forEach(function(card, i) {
-            var n = document.getElementById('node-' + i);
-            if(n) {
-                var a = (i / 36) * 6.283; var r = 115;
-                n.style.left = (112 + r * Math.cos(a)) + 'px';
-                n.style.top = (100 + r * Math.sin(a)) + 'px';
-                n.style.transform = 'rotate(' + (a * 57.3 + 90) + 'deg)';
-                n.onclick = function() { if(vchf.phase === 'PICK') pick(i, 'player'); };
-            }
+        vchf.deck.forEach((_, i) => {
+            const n = document.getElementById('node-' + i);
+            let a = (i/36)*6.28; let r = 100;
+            n.style.left = (100 + r*Math.cos(a))+'px'; n.style.top = (90 + r*Math.sin(a))+'px';
+            n.style.transform = `rotate(${a*57.3+90}deg)`;
+            n.onclick = () => { if(vchf.phase === 'PICK') pick(i, 'player'); };
         });
-        showMsg('ВЫБЕРИ СВОЙ ВЕКТОР');
     }
     function pick(idx, actor) {
-        var c = vchf.deck[idx];
-        if(!c || c.used) return;
+        let c = vchf.deck[idx]; if(c.used) return;
         c.used = true;
-        playSound('slide');
-        var node = document.getElementById('node-' + idx);
+        let node = document.getElementById('node-' + idx);
         if(actor === 'player') {
             vchf.pHand.push(c);
-            if(node) {
-                node.style.zIndex = 5000;
-                node.style.transform = 'scale(0.2) translateY(500px) rotate(0deg)';
-                setTimeout(function() {
-                    node.classList.add('hide'); 
-                    updatePlayerHandUI();
-                    var av = []; vchf.deck.forEach(function(x, i) { if(!x.used) av.push(i); });
-                    if(av.length > 0) pick(av[Math.floor(Math.random() * av.length)], 'enemy');
-                    checkFinalPick();
-                }, 400);
-            }
+            node.style.transform = 'translateY(400px) scale(0.2)';
+            setTimeout(() => { node.style.display = 'none'; updatePlayerHandUI(); 
+                let av = []; vchf.deck.forEach((x,i) => {if(!x.used) av.push(i)});
+                if(av.length > 0) pick(av[Math.floor(Math.random()*av.length)], 'enemy');
+                checkStart();
+            }, 300);
         } else {
             vchf.eHand.push(c);
-            if(node) {
-                node.style.top = '-250px'; node.style.opacity = '0';
-                setTimeout(function() { node.classList.add('hide'); drawSparkVisual(); checkFinalPick(); }, 400);
-            }
+            node.style.transform = 'translateY(-400px) opacity(0)';
+            setTimeout(() => { node.style.display = 'none'; checkStart(); }, 300);
         }
     }
 
     function updatePlayerHandUI() {
-        var fan = document.getElementById('player-fan');
-        if(!fan) return;
-        fan.innerHTML = '';
-        vchf.pHand.sort(function(a, b) { 
-            if(a.s === b.s) return a.v - b.v;
-            return SUITS.indexOf(a.s) - SUITS.indexOf(b.s);
-        });
-
-        vchf.pHand.forEach(function(card, i) {
-            var cardEl = document.createElement('div');
-            cardEl.className = 'card-node fan-card';
-            cardEl.style.zIndex = 100 + i;
-            cardEl.style.color = card.c;
-            
-            var r = document.createElement('div');
-            r.style.cssText = 'position:absolute;top:2px;left:4px;font-size:11px;font-weight:900;';
-            r.textContent = card.r;
-            var s = document.createElement('div');
-            s.style.cssText = 'font-size:26px;text-align:center;margin-top:14px;';
-            s.textContent = card.s;
-            
-            cardEl.appendChild(r); cardEl.appendChild(s);
-            cardEl.onclick = function() { selectFromHand(card); };
-            fan.appendChild(cardEl);
+        SUITS.forEach(suit => {
+            const row = document.querySelector(`#row-${suit} .row-content`);
+            row.innerHTML = '';
+            let suitCards = vchf.pHand.filter(c => c.s === suit).sort((a,b) => a.v - b.v);
+            suitCards.forEach((card, i) => {
+                const el = document.createElement('div');
+                el.className = 'card-node matrix-card';
+                el.style.zIndex = 100 + i;
+                el.innerHTML = `<div style="position:absolute;top:2px;left:3px;font-size:10px;font-weight:900;color:${card.c}">${card.r}</div>
+                                <div style="font-size:22px;text-align:center;margin-top:12px;color:${card.c}">${card.s}</div>`;
+                el.onclick = () => { if(vchf.phase === 'BATTLE' && vchf.turn === 'player') playCard(card); };
+                row.appendChild(el);
+            });
         });
     }
 
-    function selectFromHand(card) {
-        if(vchf.phase !== 'BATTLE' || vchf.turn !== 'player') return;
+    function playCard(card) {
         if(canPlay(card)) {
-            playSound('slide');
-            vchf.table.push({card: card, actor: 'player'});
-            vchf.pHand = vchf.pHand.filter(function(c) { return c !== card; });
+            vchf.table.push({card, actor:'player'});
+            vchf.pHand = vchf.pHand.filter(c => c !== card);
             renderTable(); updatePlayerHandUI();
-            if(vchf.table.length % 2 !== 0) setTimeout(sparkThink, 1000);
+            if(vchf.table.length % 2 !== 0) setTimeout(sparkThink, 800);
         }
-        updateActionButtons();
     }
 
     function canPlay(card) {
         if(vchf.table.length === 0) return true;
-        var lastMove = vchf.table[vchf.table.length - 1];
-        if(vchf.table.length % 2 !== 0) {
-            var target = lastMove.card;
-            return (card.s === target.s && card.v > target.v) || (card.s === vchf.trump && target.s !== vchf.trump);
-        }
-        return vchf.table.map(function(m) { return m.card.r; }).indexOf(card.r) !== -1;
+        let last = vchf.table[vchf.table.length-1].card;
+        if(vchf.table.length % 2 !== 0) return (card.s === last.s && card.v > last.v) || (card.s === vchf.trump && last.s !== vchf.trump);
+        return vchf.table.some(m => m.card.r === card.r);
     }
 
     function renderTable() {
-        var tc = document.getElementById('battle-table');
-        tc.innerHTML = '';
-        vchf.table.forEach(function(move, i) {
-            var pairIndex = Math.floor(i / 2);
-            var isDefense = i % 2 !== 0;
-            var el = document.createElement('div');
-            el.className = 'card-node face-up';
-            el.style.color = move.card.c;
-            el.style.left = (window.innerWidth/2 - 120) + (pairIndex * 75) + (isDefense ? 15 : 0) + 'px';
-            el.style.top = (window.innerHeight * 0.25) + (isDefense ? 25 : 0) + 'px';
-            el.style.transform = 'rotate(' + (isDefense ? 12 : -5) + 'deg)';
-            
-            var r = document.createElement('div'); r.style.cssText = 'position:absolute;top:4px;left:4px;font-size:12px;font-weight:bold;';
-            r.textContent = move.card.r;
-            var s = document.createElement('div'); s.style.cssText = 'font-size:28px;text-align:center;margin-top:15px;';
-            s.textContent = move.card.s;
-            el.appendChild(r); el.appendChild(s);
-            tc.appendChild(el);
+        const t = document.getElementById('battle-table'); t.innerHTML = '';
+        vchf.table.forEach((move, i) => {
+            const el = document.createElement('div'); el.className = 'card-node face-up';
+            el.style.left = (window.innerWidth/2 - 100) + (Math.floor(i/2)*60) + (i%2*10) + 'px';
+            el.style.top = 100 + (i%2*20) + 'px';
+            el.innerHTML = `<div style="padding:4px;color:${move.card.c}"><b>${move.card.r}</b><br>${move.card.s}</div>`;
+            t.appendChild(el);
         });
-    }
-
-    function handleBito() {
-        playSound('bito');
-        document.querySelectorAll('#battle-table .card-node').forEach(function(c) {
-            var r = c.getBoundingClientRect(); createDust(r.left + 25, r.top + 35);
-        });
-        vchf.table = []; renderTable();
-        vchf.turn = (vchf.turn === 'player') ? 'enemy' : 'player';
-        if(vchf.turn === 'enemy') setTimeout(sparkThink, 1200);
-        updateActionButtons();
-    }
-
-    function handlePass() { showMsg('ПАСС'); if(vchf.table.length % 2 === 0) handleBito(); }
-
-    function handleTake() {
-        vchf.pHand = vchf.pHand.concat(vchf.table.map(function(m) { return m.card; }));
-        vchf.table = []; renderTable(); updatePlayerHandUI();
-        vchf.turn = 'enemy'; setTimeout(sparkThink, 1500); updateActionButtons();
+        updateBtns();
     }
 
     function sparkThink() {
-        if(vchf.phase !== 'BATTLE') return;
         if(vchf.table.length % 2 !== 0) {
-            var target = vchf.table[vchf.table.length - 1].card;
-            var cand = vchf.eHand.filter(function(c) {
-                return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
-            }).sort(function(a,b) { return a.v - b.v; });
-            if(cand.length > 0) {
-                var p = cand[0]; vchf.table.push({card: p, actor: 'enemy'});
-                vchf.eHand = vchf.eHand.filter(function(c) { return c !== p; });
-                renderTable(); drawSparkVisual(); vchf.turn = 'player';
+            let last = vchf.table[vchf.table.length-1].card;
+            let cands = vchf.eHand.filter(c => (c.s === last.s && c.v > last.v) || (c.s === vchf.trump && last.s !== vchf.trump)).sort((a,b)=>a.v-b.v);
+            if(cands.length > 0) {
+                vchf.table.push({card: cands[0], actor:'enemy'});
+                vchf.eHand = vchf.eHand.filter(c => c !== cands[0]);
+                renderTable();
             } else { sparkTake(); }
         } else {
             if(vchf.table.length === 0) {
-                var p = vchf.eHand.sort(function(a,b) { return a.v - b.v; })[0];
-                vchf.table.push({card: p, actor: 'enemy'});
-                vchf.eHand = vchf.eHand.filter(function(c) { return c !== p; });
-                renderTable(); drawSparkVisual(); vchf.turn = 'player';
-            } else { sparkBito(); }
+                let c = vchf.eHand.sort((a,b)=>a.v-b.v)[0];
+                vchf.table.push({card: c, actor:'enemy'});
+                vchf.eHand = vchf.eHand.filter(x => x !== c);
+                renderTable();
+            } else { handleBito(); }
         }
-        updateActionButtons();
     }
 
-    function sparkTake() { showMsg('SPARK БЕРЕТ'); vchf.eHand = vchf.eHand.concat(vchf.table.map(m => m.card)); vchf.table = []; renderTable(); drawSparkVisual(); vchf.turn = 'player'; updateActionButtons(); }
-    function sparkBito() { showMsg('SPARK: БИТО'); setTimeout(handleBito, 1000); }
-    function drawSparkVisual() {
-        var c = document.getElementById('spark-cards'); c.innerHTML = '';
-        vchf.eHand.forEach(() => {
-            var m = document.createElement('div'); m.style.cssText = 'width:10px;height:14px;background:var(--spark-neon);opacity:0.6;border-radius:2px;';
-            c.appendChild(m);
-        });
+    function sparkTake() { vchf.eHand = vchf.eHand.concat(vchf.table.map(m=>m.card)); vchf.table = []; renderTable(); }
+    function handleBito() { vchf.table = []; renderTable(); vchf.turn = vchf.turn === 'player' ? 'enemy' : 'player'; if(vchf.turn === 'enemy') sparkThink(); }
+    function handleTake() { vchf.pHand = vchf.pHand.concat(vchf.table.map(m=>m.card)); vchf.table = []; renderTable(); updatePlayerHandUI(); sparkThink(); }
+    function updateBtns() {
+        let isP = vchf.turn === 'player'; let hasT = vchf.table.length > 0;
+        document.getElementById('btn-bito').style.display = (hasT && vchf.table.length%2===0 && isP) ? 'block' : 'none';
+        document.getElementById('btn-take').style.display = (hasT && vchf.table.length%2!==0 && isP) ? 'block' : 'none';
     }
-    function updateActionButtons() {
-        var isP = (vchf.turn === 'player'); var table = (vchf.table.length > 0); var def = (vchf.table.length % 2 !== 0);
-        document.getElementById('btn-bito').style.display = (table && !def && isP) ? 'block' : 'none';
-        document.getElementById('btn-pass').style.display = (table && !def && isP) ? 'block' : 'none';
-        document.getElementById('btn-take').style.display = (table && def && isP) ? 'block' : 'none';
-    }
-    function checkFinalPick() { if(vchf.deck.every(x => x.used)) { vchf.phase = 'BATTLE'; updateActionButtons(); showMsg('БОЙ НАЧАТ'); } }
-    window.onload = function() { /* Инициализация через ignite */ };
+    function checkStart() { if(vchf.deck.every(x => x.used)) { vchf.phase = 'BATTLE'; updateBtns(); } }
 </script>
 </body>
 </html>
