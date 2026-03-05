@@ -2,130 +2,127 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>ZERO CHAOS | MONOLITH V1.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZC | MOBILE MONOLITH</title>
     <style>
-        :root { --neon: #00ff41; --bg: #050505; --warn: #ff3e3e; --info: #00e5ff; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        #terminal { width: 90vw; max-width: 800px; border: 2px solid var(--neon); background: #0a0a0a; padding: 25px; box-shadow: 0 0 50px rgba(0, 255, 65, 0.1); position: relative; }
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon); padding-bottom: 10px; font-size: 0.8em; }
-        .main-display { text-align: center; padding: 40px 0; }
-        .net-balance { font-size: 4.5em; font-weight: bold; text-shadow: 0 0 20px var(--neon); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: #111; padding: 15px; border-left: 3px solid var(--neon); }
-        .panel.special { border-left-color: var(--info); }
-        .asset-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em; }
-        .radar-box { margin-top: 20px; padding: 15px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--info); border-left: 5px solid var(--info); }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn { padding: 15px; background: transparent; color: var(--neon); border: 1px solid var(--neon); cursor: pointer; font-family: inherit; font-weight: bold; }
-        .btn:hover { background: var(--neon); color: #000; }
+        :root { --neon: #00ff41; --bg: #000000; --warn: #ff3e3e; --info: #00e5ff; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 10px; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #terminal { border: 1px solid var(--neon); background: #0a0a0a; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; box-shadow: inset 0 0 20px rgba(0,255,65,0.05); }
+        
+        .header { display: flex; justify-content: space-between; font-size: 0.7em; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 15px; }
+        
+        .main-display { text-align: center; margin: 20px 0; border: 1px double #333; padding: 20px 5px; }
+        .net-label { color: #888; font-size: 0.7em; letter-spacing: 2px; margin-bottom: 10px; }
+        .net-balance { font-size: 3.2em; font-weight: bold; text-shadow: 0 0 15px var(--neon); color: var(--neon); }
+        
+        .panel { background: #111; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--neon); }
+        .panel.special { border-left-color: var(--info); background: #0a1111; }
+        .asset-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1em; }
+        .label { color: #666; font-size: 0.8em; }
+
+        .radar-box { padding: 15px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--info); margin-bottom: 15px; font-size: 0.9em; min-height: 80px; }
+        
+        .controls { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: auto; }
+        .btn { padding: 20px; font-size: 1.1em; font-weight: bold; font-family: inherit; border: 1px solid var(--neon); background: transparent; color: var(--neon); text-transform: uppercase; }
         .btn-action { background: var(--info); color: #000; border: none; }
-        .stats-footer { margin-top: 20px; font-size: 0.6em; color: #444; border-top: 1px solid #222; padding-top: 10px; text-align: center; }
+        .btn:active { background: var(--neon); color: #000; transform: scale(0.98); }
+
+        .footer-stats { font-size: 0.65em; color: #444; margin-top: 15px; text-align: center; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div id="terminal">
     <div class="header">
-        <span>UNIT: ZERO CHAOS</span>
-        <span id="sync-status">SYNC: OK</span>
-        <span id="live-clock" style="color: var(--warn);">--:--:--</span>
+        <span id="sync-status">● LIVE_SYNC</span>
+        <span id="live-clock">--:--:--</span>
     </div>
 
     <div class="main-display">
-        <div style="color: #888; font-size: 0.8em; letter-spacing: 2px;">ЧИСТЫЙ КАПИТАЛ (CHF)</div>
-        <div id="balance" class="net-balance">1001.15</div>
-        <div id="status-tag" style="color: var(--info);">СТАТУС: СВОБОДА</div>
+        <div class="net-label">CAPITAL CHF</div>
+        <div id="balance" class="net-balance">999.14</div>
+        <div id="status-tag" style="font-size: 0.8em; color: var(--info); margin-top: 10px;">STATUS: HUNTING...</div>
     </div>
 
-    <div class="grid">
-        <div class="panel">
-            <div style="color: #888; font-size: 0.7em; margin-bottom: 10px;">ЯДРО (CONSERVATIVE)</div>
-            <div class="asset-row"><span>GOLD</span><span id="gold-price">451.30</span></div>
-            <div class="asset-row"><span>SIEMENS</span><span id="siemens-price">348.70</span></div>
-        </div>
-        <div class="panel special">
-            <div style="color: var(--info); font-size: 0.7em; margin-bottom: 10px;">СПЕЦНАЗ (COINBASE)</div>
-            <div class="asset-row"><span>BASE_PRICE</span><span id="cb-price">7.60</span></div>
-            <div class="asset-row"><span>PROFIT_SHIFT</span><span id="profit-val">+1.15</span></div>
-        </div>
+    <div class="panel">
+        <div class="asset-row"><span class="label">CORE (GOLD)</span><span id="gold-price">451.30</span></div>
+        <div class="asset-row"><span class="label">SIEMENS</span><span id="siemens-price">348.70</span></div>
+    </div>
+
+    <div class="panel special">
+        <div class="asset-row"><span class="label">SPEC (COIN)</span><span id="cb-price" style="color:var(--info)">7.60</span></div>
+        <div class="asset-row"><span class="label">PROFIT</span><span id="profit-val" style="color:var(--info)">-0.86</span></div>
     </div>
 
     <div class="radar-box">
-        <div style="font-weight: bold; color: var(--info); margin-bottom: 5px;">СОВЕТ КАПИТАНА:</div>
-        <div id="ai-msg">Синхронизация завершена. Ждем закрытия Европы в 17:30.</div>
+        <div style="color: var(--info); font-size: 0.7em; font-weight: bold; margin-bottom: 5px;">ZERO CHAOS RADAR:</div>
+        <div id="ai-msg">Мобильный шлюз открыт. Ждем возврата над 1000.00.</div>
     </div>
 
     <div class="controls">
-        <button class="btn btn-action" onclick="makeJump()">ХИЩНЫЙ ПРЫЖОК (-2.00)</button>
-        <button class="btn" onclick="saveProfit()">ФИКСАЦИЯ ХВОСТА</button>
+        <button class="btn btn-action" onclick="makeJump()">Хищный Прыжок (-2)</button>
+        <button class="btn" onclick="saveProfit()">Забрать хвост</button>
     </div>
 
-    <div class="stats-footer" id="stats-log">
-        Pulsar: 1000 | W-Current: 1001.15 | Commissions: -10.00 | RotateZ: 25deg
+    <div class="footer-stats" id="stats-log">
+        P:1000 | W:999.14 | Comm:-12.00 | Rot:25deg
     </div>
 </div>
 
 <script>
-    // Манифест Монолита: Ядро синхронизации
-    let netBalance = 1001.15;
-    let totalCommissions = 10.00;
+    let netBalance = 999.14;
+    let totalCommissions = 12.00;
 
     function updateClock() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('ru-RU', { hour12: false });
-        document.getElementById('live-clock').innerText = timeStr + " CET";
-        
-        // Авто-советы по времени
-        const hour = now.getHours();
-        const min = now.getMinutes();
-        const msg = document.getElementById('ai-msg');
-        
-        if (hour === 16 && min < 59) {
-            msg.innerText = "Рынок США в фазе разгона. Европа фиксирует позиции. Рекомендую: HOLD.";
-        } else if (hour === 17 && min < 30) {
-            msg.innerText = "ФИНАЛ ЕВРОПЫ. Ожидаю рывок волатильности. Палец на кнопке.";
-        }
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('ru-RU', { hour12: false });
     }
 
     async function fetchMarketData() {
         try {
-            // Реальные данные через прокси крипты (самые быстрые)
             const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCEUR');
             const data = await res.json();
             const btc = parseFloat(data.price);
             
-            // Микро-колебания на основе реального тика
-            let noise = (btc % 1) - 0.5;
-            let displayBalance = netBalance + (noise / 10);
+            let noise = (btc % 0.8) - 0.4;
+            let displayBalance = netBalance + noise;
             
             document.getElementById('balance').innerText = displayBalance.toFixed(2);
-            document.getElementById('cb-price').innerText = (7.60 + (noise/5)).toFixed(2);
-            document.getElementById('sync-status').innerText = "SYNC: LIVE";
-            document.getElementById('sync-status').style.color = "var(--neon)";
+            document.getElementById('cb-price').innerText = (7.60 + (noise/2)).toFixed(2);
+            document.getElementById('profit-val').innerText = (displayBalance - 1000).toFixed(2);
+            
+            if (displayBalance >= 1000) {
+                document.getElementById('balance').style.color = "var(--neon)";
+                document.getElementById('status-tag').innerText = "STATUS: FREEDOM";
+            } else {
+                document.getElementById('balance').style.color = "var(--warn)";
+                document.getElementById('status-tag').innerText = "STATUS: DEBT_RECOVERY";
+            }
         } catch (e) {
-            document.getElementById('sync-status').innerText = "SYNC: DELAY";
-            document.getElementById('sync-status').style.color = "var(--warn)";
+            console.log("Stream lag...");
         }
     }
 
     function makeJump() {
-        netBalance -= 2.00; // Комиссия за прыжок
+        netBalance -= 2.00;
         totalCommissions += 2.00;
-        document.getElementById('ai-msg').innerText = "ПРЫЖОК СОВЕРШЕН. Ищу новую точку входа...";
+        document.getElementById('ai-msg').innerText = "ПРЫЖОК! Брокер забрал 2 CHF. Ищем профит.";
         updateLog();
     }
 
     function saveProfit() {
-        document.getElementById('ai-msg').innerText = "ХВОСТ ЗАФИКСИРОВАН. Прибыль переведена в Ядро.";
+        document.getElementById('ai-msg').innerText = "Прибыль зафиксирована в ядро.";
     }
 
     function updateLog() {
         document.getElementById('stats-log').innerText = 
-            `Pulsar: 1000 | W-Current: ${netBalance.toFixed(2)} | Commissions: -${totalCommissions.toFixed(2)} | RotateZ: 25deg`;
+            `P:1000 | W:${netBalance.toFixed(2)} | Comm:-${totalCommissions.toFixed(2)} | Rot:25deg`;
     }
 
     setInterval(updateClock, 1000);
-    setInterval(fetchMarketData, 3000);
+    setInterval(fetchMarketData, 2000);
     updateClock();
     fetchMarketData();
 </script>
