@@ -2,168 +2,62 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Chaos Terminal v1.0</title>
+    <title>Zero Chaos: Monolith Live</title>
     <style>
-        :root {
-            --neon-green: #00ff41;
-            --dark-bg: #0a0a0a;
-            --signal-blue: #00e5ff;
-            --danger-red: #ff3e3e;
-        }
-        body {
-            background-color: #000;
-            color: var(--neon-green);
-            font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #terminal {
-            width: 700px;
-            background: var(--dark-bg);
-            border: 2px solid var(--neon-green);
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            position: relative;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--neon-green);
-            padding-bottom: 10px;
-            font-size: 0.8em;
-        }
-        .balance-box {
-            text-align: center;
-            padding: 30px 0;
-        }
-        .balance-value {
-            font-size: 3.5em;
-            text-shadow: 0 0 10px var(--neon-green);
-        }
-        .assets-table {
-            width: 100%;
-            margin: 20px 0;
-            border-spacing: 0;
-        }
-        .assets-table th {
-            border-bottom: 1px solid #333;
-            padding: 10px;
-            text-align: left;
-            font-size: 0.7em;
-            color: #888;
-        }
-        .assets-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #1a1a1a;
-        }
-        .radar {
-            background: #111;
-            border-left: 4px solid var(--signal-blue);
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-buy { background: var(--neon-green); color: #000; }
-        .btn-hold { background: #222; color: #fff; }
-        button:hover { opacity: 0.8; transform: scale(1.02); }
-        .binary-log { font-size: 0.6em; color: #444; margin-top: 10px; text-align: center; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        #monolith { border: 2px solid #00ff41; padding: 30px; background: #0a0a0a; box-shadow: 0 0 30px rgba(0,255,65,0.2); width: 600px; text-align: center; }
+        .net-value { font-size: 4em; margin: 20px 0; transition: all 0.5s; }
+        .status { color: #00e5ff; font-size: 0.9em; margin-bottom: 10px; }
+        .profit { color: #ff3e3e; font-size: 1.2em; }
+        .binary { font-size: 0.7em; color: #222; word-break: break-all; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div id="terminal">
-    <div class="header">
-        <span>STATUS: ACTIVE [100% REALISM]</span>
-        <span id="clock">01010011 01010100</span>
-        <span style="color: var(--danger-red);">BERN: 14:45 CET</span>
+<div id="monolith">
+    <div class="status">ID: БРОДЯГА | STRATEGY: HUNTER | REAL-TIME</div>
+    <div style="color: #888;">ЧИСТЫЙ КАПИТАЛ (CHF)</div>
+    <div id="balance" class="net-value">1000.10</div>
+    <div id="diff" class="profit">СВОБОДА: АКТИВИРОВАНА</div>
+    
+    <div id="assets" style="text-align: left; font-size: 0.8em; border-top: 1px solid #333; padding-top: 10px;">
+        <div>ЗОЛОТО: <span id="gold-price">ЖДУ ДАННЫХ...</span></div>
+        <div>BTC/COINBASE: <span id="crypto-price">В ПОЛЕТЕ...</span></div>
     </div>
-
-    <div class="balance-box">
-        <div style="color: #888; font-size: 0.9em;">NET CAPITAL (CHF)</div>
-        <div class="balance-value" id="net-balance">999.20</div>
-        <div style="color: var(--danger-red); margin-top: 5px;">COMMISSION DEBT: -10.00 CHF</div>
-    </div>
-
-    <table class="assets-table">
-        <thead>
-            <tr>
-                <th>ASSET</th>
-                <th>VALUE</th>
-                <th>PERFORMANCE</th>
-            </tr>
-        </thead>
-        <tbody id="assets-body">
-            <tr>
-                <td>GOLD (CORE)</td>
-                <td>451.30</td>
-                <td style="color: var(--neon-green);">+0.31%</td>
-            </tr>
-            <tr>
-                <td>SIEMENS ENERGY</td>
-                <td>348.70</td>
-                <td>0.00%</td>
-            </tr>
-            <tr>
-                <td>INFINEON (JUMP)</td>
-                <td>200.10</td>
-                <td style="color: var(--neon-green);">+1.10%</td>
-            </tr>
-            <tr style="color: var(--signal-blue);">
-                <td>COINBASE (SPECIAL)</td>
-                <td>7.20</td>
-                <td>+44.00%</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="radar">
-        <div style="color: var(--signal-blue); font-weight: bold;">ZERO CHAOS RADAR:</div>
-        <div id="radar-msg" style="margin-top: 5px;">USA MARKET OPENED. VOLATILITY SPIKE DETECTED.</div>
-    </div>
-
-    <div class="controls">
-        <button class="btn-buy" onclick="action('JUMP')">EXECUTE JUMP (-2 CHF)</button>
-        <button class="btn-hold" onclick="action('WAIT')">HOLD / WAIT</button>
-    </div>
-
-    <div class="binary-log" id="binary-log">
-        01101101 01101111 01101110 01101111 01101100 01101001 01110100 01101000
-    </div>
+    
+    <div class="binary" id="bin">01010011 01101100 01101111 01100100 01100001</div>
 </div>
 
 <script>
-    function action(type) {
-        const log = document.getElementById('binary-log');
-        const radar = document.getElementById('radar-msg');
-        if(type === 'JUMP') {
-            radar.innerText = "COMMAND RECEIVED: ANALYZING NEW ENTRY POINT...";
-            radar.style.color = "#ff3e3e";
-            setTimeout(() => {
-                radar.innerText = "BROKER FEE APPLIED. POSITION UPDATED.";
-                radar.style.color = "#00e5ff";
-            }, 1500);
-        } else {
-            radar.innerText = "STRATEGY: PATIENCE. WATCHING PRICE ACTION.";
+    // Имитация живого подключения к данным (Мозг Нулевого Хаоса)
+    async function updateMarket() {
+        try {
+            // Берем реальную цену BTC как драйвер для нашей "ракеты" Coinbase
+            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCEUR');
+            const data = await res.json();
+            const price = parseFloat(data.price);
+            
+            // Логика пересчета в твои франки (симуляция прогрессии)
+            let baseBalance = 1000.10;
+            let volatility = (price % 100) / 1000; // Используем хвост цены для микро-движений
+            let currentBalance = (baseBalance + volatility).toFixed(2);
+            
+            document.getElementById('balance').innerText = currentBalance;
+            document.getElementById('crypto-price').innerText = price.toFixed(2) + " EUR/CHF";
+            document.getElementById('bin').innerText = Math.random().toString(2).substr(2, 64);
+            
+            if (currentBalance > 1000.10) {
+                document.getElementById('balance').style.color = "#00ff41";
+                document.getElementById('diff').innerText = "ПРИБЫЛЬ: " + (currentBalance - 1000).toFixed(2) + " CHF";
+                document.getElementById('diff').style.color = "#00ff41";
+            }
+        } catch (e) {
+            console.log("Жду открытия шлюзов...");
         }
-        log.innerText = Math.random().toString(2).substr(2, 64);
     }
-</script>
 
+    setInterval(updateMarket, 2000); // Обновление каждые 2 секунды
+    updateMarket();
+</script>
 </body>
 </html>
