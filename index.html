@@ -22,7 +22,6 @@
             transition: filter 0.5s ease;
         }
 
-        /* --- БЛОК ДИАГНОСТИКИ СЕТИ (Глаз Монолита) --- */
         #net-status {
             position: fixed; top: 15px; left: 15px; z-index: 6000;
             background: rgba(12, 15, 24, 0.85);
@@ -35,14 +34,12 @@
         }
 
         .net-logo-wrapper { position: relative; width: 35px; height: 35px; }
-        
         .net-logo {
             width: 100%; height: 100%; border-radius: 8px;
             background: url('1771489965074(1).png') center/cover;
             border: 1px solid var(--gold); z-index: 2; position: relative;
         }
 
-        /* Радар (Визуализация Handshake) */
         .radar-ping {
             position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
             border: 2px solid var(--spark-neon); border-radius: 10px;
@@ -57,10 +54,9 @@
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
         #peer-id { font-size: 11px; color: #fff; font-family: monospace; }
 
-        /* Эффект сканирования для нестабильного интернета */
         #search-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 6500; display: none;
+            background: rgba(0,0,0,0.9); z-index: 6500; display: none;
             flex-direction: column; align-items: center; justify-content: center;
         }
         .scanner-line {
@@ -79,7 +75,6 @@
             text-transform: uppercase; letter-spacing: 3px; animation: pulseStart 2s infinite;
         }
 
-        /* --- АРЕНА (Интерфейс Битвы) --- */
         .arena-top {
             flex: 1; position: relative;
             background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
@@ -92,7 +87,7 @@
         .arena-top::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 50px 50px; opacity: 0.5; pointer-events: none;
+            background-size: 50px 50px; opacity: 0.5;
         }
 
         .trump-status { 
@@ -110,6 +105,7 @@
         }
 
         .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
+        .card-node.face-up div { color: inherit; }
 
         .control-bottom {
             height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
@@ -117,7 +113,6 @@
         }
         .control-bottom.expanded { height: 350px; }
 
-        /* Сетка слотов (Спарк-версия) */
         .suits-grid { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 15px; }
         .suit-row { display: flex; height: 22px; transition: 0.4s; }
 
@@ -126,8 +121,10 @@
             border: 1px solid rgba(255,207,64,0.2); margin-left: -42px; transform: scale(var(--micro-scale));
             transform-origin: center bottom; transition: 0.5s; border-radius: 4px; overflow: hidden;
         }
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.5); color: #000; }
-        
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; color: #000; }
+        .slot.filled div { color: inherit; }
+        .slot.locked { filter: grayscale(1) brightness(0.5); pointer-events: none; }
+
         #status-msg {
             position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
             z-index: 9999; color: var(--gold); font-weight: bold; letter-spacing: 4px;
@@ -145,14 +142,14 @@
             text-transform: uppercase; border-radius: 8px; cursor: pointer;
         }
 
-        @keyframes tableBreathe { 0%, 100% { filter: brightness(0.8); } 50% { filter: brightness(1.1); } }
         @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
+        @keyframes tableBreathe { 0%, 100% { filter: brightness(0.8); } 50% { filter: brightness(1.1); } }
     </style>
 </head>
 <body>
     <div id="search-overlay">
         <div class="scanner-line"></div>
-        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:12px; letter-spacing:3px; font-weight:bold; text-align:center;">ИНИЦИАЛИЗАЦИЯ...</div>
+        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">ПОИСК АБОНЕНТА...</div>
     </div>
 
     <div id="net-status" onclick="copyMyID()">
@@ -193,8 +190,7 @@
         </div>
     </div>
 <script>
-    // Манифест Монолита: Новый код = Старый код + Введенная функция
-    // Window 2.4: Агрессивная логика соединения для нестабильного интернета
+    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -218,7 +214,6 @@
         if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
     }
 
-    // ВХОД В МОНОЛИТ С УЛУЧШЕННЫМ СКАНЕРОМ
     function startNetwork() {
         const urlParams = new URLSearchParams(window.location.search);
         let roomNum = urlParams.get('room');
@@ -235,28 +230,12 @@
     }
 
     function initPeerSession(finalID, roomNum) {
-        // Конфигурация STUN для пробивки NAT
-        const config = {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'stun:stun1.l.google.com:19302' }]};
-        peer = new Peer(null, { debug: 1, config: config });
-        
-        peer.on('open', () => {
-            updateSearchStatus("ПОИСК КАНАЛА...");
-            attemptConnect(finalID, roomNum);
-        });
-
+        peer = new Peer(null, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
+        peer.on('open', () => attemptConnect(finalID, roomNum));
         peer.on('error', (err) => {
-            console.error("Peer Error:", err.type);
-            if (err.type === 'unavailable-id' || err.type === 'network') {
-                updateSearchStatus("СЕТЕВОЙ ПЕРЕЗАПУСК...");
-                setTimeout(() => initPeerSession(finalID, roomNum), 1500);
-            }
+            if (err.type === 'unavailable-id') setTimeout(() => initPeerSession(finalID, roomNum), 1500);
         });
-
         setInterval(monitorConnection, 2000);
-    }
-
-    function updateSearchStatus(txt) {
-        document.getElementById('search-text').textContent = txt;
     }
 
     function monitorConnection() {
@@ -267,65 +246,44 @@
         radar.style.display = 'block';
         radar.style.borderColor = isDisconnected ? '#ff4444' : 'var(--spark-neon)';
 
-        // Если нет ответа более 5 секунд - сигналим об обрыве
         if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
             isDisconnected = true;
-            showMsg("СЕТЕВАЯ ЯМА...", true);
-            document.body.style.filter = "grayscale(1) brightness(0.4)";
-            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ ПАКЕТОВ";
+            showMsg("СВЯЗЬ ПРЕРВАНА...", true);
+            document.body.style.filter = "grayscale(1) brightness(0.5)";
+            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ...";
         }
     }
 
     function attemptConnect(targetID, roomName) {
         searchAttempt++;
-        updateSearchStatus(`ПОПЫТКА СТЫКОВКИ ${searchAttempt}/3`);
-        document.getElementById('room-info').textContent = "ROOM: " + roomName;
-        
-        // Пытаемся подключиться как Гость
-        conn = peer.connect(targetID, { reliable: true, serialization: 'json' });
+        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
+        conn = peer.connect(targetID, { reliable: true });
 
-        // Бронированный таймаут: если за 2.5 сек не ответил - либо мы Хост, либо инет упал
         let connectTimeout = setTimeout(() => {
             if (!conn || !conn.open) {
-                if (searchAttempt >= 3) { 
-                    updateSearchStatus("РЕГИСТРАЦИЯ ХОСТА...");
-                    peer.destroy(); 
-                    createHostRoom(targetID, roomName); 
-                } else { 
-                    attemptConnect(targetID, roomName); 
-                }
+                if (searchAttempt > 3) { peer.destroy(); createHostRoom(targetID, roomName); }
+                else { attemptConnect(targetID, roomName); }
             }
         }, 2500);
-
         setupConn(connectTimeout);
     }
 
     function createHostRoom(tID, oNum) {
-        // Создаем комнату с фиксированным ID
         peer = new Peer(tID, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
-        
         peer.on('open', () => {
             myRole = 'host';
             document.getElementById('search-overlay').style.display = 'none';
-            document.getElementById('room-info').textContent = "В ЭФИРЕ: " + oNum;
+            document.getElementById('room-info').textContent = "ROOM: " + oNum;
             document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
             document.getElementById('radar').style.display = 'block';
             document.getElementById('radar').style.animation = 'radarBeam 4s infinite';
-            showMsg("МОНОЛИТ ЗАПУЩЕН");
+            showMsg("ТЫ ХОЗЯИН");
         });
-
         peer.on('connection', (c) => { 
             conn = c; 
             setupConn(); 
-            showMsg("ГОСТЬ ВОШЕЛ");
+            showMsg("ИГРОК ВОШЕЛ");
             document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
-        });
-
-        peer.on('error', (err) => {
-            if (err.type === 'unavailable-id') {
-                // Если ID все еще занят - значит кто-то уже Хост, пробуем стать гостем снова
-                setTimeout(() => initPeerSession(tID, oNum), 1000);
-            }
         });
     }
 
@@ -335,15 +293,13 @@
             if (timeoutToClear) clearTimeout(timeoutToClear);
             document.getElementById('search-overlay').style.display = 'none';
             document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "СВЯЗЬ: 5/5";
+            document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
             document.getElementById('radar').style.display = 'block';
-            document.getElementById('radar').style.animation = 'radarBeam 1.2s infinite';
+            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
             lastHeartbeat = Date.now();
             conn.on('data', handleNetData);
         });
     }
-    // ... Продолжение логики боя в Window 3
-</script>
     function handleNetData(data) {
         if (data.type === 'PING') { conn.send({type: 'PONG'}); return; }
         if (data.type === 'PONG') {
@@ -352,7 +308,7 @@
                 isDisconnected = false;
                 document.getElementById('status-msg').classList.remove('active');
                 document.body.style.filter = "none";
-                document.getElementById('peer-id').textContent = "СВЯЗЬ: 5/5";
+                document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
             }
             return;
         }
@@ -365,23 +321,6 @@
         if (data.type === 'PICK') executePick(data.idx, 'enemy');
         if (data.type === 'MOVE') executeMove(data.card, 'enemy');
         if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
-    }
-
-    function playSound(type) {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioCtx.currentTime;
-        if (type === 'slide') {
-            const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(220, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-            g.gain.setValueAtTime(0.05, now); osc.start(); osc.stop(now + 0.15);
-        } else if (type === 'shuffle') {
-            const bufferSize = audioCtx.sampleRate * 0.4; const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 600;
-            noise.connect(filter); filter.connect(audioCtx.destination); noise.start(); noise.stop(now + 0.4);
-        }
     }
 
     function renderTrumpUI() {
@@ -405,7 +344,7 @@
     }
 
     function startChaosPhase() {
-        vchf.phase = 'PICK'; playSound('shuffle'); renderChaosInitial();
+        vchf.phase = 'PICK'; renderChaosInitial();
     }
 
     function renderChaosInitial() {
@@ -423,7 +362,7 @@
                 if (vchf.phase === 'PICK' && !card.used) {
                     const canIPick = (myRole === 'host') ? (vchf.pHand.length <= vchf.eCount) : (vchf.pHand.length < vchf.eCount);
                     if (canIPick) { if (conn) conn.send({type: 'PICK', idx: i}); executePick(i, 'player'); }
-                    else { showMsg("ОЧЕРЕДЬ ВРАГА"); }
+                    else { showMsg("ЖДИ ВРАГА"); }
                 } 
             };
         });
@@ -432,7 +371,7 @@
     function executePick(idx, actor) {
         const card = vchf.deck[idx]; const n = document.getElementById(`node-${idx}`);
         if (!n || card.used) return;
-        card.used = true; playSound('slide');
+        card.used = true;
         if (actor === 'player') {
             vchf.pHand.push(card); fillSlot(card);
             n.style.zIndex = "5000"; n.style.transform = "scale(0) rotate(180deg)"; n.style.opacity = "0";
@@ -441,7 +380,7 @@
             vchf.eCount++; n.style.top = "-150px"; n.style.opacity = "0";
             setTimeout(() => n.remove(), 600);
         }
-        document.getElementById('enemy-stat').textContent = `В ЭФИРЕ ВРАГА: ${vchf.eCount}`;
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
         if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); }
     }
 
@@ -479,7 +418,7 @@
     }
 
     function executeMove(card, actor) {
-        playSound('slide'); vchf.table.push({card, actor}); if (actor === 'enemy') vchf.eCount--;
+        vchf.table.push({card, actor}); if (actor === 'enemy') vchf.eCount--;
         vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host'); renderBattleTable(); checkBattleEnd();
     }
 
@@ -501,9 +440,8 @@
 
     function handleBito() { syncBito(); if(conn) conn.send({type: 'ACTION', cmd: 'BITO'}); }
     function syncBito() {
-        playSound('shuffle'); vchf.table = [];
-        vchf.attacker = (vchf.attacker === 'host' ? 'guest' : 'host'); vchf.turn = vchf.attacker;
-        setTimeout(renderBattleTable, 600); showMsg("БИТО! ТВОЙ ХОД");
+        vchf.table = []; vchf.attacker = (vchf.attacker === 'host' ? 'guest' : 'host'); vchf.turn = vchf.attacker;
+        setTimeout(renderBattleTable, 600); showMsg("БИТО!");
     }
 
     function handleTake() { syncTake(); if(conn) conn.send({type: 'ACTION', cmd: 'TAKE'}); }
