@@ -2,62 +2,116 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Zero Chaos: Monolith Live</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZERO CHAOS | MONOLITH TERMINAL</title>
     <style>
-        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        #monolith { border: 2px solid #00ff41; padding: 30px; background: #0a0a0a; box-shadow: 0 0 30px rgba(0,255,65,0.2); width: 600px; text-align: center; }
-        .net-value { font-size: 4em; margin: 20px 0; transition: all 0.5s; }
-        .status { color: #00e5ff; font-size: 0.9em; margin-bottom: 10px; }
-        .profit { color: #ff3e3e; font-size: 1.2em; }
-        .binary { font-size: 0.7em; color: #222; word-break: break-all; margin-top: 20px; }
+        :root { --neon: #00ff41; --bg: #050505; --warn: #ff3e3e; --info: #00e5ff; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        #terminal { width: 90vw; max-width: 800px; border: 2px solid var(--neon); background: #0a0a0a; padding: 20px; box-shadow: 0 0 40px rgba(0, 255, 65, 0.1); position: relative; }
+        
+        .header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon); padding-bottom: 10px; font-size: 0.8em; }
+        .main-display { text-align: center; padding: 40px 0; border-bottom: 1px dotted #333; }
+        .net-balance { font-size: 4.5em; font-weight: bold; text-shadow: 0 0 20px var(--neon); transition: 0.3s; }
+        .sub-text { color: #888; font-size: 0.9em; margin-bottom: 5px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .panel { background: #111; padding: 15px; border-left: 3px solid var(--neon); }
+        .panel.special { border-left-color: var(--info); }
+        
+        .asset-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em; }
+        .profit-plus { color: var(--neon); }
+        .profit-minus { color: var(--warn); }
+
+        .radar-box { margin-top: 20px; padding: 10px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--info); font-size: 0.85em; }
+        
+        .binary-stream { font-size: 0.6em; color: #1a331a; position: absolute; bottom: 5px; width: 100%; text-align: center; letter-spacing: 2px; }
+        .btn { width: 100%; padding: 15px; margin-top: 20px; background: var(--neon); color: #000; border: none; font-weight: bold; cursor: pointer; font-family: inherit; }
+        .btn:hover { background: #fff; }
     </style>
 </head>
 <body>
 
-<div id="monolith">
-    <div class="status">ID: БРОДЯГА | STRATEGY: HUNTER | REAL-TIME</div>
-    <div style="color: #888;">ЧИСТЫЙ КАПИТАЛ (CHF)</div>
-    <div id="balance" class="net-value">1000.10</div>
-    <div id="diff" class="profit">СВОБОДА: АКТИВИРОВАНА</div>
-    
-    <div id="assets" style="text-align: left; font-size: 0.8em; border-top: 1px solid #333; padding-top: 10px;">
-        <div>ЗОЛОТО: <span id="gold-price">ЖДУ ДАННЫХ...</span></div>
-        <div>BTC/COINBASE: <span id="crypto-price">В ПОЛЕТЕ...</span></div>
+<div id="terminal">
+    <div class="header">
+        <span>V-CAPITAL: 1000.00 CHF</span>
+        <span id="binary-clock">01010011 01010100</span>
+        <span style="color: var(--warn);">REAL-TIME | BERN 15:30</span>
     </div>
-    
-    <div class="binary" id="bin">01010011 01101100 01101111 01100100 01100001</div>
+
+    <div class="main-display">
+        <div class="sub-text">ЧИСТЫЙ КАПИТАЛ (NET AFTER COMMISSIONS)</div>
+        <div id="balance" class="net-balance">1000.10</div>
+        <div id="freedom-status" style="color: var(--info); font-size: 1.1em; letter-spacing: 3px;">STATUS: СВОБОДА</div>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <div style="color: #888; margin-bottom: 10px; font-size: 0.7em;">ЯДРО (КОНСЕРВАТИВНО)</div>
+            <div class="asset-row"><span>ЗОЛОТО</span><span id="gold-val">451.30</span></div>
+            <div class="asset-row"><span>SIEMENS</span><span id="siemens-val">348.70</span></div>
+        </div>
+        <div class="panel special">
+            <div style="color: var(--info); margin-bottom: 10px; font-size: 0.7em;">СПЕЦНАЗ (ПРОГРЕССИЯ)</div>
+            <div class="asset-row"><span>COINBASE</span><span class="profit-plus" id="cb-val">7.40</span></div>
+            <div class="asset-row"><span>INFINEON</span><span class="profit-plus" id="inf-val">200.10</span></div>
+        </div>
+    </div>
+
+    <div class="radar-box">
+        <span style="color: var(--info); font-weight: bold;">НУЛЕВОЙ ХАОС:</span> 
+        <span id="ai-msg">Рынок США открыт. Волатильность высокая. Ожидаю точку входа для "Спецназа".</span>
+    </div>
+
+    <button class="btn" onclick="executeJump()">СОВЕРШИТЬ ХИЩНЫЙ ПРЫЖОК (-2 CHF)</button>
+
+    <div class="binary-stream" id="bin-stream">01101101 01101111 01101110 01101111 01101100 01101001 01110100 01101000</div>
 </div>
 
 <script>
-    // Имитация живого подключения к данным (Мозг Нулевого Хаоса)
-    async function updateMarket() {
+    // Манифест Монолита: Ядро логики
+    let netBalance = 1000.10;
+    let commissions = 10.00;
+
+    async function syncMarket() {
         try {
-            // Берем реальную цену BTC как драйвер для нашей "ракеты" Coinbase
-            const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCEUR');
-            const data = await res.json();
-            const price = parseFloat(data.price);
+            // Подключаемся к реальным данным (BTC как прокси для Coinbase)
+            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCEUR');
+            const data = await response.json();
+            const btcPrice = parseFloat(data.price);
             
-            // Логика пересчета в твои франки (симуляция прогрессии)
-            let baseBalance = 1000.10;
-            let volatility = (price % 100) / 1000; // Используем хвост цены для микро-движений
-            let currentBalance = (baseBalance + volatility).toFixed(2);
+            // Симуляция движения активов на основе реального шума рынка
+            let marketNoise = (btcPrice % 10) / 100;
+            netBalance += (marketNoise - 0.05); 
             
-            document.getElementById('balance').innerText = currentBalance;
-            document.getElementById('crypto-price').innerText = price.toFixed(2) + " EUR/CHF";
-            document.getElementById('bin').innerText = Math.random().toString(2).substr(2, 64);
+            // Обновление интерфейса
+            document.getElementById('balance').innerText = netBalance.toFixed(2);
+            document.getElementById('cb-val').innerText = (7.40 + (marketNoise * 2)).toFixed(2);
+            document.getElementById('bin-stream').innerText = Math.random().toString(2).substr(2, 64);
             
-            if (currentBalance > 1000.10) {
-                document.getElementById('balance').style.color = "#00ff41";
-                document.getElementById('diff').innerText = "ПРИБЫЛЬ: " + (currentBalance - 1000).toFixed(2) + " CHF";
-                document.getElementById('diff').style.color = "#00ff41";
+            // Проверка на Свободу
+            const status = document.getElementById('freedom-status');
+            if(netBalance < 1000) {
+                status.innerText = "STATUS: ДОЛГ БРОКЕРУ";
+                status.style.color = "#ff3e3e";
+            } else {
+                status.innerText = "STATUS: СВОБОДА";
+                status.style.color = "#00e5ff";
             }
         } catch (e) {
-            console.log("Жду открытия шлюзов...");
+            console.log("Ожидание потока данных...");
         }
     }
 
-    setInterval(updateMarket, 2000); // Обновление каждые 2 секунды
-    updateMarket();
+    function executeJump() {
+        netBalance -= 2.00; // Комиссия брокера
+        document.getElementById('ai-msg').innerText = "ПРЫЖОК СОВЕРШЕН. -2 CHF. ИЩУ НОВУЮ ЦЕЛЬ...";
+        syncMarket();
+    }
+
+    setInterval(syncMarket, 3000);
+    syncMarket();
 </script>
+
 </body>
 </html>
