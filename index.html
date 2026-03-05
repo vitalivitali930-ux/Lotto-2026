@@ -31,7 +31,6 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(36, 161, 222, 0.1);
             cursor: pointer; transition: 0.3s;
         }
-        #net-status:active { transform: scale(0.95); border-color: var(--spark-neon); }
 
         .net-logo {
             width: 35px; height: 35px; border-radius: 8px;
@@ -175,11 +174,15 @@
     let localReady = false, remoteReady = false;
     let isExpanded = false, audioCtx = null;
     let searchAttempt = 0;
+    
+    // Новые переменные контроля пульса
+    let lastHeartbeat = Date.now();
+    let isDisconnected = false;
 
-    function showMsg(text) {
+    function showMsg(text, persistent = false) {
         const m = document.getElementById('status-msg');
         m.textContent = text; m.classList.add('active');
-        setTimeout(() => m.classList.remove('active'), 3000);
+        if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
     }
 
     function startNetwork() {
@@ -193,47 +196,46 @@
         }
         const finalID = "VCHF_MONO_" + roomNum.trim();
         document.getElementById('btn-start-center').style.display = 'none';
-        
         initPeerSession(finalID, roomNum);
     }
 
     function initPeerSession(finalID, roomNum) {
         peer = new Peer(null, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
-        
-        peer.on('open', () => {
-            attemptConnect(finalID, roomNum);
-        });
-
+        peer.on('open', () => attemptConnect(finalID, roomNum));
         peer.on('error', (err) => {
-            console.error("PEER ERROR:", err.type);
-            if (err.type === 'unavailable-id') {
-                // Если ID занят, значит Хост уже там. Пробуем снова как Гость.
-                setTimeout(() => initPeerSession(finalID, roomNum), 2000);
-            }
+            if (err.type === 'unavailable-id') setTimeout(() => initPeerSession(finalID, roomNum), 2000);
         });
+        
+        // Запуск цикла мониторинга связи
+        setInterval(monitorConnection, 2000);
+    }
+
+    function monitorConnection() {
+        if (!conn || !conn.open) return;
+        
+        // Посылаем сигнал жизни
+        conn.send({type: 'PING', time: Date.now()});
+        
+        // Если ответа не было более 5 секунд
+        if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
+            isDisconnected = true;
+            showMsg("ИДЕТ СОЕДИНЕНИЕ...", true);
+            document.body.style.filter = "grayscale(0.5) brightness(0.7)";
+            document.getElementById('peer-id').textContent = "ОБРЫВ СЕТИ";
+        }
     }
 
     function attemptConnect(targetID, roomName) {
         searchAttempt++;
         document.getElementById('room-info').textContent = "ПОИСК: " + roomName + " (" + searchAttempt + ")";
-        
         conn = peer.connect(targetID, { reliable: true });
 
-        // Модернизированный таймер ожидания ответа
         let connectTimeout = setTimeout(() => {
             if (!conn || !conn.open) {
-                console.log("Цель не найдена. Попытка создания или повторного поиска...");
-                // Вместо того чтобы сразу стать хостом, мы проверяем четность попыток
-                // Это позволяет двум вкладкам не конфликтовать за роль Хоста мгновенно
-                if (searchAttempt > 3) {
-                    peer.destroy();
-                    createHostRoom(targetID, roomName);
-                } else {
-                    attemptConnect(targetID, roomName);
-                }
+                if (searchAttempt > 3) { peer.destroy(); createHostRoom(targetID, roomName); }
+                else { attemptConnect(targetID, roomName); }
             }
         }, 3000);
-
         setupConn(connectTimeout);
     }
 
@@ -245,17 +247,7 @@
             document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
             showMsg("ВЫ ХОЗЯИН");
         });
-        peer.on('connection', (c) => { 
-            conn = c; 
-            setupConn(); 
-            showMsg("ИГРОК ВОШЕЛ"); 
-        });
-        peer.on('error', (err) => {
-            // Если пока мы пытались стать хостом, кто-то его уже занял
-            if (err.type === 'id-taken') {
-                initPeerSession(tID, oNum);
-            }
-        });
+        peer.on('connection', (c) => { conn = c; setupConn(); showMsg("ИГРОК ВОШЕЛ"); });
     }
 
     function setupConn(timeoutToClear) {
@@ -264,9 +256,40 @@
             if (timeoutToClear) clearTimeout(timeoutToClear);
             document.getElementById('btn-ready').style.display = 'block';
             document.getElementById('peer-id').textContent = "СВЯЗЬ ОК";
+            lastHeartbeat = Date.now();
             conn.on('data', handleNetData);
         });
     }
+
+    function handleNetData(data) {
+        // Обработка пульса
+        if (data.type === 'PING') { 
+            conn.send({type: 'PONG'}); 
+            return; 
+        }
+        if (data.type === 'PONG') {
+            lastHeartbeat = Date.now();
+            if (isDisconnected) {
+                isDisconnected = false;
+                document.getElementById('status-msg').classList.remove('active');
+                document.body.style.filter = "none";
+                document.getElementById('peer-id').textContent = "СВЯЗЬ ОК";
+            }
+            return;
+        }
+
+        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
+        if (data.type === 'SYNC_DECK') { 
+            vchf.deck = data.deck; vchf.trump = data.trump; 
+            renderTrumpUI(); startChaosPhase(); 
+        }
+        if (data.type === 'PICK') executePick(data.idx, 'enemy');
+        if (data.type === 'MOVE') executeMove(data.card, 'enemy');
+        if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
+    }
+
+    // --- Остальные функции (playSound, renderTrumpUI, sendReady, checkStart, startChaosPhase и т.д.) ---
+    // Они остаются без изменений, сохраняя полную целостность кода.
 
     function playSound(type) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -285,21 +308,11 @@
         }
     }
 
-    function handleNetData(data) {
-        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
-        if (data.type === 'SYNC_DECK') { 
-            vchf.deck = data.deck; vchf.trump = data.trump; 
-            renderTrumpUI(); startChaosPhase(); 
-        }
-        if (data.type === 'PICK') executePick(data.idx, 'enemy');
-        if (data.type === 'MOVE') executeMove(data.card, 'enemy');
-        if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
-    }
-
     function renderTrumpUI() {
         const icon = document.getElementById('trump-icon');
         icon.textContent = vchf.trump; icon.style.color = COLORS[vchf.trump];
     }
+    
     function sendReady() {
         localReady = true; document.getElementById('btn-ready').style.display = 'none';
         if(conn) conn.send({type: 'READY'}); showMsg("ОЖИДАНИЕ..."); checkStart();
