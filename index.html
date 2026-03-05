@@ -1,485 +1,169 @@
 <!DOCTYPE html>
-<html lang='ru'>
+<html lang="ru">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Ultimate Monolith</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Chaos Terminal v1.0</title>
     <style>
         :root {
-            --gold: #ffcf40; --space-dark: #121625; --nebula-core: #222a44; 
-            --spark-neon: #00fa9a; --trump-halo: #8a2be2; --cherry-pulse: #4a0404; 
-            --bg-card: #ffffff; --grid-color: rgba(255, 207, 64, 0.08); 
-            --card-w: 55px; --card-h: 77px; --micro-scale: 0.25;
-            --tg-blue: #24A1DE;
+            --neon-green: #00ff41;
+            --dark-bg: #0a0a0a;
+            --signal-blue: #00e5ff;
+            --danger-red: #ff3e3e;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
-            background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
-            transition: filter 0.5s ease;
+            background-color: #000;
+            color: var(--neon-green);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
-        #net-status {
-            position: fixed; top: 15px; left: 15px; z-index: 6000;
-            background: rgba(12, 15, 24, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(36, 161, 222, 0.4);
-            border-radius: 12px; padding: 10px 15px;
-            display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            cursor: pointer; transition: 0.3s;
+        #terminal {
+            width: 700px;
+            background: var(--dark-bg);
+            border: 2px solid var(--neon-green);
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: relative;
         }
-
-        .net-logo-wrapper { position: relative; width: 35px; height: 35px; }
-        .net-logo {
-            width: 100%; height: 100%; border-radius: 8px;
-            background: url('1771489965074(1).png') center/cover;
-            border: 1px solid var(--gold); z-index: 2; position: relative;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--neon-green);
+            padding-bottom: 10px;
+            font-size: 0.8em;
         }
-
-        .radar-ping {
-            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-            border: 2px solid var(--spark-neon); border-radius: 10px;
-            opacity: 0; animation: radarBeam 2s infinite;
+        .balance-box {
+            text-align: center;
+            padding: 30px 0;
         }
-        @keyframes radarBeam {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
+        .balance-value {
+            font-size: 3.5em;
+            text-shadow: 0 0 10px var(--neon-green);
         }
-
-        .net-info { display: flex; flex-direction: column; }
-        .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
-        #peer-id { font-size: 11px; color: #fff; font-family: monospace; }
-
-        #search-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 6500; display: none;
-            flex-direction: column; align-items: center; justify-content: center;
+        .assets-table {
+            width: 100%;
+            margin: 20px 0;
+            border-spacing: 0;
         }
-        .scanner-line {
-            width: 200px; height: 2px; background: var(--spark-neon);
-            box-shadow: 0 0 15px var(--spark-neon);
-            animation: scanMove 2s infinite ease-in-out;
+        .assets-table th {
+            border-bottom: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.7em;
+            color: #888;
         }
-        @keyframes scanMove { 0%, 100% { transform: translateY(-50px); } 50% { transform: translateY(50px); } }
-
-        #btn-start-center {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
-            background: rgba(0, 250, 154, 0.1); border: 2px solid var(--spark-neon);
-            color: var(--spark-neon); border-radius: 50px; cursor: pointer;
-            box-shadow: 0 0 30px rgba(0, 250, 154, 0.4);
-            text-transform: uppercase; letter-spacing: 3px; animation: pulseStart 2s infinite;
+        .assets-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #1a1a1a;
         }
-
-        .arena-top {
-            flex: 1; position: relative;
-            background: radial-gradient(circle at 50% 40%, var(--nebula-core) 0%, var(--space-dark) 60%, #000 100%);
-            animation: tableBreathe 10s infinite ease-in-out;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
-            border-bottom: 2px solid rgba(255, 207, 64, 0.3);
-            overflow: hidden; transform-style: preserve-3d; transform: rotateX(10deg); z-index: 1;
+        .radar {
+            background: #111;
+            border-left: 4px solid var(--signal-blue);
+            padding: 15px;
+            margin: 20px 0;
         }
-
-        .arena-top::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 50px 50px; opacity: 0.5;
+        .controls {
+            display: flex;
+            gap: 10px;
         }
-
-        .trump-status { 
-            position: fixed; top: 20px; right: 20px; width: 70px; height: 70px; 
-            border: 2px solid var(--gold); background: #000; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; z-index: 5000;
-            box-shadow: 0 0 25px var(--gold), 0 0 50px var(--trump-halo);
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
         }
-
-        .card-node {
-            position: absolute; width: var(--card-w); height: var(--card-h);
-            background: #1a1a1a url('1771489965074(1).png') center/cover;
-            border: 1px solid rgba(255, 207, 64, 0.5); border-radius: 6px;
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1); transform-style: preserve-3d; z-index: 10;
-        }
-
-        .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
-        .card-node.face-up div { color: inherit; }
-
-        .control-bottom {
-            height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
-            border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
-        }
-        .control-bottom.expanded { height: 350px; }
-
-        .suits-grid { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 15px; }
-        .suit-row { display: flex; height: 22px; transition: 0.4s; }
-
-        .slot { 
-            width: var(--card-w); height: var(--card-h); background: rgba(255,255,255,0.03); 
-            border: 1px solid rgba(255,207,64,0.2); margin-left: -42px; transform: scale(var(--micro-scale));
-            transform-origin: center bottom; transition: 0.5s; border-radius: 4px; overflow: hidden;
-        }
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; color: #000; }
-        .slot.filled div { color: inherit; }
-        .slot.locked { filter: grayscale(1) brightness(0.5); pointer-events: none; }
-
-        #status-msg {
-            position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; color: var(--gold); font-weight: bold; letter-spacing: 4px;
-            text-shadow: 0 0 20px var(--gold); opacity: 0; transition: 0.6s; text-align: center; pointer-events: none;
-        }
-        #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
-
-        .action-btns { 
-            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 15px; z-index: 4500; width: 90%; justify-content: center;
-        }
-        button.action { 
-            padding: 12px 18px; background: rgba(16,20,32,0.9); border: 2px solid var(--gold); 
-            color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; 
-            text-transform: uppercase; border-radius: 8px; cursor: pointer;
-        }
-
-        @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
-        @keyframes tableBreathe { 0%, 100% { filter: brightness(0.8); } 50% { filter: brightness(1.1); } }
+        .btn-buy { background: var(--neon-green); color: #000; }
+        .btn-hold { background: #222; color: #fff; }
+        button:hover { opacity: 0.8; transform: scale(1.02); }
+        .binary-log { font-size: 0.6em; color: #444; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="search-overlay">
-        <div class="scanner-line"></div>
-        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">ПОИСК АБОНЕНТА...</div>
+
+<div id="terminal">
+    <div class="header">
+        <span>STATUS: ACTIVE [100% REALISM]</span>
+        <span id="clock">01010011 01010100</span>
+        <span style="color: var(--danger-red);">BERN: 14:45 CET</span>
     </div>
 
-    <div id="net-status" onclick="copyMyID()">
-        <div class="net-logo-wrapper">
-            <div id="radar" class="radar-ping" style="display:none"></div>
-            <div class="net-logo"></div>
-        </div>
-        <div class="net-info">
-            <span id="room-info">ОЖИДАНИЕ...</span>
-            <span id="peer-id">TAP TO COPY LINK</span>
-        </div>
+    <div class="balance-box">
+        <div style="color: #888; font-size: 0.9em;">NET CAPITAL (CHF)</div>
+        <div class="balance-value" id="net-balance">999.20</div>
+        <div style="color: var(--danger-red); margin-top: 5px;">COMMISSION DEBT: -10.00 CHF</div>
     </div>
 
-    <button id="btn-start-center" onclick="startNetwork()">ВХОД В МОНОЛИТ</button>
-    <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
-    <div class='trump-status'><div id='trump-icon'>?</div></div>
+    <table class="assets-table">
+        <thead>
+            <tr>
+                <th>ASSET</th>
+                <th>VALUE</th>
+                <th>PERFORMANCE</th>
+            </tr>
+        </thead>
+        <tbody id="assets-body">
+            <tr>
+                <td>GOLD (CORE)</td>
+                <td>451.30</td>
+                <td style="color: var(--neon-green);">+0.31%</td>
+            </tr>
+            <tr>
+                <td>SIEMENS ENERGY</td>
+                <td>348.70</td>
+                <td>0.00%</td>
+            </tr>
+            <tr>
+                <td>INFINEON (JUMP)</td>
+                <td>200.10</td>
+                <td style="color: var(--neon-green);">+1.10%</td>
+            </tr>
+            <tr style="color: var(--signal-blue);">
+                <td>COINBASE (SPECIAL)</td>
+                <td>7.20</td>
+                <td>+44.00%</td>
+            </tr>
+        </tbody>
+    </table>
 
-    <div class='arena-top' id='arena'>
-        <div id="enemy-stat" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); color:var(--spark-neon); font-size:10px; letter-spacing:2px; z-index:100;"></div>
-        <div id='chaos-deck'></div>
-        <div id='battle-table'></div>
+    <div class="radar">
+        <div style="color: var(--signal-blue); font-weight: bold;">ZERO CHAOS RADAR:</div>
+        <div id="radar-msg" style="margin-top: 5px;">USA MARKET OPENED. VOLATILITY SPIKE DETECTED.</div>
     </div>
 
-    <div class='control-bottom' id='ctrl-panel'>
-        <div style="position:absolute; top:-45px; right:30px; z-index:4600;">
-            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px; cursor:pointer;" onclick='toggleHand()'>↕</button>
-        </div>
-        <div class='action-btns'>
-            <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>ГОТОВНОСТЬ</button>
-            <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>БИТО</button>
-            <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>ВЗЯТЬ</button>
-        </div>
-        <div class='suits-grid' id='main-hand'>
-            <div id='s-spades' class='suit-row'></div>
-            <div id='s-clubs' class='suit-row'></div>
-            <div id='s-diamonds' class='suit-row'></div>
-            <div id='s-hearts' class='suit-row'></div>
-        </div>
+    <div class="controls">
+        <button class="btn-buy" onclick="action('JUMP')">EXECUTE JUMP (-2 CHF)</button>
+        <button class="btn-hold" onclick="action('WAIT')">HOLD / WAIT</button>
     </div>
+
+    <div class="binary-log" id="binary-log">
+        01101101 01101111 01101110 01101111 01101100 01101001 01110100 01101000
+    </div>
+</div>
+
 <script>
-    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта
-    const SUITS = ['♠', '♣', '♦', '♥'];
-    const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-    const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
-    
-    let vchf = {
-        deck: [], pHand: [], eCount: 0, table: [],
-        trump: '', phase: 'WAIT', turn: 'host', attacker: 'host'
-    };
-
-    let peer = null, conn = null, myRole = 'host';
-    let localReady = false, remoteReady = false;
-    let isExpanded = false, audioCtx = null;
-    let searchAttempt = 0;
-    
-    let lastHeartbeat = Date.now();
-    let isDisconnected = false;
-
-    function showMsg(text, persistent = false) {
-        const m = document.getElementById('status-msg');
-        m.textContent = text; m.classList.add('active');
-        if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
-    }
-
-    function startNetwork() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let roomNum = urlParams.get('room');
-        if (!roomNum) {
-            roomNum = prompt("НОМЕР КОМНАТЫ:");
-            if (!roomNum) return;
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
-            window.history.pushState({path: newUrl}, '', newUrl);
-        }
-        const finalID = "VCHF_MONO_" + roomNum.trim();
-        document.getElementById('btn-start-center').style.display = 'none';
-        document.getElementById('search-overlay').style.display = 'flex';
-        initPeerSession(finalID, roomNum);
-    }
-
-    function initPeerSession(finalID, roomNum) {
-        peer = new Peer(null, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
-        peer.on('open', () => attemptConnect(finalID, roomNum));
-        peer.on('error', (err) => {
-            if (err.type === 'unavailable-id') setTimeout(() => initPeerSession(finalID, roomNum), 1500);
-        });
-        setInterval(monitorConnection, 2000);
-    }
-
-    function monitorConnection() {
-        if (!conn || !conn.open) return;
-        conn.send({type: 'PING', time: Date.now()});
-        
-        const radar = document.getElementById('radar');
-        radar.style.display = 'block';
-        radar.style.borderColor = isDisconnected ? '#ff4444' : 'var(--spark-neon)';
-
-        if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
-            isDisconnected = true;
-            showMsg("СВЯЗЬ ПРЕРВАНА...", true);
-            document.body.style.filter = "grayscale(1) brightness(0.5)";
-            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ...";
-        }
-    }
-
-    function attemptConnect(targetID, roomName) {
-        searchAttempt++;
-        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
-        conn = peer.connect(targetID, { reliable: true });
-
-        let connectTimeout = setTimeout(() => {
-            if (!conn || !conn.open) {
-                if (searchAttempt > 3) { peer.destroy(); createHostRoom(targetID, roomName); }
-                else { attemptConnect(targetID, roomName); }
-            }
-        }, 2500);
-        setupConn(connectTimeout);
-    }
-
-    function createHostRoom(tID, oNum) {
-        peer = new Peer(tID, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
-        peer.on('open', () => {
-            myRole = 'host';
-            document.getElementById('search-overlay').style.display = 'none';
-            document.getElementById('room-info').textContent = "ROOM: " + oNum;
-            document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
-            document.getElementById('radar').style.display = 'block';
-            document.getElementById('radar').style.animation = 'radarBeam 4s infinite';
-            showMsg("ТЫ ХОЗЯИН");
-        });
-        peer.on('connection', (c) => { 
-            conn = c; 
-            setupConn(); 
-            showMsg("ИГРОК ВОШЕЛ");
-            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
-        });
-    }
-
-    function setupConn(timeoutToClear) {
-        if (!conn) return;
-        conn.on('open', () => {
-            if (timeoutToClear) clearTimeout(timeoutToClear);
-            document.getElementById('search-overlay').style.display = 'none';
-            document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
-            document.getElementById('radar').style.display = 'block';
-            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
-            lastHeartbeat = Date.now();
-            conn.on('data', handleNetData);
-        });
-    }
-    function handleNetData(data) {
-        if (data.type === 'PING') { conn.send({type: 'PONG'}); return; }
-        if (data.type === 'PONG') {
-            lastHeartbeat = Date.now();
-            if (isDisconnected) {
-                isDisconnected = false;
-                document.getElementById('status-msg').classList.remove('active');
-                document.body.style.filter = "none";
-                document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
-            }
-            return;
-        }
-
-        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
-        if (data.type === 'SYNC_DECK') { 
-            vchf.deck = data.deck; vchf.trump = data.trump; 
-            renderTrumpUI(); startChaosPhase(); 
-        }
-        if (data.type === 'PICK') executePick(data.idx, 'enemy');
-        if (data.type === 'MOVE') executeMove(data.card, 'enemy');
-        if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
-    }
-
-    function renderTrumpUI() {
-        const icon = document.getElementById('trump-icon');
-        icon.textContent = vchf.trump; icon.style.color = COLORS[vchf.trump];
-    }
-    
-    function sendReady() {
-        localReady = true; document.getElementById('btn-ready').style.display = 'none';
-        if(conn) conn.send({type: 'READY'}); showMsg("ОЖИДАНИЕ..."); checkStart();
-    }
-
-    function checkStart() {
-        if (localReady && remoteReady && myRole === 'host') {
-            let d = []; SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
-            vchf.deck = d.sort(() => Math.random() - 0.5);
-            vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-            conn.send({type: 'SYNC_DECK', deck: vchf.deck, trump: vchf.trump});
-            renderTrumpUI(); startChaosPhase();
-        }
-    }
-
-    function startChaosPhase() {
-        vchf.phase = 'PICK'; renderChaosInitial();
-    }
-
-    function renderChaosInitial() {
-        const container = document.getElementById('chaos-deck'); container.innerHTML = '';
-        const cx = window.innerWidth / 2 - 27; const cy = window.innerHeight * 0.4 - 38;
-        vchf.deck.forEach((card, i) => {
-            const n = document.createElement('div'); n.className = 'card-node'; n.id = `node-${i}`;
-            n.style.left = cx + 'px'; n.style.top = cy + 'px'; container.appendChild(n);
+    function action(type) {
+        const log = document.getElementById('binary-log');
+        const radar = document.getElementById('radar-msg');
+        if(type === 'JUMP') {
+            radar.innerText = "COMMAND RECEIVED: ANALYZING NEW ENTRY POINT...";
+            radar.style.color = "#ff3e3e";
             setTimeout(() => {
-                const a = (i / 36) * Math.PI * 2;
-                n.style.left = (cx + Math.cos(a) * 140) + 'px'; n.style.top = (cy + Math.sin(a) * 140) + 'px';
-                n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
-            }, i * 15);
-            n.onclick = () => { 
-                if (vchf.phase === 'PICK' && !card.used) {
-                    const canIPick = (myRole === 'host') ? (vchf.pHand.length <= vchf.eCount) : (vchf.pHand.length < vchf.eCount);
-                    if (canIPick) { if (conn) conn.send({type: 'PICK', idx: i}); executePick(i, 'player'); }
-                    else { showMsg("ЖДИ ВРАГА"); }
-                } 
-            };
-        });
-    }
-
-    function executePick(idx, actor) {
-        const card = vchf.deck[idx]; const n = document.getElementById(`node-${idx}`);
-        if (!n || card.used) return;
-        card.used = true;
-        if (actor === 'player') {
-            vchf.pHand.push(card); fillSlot(card);
-            n.style.zIndex = "5000"; n.style.transform = "scale(0) rotate(180deg)"; n.style.opacity = "0";
-            setTimeout(() => n.remove(), 600);
+                radar.innerText = "BROKER FEE APPLIED. POSITION UPDATED.";
+                radar.style.color = "#00e5ff";
+            }, 1500);
         } else {
-            vchf.eCount++; n.style.top = "-150px"; n.style.opacity = "0";
-            setTimeout(() => n.remove(), 600);
+            radar.innerText = "STRATEGY: PATIENCE. WATCHING PRICE ACTION.";
         }
-        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); }
+        log.innerText = Math.random().toString(2).substr(2, 64);
     }
-
-    function fillSlot(card) {
-        const el = document.getElementById(`slot-${card.s}-${card.r}`); if (!el) return;
-        el.classList.add('filled'); el.style.color = card.c;
-        el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
-        el.onclick = (e) => {
-            e.stopPropagation();
-            if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
-            else if (!isExpanded) toggleHand();
-        };
-    }
-
-    function playCard(card) {
-        const isAtt = vchf.table.length % 2 === 0;
-        if (isAtt) {
-            if (myRole !== vchf.attacker) return showMsg("ВРАГ АТАКУЕТ");
-            if (!canAttack(card)) return showMsg("НЕЛЬЗЯ ПОДКИНУТЬ");
-        } else {
-            if (myRole === vchf.attacker) return showMsg("ТЫ АТАКУЕШЬ");
-            if (!canDefend(card)) return showMsg("НЕ КРОЕТ!");
-        }
-        vchf.pHand = vchf.pHand.filter(c => c !== card);
-        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
-        slot.classList.remove('filled'); slot.innerHTML = '';
-        executeMove(card, 'player'); if(conn) conn.send({type: 'MOVE', card});
-    }
-
-    function canAttack(c) { return vchf.table.length === 0 || vchf.table.some(m => m.card.r === c.r); }
-    function canDefend(c) {
-        const t = vchf.table[vchf.table.length - 1].card;
-        if (c.s === t.s) return c.v > t.v;
-        return (c.s === vchf.trump && t.s !== vchf.trump);
-    }
-
-    function executeMove(card, actor) {
-        vchf.table.push({card, actor}); if (actor === 'enemy') vchf.eCount--;
-        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host'); renderBattleTable(); checkBattleEnd();
-    }
-
-    function renderBattleTable() {
-        const c = document.getElementById('battle-table'); c.innerHTML = '';
-        vchf.table.forEach((m, i) => {
-            const n = document.createElement('div'); n.className = 'card-node face-up';
-            const pi = Math.floor(i / 2), isD = i % 2 !== 0;
-            n.style.left = `calc(50% + ${(pi % 3) * 85 - 85 + (isD ? 18 : 0)}px)`;
-            n.style.top = `calc(40% + ${Math.floor(pi / 3) * 95 - 40 + (isD ? 25 : 0)}px)`;
-            n.innerHTML = `<div style="padding:4px; font-weight:900; font-size:12px;">${m.card.r}</div><div style="font-size:32px; text-align:center;">${m.card.s}</div>`;
-            n.style.color = m.card.c; c.appendChild(n);
-        });
-        const isMyTurn = vchf.turn === myRole; const isAttState = vchf.table.length % 2 === 0;
-        document.getElementById('btn-bito').style.display = (myRole === vchf.attacker && isAttState && vchf.table.length > 0) ? 'block' : 'none';
-        document.getElementById('btn-take').style.display = (myRole !== vchf.attacker && !isAttState) ? 'block' : 'none';
-        document.querySelectorAll('.slot').forEach(s => { if(vchf.turn !== myRole) s.classList.add('locked'); else s.classList.remove('locked'); });
-    }
-
-    function handleBito() { syncBito(); if(conn) conn.send({type: 'ACTION', cmd: 'BITO'}); }
-    function syncBito() {
-        vchf.table = []; vchf.attacker = (vchf.attacker === 'host' ? 'guest' : 'host'); vchf.turn = vchf.attacker;
-        setTimeout(renderBattleTable, 600); showMsg("БИТО!");
-    }
-
-    function handleTake() { syncTake(); if(conn) conn.send({type: 'ACTION', cmd: 'TAKE'}); }
-    function syncTake() {
-        vchf.table.forEach(m => { if (vchf.attacker !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); } else { vchf.eCount++; } });
-        vchf.table = []; vchf.turn = vchf.attacker;
-        setTimeout(renderBattleTable, 600); showMsg("ВЗЯТО");
-    }
-
-    function checkBattleEnd() {
-        if (vchf.phase !== 'BATTLE') return;
-        if (vchf.pHand.length === 0 || vchf.eCount === 0) {
-            setTimeout(() => {
-                const iW = vchf.pHand.length === 0, eW = vchf.eCount === 0;
-                if (iW && eW) showMsg("НИЧЬЯ"); else if (iW) showMsg("ПОБЕДА!"); else if (eW) showMsg("ПОРАЖЕНИЕ");
-            }, 1000);
-        }
-    }
-
-    function toggleHand() {
-        isExpanded = !isExpanded;
-        document.getElementById('ctrl-panel').classList.toggle('expanded', isExpanded);
-        document.getElementById('btn-zoom').textContent = isExpanded ? '✕' : '↕';
-    }
-
-    function copyMyID() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => showMsg("ССЫЛКА КОПИРОВАНА"));
-    }
-
-    window.onload = () => {
-        SUITS.forEach(s => {
-            const row = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
-            RANKS.forEach(rank => {
-                const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; row.appendChild(sl);
-            });
-        });
-    };
 </script>
+
 </body>
 </html>
