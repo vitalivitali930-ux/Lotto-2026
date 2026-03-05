@@ -3,161 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | IMPERIAL VAULT</title>
-    
+    <title>ZERO CHAOS | THE MONOLITH</title>
     <style>
         :root {
-            --gold: #d4af37;
-            --gold-bright: #ffef8a;
-            --cherry: #4a0404;
-            --cherry-dark: #1a0000;
-            --neon: #00ff41;
+            --gold: #bf953f;
+            --gold-bright: #fcf6ba;
+            --cherry-deep: #2b0101;
+            --black: #050505;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%;
-            background: #000; overflow: hidden; font-family: 'Georgia', serif;
+            background: #000; overflow: hidden; font-family: 'Cinzel', serif;
         }
 
-        /* --- СТВОРКИ СЕЙФА (GATES) --- */
-        #vault-wrapper {
-            position: fixed; width: 100vw; height: 100vh;
-            display: flex; z-index: 100;
-            transition: transform 1.8s cubic-bezier(0.8, 0, 0.2, 1);
+        #vault-stage {
+            position: relative; width: 100vw; height: 100vh;
+            display: flex; perspective: 1200px;
         }
 
-        .gate {
-            width: 50%; height: 100%; position: relative;
-            background: radial-gradient(circle at center, var(--cherry) 0%, var(--cherry-dark) 100%);
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            overflow: hidden;
+        /* --- СТВОРКИ С ТОЛЩИНОЙ (3D) --- */
+        .door {
+            width: 50%; height: 100%; z-index: 10;
+            background: radial-gradient(circle at center, var(--cherry-deep) 0%, var(--black) 100%);
+            border: 2px solid var(--gold);
+            box-shadow: inset 0 0 150px #000;
+            transition: 3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
         }
 
-        /* Текстура бархата через градиент-шум */
-        .gate::before {
-            content: ""; position: absolute; width: 200%; height: 200%;
-            background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
-            opacity: 0.2; pointer-events: none;
-        }
+        .door-l { border-right: 4px solid var(--gold); transform-origin: left center; }
+        .door-r { border-right: 4px solid var(--gold); transform-origin: right center; }
 
-        .gate-left { border-right: 2px solid var(--gold); box-shadow: inset -50px 0 100px rgba(0,0,0,0.8); }
-        .gate-right { border-left: 2px solid var(--gold); box-shadow: inset 50px 0 100px rgba(0,0,0,0.8); }
-
-        /* --- ШТУРВАЛ (MASTER WHEEL) --- */
-        .hub-container {
+        /* --- ШТУРВАЛ (HEAVY GEAR) --- */
+        .wheel-unit {
             position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
-            width: 400px; height: 400px; z-index: 200;
+            width: 340px; height: 340px; z-index: 50;
             display: flex; align-items: center; justify-content: center;
-            transition: 1s;
         }
 
-        .main-ring {
-            width: 240px; height: 240px; border-radius: 50%;
-            background: radial-gradient(circle, #222 0%, #050505 100%);
-            border: 5px double var(--gold);
-            box-shadow: 0 0 50px rgba(0,0,0,1), 0 0 20px var(--gold);
+        .hub-core {
+            width: 130px; height: 130px; background: #111;
+            border: 6px double var(--gold); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; z-index: 5;
+            box-shadow: 0 0 40px #000, inset 0 0 25px var(--gold);
+            z-index: 60; filter: drop-shadow(0 0 10px rgba(191, 149, 63, 0.4));
         }
 
-        .skull {
-            font-size: 100px; color: var(--gold); 
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.5));
-            transition: 0.3s; user-select: none;
+        .spoke-group {
+            position: absolute; width: 100%; height: 100%;
+            transition: 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        /* ОРБИТА ВАЛЮТ */
-        .orbit {
-            position: absolute; width: 400px; height: 400px;
-            animation: rotateOrbit 120s linear infinite;
+        .spoke {
+            position: absolute; top: 50%; left: 50%;
+            width: 150px; height: 8px; 
+            background: linear-gradient(90deg, var(--gold), transparent);
+            transform-origin: 0% 50%;
         }
 
-        @keyframes rotateOrbit {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .cap {
+            position: absolute; right: -40px; top: -21px;
+            width: 55px; height: 55px; background: #000;
+            border: 2px solid var(--gold); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold); font-weight: 900; font-size: 1.5em;
+            cursor: pointer; box-shadow: 0 8px 20px #000;
+            transition: 0.4s;
         }
 
-        .currency-btn {
-            position: absolute; width: 65px; height: 65px;
-            background: #000; border: 2px solid var(--gold); border-radius: 50%;
-            color: var(--gold); display: flex; align-items: center; justify-content: center;
-            font-size: 1.6em; font-weight: bold; cursor: pointer;
-            transition: 0.4s; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        /* --- ЭФФЕКТЫ --- */
+        .cap-active { transform: scale(0) translateY(400px); opacity: 0; }
+        .vault-open .door-l { transform: rotateY(-95deg) scaleX(0.9); opacity: 0.2; }
+        .vault-open .door-r { transform: rotateY(95deg) scaleX(0.9); opacity: 0.2; }
+        .screen-shake { animation: shake 0.2s; }
+
+        @keyframes shake {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(4px); }
+            100% { transform: translateY(0); }
         }
 
-        .currency-btn:hover { 
-            color: var(--neon); border-color: var(--neon); 
-            box-shadow: 0 0 20px var(--neon); transform: scale(1.1);
+        .entry-ready {
+            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
+            padding: 15px 60px; background: none; border: 1px solid var(--gold);
+            color: var(--gold); letter-spacing: 12px; font-weight: bold;
+            cursor: pointer; opacity: 0; transition: 1s; z-index: 100;
         }
-
-        /* Позиции */
-        .c1 { top: 0; left: 50%; transform: translateX(-50%); }
-        .c2 { top: 25%; right: 0; }
-        .c3 { bottom: 25%; right: 0; }
-        .c4 { bottom: 0; left: 50%; transform: translateX(-50%); }
-        .c5 { bottom: 25%; left: 0; }
-        .c6 { top: 25%; left: 0; }
-
-        /* --- ВВОД (FOOTER) --- */
-        .auth-box {
-            position: absolute; bottom: 80px; width: 100%; text-align: center; z-index: 200;
-        }
-        .auth-box input {
-            display: block; width: 260px; margin: 10px auto;
-            background: rgba(0,0,0,0.7); border: 1px solid var(--gold);
-            padding: 12px; color: var(--gold); text-align: center;
-            letter-spacing: 5px; font-family: monospace; outline: none;
-        }
-
-        /* --- ЭФФЕКТ РАЗРЫВА --- */
-        .opened #g-left { transform: translateX(-100%); opacity: 0; }
-        .opened #g-right { transform: translateX(100%); opacity: 0; }
-        .opened .hub-container, .opened .auth-box { opacity: 0; transform: translate(-50%, -50%) scale(2); }
-
     </style>
 </head>
-<body>
+<body onclick="initAudio()">
 
-<div id="vault-wrapper">
-    <div id="g-left" class="gate gate-left"></div>
-    <div id="g-right" class="gate gate-right"></div>
+<div id="vault-stage">
+    <div id="dl" class="door door-l"></div>
+    <div id="dr" class="door door-r"></div>
 
-    <div class="hub-container">
-        <div class="orbit">
-            <div class="currency-btn c1" onclick="tapKey('$')">$</div>
-            <div class="currency-btn c2" onclick="tapKey('€')">€</div>
-            <div class="currency-btn c3" onclick="tapKey('₣')">₣</div>
-            <div class="currency-btn c4" onclick="tapKey('£')">£</div>
-            <div class="currency-btn c5" onclick="tapKey('¥')">¥</div>
-            <div class="currency-btn c6" onclick="tapKey('₿')">₿</div>
-        </div>
-        <div class="main-ring" onclick="unlock()">
-            <div class="skull">☠</div>
-        </div>
+    <div class="wheel-unit">
+        <div class="hub-core"><span style="font-size:60px; color:var(--gold);">☠</span></div>
+        <div id="gear" class="spoke-group"></div>
     </div>
 
-    <div class="auth-box">
-        <input type="text" placeholder="IDENTITY" id="uid">
-        <input type="password" placeholder="SECRET" id="ukey">
-    </div>
+    <button id="open-btn" class="entry-ready" onclick="crack()">OPEN</button>
 </div>
 
 <script>
-    function tapKey(s) { 
-        document.getElementById('ukey').value += "*"; 
-        // Визуальный отклик штурвала
-        document.querySelector('.main-ring').style.boxShadow = '0 0 40px var(--neon)';
-        setTimeout(() => { document.querySelector('.main-ring').style.boxShadow = ''; }, 200);
+    let audioCtx, count = 0;
+    const symbols = ['$','€','₣','£','¥','₿'];
+    const gear = document.getElementById('gear');
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    function unlock() {
-        if (!document.getElementById('uid').value) return alert("IDENTITÄT!");
-        document.getElementById('vault-wrapper').classList.add('opened');
-        setTimeout(() => { window.location.href = 'terminal.html'; }, 2000);
+    // Генерация Механики
+    symbols.forEach((s, i) => {
+        const spoke = document.createElement('div');
+        spoke.className = 'spoke';
+        spoke.style.transform = `rotate(${i * 60}deg)`;
+        spoke.innerHTML = `<div class="cap" onclick="engage('${s}', this)">${s}</div>`;
+        gear.appendChild(spoke);
+    });
+
+    function playSound(freq, type, dur, vol) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    }
+
+    function engage(s, el) {
+        if (count >= 6) return;
+        // Звук удара ригеля
+        playSound(80, 'sine', 0.4, 1);
+        playSound(150, 'square', 0.1, 0.2); // Металлический лязг
+        
+        el.classList.add('cap-active');
+        document.body.classList.add('screen-shake');
+        setTimeout(() => document.body.classList.remove('screen-shake'), 200);
+
+        count++;
+        gear.style.transform = `rotate(${count * 60}deg)`;
+        
+        if (count === 6) document.getElementById('open-btn').style.opacity = '1';
+    }
+
+    function crack() {
+        // Звук гидравлики
+        playSound(50, 'sawtooth', 2, 0.5); 
+        document.getElementById('vault-stage').classList.add('vault-open');
+        setTimeout(() => { window.location.href = 'terminal.html'; }, 3000);
     }
 </script>
-
 </body>
 </html>
