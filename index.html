@@ -19,8 +19,10 @@
         body {
             background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
+            transition: filter 0.5s ease;
         }
 
+        /* --- НОВЫЙ БЛОК: ИНДИКАТОР ЖИЗНИ --- */
         #net-status {
             position: fixed; top: 15px; left: 15px; z-index: 6000;
             background: rgba(12, 15, 24, 0.85);
@@ -28,19 +30,45 @@
             border: 1px solid rgba(36, 161, 222, 0.4);
             border-radius: 12px; padding: 10px 15px;
             display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(36, 161, 222, 0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
             cursor: pointer; transition: 0.3s;
         }
 
+        .net-logo-wrapper { position: relative; width: 35px; height: 35px; }
+        
         .net-logo {
-            width: 35px; height: 35px; border-radius: 8px;
+            width: 100%; height: 100%; border-radius: 8px;
             background: url('1771489965074(1).png') center/cover;
-            border: 1px solid var(--gold);
+            border: 1px solid var(--gold); z-index: 2; position: relative;
+        }
+
+        /* Радар вокруг логотипа */
+        .radar-ping {
+            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border: 2px solid var(--spark-neon); border-radius: 10px;
+            opacity: 0; animation: radarBeam 2s infinite;
+        }
+        @keyframes radarBeam {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .net-info { display: flex; flex-direction: column; }
         .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
-        #peer-id { font-size: 11px; color: #fff; font-family: monospace; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        #peer-id { font-size: 11px; color: #fff; font-family: monospace; }
+
+        /* Эффект сканирования при поиске */
+        #search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 6500; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .scanner-line {
+            width: 200px; height: 2px; background: var(--spark-neon);
+            box-shadow: 0 0 15px var(--spark-neon);
+            animation: scanMove 2s infinite ease-in-out;
+        }
+        @keyframes scanMove { 0%, 100% { transform: translateY(-50px); } 50% { transform: translateY(50px); } }
 
         #btn-start-center {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -129,8 +157,16 @@
     </style>
 </head>
 <body>
+    <div id="search-overlay">
+        <div class="scanner-line"></div>
+        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">ПОИСК АБОНЕНТА...</div>
+    </div>
+
     <div id="net-status" onclick="copyMyID()">
-        <div class="net-logo"></div>
+        <div class="net-logo-wrapper">
+            <div id="radar" class="radar-ping" style="display:none"></div>
+            <div class="net-logo"></div>
+        </div>
         <div class="net-info">
             <span id="room-info">ОЖИДАНИЕ...</span>
             <span id="peer-id">TAP TO COPY LINK</span>
@@ -161,6 +197,7 @@
         </div>
     </div>
 <script>
+    // ПРИМЕЧАНИЕ: Это примечание не будет удалено. Window 2.3 - Логика "Глаз Монолита".
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -175,7 +212,6 @@
     let isExpanded = false, audioCtx = null;
     let searchAttempt = 0;
     
-    // Новые переменные контроля пульса
     let lastHeartbeat = Date.now();
     let isDisconnected = false;
 
@@ -196,6 +232,7 @@
         }
         const finalID = "VCHF_MONO_" + roomNum.trim();
         document.getElementById('btn-start-center').style.display = 'none';
+        document.getElementById('search-overlay').style.display = 'flex'; // Включаем сканер
         initPeerSession(finalID, roomNum);
     }
 
@@ -205,29 +242,31 @@
         peer.on('error', (err) => {
             if (err.type === 'unavailable-id') setTimeout(() => initPeerSession(finalID, roomNum), 2000);
         });
-        
-        // Запуск цикла мониторинга связи
         setInterval(monitorConnection, 2000);
     }
 
     function monitorConnection() {
         if (!conn || !conn.open) return;
-        
-        // Посылаем сигнал жизни
         conn.send({type: 'PING', time: Date.now()});
         
-        // Если ответа не было более 5 секунд
+        // Визуальный пульс радара при каждом пинге
+        const radar = document.getElementById('radar');
+        radar.style.display = 'block';
+        radar.style.borderColor = isDisconnected ? '#ff4444' : 'var(--spark-neon)';
+
         if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
             isDisconnected = true;
             showMsg("ИДЕТ СОЕДИНЕНИЕ...", true);
-            document.body.style.filter = "grayscale(0.5) brightness(0.7)";
+            document.body.style.filter = "grayscale(1) brightness(0.5)";
             document.getElementById('peer-id').textContent = "ОБРЫВ СЕТИ";
         }
     }
 
     function attemptConnect(targetID, roomName) {
         searchAttempt++;
-        document.getElementById('room-info').textContent = "ПОИСК: " + roomName + " (" + searchAttempt + ")";
+        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
+        document.getElementById('search-text').textContent = `СКАНЕР: ${roomName} (${searchAttempt})`;
+        
         conn = peer.connect(targetID, { reliable: true });
 
         let connectTimeout = setTimeout(() => {
@@ -243,30 +282,37 @@
         peer = new Peer(tID, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
         peer.on('open', () => {
             myRole = 'host';
+            document.getElementById('search-overlay').style.display = 'none'; // Скрываем сканер
             document.getElementById('room-info').textContent = "КОМНАТА: " + oNum;
             document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
+            document.getElementById('radar').style.display = 'block';
+            document.getElementById('radar').style.animation = 'radarBeam 4s infinite'; // Медленный поиск
             showMsg("ВЫ ХОЗЯИН");
         });
-        peer.on('connection', (c) => { conn = c; setupConn(); showMsg("ИГРОК ВОШЕЛ"); });
+        peer.on('connection', (c) => { 
+            conn = c; 
+            setupConn(); 
+            showMsg("ИГРОК ВОШЕЛ");
+            document.getElementById('radar').style.animation = 'radarBeam 1s infinite'; // Быстрый пульс - связь есть
+        });
     }
 
     function setupConn(timeoutToClear) {
         if (!conn) return;
         conn.on('open', () => {
             if (timeoutToClear) clearTimeout(timeoutToClear);
+            document.getElementById('search-overlay').style.display = 'none';
             document.getElementById('btn-ready').style.display = 'block';
             document.getElementById('peer-id').textContent = "СВЯЗЬ ОК";
+            document.getElementById('radar').style.display = 'block';
+            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
             lastHeartbeat = Date.now();
             conn.on('data', handleNetData);
         });
     }
 
     function handleNetData(data) {
-        // Обработка пульса
-        if (data.type === 'PING') { 
-            conn.send({type: 'PONG'}); 
-            return; 
-        }
+        if (data.type === 'PING') { conn.send({type: 'PONG'}); return; }
         if (data.type === 'PONG') {
             lastHeartbeat = Date.now();
             if (isDisconnected) {
@@ -287,9 +333,6 @@
         if (data.type === 'MOVE') executeMove(data.card, 'enemy');
         if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
     }
-
-    // --- Остальные функции (playSound, renderTrumpUI, sendReady, checkStart, startChaosPhase и т.д.) ---
-    // Они остаются без изменений, сохраняя полную целостность кода.
 
     function playSound(type) {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
