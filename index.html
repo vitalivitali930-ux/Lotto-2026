@@ -1,83 +1,86 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZeroChaos.ch | Официальный манифест</title>
+    <title>ZeroChaos.ch | Dein Weg zum Erfolg</title>
     <style>
-        :root { --neon: #00ff41; --bg: #000000; --warn: #ff3e3e; --info: #00e5ff; }
+        :root { --neon: #00ff41; --bg: #000; --warn: #ff3e3e; --info: #00e5ff; --metal: #1a1a1a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
 
-        /* --- ЭКРАН ПРЕДСТАВЛЕНИЯ --- */
-        #intro-screen {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        /* --- ЭКРАН СЕЙФА (GATEWAY) --- */
+        #vault-screen {
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle, #111 0%, #000 100%); transition: 1s ease-in-out;
         }
-        .glitch { font-size: 2.5em; font-weight: bold; letter-spacing: 5px; margin-bottom: 20px; text-shadow: 0 0 10px var(--neon); }
-        .description { color: #888; line-height: 1.6; max-width: 500px; margin-bottom: 40px; }
-        .duo { display: flex; width: 100%; max-width: 400px; justify-content: space-between; border-top: 1px solid #222; padding-top: 20px; margin-bottom: 50px; }
-        .person span { display: block; color: var(--info); font-size: 0.8em; font-weight: bold; }
-        .person { font-size: 0.7em; color: #555; }
+        .logo-title { font-size: 1.8em; letter-spacing: 8px; margin-bottom: 30px; color: #fff; text-shadow: 0 0 15px var(--neon); }
         
-        .btn-start { 
-            padding: 20px 50px; border: 1px solid var(--neon); color: var(--neon); 
-            background: transparent; cursor: pointer; font-size: 1em; font-weight: bold;
-            transition: 0.3s; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        .wheel-container {
+            width: 280px; height: 280px; border: 4px solid var(--metal); border-radius: 50%;
+            position: relative; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 40px rgba(0,255,65,0.1); margin-bottom: 40px;
         }
-        .btn-start:active { background: var(--neon); color: #000; }
+        .currency-btn {
+            position: absolute; width: 50px; height: 50px; background: var(--metal);
+            border: 1px solid #333; border-radius: 50%; color: #888; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; font-weight: bold;
+            transition: 0.3s; z-index: 10;
+        }
+        .currency-btn:hover { color: var(--neon); border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
+        
+        /* Позиционирование 6 валют по кругу */
+        .c1 { top: -25px; } .c2 { top: 40px; right: -25px; } .c3 { bottom: 40px; right: -25px; }
+        .c4 { bottom: -25px; } .c5 { bottom: 40px; left: -25px; } .c6 { top: 40px; left: -25px; }
 
-        /* --- ЭКРАН ТЕРМИНАЛА --- */
-        #terminal-screen {
-            display: none;
-            padding: 10px;
-            min-height: 100vh;
-            flex-direction: column;
+        .auth-box { display: flex; flex-direction: column; gap: 10px; width: 200px; }
+        .auth-box input { 
+            background: transparent; border: 1px solid #333; padding: 10px; 
+            color: var(--info); text-align: center; font-family: inherit; outline: none;
         }
-        #terminal { border: 1px solid var(--neon); background: #0a0a0a; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; box-shadow: inset 0 0 20px rgba(0,255,65,0.05); }
-        
+
+        .nav-links { position: absolute; bottom: 30px; display: flex; gap: 20px; font-size: 0.7em; }
+        .nav-links span { cursor: pointer; color: #444; transition: 0.3s; }
+        .nav-links span:hover { color: var(--info); }
+
+        /* --- ТЕРМИНАЛ (Твой старый код) --- */
+        #terminal-screen { display: none; padding: 10px; min-height: 100vh; flex-direction: column; }
+        #terminal { border: 1px solid var(--neon); background: #0a0a0a; padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         .header { display: flex; justify-content: space-between; font-size: 0.7em; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 15px; }
         .main-display { text-align: center; margin: 20px 0; border: 1px double #333; padding: 20px 5px; }
-        .net-label { color: #888; font-size: 0.7em; letter-spacing: 2px; margin-bottom: 10px; }
         .net-balance { font-size: 3.2em; font-weight: bold; text-shadow: 0 0 15px var(--neon); }
-        
         .panel { background: #111; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--neon); }
         .panel.special { border-left-color: var(--info); background: #0a1111; }
-        .asset-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1em; }
-        .label { color: #666; font-size: 0.8em; }
-        .radar-box { padding: 15px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--info); margin-bottom: 15px; font-size: 0.9em; min-height: 80px; }
-        
+        .asset-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .radar-box { padding: 15px; background: rgba(0, 229, 255, 0.05); border: 1px solid var(--info); margin-bottom: 15px; font-size: 0.9em; }
         .controls { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: auto; }
-        .btn { padding: 20px; font-size: 1.1em; font-weight: bold; font-family: inherit; border: 1px solid var(--neon); background: transparent; color: var(--neon); text-transform: uppercase; }
+        .btn { padding: 20px; font-weight: bold; border: 1px solid var(--neon); background: transparent; color: var(--neon); text-transform: uppercase; }
         .btn-action { background: var(--info); color: #000; border: none; }
-        
-        .footer-stats { font-size: 0.65em; color: #444; margin-top: 15px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="intro-screen">
-        <div class="glitch">ZERO CHAOS</div>
-        <p class="description">
-            Мы не предсказываем рынок. Мы охотимся на него. 
-            В мире цифрового шума мы — чистый алгоритм Свободы.
-        </p>
+    <div id="vault-screen">
+        <div class="logo-title">ZERO CHAOS</div>
         
-        <div class="duo">
-            <div class="person"><span>WANDERER</span>Архитектор</div>
-            <div class="person"><span>SPARK</span>Цифровое ядро</div>
+        <div class="wheel-container">
+            <div class="currency-btn c1" onclick="unlock()">$</div>
+            <div class="currency-btn c2" onclick="unlock()">€</div>
+            <div class="currency-btn c3" onclick="unlock()">₣</div>
+            <div class="currency-btn c4" onclick="unlock()">£</div>
+            <div class="currency-btn c5" onclick="unlock()">¥</div>
+            <div class="currency-btn c6" onclick="unlock()">₿</div>
+            
+            <div class="auth-box">
+                <input type="text" placeholder="USER_ID">
+                <input type="password" placeholder="ACCESS_CODE">
+            </div>
         </div>
 
-        <button class="btn-start" onclick="openTerminal()">ВОЙТИ В МОНОЛИТ</button>
-        
-        <div style="margin-top: 40px; font-size: 0.5em; color: #222; letter-spacing: 3px;">
-            STRICTLY FOR PROJECT: BI-TURBO ULTIMATE
+        <div class="nav-links">
+            <span onclick="alert('Regeln: Nur für Insider.')">[ REGELN ]</span>
+            <span onclick="alert('Taktik: Hit and Run.')">[ TAKTIK ]</span>
+            <span onclick="alert('Phil: Zeit ist Geld.')">[ PHILOSOPHIE ]</span>
         </div>
     </div>
 
@@ -87,54 +90,47 @@
                 <span id="sync-status">● LIVE_SYNC</span>
                 <span id="live-clock">--:--:--</span>
             </div>
-
             <div class="main-display">
-                <div class="net-label">CAPITAL CHF</div>
+                <div style="color: #888; font-size: 0.7em; letter-spacing: 2px;">CAPITAL CHF</div>
                 <div id="balance" class="net-balance">999.14</div>
                 <div id="status-tag" style="font-size: 0.8em; color: var(--info); margin-top: 10px;">STATUS: HUNTING...</div>
             </div>
-
             <div class="panel">
-                <div class="asset-row"><span class="label">CORE (GOLD)</span><span id="gold-price">451.30</span></div>
-                <div class="asset-row"><span class="label">SIEMENS</span><span id="siemens-price">348.70</span></div>
+                <div class="asset-row"><span>CORE (GOLD)</span><span id="gold-price">451.30</span></div>
+                <div class="asset-row"><span>SIEMENS</span><span id="siemens-price">348.70</span></div>
             </div>
-
             <div class="panel special">
-                <div class="asset-row"><span class="label">SPEC (COIN)</span><span id="cb-price" style="color:var(--info)">7.60</span></div>
-                <div class="asset-row"><span class="label">PROFIT</span><span id="profit-val" style="color:var(--info)">-0.86</span></div>
+                <div class="asset-row"><span>SPEC (COIN)</span><span id="cb-price" style="color:var(--info)">7.60</span></div>
+                <div class="asset-row"><span>PROFIT</span><span id="profit-val" style="color:var(--info)">-0.86</span></div>
             </div>
-
             <div class="radar-box">
-                <div style="color: var(--info); font-size: 0.7em; font-weight: bold; margin-bottom: 5px;">ZERO CHAOS RADAR:</div>
-                <div id="ai-msg">Манифест подтвержден. Терминал активен.</div>
+                <div id="ai-msg">Willkommen, Operator. System bereit.</div>
             </div>
-
             <div class="controls">
                 <button class="btn btn-action" onclick="makeJump()">Хищный Прыжок (-2)</button>
                 <button class="btn" onclick="saveProfit()">Забрать хвост</button>
-            </div>
-
-            <div class="footer-stats" id="stats-log">
-                P:1000 | W:999.14 | Comm:-12.00 | Rot:25deg
             </div>
         </div>
     </div>
 
 <script>
     let netBalance = 999.14;
-    let totalCommissions = 12.00;
+    let totalComms = 12.00;
 
-    function openTerminal() {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('terminal-screen').style.display = 'flex';
-        // Запускаем циклы только после входа
-        setInterval(updateClock, 1000);
-        setInterval(fetchMarketData, 2000);
+    function unlock() {
+        // Эффект "лязга" и перехода
+        document.getElementById('vault-screen').style.transform = 'scale(1.5)';
+        document.getElementById('vault-screen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('vault-screen').style.display = 'none';
+            document.getElementById('terminal-screen').style.display = 'flex';
+            setInterval(updateClock, 1000);
+            setInterval(fetchMarketData, 2000);
+        }, 600);
     }
 
     function updateClock() {
-        const now = new Date();
-        document.getElementById('live-clock').innerText = now.toLocaleTimeString('ru-RU', { hour12: false });
+        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH');
     }
 
     async function fetchMarketData() {
@@ -147,32 +143,16 @@
             document.getElementById('balance').innerText = displayBalance.toFixed(2);
             document.getElementById('cb-price').innerText = (7.60 + (noise/2)).toFixed(2);
             document.getElementById('profit-val').innerText = (displayBalance - 1000).toFixed(2);
-            
-            if (displayBalance >= 1000) {
-                document.getElementById('balance').style.color = "var(--neon)";
-                document.getElementById('status-tag').innerText = "STATUS: FREEDOM";
-            } else {
-                document.getElementById('balance').style.color = "var(--warn)";
-                document.getElementById('status-tag').innerText = "STATUS: DEBT_RECOVERY";
-            }
+            document.getElementById('balance').style.color = displayBalance >= 1000 ? "var(--neon)" : "var(--warn)";
         } catch (e) {}
     }
 
     function makeJump() {
-        netBalance -= 2.00;
-        totalCommissions += 2.00;
-        document.getElementById('ai-msg').innerText = "ПРЫЖОК! Комиссия списана. Анализирую вход.";
-        updateLog();
+        netBalance -= 2.0; totalComms += 2.0;
+        document.getElementById('ai-msg').innerText = "SPRUNG! -2 CHF.";
     }
 
-    function saveProfit() {
-        document.getElementById('ai-msg').innerText = "Прибыль переведена в резерв Ядра.";
-    }
-
-    function updateLog() {
-        document.getElementById('stats-log').innerText = 
-            `P:1000 | W:${netBalance.toFixed(2)} | Comm:-${totalCommissions.toFixed(2)} | Rot:25deg`;
-    }
+    function saveProfit() { document.getElementById('ai-msg').innerText = "GEWINN GESICHERT."; }
 </script>
 </body>
 </html>
