@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v4.1 FINAL</title>
+    <title>ZERO CHAOS | MONOLITH v4.1.1</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -98,7 +98,7 @@
             </tr>
         </tbody>
     </table>
-    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИСТЕМА СИНХРОНИЗИРОВАНА. ОЖИДАНИЕ СТАРТА МАТЧЕЙ... СЕКТОР BLUE АКТИВЕН...</div></div>
+    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИСТЕМА СИНХРОНИЗИРОВАНА. МОНИТОРИНГ МАТЧЕЙ В РЕАЛЬНОМ ВРЕМЕНИ...</div></div>
     <div class="admin-panel">
         <button class="btn-goal" onclick="recordGoal('lpz')">GOAL LEIPZIG</button>
         <button class="btn-goal" onclick="recordGoal('nap')">GOAL NAPOLI</button>
@@ -153,7 +153,8 @@
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
         
-        if (Math.abs(Date.now() - lastSixSync) > 1500) {
+        // Время от SIX Exchange (симуляция по системному времени для привязки)
+        if (Math.abs(Date.now() - lastSixSync) > 2000) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
             document.getElementById('sync-error').style.display = 'none';
@@ -166,14 +167,24 @@
 
     function timer(id, h, m) {
         const target = new Date(2026, 2, 6, h, m, 0);
-        const diff = target - new Date();
+        const now = new Date();
+        const diff = target - now;
         const el = document.getElementById(id);
         const stat = el.parentElement;
 
         if (diff <= 0) {
-            el.innerText = "LIVE NOW";
             stat.className = "status-live";
+            const elapsedMs = now - target;
+            const elapsedMins = Math.floor(elapsedMs / 60000);
+            const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+            
+            let displayTime = `${elapsedMins}' ${String(elapsedSecs).padStart(2,'0')}"`;
+            if (elapsedMins >= 45) {
+                displayTime = `2nd H | ${elapsedMins}'`;
+            }
+            el.innerText = `LIVE: ${displayTime}`;
         } else {
+            stat.className = "status-wait";
             const hrs = Math.floor(diff / 3600000);
             const mins = Math.floor((diff % 3600000) / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
@@ -182,7 +193,7 @@
     }
 
     function recordGoal(team) {
-        document.getElementById('goal-sound').play();
+        try { document.getElementById('goal-sound').play(); } catch(e) {}
         const ticker = document.getElementById('ticker-content');
         ticker.innerText = `[${new Date().toLocaleTimeString()}] ALERT: GOAL IN ${team.toUpperCase()} MATCH! BANK PROTECTION ACTIVE.`;
         ticker.style.color = 'var(--neon-red)';
