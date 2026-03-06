@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v4.1.1</title>
+    <title>ZERO CHAOS | MONOLITH v4.1.2</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -73,7 +73,7 @@
 </div>
 
 <div class="panel" style="border-color: var(--neon-blue);">
-    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE PHASE (06.03)</div>
+    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE PHASE (06.03 - REAL LIVE)</div>
     <table class="log-table">
         <thead>
             <tr>
@@ -85,23 +85,23 @@
         </thead>
         <tbody>
             <tr>
-                <td style="text-align:left;">Leipzig П1</td>
+                <td style="text-align:left;">Napoli П1</td>
                 <td>25.00</td>
-                <td>37.75</td>
-                <td id="stat-lpz" class="status-wait">WAIT<span id="t-lpz" class="countdown-timer">--:--:--</span></td>
+                <td>38.50</td>
+                <td id="stat-nap" class="status-wait">WAIT<span id="t-nap" class="countdown-timer">--:--:--</span></td>
             </tr>
             <tr>
-                <td style="text-align:left;">Napoli ТБ</td>
+                <td style="text-align:left;">Nice П1</td>
                 <td>25.00</td>
-                <td>47.75</td>
-                <td id="stat-nap" class="status-wait">WAIT<span id="t-nap" class="countdown-timer">--:--:--</span></td>
+                <td>42.25</td>
+                <td id="stat-nice" class="status-wait">WAIT<span id="t-nice" class="countdown-timer">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
-    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИСТЕМА СИНХРОНИЗИРОВАНА. МОНИТОРИНГ МАТЧЕЙ В РЕАЛЬНОМ ВРЕМЕНИ...</div></div>
+    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИНХРОНИЗАЦИЯ С РЕАЛЬНЫМ LIVE: НАПОЛИ (16') | НИЦЦА (1'). СИСТЕМА ЧИСТА...</div></div>
     <div class="admin-panel">
-        <button class="btn-goal" onclick="recordGoal('lpz')">GOAL LEIPZIG</button>
-        <button class="btn-goal" onclick="recordGoal('nap')">GOAL NAPOLI</button>
+        <button class="btn-goal" onclick="recordGoal('NAPOLI')">GOAL NAPOLI</button>
+        <button class="btn-goal" onclick="recordGoal('NICE')">GOAL NICE</button>
     </div>
 </div>
 
@@ -110,38 +110,13 @@
     <table class="log-table">
         <tbody>
             <tr>
-                <td style="width: 35%; text-align:left;">Man City П1+</td>
+                <td style="width: 35%; text-align:left;">Man City П1</td>
                 <td>25.00</td>
-                <td>41.50</td>
-                <td>PENDING</td>
-            </tr>
-            <tr>
-                <td style="width: 35%; text-align:left;">Bayern ТБ 2.5</td>
-                <td>25.00</td>
-                <td>43.00</td>
+                <td>36.50</td>
                 <td>PENDING</td>
             </tr>
         </tbody>
     </table>
-</div>
-
-<div class="panel" style="border-color: var(--neon-gold);">
-    <div class="sector-title" style="color: var(--neon-gold);">◈ GOLD PHASE (08.03)</div>
-    <table class="log-table">
-        <tbody>
-            <tr>
-                <td style="width: 35%; text-align:left;">Real Madrid</td>
-                <td>ALL IN</td>
-                <td>~210.00</td>
-                <td>SCHEDULED</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<div style="display: flex; justify-content: space-between; padding: 10px; border: 1px solid var(--neon-green); font-size: 0.6em; background: #111;">
-    <div>DEPOSIT: 06.03.2026</div>
-    <div style="color: var(--neon-gold);">SERVER FUND: 0.00%</div>
 </div>
 
 <audio id="goal-sound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
@@ -153,7 +128,6 @@
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
         
-        // Время от SIX Exchange (симуляция по системному времени для привязки)
         if (Math.abs(Date.now() - lastSixSync) > 2000) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
@@ -161,8 +135,9 @@
         }
         lastSixSync = Date.now();
 
-        timer('t-lpz', 20, 30);
-        timer('t-nap', 20, 45);
+        // Реальное время старта матчей 6 марта 2026
+        timer('t-nap', 20, 45); // Наполи - Торино
+        timer('t-nice', 21, 0); // Ницца - Монпелье
     }
 
     function timer(id, h, m) {
@@ -179,23 +154,22 @@
             const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
             
             let displayTime = `${elapsedMins}' ${String(elapsedSecs).padStart(2,'0')}"`;
-            if (elapsedMins >= 45) {
-                displayTime = `2nd H | ${elapsedMins}'`;
-            }
+            if (elapsedMins >= 45 && elapsedMins < 60) displayTime = `HT | ${elapsedMins}'`;
+            if (elapsedMins >= 60) displayTime = `2nd H | ${elapsedMins}'`;
+            
             el.innerText = `LIVE: ${displayTime}`;
         } else {
             stat.className = "status-wait";
-            const hrs = Math.floor(diff / 3600000);
             const mins = Math.floor((diff % 3600000) / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
-            el.innerText = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            el.innerText = `START IN: ${mins}:${String(secs).padStart(2,'0')}`;
         }
     }
 
     function recordGoal(team) {
         try { document.getElementById('goal-sound').play(); } catch(e) {}
         const ticker = document.getElementById('ticker-content');
-        ticker.innerText = `[${new Date().toLocaleTimeString()}] ALERT: GOAL IN ${team.toUpperCase()} MATCH! BANK PROTECTION ACTIVE.`;
+        ticker.innerText = `[${new Date().toLocaleTimeString()}] ALERT: GOAL BY ${team}! BANK PROTECTION ACTIVE.`;
         ticker.style.color = 'var(--neon-red)';
     }
 
