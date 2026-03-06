@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.7</title>
+    <title>ZERO CHAOS | MONOLITH v2.8</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131;
@@ -14,9 +14,10 @@
         .header { border: 1px solid var(--neon-green); padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; }
         .sports-panel { border-color: var(--neon-blue); color: var(--neon-blue); }
-        .bet-card { border-bottom: 1px dotted rgba(255,255,255,0.1); padding: 8px 0; font-size: 0.75em; }
-        .timer-val { font-weight: bold; color: #fff; background: #002b36; padding: 2px 4px; border-radius: 3px; }
-        .oracle-status { font-style: italic; color: var(--neon-blue); font-size: 0.8em; }
+        .bet-card { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.75em; }
+        .timer-val { font-weight: bold; color: #fff; background: #002b36; padding: 2px 6px; border-radius: 3px; font-size: 1em; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; font-size: 0.9em; }
+        .result-box { border: 1px dashed var(--neon-blue); color: #fff; padding: 5px; text-align: center; font-weight: bold; min-height: 20px; }
         .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; }
         .total-row { display: flex; justify-content: space-between; align-items: center; }
         .advisor-area { background: #000a00; border-left: 3px solid var(--neon-green); padding: 8px; height: 50px; overflow-y: auto; font-size: 0.7em; }
@@ -37,29 +38,37 @@
 </div>
 
 <div class="panel sports-panel">
-    <div style="font-size: 0.8em; font-weight: bold;">◈ BLUE SECTOR: AUTO-ORACLE (2x25€)</div>
+    <div style="font-size: 0.8em; font-weight: bold;">◈ BLUE SECTOR: STATS & PREDICTIONS</div>
+    
     <div class="bet-card">
-        <div>LEIPZIG vs GLADBACH | П1 (1.55)</div>
-        <div style="display:flex; justify-content:space-between; margin-top:4px;">
-            <span id="timer-lpz" class="timer-val">WAITING</span>
-            <span class="oracle-status">[ORACLE: SCANNING ODDS]</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>LEIPZIG vs GLADBACH (П1)</span>
+            <span id="timer-lpz" class="timer-val">--:--:--</span>
+        </div>
+        <div class="stat-grid">
+            <div>СТАВКА: <b>25.00€</b></div>
+            <div>ПРОГНОЗ: <b style="color:#fff">WIN (1.55)</b></div>
+            <div>ИТОГО (-1€): <b style="color:var(--neon-green)">37.75€</b></div>
+            <div class="result-box" id="res-lpz">[ ОЖИДАНИЕ ]</div>
         </div>
     </div>
-    <div class="bet-card">
-        <div>NAPOLI vs ROMA | ТБ 2.5 (1.95)</div>
-        <div style="display:flex; justify-content:space-between; margin-top:4px;">
-            <span id="timer-nap" class="timer-val">WAITING</span>
-            <span class="oracle-status">[ORACLE: SCANNING ODDS]</span>
-        </div>
-    </div>
-</div>
 
-<div class="panel" id="asset-container" style="flex-grow: 1;">
-    <div style="font-size: 0.7em; color: gray;">> Ожидание завершения спортивных событий для обновления баланса...</div>
+    <div class="bet-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>NAPOLI vs ROMA (ТБ 2.5)</span>
+            <span id="timer-nap" class="timer-val">--:--:--</span>
+        </div>
+        <div class="stat-grid">
+            <div>СТАВКА: <b>25.00€</b></div>
+            <div>ПРОГНОЗ: <b style="color:#fff">GOALS (1.95)</b></div>
+            <div>ИТОГО (-1€): <b style="color:var(--neon-green)">47.75€</b></div>
+            <div class="result-box" id="res-nap">[ ОЖИДАНИЕ ]</div>
+        </div>
+    </div>
 </div>
 
 <div class="panel">
-    <div id="advisor-log" class="advisor-area"> > Навигатор v2.7: Автономный Оракул подключен. Жду завершения матчей. </div>
+    <div id="advisor-log" class="advisor-area"> > Навигатор v2.8: Формат времени исправлен на ЧЧ:ММ:СС. Жду открытия ворот. </div>
 </div>
 
 <div class="balance-bar">
@@ -71,7 +80,7 @@
 </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('monolith_v2_7')) || { balance: 1000.00, startBalance: 1000.00 };
+    let state = JSON.parse(localStorage.getItem('monolith_v2_8')) || { balance: 1000.00, startBalance: 1000.00 };
 
     function updateSystem() {
         const now = new Date();
@@ -88,16 +97,21 @@
     }
 
     function updateTimer(id, h, m) {
-        const target = new Date(); target.setHours(h, m, 0);
-        const diff = target - new Date();
+        const now = new Date();
+        const target = new Date();
+        target.setHours(h, m, 0);
+        
+        const diff = target - now;
         const el = document.getElementById(id);
-        if (diff <= 0) { 
-            el.innerText = "IN PROGRESS"; 
-            el.style.background = "#410000"; 
+        
+        if (diff <= 0) {
+            el.innerText = "LIVE NOW";
+            el.style.background = "#410000";
         } else {
-            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
-            el.innerText = `${mins}:${String(secs).padStart(2,'0')}`;
+            el.innerText = `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
         }
     }
 
