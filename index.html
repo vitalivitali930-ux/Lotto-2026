@@ -3,110 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.1</title>
+    <title>ZERO CHAOS | MONOLITH v3.3</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131;
             --dark-bg: #050505; --panel-bg: #0d0d0d; --font: 'Courier New', monospace;
         }
-        body { background-color: var(--dark-bg); color: var(--neon-green); font-family: var(--font); margin: 0; padding: 10px; font-size: 14px; }
-        .header { border: 1px solid var(--neon-green); padding: 10px; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.65em; margin-bottom: 10px; }
-        .log-table th { border: 1px solid var(--neon-green); padding: 5px; text-align: left; background: #002b00; }
-        .log-table td { border: 1px solid #222; padding: 5px; }
-        .status-win { color: var(--neon-green); font-weight: bold; }
-        .status-loss { color: var(--neon-red); font-weight: bold; }
-        .status-wait { color: var(--neon-blue); animation: blink 2s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
-        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 10px; margin-bottom: 10px; }
+        body { 
+            background-color: var(--dark-bg); color: var(--neon-green); 
+            font-family: var(--font); margin: 0; padding: 15px; font-size: 20px; 
+        }
+        .header { 
+            border-bottom: 2px solid var(--neon-green); padding-bottom: 10px;
+            display: flex; justify-content: space-between; margin-bottom: 25px; 
+        }
+        .log-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .log-table th { 
+            border-bottom: 2px solid var(--neon-green); padding: 10px 5px; 
+            text-align: left; font-size: 0.7em; color: var(--neon-blue);
+        }
+        .log-table td { padding: 15px 5px; border-bottom: 1px solid #222; font-size: 0.8em; }
+        
+        .bank-display { text-align: right; }
+        .bank-label { font-size: 0.5em; color: var(--neon-blue); display: block; }
+        .bank-total { font-size: 1.5em; font-weight: bold; color: #fff; }
+
+        .status-wait { color: var(--neon-blue); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        .panel { background: var(--panel-bg); border: 1px solid #333; padding: 15px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div>
-        <div id="live-clock">00:00:00</div>
-        <div>SYS: ECHELON_MODE_ACTIVE</div>
+        <div style="font-size: 1.2em; font-weight: bold; letter-spacing: 2px;">MONOLITH</div>
+        <div style="font-size: 0.6em; color: #666;">ECHELON PROTOCOL ACTIVE</div>
     </div>
-    <div style="text-align:right">
-        <div>BANK: <span id="current-bank">50.00</span> EUR</div>
+    <div class="bank-display">
+        <span class="bank-label">TOTAL BANK (EUR)</span>
+        <span class="bank-total" id="current-bank">50.00</span>
     </div>
 </div>
 
 <div class="panel">
-    <div style="font-size: 0.8em; margin-bottom: 5px; color: var(--neon-blue);">◈ ЖУРНАЛ ОПЕРАЦИЙ: 06.03 — 13.03</div>
     <table class="log-table">
         <thead>
             <tr>
-                <th>DATE</th>
-                <th>EVENT</th>
-                <th>BET</th>
-                <th>IN</th>
-                <th>OUT</th>
-                <th>STATUS</th>
+                <th>ДЕНЬ</th>
+                <th>МАТЧ</th>
+                <th>ВХОД</th>
+                <th>ИТОГ</th>
+                <th>СТАТУС</th>
             </tr>
         </thead>
-        <tbody id="log-body">
+        <tbody>
             <tr>
                 <td>06.03</td>
-                <td>Leipzig - Gladbach</td>
-                <td>П1 (1.55)</td>
+                <td>Leipzig П1</td>
                 <td>25.00</td>
                 <td>37.75</td>
                 <td class="status-wait">WAITING</td>
             </tr>
             <tr>
                 <td>06.03</td>
-                <td>Napoli - Roma</td>
-                <td>ТБ 2.5 (1.95)</td>
+                <td>Napoli ТБ</td>
                 <td>25.00</td>
                 <td>47.75</td>
                 <td class="status-wait">WAITING</td>
             </tr>
             <tr>
                 <td>07.03</td>
-                <td>Man City - Bourn.</td>
-                <td>П1+2.5 (1.65)</td>
+                <td>City П1+</td>
                 <td>40.00</td>
                 <td>65.00</td>
-                <td>PENDING</td>
+                <td style="color:#444">PENDING</td>
             </tr>
             <tr>
                 <td>07.03</td>
-                <td>Bayern - Hoff.</td>
-                <td>ИТБ1 2.5 (1.70)</td>
+                <td>Bayern ТБ</td>
                 <td>40.00</td>
                 <td>67.00</td>
-                <td>PENDING</td>
+                <td style="color:#444">PENDING</td>
             </tr>
             <tr>
                 <td>08.03</td>
-                <td>Real Madrid - Ath.</td>
-                <td>П1 (1.55)</td>
+                <td>Real M П1</td>
                 <td>60.00</td>
                 <td>92.00</td>
-                <td>PENDING</td>
+                <td style="color:#444">PENDING</td>
             </tr>
-            </tbody>
+        </tbody>
     </table>
 </div>
 
-<div class="panel" style="font-size: 0.7em; color: #888;">
-    <b>ПРИМЕЧАНИЕ ОРАКУЛА:</b><br>
-    > Пятница: Точка входа. Суббота: Первая фаза реинвестирования.<br>
-    > Все расчеты включают комиссию 1.00 EUR на операцию.
+<div style="margin-top: 20px; font-size: 0.6em; color: #555; text-align: center; border-top: 1px solid #222; padding-top: 10px;">
+    МАНИФЕСТ МОНОЛИТА: МЫ ВЕДЕМ УЧЕТ КАЖДОГО ЦЕНТА.<br>
+    СЛЕДУЮЩЕЕ ОБНОВЛЕНИЕ ПОСЛЕ ФИНАЛЬНОГО СВИСТКА.
 </div>
 
-<script>
-    function update() {
-        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH');
-        // Логика авто-синхронизации времени SIX exchange
-        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1000) {
-           console.log("SYNC ERROR. DATA IS OUTDATED");
-        }
-        window.lastSync = Date.now();
-    }
-    setInterval(update, 1000);
-</script>
 </body>
 </html>
