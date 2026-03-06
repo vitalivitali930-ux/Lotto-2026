@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v4.0 LIVE</title>
+    <title>ZERO CHAOS | MONOLITH v4.1 FINAL</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -27,99 +27,121 @@
         .panel { 
             background: var(--panel-bg); border: 1px solid var(--neon-green); 
             padding: 12px; margin-bottom: 15px; position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.1);
         }
-        .sector-title { font-size: 0.9em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; text-transform: uppercase; }
+        .sector-title { font-size: 0.85em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; text-transform: uppercase; }
         
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; table-layout: fixed; }
-        .log-table th { background: #002b00; padding: 8px 2px; border: 1px solid var(--neon-green); }
-        .log-table td { padding: 10px 2px; border: 1px solid #222; text-align: center; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.72em; table-layout: fixed; }
+        .log-table th { background: #002b00; padding: 8px 2px; border: 1px solid var(--neon-green); color: #fff; }
+        .log-table td { padding: 12px 2px; border: 1px solid #222; text-align: center; overflow: hidden; }
 
-        /* LIVE TICKER STYLE */
         .live-ticker {
             background: #000; border: 1px solid var(--neon-blue);
-            margin-top: 10px; padding: 5px; font-size: 0.7em;
+            margin-top: 10px; padding: 5px; font-size: 0.65em;
             color: var(--neon-blue); overflow: hidden; white-space: nowrap;
         }
-        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 15s linear infinite; }
+        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 20s linear infinite; }
         @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        /* CONTROLS */
         .admin-panel { display: flex; gap: 5px; margin-top: 10px; }
         .btn-goal { 
             background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red);
-            padding: 5px 10px; font-size: 0.6em; cursor: pointer; text-transform: uppercase;
+            padding: 6px; font-size: 0.6em; cursor: pointer; flex-grow: 1;
         }
-        .btn-goal:active { background: var(--neon-red); color: #000; }
 
         .status-wait { color: var(--neon-blue); }
         .status-live { color: var(--neon-red); font-weight: bold; animation: haloPulse 1.5s infinite; }
-        @keyframes haloPulse { 0% { text-shadow: 0 0 5px var(--neon-red); } 50% { text-shadow: 0 0 20px var(--neon-red); opacity: 0.7; } 100% { text-shadow: 0 0 5px var(--neon-red); } }
+        @keyframes haloPulse { 0%, 100% { opacity: 1; text-shadow: 0 0 5px var(--neon-red); } 50% { opacity: 0.6; text-shadow: 0 0 15px var(--neon-red); } }
 
         .big-sum { font-size: 1.4em; color: white; text-shadow: 0 0 10px var(--neon-green); }
+        .countdown-timer { font-size: 0.9em; display: block; margin-top: 2px; color: #fff; }
     </style>
 </head>
 <body>
 
-<div id="sync-error">SYNC ERROR. DATA IS OUTDATED<br><small style="font-size:0.5em">CHECK SIX EXCHANGE TIME</small></div>
+<div id="sync-error">SYNC ERROR. DATA IS OUTDATED<br><small style="font-size:0.5em">CHECK SYSTEM TIME (CH)</small></div>
 
 <div class="header">
     <div>
-        <div id="live-clock">00:00:00</div>
-        <div style="font-size: 0.5em; color: var(--neon-blue);">PROTOKOL: MONOLITH_V4</div>
+        <div id="live-clock" style="font-size: 1.3em;">00:00:00</div>
+        <div style="font-size: 0.5em; color: var(--neon-blue);">ECHELON 1.1 | SPARK-DRIVE</div>
     </div>
     <div style="text-align: right;">
-        <div style="font-size: 0.5em;">CURRENT BANK:</div>
+        <div style="font-size: 0.5em;">BANK (VCHF):</div>
         <div class="big-sum">50.00</div>
     </div>
 </div>
 
-<div class="panel" id="sector-blue" style="border-color: var(--neon-blue);">
-    <div class="sector-title" style="color: var(--neon-blue);">◈ СЕКТОР BLUE: ПЯТНИЦА (06.03)</div>
+<div class="panel" style="border-color: var(--neon-blue);">
+    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE PHASE (06.03)</div>
     <table class="log-table">
         <thead>
             <tr>
-                <th style="width: 35%;">МАТЧ</th>
+                <th style="width: 35%;">EVENT</th>
                 <th>BET</th>
                 <th>WIN</th>
-                <th>СТАТУС</th>
+                <th>STATUS</th>
             </tr>
         </thead>
-        <tbody id="blue-body">
-            <tr id="row-lpz">
+        <tbody>
+            <tr>
                 <td style="text-align:left;">Leipzig П1</td>
                 <td>25.00</td>
                 <td>37.75</td>
-                <td id="stat-lpz" class="status-wait">WAIT <span id="t-lpz">--:--</span></td>
+                <td id="stat-lpz" class="status-wait">WAIT<span id="t-lpz" class="countdown-timer">--:--:--</span></td>
             </tr>
-            <tr id="row-nap">
+            <tr>
                 <td style="text-align:left;">Napoli ТБ</td>
                 <td>25.00</td>
                 <td>47.75</td>
-                <td id="stat-nap" class="status-wait">WAIT <span id="t-nap">--:--</span></td>
+                <td id="stat-nap" class="status-wait">WAIT<span id="t-nap" class="countdown-timer">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
-    
-    <div class="live-ticker">
-        <div class="ticker-text" id="ticker-content">СИСТЕМА СИНХРОНИЗИРОВАНА. ОЖИДАНИЕ СТАРТА МАТЧЕЙ... СЕКТОР BLUE АКТИВЕН...</div>
-    </div>
-
+    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИСТЕМА СИНХРОНИЗИРОВАНА. ОЖИДАНИЕ СТАРТА МАТЧЕЙ... СЕКТОР BLUE АКТИВЕН...</div></div>
     <div class="admin-panel">
-        <button class="btn-goal" onclick="recordGoal('lpz')">GOAL LPZ</button>
-        <button class="btn-goal" onclick="recordGoal('nap')">GOAL NAP</button>
+        <button class="btn-goal" onclick="recordGoal('lpz')">GOAL LEIPZIG</button>
+        <button class="btn-goal" onclick="recordGoal('nap')">GOAL NAPOLI</button>
     </div>
 </div>
 
-<div class="panel" style="border-color: var(--neon-red); opacity: 0.8;">
-    <div class="sector-title" style="color: var(--neon-red);">◈ СЕКТОР RED: СУББОТА (07.03)</div>
-    <div style="font-size: 0.7em;">
-        25.00 -> Man City (П1) | 25.00 -> Bayern (ИТБ 1.5)
-    </div>
+<div class="panel" style="border-color: var(--neon-red); opacity: 0.9;">
+    <div class="sector-title" style="color: var(--neon-red);">◈ RED PHASE (07.03)</div>
+    <table class="log-table">
+        <tbody>
+            <tr>
+                <td style="width: 35%; text-align:left;">Man City П1+</td>
+                <td>25.00</td>
+                <td>41.50</td>
+                <td>PENDING</td>
+            </tr>
+            <tr>
+                <td style="width: 35%; text-align:left;">Bayern ТБ 2.5</td>
+                <td>25.00</td>
+                <td>43.00</td>
+                <td>PENDING</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
-<div style="display: flex; justify-content: space-between; padding: 10px; border: 1px solid var(--neon-green); font-size: 0.6em;">
-    <div>START: 55.00 (INC. FEE)</div>
-    <div style="color: var(--neon-gold);">TARGET: 10'000.00+</div>
+<div class="panel" style="border-color: var(--neon-gold);">
+    <div class="sector-title" style="color: var(--neon-gold);">◈ GOLD PHASE (08.03)</div>
+    <table class="log-table">
+        <tbody>
+            <tr>
+                <td style="width: 35%; text-align:left;">Real Madrid</td>
+                <td>ALL IN</td>
+                <td>~210.00</td>
+                <td>SCHEDULED</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="display: flex; justify-content: space-between; padding: 10px; border: 1px solid var(--neon-green); font-size: 0.6em; background: #111;">
+    <div>DEPOSIT: 06.03.2026</div>
+    <div style="color: var(--neon-gold);">SERVER FUND: 0.00%</div>
 </div>
 
 <audio id="goal-sound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
@@ -129,48 +151,44 @@
 
     function update() {
         const now = new Date();
-        // СИНХРОНИЗАЦИЯ ПО ШВЕЙЦАРИИ (CET)
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
         
-        // ПРОВЕРКА SIX (1 SEKUNDA)
-        if (Math.abs(Date.now() - lastSixSync) > 1200) {
+        if (Math.abs(Date.now() - lastSixSync) > 1500) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
             document.getElementById('sync-error').style.display = 'none';
         }
         lastSixSync = Date.now();
 
-        // ТАЙМЕРЫ
-        timer('t-lpz', 20, 30, 'stat-lpz');
-        timer('t-nap', 20, 45, 'stat-nap');
+        timer('t-lpz', 20, 30);
+        timer('t-nap', 20, 45);
     }
 
-    function timer(id, h, m, statId) {
-        const target = new Date();
-        target.setHours(h, m, 0);
+    function timer(id, h, m) {
+        const target = new Date(2026, 2, 6, h, m, 0);
         const diff = target - new Date();
         const el = document.getElementById(id);
+        const stat = el.parentElement;
+
         if (diff <= 0) {
-            el.innerHTML = "LIVE";
-            document.getElementById(statId).className = "status-live";
+            el.innerText = "LIVE NOW";
+            stat.className = "status-live";
         } else {
-            const mins = Math.floor(diff / 60000);
+            const hrs = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
-            el.innerText = `${mins}:${String(secs).padStart(2,'0')}`;
+            el.innerText = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
         }
     }
 
     function recordGoal(team) {
         document.getElementById('goal-sound').play();
         const ticker = document.getElementById('ticker-content');
-        const time = new Date().toLocaleTimeString('de-CH');
-        ticker.innerText = `[${time}] GOAL DETECTED IN ${team.toUpperCase()} MATCH! DATA UPDATING... `;
+        ticker.innerText = `[${new Date().toLocaleTimeString()}] ALERT: GOAL IN ${team.toUpperCase()} MATCH! BANK PROTECTION ACTIVE.`;
         ticker.style.color = 'var(--neon-red)';
-        setTimeout(() => { ticker.style.color = 'var(--neon-blue)'; }, 2000);
     }
 
     setInterval(update, 1000);
 </script>
-
 </body>
 </html>
