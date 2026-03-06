@@ -155,77 +155,58 @@
 
 
 
-    <style>
-    /* Геометрия 6 Ригелей */
+<style>
+    /* Глобальный фикс: Декор не должен ловить клики */
+    .vault-core, .vault-core::after, #progress-ring, .bolt::after, .bolt::before {
+        pointer-events: none !important; 
+    }
+
+    .vault-door {
+        position: relative;
+        width: var(--vault-size);
+        height: var(--vault-size);
+        background: radial-gradient(circle at 30% 30%, #242426, #121213);
+        border: 4px solid var(--steel-mid);
+        border-radius: 50%;
+        box-shadow: 0 20px 50px #000, inset 0 0 40px #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transform-style: preserve-3d;
+        z-index: 5; /* Основа внизу */
+    }
+
     .bolt {
         position: absolute;
         width: var(--bolt-size);
         height: 80px;
-        background: linear-gradient(to bottom, #2a2a2c 0%, #121213 100%);
+        background: linear-gradient(145deg, #2a2a2c, #121213);
         border: 2px solid var(--steel-mid);
-        border-radius: 4px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        border-radius: 6px;
         cursor: pointer;
-        transform-origin: center 160px; /* Центр вращения - центр сейфа */
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Важно: Центр вращения строго в центре сейфа */
+        transform-origin: center 160px; 
+        z-index: 100; /* Ригели ВСЕГДА сверху всех теней */
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
         align-items: center;
-        padding: 5px 0;
-        z-index: 12;
+        justify-content: center;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+        touch-action: manipulation; /* Фикс для мобилок */
     }
 
-    /* Золотая маркировка на каждом ригеле */
-    .bolt::before {
-        content: '';
-        width: 60%;
-        height: 4px;
-        background: var(--gold-hot);
-        box-shadow: 0 0 10px var(--gold-shadow);
-        border-radius: 2px;
-    }
-
-    .bolt::after {
-        content: attr(data-index);
-        color: var(--gold-hot);
-        font-size: 10px;
-        font-weight: bold;
-        opacity: 0.5;
-        pointer-events: none;
+    .bolt.active {
+        border-color: var(--gold-hot);
+        box-shadow: 0 0 20px var(--gold-shadow), inset 0 0 10px var(--gold-hot);
+        background: #1e1e1f;
     }
 
     .bolt:active {
-        transform: scale(var(--recoil));
-        filter: brightness(1.2);
-    }
-
-    /* Специфические позиции для 6 ригелей (60 градусов шаг) */
-    .bolt[data-index="1"] { transform: rotate(0deg) translateY(-140px); }
-    .bolt[data-index="2"] { transform: rotate(60deg) translateY(-140px); }
-    .bolt[data-index="3"] { transform: rotate(120deg) translateY(-140px); }
-    .bolt[data-index="4"] { transform: rotate(180deg) translateY(-140px); }
-    .bolt[data-index="5"] { transform: rotate(240deg) translateY(-140px); }
-    .bolt[data-index="6"] { transform: rotate(300deg) translateY(-140px); }
-
-    /* Состояние "Активирован" */
-    .bolt.active {
-        border-color: var(--gold-hot);
-        box-shadow: 0 0 20px var(--gold-shadow);
-        background: linear-gradient(to bottom, #3a3a3c 0%, #1e1e1f 100%);
-    }
-
-    /* Индикатор прогресса в центре */
-    #progress-ring {
-        position: absolute;
-        width: 240px;
-        height: 240px;
-        border: 1px dashed rgba(252, 246, 186, 0.1);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 11;
+        transform: scale(0.92) !important; /* Визуальный отклик на нажатие */
     }
 </style>
+
+
 
 
 
@@ -367,29 +348,88 @@ window.addEventListener('DOMContentLoaded', () => VaultLogic.init());
 
 
 
-    <script>
-// Transition_Engine: Эффект Разрыва
-const TransitionEngine = {
-    start() {
+<script>
+const VaultLogic = {
+    activeBolts: new Set(),
+    sequence: [1, 2, 3, 4, 5, 6],
+    currentStep: 0,
+    isLocked: true,
+
+    init() {
         const vault = document.getElementById('main-vault');
-        const terminal = document.getElementById('exchange-terminal');
-        const wrapper = document.getElementById('monolith-wrapper');
+        // Очистка старых ригелей перед новой отливкой
+        vault.querySelectorAll('.bolt').forEach(b => b.remove());
 
-        // 1. Вращение и уход в перспективу
-        vault.style.transform = 'translateZ(-500px) rotateY(180deg) scale(0)';
-        vault.style.opacity = '0';
-
-        // 2. Активация Терминала
-        setTimeout(() => {
-            terminal.classList.add('active');
-            wrapper.style.background = 'radial-gradient(circle, #1a1a1b 0%, #000 100%)';
+        for (let i = 1; i <= 6; i++) {
+            const bolt = document.createElement('div');
+            bolt.className = 'bolt';
+            bolt.setAttribute('data-index', i);
+            bolt.innerHTML = `<span style="color:var(--gold-hot);font-size:12px;opacity:0.5">${i}</span>`;
             
-            // Инициализация Canvas Биржи (Window 6)
-            ExchangeCore.init();
-        }, 800);
+            // Рассчитываем вращение: 0, 60, 120, 180, 240, 300
+            const rotation = (i - 1) * 60;
+            bolt.style.transform = `rotate(${rotation}deg) translateY(-140px)`;
+            
+            // ИСПОЛЬЗУЕМ POINTERDOWN ДЛЯ ТЕЛЕФОНА
+            bolt.addEventListener('pointerdown', (e) => {
+                e.stopPropagation(); // Не даем событию уйти вглубь
+                if (!this.isLocked) return;
+                
+                SonicForge.init(); // Оживляем звук
+                this.processClick(i, bolt);
+            });
+
+            vault.appendChild(bolt);
+        }
+    },
+
+    processClick(index, el) {
+        if (this.activeBolts.has(index)) return;
+
+        SonicForge.playClick();
+
+        if (index === this.sequence[this.currentStep]) {
+            this.activeBolts.add(index);
+            el.classList.add('active');
+            this.currentStep++;
+            
+            if (this.currentStep === 6) this.unlock();
+        } else {
+            this.failure();
+        }
+    },
+
+    failure() {
+        // Эффект встряски при ошибке
+        const vault = document.getElementById('main-vault');
+        vault.style.animation = 'none';
+        setTimeout(() => vault.style.animation = 'shake 0.4s', 10);
+        this.reset();
+    },
+
+    reset() {
+        this.currentStep = 0;
+        this.activeBolts.clear();
+        setTimeout(() => {
+            document.querySelectorAll('.bolt').forEach(b => b.classList.remove('active'));
+        }, 300);
+    },
+
+    unlock() {
+        this.isLocked = false;
+        document.body.style.backgroundColor = '#000';
+        TransitionEngine.start();
     }
 };
+
+// Добавим анимацию встряски в стили (временно здесь для теста)
+const style = document.createElement('style');
+style.textContent = `@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }`;
+document.head.appendChild(style);
+
+window.addEventListener('load', () => VaultLogic.init());
 </script>
+
 
 
 
