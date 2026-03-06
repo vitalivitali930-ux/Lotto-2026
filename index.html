@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.4</title>
+    <title>ZERO CHAOS | MONOLITH v2.5</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -39,16 +39,15 @@
         .risk-panel { border-color: var(--neon-red); color: var(--neon-red); }
 
         .bet-card { border-bottom: 1px dotted rgba(255,255,255,0.1); padding: 8px 0; font-size: 0.75em; }
-        .asset-card { border-bottom: 1px solid #222; padding: 10px 0; }
-        
         .ticker { font-size: 1em; font-weight: bold; color: white; }
+        .timer-val { font-weight: bold; color: #fff; background: #002b36; padding: 2px 4px; border-radius: 3px; }
+
         .trade-input { 
             background: #000; border: 1px solid var(--neon-green); color: var(--neon-green); 
             padding: 8px; width: 50px; font-family: var(--font); text-align: center;
         }
 
         .btn { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 8px; cursor: pointer; font-family: var(--font); font-weight: bold; }
-        .btn-blue { border-color: var(--neon-blue); color: var(--neon-blue); }
         .btn-red { border-color: var(--neon-red); color: var(--neon-red); }
 
         .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; }
@@ -75,31 +74,27 @@
     <div style="font-size: 0.8em; font-weight: bold;">◈ BLUE SECTOR: FOOTBALL (2x25€)</div>
     <div class="bet-card">
         <div>LEIPZIG vs GLADBACH | Цель: П1 (1.55)</div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:0.9em;">
-            <span>In: 24.00€</span><span style="color:var(--neon-blue)">WAITING...</span>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:0.85em;">
+            <span>In: 24.00€</span>
+            <span id="timer-lpz" class="timer-val">00:00:00</span>
         </div>
     </div>
     <div class="bet-card">
         <div>NAPOLI vs ROMA | Цель: ТБ 2.5 (1.95)</div>
-        <div style="display:flex; justify-content:space-between; margin-top:2px; font-size:0.9em;">
-            <span>In: 24.00€</span><span style="color:var(--neon-blue)">WAITING...</span>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:0.85em;">
+            <span>In: 24.00€</span>
+            <span id="timer-nap" class="timer-val">00:00:00</span>
         </div>
     </div>
 </div>
 
 <div class="panel risk-panel">
-    <div style="font-size: 0.8em; font-weight: bold;">◈ RED SECTOR: HIGH-RISK (TENNIS/ESPORTS)</div>
-    <div class="bet-card">
-        <div>INDIAN WELLS (TENNIS) | Sum: 10€</div>
-        <div style="display:flex; justify-content:space-between; font-size:0.9em;">
-            <span>Strategy: 1st Set Favorit</span><span>STATUS: ANALYZING</span>
-        </div>
+    <div style="font-size: 0.8em; font-weight: bold;">◈ RED SECTOR: HIGH-RISK</div>
+    <div class="bet-card" style="display:flex; justify-content:space-between;">
+        <span>INDIAN WELLS (10€)</span><span>ANALYZING...</span>
     </div>
-    <div class="bet-card">
-        <div>ESL PRO LEAGUE (CS2) | Sum: 10€</div>
-        <div style="display:flex; justify-content:space-between; font-size:0.9em;">
-            <span>Strategy: Map 1 Win</span><span>STATUS: ANALYZING</span>
-        </div>
+    <div class="bet-card" style="display:flex; justify-content:space-between;">
+        <span>ESL PRO CS2 (10€)</span><span>ANALYZING...</span>
     </div>
 </div>
 
@@ -109,7 +104,7 @@
 </div>
 
 <div class="panel">
-    <div id="advisor-log" class="advisor-area"> > Навигатор v2.4: Цветовая дифференциация активна. </div>
+    <div id="advisor-log" class="advisor-area"> > Навигатор v2.5: Обратный отсчет запущен. </div>
 </div>
 
 <div class="balance-bar">
@@ -131,14 +126,38 @@
         }
     };
 
-    let state = JSON.parse(localStorage.getItem('monolith_v2_4')) || INITIAL_STATE;
+    let state = JSON.parse(localStorage.getItem('monolith_v2_5')) || INITIAL_STATE;
 
-    function save() { localStorage.setItem('monolith_v2_4', JSON.stringify(state)); }
+    function save() { localStorage.setItem('monolith_v2_5', JSON.stringify(state)); }
 
-    function updateTime() {
-        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH', { hour12: false });
+    function updateSystem() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', { hour12: false });
+        
+        // Таймеры (Матчи 06.03.2026)
+        updateMatchTimer('timer-lpz', 20, 30);
+        updateMatchTimer('timer-nap', 20, 45);
+
         if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 5000) document.getElementById('sync-error').style.display = 'block';
         window.lastSync = Date.now();
+    }
+
+    function updateMatchTimer(id, h, m) {
+        const now = new Date();
+        const target = new Date();
+        target.setHours(h, m, 0);
+        
+        const diff = target - now;
+        if (diff <= 0) {
+            document.getElementById(id).innerText = "LIVE NOW";
+            document.getElementById(id).style.color = "#00f2ff";
+        } else {
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            document.getElementById(id).innerText = 
+                `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        }
     }
 
     function render() {
@@ -159,7 +178,7 @@
                         <span style="color:white">${asset.price.toFixed(2)}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; font-size:0.6em; opacity:0.7; margin: 4px 0;">
-                        <span>Hold: ${currentVal.toFixed(2)}€</span>
+                        <span>In: ${asset.invested.toFixed(2)}€</span>
                         <span style="color:${profitPct>=0?'#00ff41':'#ff3131'}">${profitPct.toFixed(2)}%</span>
                     </div>
                     <div style="display:flex; gap:5px;">
@@ -187,7 +206,7 @@
         save(); render();
     }
 
-    setInterval(updateTime, 1000);
+    setInterval(updateSystem, 1000);
     render();
     window.lastSync = Date.now();
 </script>
