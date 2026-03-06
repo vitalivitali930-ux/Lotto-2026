@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZERO CHAOS | MONOLITH TERMINAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZERO CHAOS | V1.2</title>
     <style>
         :root {
             --neon-green: #00ff41;
             --dark-bg: #050505;
-            --panel-bg: #111111;
+            --panel-bg: #0d0d0d;
             --danger: #ff3e3e;
             --font: 'Courier New', monospace;
         }
@@ -17,95 +17,70 @@
             background-color: var(--dark-bg);
             color: var(--neon-green);
             font-family: var(--font);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            margin: 0; padding: 10px;
             box-sizing: border-box;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
         }
 
         #sync-error {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.95);
-            color: white;
-            z-index: 9999;
-            text-align: center;
-            padding-top: 20%;
-            font-size: 2.5em;
-            font-weight: bold;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.95); z-index: 9999;
+            text-align: center; padding-top: 20%; font-size: 1.5em;
         }
 
         .header {
             border: 1px solid var(--neon-green);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+            padding: 10px; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+            font-size: 0.8em;
         }
 
-        .clock-box { font-size: 1.8em; font-weight: bold; }
-        .manifesto-text { font-size: 0.7em; text-transform: uppercase; opacity: 0.6; }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            flex-grow: 1;
-        }
+        .clock-box { font-size: 1.4em; font-weight: bold; }
 
         .panel {
             background: var(--panel-bg);
             border: 1px solid var(--neon-green);
-            padding: 20px;
-            position: relative;
-            overflow-y: auto;
+            padding: 12px; margin-bottom: 10px;
         }
 
-        .haloPulse {
-            animation: halo 2s infinite;
+        .asset-card {
+            border-bottom: 1px solid #222;
+            padding: 15px 0;
+            display: flex; flex-direction: column; gap: 10px;
         }
 
-        @keyframes halo {
-            0% { box-shadow: 0 0 5px var(--neon-green); }
-            50% { box-shadow: 0 0 20px var(--neon-green); }
-            100% { box-shadow: 0 0 5px var(--neon-green); }
-        }
+        .asset-info { display: flex; justify-content: space-between; align-items: center; }
+        .ticker { font-size: 1.1em; font-weight: bold; color: white; }
+        .price { font-size: 1.1em; color: var(--neon-green); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
-        th { text-transform: uppercase; font-size: 0.8em; color: #888; }
-
+        .btn-group { display: flex; gap: 10px; }
         .btn {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 8px 15px;
-            cursor: pointer;
-            font-family: var(--font);
-            transition: 0.2s;
+            flex: 1; background: transparent; border: 1px solid var(--neon-green);
+            color: var(--neon-green); padding: 15px; cursor: pointer;
+            font-family: var(--font); font-weight: bold; text-transform: uppercase;
+            transition: 0.1s;
         }
 
-        .btn:hover { background: var(--neon-green); color: black; font-weight: bold; }
+        .btn:active { background: var(--neon-green); color: black; transform: scale(0.98); }
         .btn-sell { border-color: var(--danger); color: var(--danger); }
-        .btn-sell:hover { background: var(--danger); color: white; }
+        .btn-sell:active { background: var(--danger); color: white; }
+
+        .balance-bar {
+            background: #1a1a1a; padding: 15px; border: 1px solid var(--neon-green);
+            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+        }
 
         .advisor-area {
-            background: #001004;
-            border-left: 4px solid var(--neon-green);
-            padding: 15px;
-            height: 300px;
-            overflow-y: auto;
-            font-size: 0.9em;
-            line-height: 1.4;
+            background: #000a00; border-left: 3px solid var(--neon-green);
+            padding: 10px; height: 100px; overflow-y: auto; font-size: 0.8em; opacity: 0.8;
         }
 
-        .stat-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1em; }
-        .highlight { color: white; text-shadow: 0 0 5px var(--neon-green); }
+        .haloPulse { animation: halo 2s infinite; }
+        @keyframes halo { 
+            0%, 100% { box-shadow: 0 0 5px rgba(0,255,65,0.2); }
+            50% { box-shadow: 0 0 15px rgba(0,255,65,0.4); }
+        }
     </style>
 </head>
 <body>
@@ -115,143 +90,95 @@
 <div class="header">
     <div>
         <div id="live-clock" class="clock-box">00:00:00</div>
-        <div style="font-size: 0.7em;">LOCATION: SWITZERLAND / GERMANY HUB</div>
+        <div style="opacity: 0.6;">GERMANY HUB | V1.2</div>
     </div>
     <div style="text-align: right;">
-        <div class="manifesto-text">Манифест Монолита</div>
-        <div id="sync-status">STATUS: SECURE</div>
+        <div style="font-size: 0.6em; opacity: 0.5;">МАНИФЕСТ МОНОЛИТА</div>
+        <div id="sync-status" style="color: var(--neon-green);">● SECURE</div>
     </div>
 </div>
 
-<div class="main-grid">
-    <div class="panel haloPulse">
-        <h3>АКТИВЫ (REAL-TIME XETRA)</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Тикер</th>
-                    <th>Цена (EUR)</th>
-                    <th>В Портфеле</th>
-                    <th>Управление</th>
-                </tr>
-            </thead>
-            <tbody id="asset-list">
-                </tbody>
-        </table>
+<div class="panel haloPulse">
+    <div id="asset-container">
+        </div>
+</div>
 
-        <div style="margin-top: 30px; border-top: 1px solid var(--neon-green); padding-top: 20px;">
-            <div class="stat-row">
-                <span>ТЕКУЩИЙ БАЛАНС:</span>
-                <span id="total-balance" class="highlight">1000.00 EUR</span>
-            </div>
-            <div class="stat-row" style="font-size: 0.8em; opacity: 0.7;">
-                <span>КОМИССИЯ БРОКЕРА:</span>
-                <span>1.00 EUR (DE-MODE)</span>
-            </div>
-        </div>
+<div class="panel">
+    <div id="advisor-log" class="advisor-area">
+        Инициализация... Капитан, система готова к мобильному управлению.
     </div>
+</div>
 
-    <div class="panel">
-        <h3>ГОЛОС НАВИГАТОРА</h3>
-        <div id="advisor-log" class="advisor-area">
-            Инициализация систем... Капитан, мы на связи. Рынок открыт. Жду твоих приказов. 
-        </div>
-        <div style="margin-top: 20px;">
-            <button class="btn" style="width: 100%;" onclick="exportLog()">СКАЧАТЬ ОТЧЕТ (.TXT)</button>
-        </div>
-    </div>
+<div class="balance-bar">
+    <div style="font-size: 0.8em;">БАЛАНС:</div>
+    <div id="total-balance" style="font-size: 1.3em; font-weight: bold; color: white;">1000.00 EUR</div>
 </div>
 
 <script>
-    // --- ДАННЫЕ И ЛОГИКА (ОКНО 2) ---
     let state = {
         balance: 1000.00,
         commission: 1.00,
-        spread: 0.001, // 0.1%
+        spread: 0.001,
         portfolio: {
-            'NESN': { qty: 0, price: 85.15 },
-            'BTC': { qty: 0, price: 60850.00 }
+            'NESN': { name: 'Nestlé', qty: 0, price: 85.15 },
+            'BTC': { name: 'Monster (BTC)', qty: 0, price: 60850.00 }
         }
     };
 
     function updateTime() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('de-CH', { hour12: false });
-        document.getElementById('live-clock').innerText = timeStr;
-        
-        // Time-Stamping Guard
-        // Имитация задержки ответа сервера. Если браузер "врет" > 1 сек - лок.
-        if(window.lastServerSync && Math.abs(Date.now() - window.lastServerSync) > 1500) {
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', { hour12: false });
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 2000) {
             document.getElementById('sync-error').style.display = 'block';
         }
-        window.lastServerSync = Date.now();
+        window.lastSync = Date.now();
     }
 
-    function renderAssets() {
-        const list = document.getElementById('asset-list');
-        list.innerHTML = `
-            <tr>
-                <td>NESN (Nestlé)</td>
-                <td id="price-nesn">${state.portfolio.NESN.price.toFixed(2)}</td>
-                <td id="qty-nesn">${state.portfolio.NESN.qty.toFixed(2)}</td>
-                <td>
-                    <button class="btn" onclick="executeTrade('NESN', 'buy')">BUY</button>
-                    <button class="btn btn-sell" onclick="executeTrade('NESN', 'sell')">SELL</button>
-                </td>
-            </tr>
-            <tr>
-                <td>BTC (Monster)</td>
-                <td id="price-btc">${state.portfolio.BTC.price.toFixed(0)}</td>
-                <td id="qty-btc">${state.portfolio.BTC.qty.toFixed(4)}</td>
-                <td>
-                    <button class="btn" onclick="executeTrade('BTC', 'buy')">BUY</button>
-                    <button class="btn btn-sell" onclick="executeTrade('BTC', 'sell')">SELL</button>
-                </td>
-            </tr>
-        `;
+    function render() {
+        const container = document.getElementById('asset-container');
+        container.innerHTML = '';
+        for (let ticker in state.portfolio) {
+            const asset = state.portfolio[ticker];
+            container.innerHTML += `
+                <div class="asset-card">
+                    <div class="asset-info">
+                        <span class="ticker">${asset.name}</span>
+                        <span class="price">${asset.price.toFixed(ticker==='BTC'?0:2)} EUR</span>
+                    </div>
+                    <div style="font-size: 0.7em; opacity: 0.6;">В портфеле: ${asset.qty.toFixed(ticker==='BTC'?4:2)}</div>
+                    <div class="btn-group">
+                        <button class="btn" onclick="executeTrade('${ticker}', 'buy')">BUY</button>
+                        <button class="btn btn-sell" onclick="executeTrade('${ticker}', 'sell')">SELL</button>
+                    </div>
+                </div>
+            `;
+        }
         document.getElementById('total-balance').innerText = state.balance.toFixed(2) + " EUR";
     }
 
     function executeTrade(ticker, side) {
         const asset = state.portfolio[ticker];
         const log = document.getElementById('advisor-log');
-        const tradeAmount = 100; // Фикс лот 100 евро
+        const amount = 100;
 
         if (side === 'buy') {
-            if (state.balance < tradeAmount + state.commission) {
-                log.innerHTML += `<br><span style="color:var(--danger)">[!] ОШИБКА: Недостаточно EUR для покупки ${ticker}.</span>`;
-                return;
-            }
+            if (state.balance < amount + state.commission) return;
             const buyPrice = asset.price * (1 + state.spread);
-            asset.qty += (tradeAmount / buyPrice);
-            state.balance -= (tradeAmount + state.commission);
-            log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] КУПЛЕНО ${ticker} на 100€. Цена со спредом: ${buyPrice.toFixed(2)}.`;
+            asset.qty += (amount / buyPrice);
+            state.balance -= (amount + state.commission);
+            log.innerHTML = `> КУПЛЕНО ${ticker} на 100€.<br>` + log.innerHTML;
         } else {
-            if (asset.qty <= 0) {
-                log.innerHTML += `<br><span style="color:var(--danger)">[!] ОШИБКА: Нет актива ${ticker} для продажи.</span>`;
-                return;
-            }
-            const sellPrice = asset.price * (1 - state.spread);
-            state.balance += (tradeAmount - state.commission);
-            asset.qty -= (tradeAmount / asset.price);
-            log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ПРОДАНО ${ticker}. Комиссия списана.`;
+            if (asset.qty <= 0) return;
+            state.balance += (amount - state.commission);
+            asset.qty -= (amount / asset.price);
+            log.innerHTML = `> ПРОДАНО ${ticker}. -1€ комиссия.<br>` + log.innerHTML;
         }
-        renderAssets();
-        log.scrollTop = log.scrollHeight;
-    }
-
-    function exportLog() {
-        const text = document.getElementById('advisor-log').innerText;
-        const blob = new Blob([text], {type: 'text/plain'});
-        const anchor = document.createElement('a');
-        anchor.download = 'trade-report.txt';
-        anchor.href = window.URL.createObjectURL(blob);
-        anchor.click();
+        render();
     }
 
     setInterval(updateTime, 1000);
-    renderAssets();
+    render();
+    window.lastSync = Date.now();
 </script>
-
 </body>
 </html>
