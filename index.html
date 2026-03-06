@@ -2,311 +2,256 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VCHF MONOLITH | ZERO CHAOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZERO CHAOS | MONOLITH TERMINAL</title>
     <style>
         :root {
-            --bg-metal: #0d0d0e;
-            --steel-dark: #121213;
-            --steel-mid: #242426;
-            --gold-hot: #fcf6ba;
-            --gold-glow: rgba(252, 246, 186, 0.4);
-            --vault-size: 300px;
+            --neon-green: #00ff41;
+            --dark-bg: #050505;
+            --panel-bg: #111111;
+            --danger: #ff3e3e;
+            --font: 'Courier New', monospace;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         body {
-            background: var(--bg-metal);
-            color: var(--gold-hot);
-            font-family: 'Segoe UI', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 2000px;
-        }
-
-        #monolith-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-style: preserve-3d;
-        }
-
-        /* Контейнер Сейфа */
-        .vault-door {
-            position: relative;
-            width: var(--vault-size);
-            height: var(--vault-size);
-            background: radial-gradient(circle at 30% 30%, #1e1e1f, #0d0d0e);
-            border: 5px solid var(--steel-mid);
-            border-radius: 50%;
-            box-shadow: 0 30px 60px #000, inset 0 0 50px #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-style: preserve-3d;
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 10;
-        }
-
-        /* Центр (Ядро) */
-        .vault-core {
-            position: absolute;
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle, var(--gold-hot) 0%, #b8860b 100%);
-            border-radius: 50%;
-            box-shadow: 0 0 30px var(--gold-glow);
-            z-index: 5;
-            pointer-events: none; /* Фикс клика */
-        }
-
-        .vault-core::after {
-            content: '';
-            position: absolute;
-            top: -10px; left: -10px; right: -10px; bottom: -10px;
-            border: 2px solid var(--gold-hot);
-            border-radius: 50%;
-            animation: haloPulse 2s infinite;
-        }
-
-        @keyframes haloPulse {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.8); opacity: 0; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-15px) rotate(-2deg); }
-            75% { transform: translateX(15px) rotate(2deg); }
-        }
-
-        /* Терминал Биржи */
-        #exchange-terminal {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            pointer-events: none;
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            font-family: var(--font);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1.5s ease;
-            z-index: 1;
+            height: 100vh;
+            box-sizing: border-box;
         }
+
+        #sync-error {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.95);
+            color: white;
+            z-index: 9999;
+            text-align: center;
+            padding-top: 20%;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .header {
+            border: 1px solid var(--neon-green);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .clock-box { font-size: 1.8em; font-weight: bold; }
+        .manifesto-text { font-size: 0.7em; text-transform: uppercase; opacity: 0.6; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-green);
+            padding: 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .haloPulse {
+            animation: halo 2s infinite;
+        }
+
+        @keyframes halo {
+            0% { box-shadow: 0 0 5px var(--neon-green); }
+            50% { box-shadow: 0 0 20px var(--neon-green); }
+            100% { box-shadow: 0 0 5px var(--neon-green); }
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
+        th { text-transform: uppercase; font-size: 0.8em; color: #888; }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: 0.2s;
+        }
+
+        .btn:hover { background: var(--neon-green); color: black; font-weight: bold; }
+        .btn-sell { border-color: var(--danger); color: var(--danger); }
+        .btn-sell:hover { background: var(--danger); color: white; }
+
+        .advisor-area {
+            background: #001004;
+            border-left: 4px solid var(--neon-green);
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .stat-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1em; }
+        .highlight { color: white; text-shadow: 0 0 5px var(--neon-green); }
     </style>
-
-
-
-<style>
-    .bolt {
-        position: absolute;
-        width: 65px;
-        height: 45px;
-        background: linear-gradient(145deg, #2a2a2c, #121213);
-        border: 2px solid var(--steel-mid);
-        border-radius: 4px;
-        cursor: pointer;
-        transform-origin: center 150px; /* Орбита вращения */
-        z-index: 100;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: bold;
-        font-size: 14px;
-        color: var(--gold-hot);
-        text-shadow: 0 2px 4px #000;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s, box-shadow 0.3s;
-        touch-action: none;
-    }
-
-    .bolt.active {
-        border-color: var(--gold-hot);
-        box-shadow: 0 0 25px var(--gold-glow), inset 0 0 10px var(--gold-hot);
-        background: #1e1e1f;
-        transform: scale(1.05) !important;
-    }
-
-    .bolt:active { transform: scale(0.9) !important; }
-
-    /* Позиционирование 6 валют */
-    .bolt[data-index="0"] { transform: rotate(0deg) translateY(-135px); }
-    .bolt[data-index="1"] { transform: rotate(60deg) translateY(-135px); }
-    .bolt[data-index="2"] { transform: rotate(120deg) translateY(-135px); }
-    .bolt[data-index="3"] { transform: rotate(180deg) translateY(-135px); }
-    .bolt[data-index="4"] { transform: rotate(240deg) translateY(-135px); }
-    .bolt[data-index="5"] { transform: rotate(300deg) translateY(-135px); }
-</style>
 </head>
 <body>
-    <div id="monolith-wrapper">
-        <div class="vault-door" id="main-vault">
-            <div class="vault-core"></div>
-            </div>
 
-        <div id="exchange-terminal">
-            <h1 style="margin-bottom:20px; letter-spacing: 5px;">VCHF CORE</h1>
-            <canvas id="gold-chart" style="background:#000; border:1px solid #222;"></canvas>
-            <div id="stats-panel" style="width:90%; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"></div>
+<div id="sync-error">SYNC ERROR. DATA IS OUTDATED</div>
+
+<div class="header">
+    <div>
+        <div id="live-clock" class="clock-box">00:00:00</div>
+        <div style="font-size: 0.7em;">LOCATION: SWITZERLAND / GERMANY HUB</div>
+    </div>
+    <div style="text-align: right;">
+        <div class="manifesto-text">Манифест Монолита</div>
+        <div id="sync-status">STATUS: SECURE</div>
+    </div>
+</div>
+
+<div class="main-grid">
+    <div class="panel haloPulse">
+        <h3>АКТИВЫ (REAL-TIME XETRA)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Тикер</th>
+                    <th>Цена (EUR)</th>
+                    <th>В Портфеле</th>
+                    <th>Управление</th>
+                </tr>
+            </thead>
+            <tbody id="asset-list">
+                </tbody>
+        </table>
+
+        <div style="margin-top: 30px; border-top: 1px solid var(--neon-green); padding-top: 20px;">
+            <div class="stat-row">
+                <span>ТЕКУЩИЙ БАЛАНС:</span>
+                <span id="total-balance" class="highlight">1000.00 EUR</span>
+            </div>
+            <div class="stat-row" style="font-size: 0.8em; opacity: 0.7;">
+                <span>КОМИССИЯ БРОКЕРА:</span>
+                <span>1.00 EUR (DE-MODE)</span>
+            </div>
         </div>
     </div>
 
-
-
-    <script>
-const SonicForge = {
-    ctx: null,
-    init() {
-        if (this.ctx) return;
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    },
-    playClick() {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-        osc.connect(g); g.connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.1);
-    },
-    playRupture() {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        osc.frequency.setValueAtTime(40, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 1.5);
-        g.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.5);
-        osc.connect(g); g.connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + 1.5);
-    }
-};
-
-const TransitionEngine = {
-    start() {
-        const vault = document.getElementById('main-vault');
-        const term = document.getElementById('exchange-terminal');
-        vault.style.transform = 'scale(0) rotate(720deg)';
-        vault.style.opacity = '0';
-        setTimeout(() => {
-            term.style.opacity = '1';
-            term.style.pointerEvents = 'auto';
-            ExchangeCore.init();
-        }, 800);
-    }
-};
-</script>
-
-
-
-    <script>
-const VaultLogic = {
-    currencies: ["CHF", "GOLD", "USD", "EUR", "GBP", "BTC"],
-    activeSteps: 0,
-    isLocked: true,
-
-    init() {
-        const door = document.getElementById('main-vault');
-        this.currencies.forEach((name, i) => {
-            const b = document.createElement('div');
-            b.className = 'bolt';
-            b.setAttribute('data-index', i);
-            b.innerText = name;
-            
-            // Расчет орбиты (как в CSS Window 2)
-            const rot = i * 60;
-            b.style.transform = `rotate(${rot}deg) translateY(-135px)`;
-
-            b.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                SonicForge.init();
-                this.check(i, b);
-            });
-            door.appendChild(b);
-        });
-    },
-
-    check(index, el) {
-        if (!this.isLocked || el.classList.contains('active')) return;
-
-        SonicForge.playClick();
-        
-        // Проверка последовательности (CHF -> GOLD -> USD...)
-        if (index === this.activeSteps) {
-            el.classList.add('active');
-            this.activeSteps++;
-            if (this.activeSteps === 6) {
-                this.isLocked = false;
-                SonicForge.playRupture();
-                TransitionEngine.start();
-            }
-        } else {
-            this.fail();
-        }
-    },
-
-    fail() {
-        const v = document.getElementById('main-vault');
-        v.style.animation = 'shake 0.4s';
-        setTimeout(() => {
-            v.style.animation = '';
-            this.activeSteps = 0;
-            document.querySelectorAll('.bolt').forEach(b => b.classList.remove('active'));
-        }, 400);
-    }
-};
-</script>
-
+    <div class="panel">
+        <h3>ГОЛОС НАВИГАТОРА</h3>
+        <div id="advisor-log" class="advisor-area">
+            Инициализация систем... Капитан, мы на связи. Рынок открыт. Жду твоих приказов. 
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn" style="width: 100%;" onclick="exportLog()">СКАЧАТЬ ОТЧЕТ (.TXT)</button>
+        </div>
+    </div>
+</div>
 
 <script>
-const ExchangeCore = {
-    init() {
-        const canvas = document.getElementById('gold-chart');
-        const ctx = canvas.getContext('2d');
-        const panel = document.getElementById('stats-panel');
-        
-        canvas.width = window.innerWidth * 0.9;
-        canvas.height = 200;
-        
-        panel.innerHTML = `
-            <div style="background:#121213; padding:10px; border:1px solid #242426;">
-                <small>VCHF RATE</small><br><span style="font-size:20px; color:#fcf6ba;">1.0842</span>
-            </div>
-            <div style="background:#121213; padding:10px; border:1px solid #242426;">
-                <small>RESERVE</small><br><span style="font-size:20px; color:#fcf6ba;">99.9%</span>
-            </div>
-        `;
-
-        // Простая анимация графика
-        let x = 0;
-        function draw() {
-            ctx.strokeStyle = '#fcf6ba';
-            ctx.lineWidth = 2;
-            ctx.lineTo(x, 100 + Math.random() * 20);
-            ctx.stroke();
-            x += 2;
-            if (x > canvas.width) ctx.clearRect(0,0,canvas.width, canvas.height), x=0, ctx.beginPath();
-            requestAnimationFrame(draw);
+    // --- ДАННЫЕ И ЛОГИКА (ОКНО 2) ---
+    let state = {
+        balance: 1000.00,
+        commission: 1.00,
+        spread: 0.001, // 0.1%
+        portfolio: {
+            'NESN': { qty: 0, price: 85.15 },
+            'BTC': { qty: 0, price: 60850.00 }
         }
-        ctx.beginPath();
-        draw();
-    }
-};
+    };
 
-window.addEventListener('load', () => VaultLogic.init());
+    function updateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('de-CH', { hour12: false });
+        document.getElementById('live-clock').innerText = timeStr;
+        
+        // Time-Stamping Guard
+        // Имитация задержки ответа сервера. Если браузер "врет" > 1 сек - лок.
+        if(window.lastServerSync && Math.abs(Date.now() - window.lastServerSync) > 1500) {
+            document.getElementById('sync-error').style.display = 'block';
+        }
+        window.lastServerSync = Date.now();
+    }
+
+    function renderAssets() {
+        const list = document.getElementById('asset-list');
+        list.innerHTML = `
+            <tr>
+                <td>NESN (Nestlé)</td>
+                <td id="price-nesn">${state.portfolio.NESN.price.toFixed(2)}</td>
+                <td id="qty-nesn">${state.portfolio.NESN.qty.toFixed(2)}</td>
+                <td>
+                    <button class="btn" onclick="executeTrade('NESN', 'buy')">BUY</button>
+                    <button class="btn btn-sell" onclick="executeTrade('NESN', 'sell')">SELL</button>
+                </td>
+            </tr>
+            <tr>
+                <td>BTC (Monster)</td>
+                <td id="price-btc">${state.portfolio.BTC.price.toFixed(0)}</td>
+                <td id="qty-btc">${state.portfolio.BTC.qty.toFixed(4)}</td>
+                <td>
+                    <button class="btn" onclick="executeTrade('BTC', 'buy')">BUY</button>
+                    <button class="btn btn-sell" onclick="executeTrade('BTC', 'sell')">SELL</button>
+                </td>
+            </tr>
+        `;
+        document.getElementById('total-balance').innerText = state.balance.toFixed(2) + " EUR";
+    }
+
+    function executeTrade(ticker, side) {
+        const asset = state.portfolio[ticker];
+        const log = document.getElementById('advisor-log');
+        const tradeAmount = 100; // Фикс лот 100 евро
+
+        if (side === 'buy') {
+            if (state.balance < tradeAmount + state.commission) {
+                log.innerHTML += `<br><span style="color:var(--danger)">[!] ОШИБКА: Недостаточно EUR для покупки ${ticker}.</span>`;
+                return;
+            }
+            const buyPrice = asset.price * (1 + state.spread);
+            asset.qty += (tradeAmount / buyPrice);
+            state.balance -= (tradeAmount + state.commission);
+            log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] КУПЛЕНО ${ticker} на 100€. Цена со спредом: ${buyPrice.toFixed(2)}.`;
+        } else {
+            if (asset.qty <= 0) {
+                log.innerHTML += `<br><span style="color:var(--danger)">[!] ОШИБКА: Нет актива ${ticker} для продажи.</span>`;
+                return;
+            }
+            const sellPrice = asset.price * (1 - state.spread);
+            state.balance += (tradeAmount - state.commission);
+            asset.qty -= (tradeAmount / asset.price);
+            log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ПРОДАНО ${ticker}. Комиссия списана.`;
+        }
+        renderAssets();
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function exportLog() {
+        const text = document.getElementById('advisor-log').innerText;
+        const blob = new Blob([text], {type: 'text/plain'});
+        const anchor = document.createElement('a');
+        anchor.download = 'trade-report.txt';
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
+    }
+
+    setInterval(updateTime, 1000);
+    renderAssets();
 </script>
+
 </body>
 </html>
-
-
-
