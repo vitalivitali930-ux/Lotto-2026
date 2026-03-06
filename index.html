@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | V1.2</title>
+    <title>ZERO CHAOS | MONOLITH v2.0</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -47,24 +47,23 @@
         .asset-card {
             border-bottom: 1px solid #222;
             padding: 15px 0;
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex; flex-direction: column; gap: 8px;
         }
 
         .asset-info { display: flex; justify-content: space-between; align-items: center; }
         .ticker { font-size: 1.1em; font-weight: bold; color: white; }
-        .price { font-size: 1.1em; color: var(--neon-green); }
+        .profit-pct { font-size: 0.9em; font-weight: bold; }
+        .pos { color: #00ff41; } .neg { color: #ff3e3e; }
 
         .btn-group { display: flex; gap: 10px; }
         .btn {
             flex: 1; background: transparent; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 15px; cursor: pointer;
-            font-family: var(--font); font-weight: bold; text-transform: uppercase;
-            transition: 0.1s;
+            color: var(--neon-green); padding: 12px; cursor: pointer;
+            font-family: var(--font); font-weight: bold;
         }
 
-        .btn:active { background: var(--neon-green); color: black; transform: scale(0.98); }
+        .btn:active { background: var(--neon-green); color: black; }
         .btn-sell { border-color: var(--danger); color: var(--danger); }
-        .btn-sell:active { background: var(--danger); color: white; }
 
         .balance-bar {
             background: #1a1a1a; padding: 15px; border: 1px solid var(--neon-green);
@@ -73,14 +72,10 @@
 
         .advisor-area {
             background: #000a00; border-left: 3px solid var(--neon-green);
-            padding: 10px; height: 100px; overflow-y: auto; font-size: 0.8em; opacity: 0.8;
+            padding: 10px; height: 80px; overflow-y: auto; font-size: 0.75em;
         }
-
-        .haloPulse { animation: halo 2s infinite; }
-        @keyframes halo { 
-            0%, 100% { box-shadow: 0 0 5px rgba(0,255,65,0.2); }
-            50% { box-shadow: 0 0 15px rgba(0,255,65,0.4); }
-        }
+        
+        .reset-btn { font-size: 0.6em; color: gray; border: none; background: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -90,47 +85,51 @@
 <div class="header">
     <div>
         <div id="live-clock" class="clock-box">00:00:00</div>
-        <div style="opacity: 0.6;">GERMANY HUB | V1.2</div>
+        <div style="opacity: 0.6;">GERMANY HUB | NEO-MODE</div>
     </div>
     <div style="text-align: right;">
-        <div style="font-size: 0.6em; opacity: 0.5;">МАНИФЕСТ МОНОЛИТА</div>
-        <div id="sync-status" style="color: var(--neon-green);">● SECURE</div>
+        <button class="reset-btn" onclick="wipeData()">[СБРОС СЕССИИ]</button>
+        <div id="sync-status" style="color: var(--neon-green);">● MEMORY ACTIVE</div>
     </div>
 </div>
 
-<div class="panel haloPulse">
-    <div id="asset-container">
-        </div>
+<div class="panel" style="overflow-y: auto; flex-grow: 1;">
+    <div id="asset-container"></div>
 </div>
 
 <div class="panel">
     <div id="advisor-log" class="advisor-area">
-        Инициализация... Капитан, система готова к мобильному управлению.
+        > Система v2.0 загружена. Память активна. Жду приказов.
     </div>
 </div>
 
 <div class="balance-bar">
-    <div style="font-size: 0.8em;">БАЛАНС:</div>
-    <div id="total-balance" style="font-size: 1.3em; font-weight: bold; color: white;">1000.00 EUR</div>
+    <div style="font-size: 0.8em;">EUR BALANCE:</div>
+    <div id="total-balance" style="font-size: 1.3em; font-weight: bold; color: white;">1000.00</div>
 </div>
 
 <script>
-    let state = {
+    const INITIAL_STATE = {
         balance: 1000.00,
-        commission: 1.00,
-        spread: 0.001,
         portfolio: {
-            'NESN': { name: 'Nestlé', qty: 0, price: 85.15 },
-            'BTC': { name: 'Monster (BTC)', qty: 0, price: 60850.00 }
+            'BTC': { name: 'Monster (BTC)', qty: 0, price: 60850.00, buyPrice: 0 },
+            'RHM': { name: 'Rheinmetall', qty: 0, price: 542.40, buyPrice: 0 },
+            'SAP': { name: 'SAP SE', qty: 0, price: 184.20, buyPrice: 0 },
+            'ADS': { name: 'Adidas AG', qty: 0, price: 215.10, buyPrice: 0 },
+            'P911': { name: 'Porsche AG', qty: 0, price: 72.45, buyPrice: 0 },
+            'DTE': { name: 'D. Telekom', qty: 0, price: 28.14, buyPrice: 0 }
         }
     };
 
+    let state = JSON.parse(localStorage.getItem('monolith_v2')) || INITIAL_STATE;
+
+    function save() { localStorage.setItem('monolith_v2', JSON.stringify(state)); }
+
+    function wipeData() { if(confirm("Сбросить баланс до 1000?")) { state = INITIAL_STATE; save(); render(); } }
+
     function updateTime() {
-        const now = new Date();
-        document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', { hour12: false });
-        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 2000) {
-            document.getElementById('sync-error').style.display = 'block';
-        }
+        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH', { hour12: false });
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 2000) document.getElementById('sync-error').style.display = 'block';
         window.lastSync = Date.now();
     }
 
@@ -139,21 +138,27 @@
         container.innerHTML = '';
         for (let ticker in state.portfolio) {
             const asset = state.portfolio[ticker];
+            let profit = 0;
+            if(asset.qty > 0 && asset.buyPrice > 0) {
+                profit = ((asset.price - asset.buyPrice) / asset.buyPrice) * 100;
+            }
             container.innerHTML += `
                 <div class="asset-card">
                     <div class="asset-info">
                         <span class="ticker">${asset.name}</span>
-                        <span class="price">${asset.price.toFixed(ticker==='BTC'?0:2)} EUR</span>
+                        <span class="price">${asset.price.toFixed(2)}</span>
                     </div>
-                    <div style="font-size: 0.7em; opacity: 0.6;">В портфеле: ${asset.qty.toFixed(ticker==='BTC'?4:2)}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7em; opacity:0.7;">
+                        <span>В портфеле: ${asset.qty.toFixed(ticker==='BTC'?4:2)}</span>
+                        <span class="profit-pct ${profit>=0?'pos':'neg'}">P/L: ${profit.toFixed(2)}%</span>
+                    </div>
                     <div class="btn-group">
-                        <button class="btn" onclick="executeTrade('${ticker}', 'buy')">BUY</button>
-                        <button class="btn btn-sell" onclick="executeTrade('${ticker}', 'sell')">SELL</button>
+                        <button class="btn" onclick="executeTrade('${ticker}', 'buy')">BUY 100€</button>
+                        <button class="btn btn-sell" onclick="executeTrade('${ticker}', 'sell')">SELL ALL</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
-        document.getElementById('total-balance').innerText = state.balance.toFixed(2) + " EUR";
+        document.getElementById('total-balance').innerText = state.balance.toFixed(2);
     }
 
     function executeTrade(ticker, side) {
@@ -162,18 +167,21 @@
         const amount = 100;
 
         if (side === 'buy') {
-            if (state.balance < amount + state.commission) return;
-            const buyPrice = asset.price * (1 + state.spread);
-            asset.qty += (amount / buyPrice);
-            state.balance -= (amount + state.commission);
-            log.innerHTML = `> КУПЛЕНО ${ticker} на 100€.<br>` + log.innerHTML;
+            if (state.balance < amount + 1) return;
+            const spreadPrice = asset.price * 1.001;
+            if(asset.qty === 0) asset.buyPrice = spreadPrice;
+            else asset.buyPrice = (asset.buyPrice + spreadPrice) / 2;
+            asset.qty += (amount / spreadPrice);
+            state.balance -= (amount + 1);
+            log.innerHTML = `> BUY ${ticker} @ ${spreadPrice.toFixed(2)}<br>` + log.innerHTML;
         } else {
             if (asset.qty <= 0) return;
-            state.balance += (amount - state.commission);
-            asset.qty -= (amount / asset.price);
-            log.innerHTML = `> ПРОДАНО ${ticker}. -1€ комиссия.<br>` + log.innerHTML;
+            const sellPrice = asset.price * 0.999;
+            state.balance += (asset.qty * sellPrice) - 1;
+            log.innerHTML = `> SELL ${ticker}. Profit: ${((sellPrice-asset.buyPrice)/asset.buyPrice*100).toFixed(2)}%<br>` + log.innerHTML;
+            asset.qty = 0; asset.buyPrice = 0;
         }
-        render();
+        save(); render();
     }
 
     setInterval(updateTime, 1000);
