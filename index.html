@@ -3,114 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.0</title>
+    <title>ZERO CHAOS | MONOLITH v3.1</title>
     <style>
         :root {
-            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
+            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131;
             --dark-bg: #050505; --panel-bg: #0d0d0d; --font: 'Courier New', monospace;
         }
-        body { background-color: var(--dark-bg); color: var(--neon-green); font-family: var(--font); margin: 0; padding: 10px; display: flex; flex-direction: column; min-height: 100vh; }
-        .header { border: 1px solid var(--neon-green); padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; position: relative; }
-        .sector-blue { border-color: var(--neon-blue); color: var(--neon-blue); }
-        .sector-red { border-color: var(--neon-red); color: var(--neon-red); opacity: 0.7; }
-        .sector-gold { border-color: var(--neon-gold); color: var(--neon-gold); opacity: 0.5; }
-        .bet-card { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.75em; }
-        .math-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.9em; background: rgba(0,0,0,0.5); padding: 4px; }
-        .status-tag { position: absolute; top: 5px; right: 10px; font-size: 0.6em; font-weight: bold; text-transform: uppercase; }
-        .timer-val { font-weight: bold; color: #fff; background: #002b36; padding: 2px 6px; border-radius: 3px; }
-        .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; }
-        .total-row { display: flex; justify-content: space-between; align-items: center; }
+        body { background-color: var(--dark-bg); color: var(--neon-green); font-family: var(--font); margin: 0; padding: 10px; font-size: 14px; }
+        .header { border: 1px solid var(--neon-green); padding: 10px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.65em; margin-bottom: 10px; }
+        .log-table th { border: 1px solid var(--neon-green); padding: 5px; text-align: left; background: #002b00; }
+        .log-table td { border: 1px solid #222; padding: 5px; }
+        .status-win { color: var(--neon-green); font-weight: bold; }
+        .status-loss { color: var(--neon-red); font-weight: bold; }
+        .status-wait { color: var(--neon-blue); animation: blink 2s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div>
-        <div id="live-clock" style="font-size: 1.2em; font-weight: bold;">00:00:00</div>
-        <div style="font-size: 0.6em; opacity: 0.6;">START DEP: 50.00 EUR</div>
+        <div id="live-clock">00:00:00</div>
+        <div>SYS: ECHELON_MODE_ACTIVE</div>
     </div>
-    <div style="text-align: right; font-size: 0.7em;">
-        <div>PROJECTED SUNDAY:</div>
-        <div style="font-weight: bold; color: var(--neon-gold);">~210.00 EUR</div>
-    </div>
-</div>
-
-<div class="panel sector-blue">
-    <span class="status-tag">ACTIVE SECTOR</span>
-    <div style="font-size: 0.8em; font-weight: bold;">◈ ПЯТНИЦА (06.03) | ПЕРВИЧНЫЙ ВХОД</div>
-    <div class="bet-card">
-        <div>LEIPZIG vs GLADBACH | П1 (1.55) | <span id="t1" class="timer-val">--:--:--</span></div>
-        <div class="math-row">
-            <span>БЫЛО: 25.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 37.75</span>
-        </div>
-    </div>
-    <div class="bet-card">
-        <div>NAPOLI vs ROMA | ТБ 2.5 (1.95) | <span id="t2" class="timer-val">--:--:--</span></div>
-        <div class="math-row">
-            <span>БЫЛО: 25.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 47.75</span>
-        </div>
+    <div style="text-align:right">
+        <div>BANK: <span id="current-bank">50.00</span> EUR</div>
     </div>
 </div>
 
-<div class="panel sector-red">
-    <span class="status-tag">WAITING FOR REINVEST</span>
-    <div style="font-size: 0.8em; font-weight: bold;">◈ СУББОТА (07.03) | АГРЕССИВНЫЙ РОСТ</div>
-    <div class="bet-card">
-        <div>MAN CITY vs BOURNEMOUTH | П1+ТБ 2.5 (1.65)</div>
-        <div class="math-row">
-            <span>БЫЛО: 40.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 65.00</span>
-        </div>
-    </div>
-    <div class="bet-card">
-        <div>BAYERN vs HOFFENHEIM | ИТБ 2.5 (1.70)</div>
-        <div class="math-row">
-            <span>БЫЛО: 40.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 67.00</span>
-        </div>
-    </div>
+<div class="panel">
+    <div style="font-size: 0.8em; margin-bottom: 5px; color: var(--neon-blue);">◈ ЖУРНАЛ ОПЕРАЦИЙ: 06.03 — 13.03</div>
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>DATE</th>
+                <th>EVENT</th>
+                <th>BET</th>
+                <th>IN</th>
+                <th>OUT</th>
+                <th>STATUS</th>
+            </tr>
+        </thead>
+        <tbody id="log-body">
+            <tr>
+                <td>06.03</td>
+                <td>Leipzig - Gladbach</td>
+                <td>П1 (1.55)</td>
+                <td>25.00</td>
+                <td>37.75</td>
+                <td class="status-wait">WAITING</td>
+            </tr>
+            <tr>
+                <td>06.03</td>
+                <td>Napoli - Roma</td>
+                <td>ТБ 2.5 (1.95)</td>
+                <td>25.00</td>
+                <td>47.75</td>
+                <td class="status-wait">WAITING</td>
+            </tr>
+            <tr>
+                <td>07.03</td>
+                <td>Man City - Bourn.</td>
+                <td>П1+2.5 (1.65)</td>
+                <td>40.00</td>
+                <td>65.00</td>
+                <td>PENDING</td>
+            </tr>
+            <tr>
+                <td>07.03</td>
+                <td>Bayern - Hoff.</td>
+                <td>ИТБ1 2.5 (1.70)</td>
+                <td>40.00</td>
+                <td>67.00</td>
+                <td>PENDING</td>
+            </tr>
+            <tr>
+                <td>08.03</td>
+                <td>Real Madrid - Ath.</td>
+                <td>П1 (1.55)</td>
+                <td>60.00</td>
+                <td>92.00</td>
+                <td>PENDING</td>
+            </tr>
+            </tbody>
+    </table>
 </div>
 
-<div class="panel sector-gold">
-    <span class="status-tag">LOCKED UNTIL SUN</span>
-    <div style="font-size: 0.8em; font-weight: bold;">◈ ВОСКРЕСЕНЬЕ (08.03) | ФИКСАЦИЯ ПРИБЫЛИ</div>
-    <div class="bet-card">
-        <div>REAL MADRID vs ATHLETIC | П1 (1.55)</div>
-        <div class="math-row">
-            <span>БЫЛО: 60.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 92.00</span>
-        </div>
-    </div>
-</div>
-
-<div class="balance-bar">
-    <div class="total-row"><span>ТЕКУЩИЙ КЭШ:</span><span id="cash-balance">50.00</span></div>
-    <div class="total-row" style="border-top: 1px solid #333; margin-top: 5px; padding-top: 5px; color: var(--neon-gold);">
-        <span>ОЖИДАЕМЫЙ ИТОГ (22:00):</span>
-        <span id="total-equity" style="font-weight: bold;">~210.00</span>
-    </div>
+<div class="panel" style="font-size: 0.7em; color: #888;">
+    <b>ПРИМЕЧАНИЕ ОРАКУЛА:</b><br>
+    > Пятница: Точка входа. Суббота: Первая фаза реинвестирования.<br>
+    > Все расчеты включают комиссию 1.00 EUR на операцию.
 </div>
 
 <script>
-    function updateSystem() {
-        const now = new Date();
-        document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', { hour12: false });
-        
-        updateTimer('t1', 20, 30);
-        updateTimer('t2', 20, 45);
-    }
-
-    function updateTimer(id, h, m) {
-        const target = new Date(); target.setHours(h, m, 0);
-        const diff = target - new Date();
-        const el = document.getElementById(id);
-        if (diff <= 0) { el.innerText = "LIVE"; }
-        else {
-            const hours = Math.floor(diff / 3600000);
-            const mins = Math.floor((diff % 3600000) / 60000);
-            const secs = Math.floor((diff % 60000) / 1000);
-            el.innerText = `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    function update() {
+        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH');
+        // Логика авто-синхронизации времени SIX exchange
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1000) {
+           console.log("SYNC ERROR. DATA IS OUTDATED");
         }
+        window.lastSync = Date.now();
     }
-    setInterval(updateSystem, 1000);
+    setInterval(update, 1000);
 </script>
 </body>
 </html>
