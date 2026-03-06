@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.2</title>
+    <title>ZERO CHAOS | MONOLITH v2.2.1</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -80,7 +80,7 @@
 </div>
 
 <div class="panel">
-    <div id="advisor-log" class="advisor-area"> > Навигатор v2.2: Система ордеров готова. </div>
+    <div id="advisor-log" class="advisor-area"> > Навигатор v2.2.1: Таймер синхронизации оптимизирован. </div>
 </div>
 
 <div class="balance-bar">
@@ -116,7 +116,10 @@
 
     function updateTime() {
         document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH', { hour12: false });
-        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1000) document.getElementById('sync-error').style.display = 'block';
+        // Увеличен допуск до 5 секунд (5000ms) для стабильности мобильных браузеров
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 5000) {
+            document.getElementById('sync-error').style.display = 'block';
+        }
         window.lastSync = Date.now();
     }
 
