@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.5 FINAL</title>
+    <title>ZERO CHAOS | MONOLITH v3.6</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -23,29 +23,23 @@
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
         }
-        .panel { 
-            background: var(--panel-bg); border: 1px solid var(--neon-green); 
-            padding: 15px; margin-bottom: 25px;
-        }
-        .sector-title { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid; padding-bottom: 5px; }
-        
+        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 15px; margin-bottom: 25px; }
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; }
         .log-table th { background: #002b00; padding: 12px; text-align: left; border: 1px solid var(--neon-green); color: var(--neon-blue); }
         .log-table td { padding: 15px 10px; border: 1px solid #333; text-align: center; }
-
-        .logic-note { 
-            background: rgba(0, 242, 255, 0.05); border-left: 4px solid var(--neon-blue);
-            padding: 12px; margin-top: 15px; font-size: 0.8em; color: #a0faff; line-height: 1.4;
-        }
         
-        .status-wait { color: var(--neon-blue); animation: blinker 2s infinite; font-weight: bold; }
-        @keyframes blinker { 50% { opacity: 0.2; } }
+        .timer-box { 
+            background: #001a1a; color: #fff; padding: 4px 8px; 
+            border-radius: 4px; border: 1px solid var(--neon-blue); font-weight: bold;
+        }
+        .status-live { color: var(--neon-red); font-weight: bold; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
 
         .footer-stats { 
             background: #1a1a1a; padding: 20px; border: 2px solid var(--neon-green); 
-            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .big-sum { font-size: 1.8em; color: white; text-shadow: 0 0 15px var(--neon-green); font-weight: bold; }
+        .big-sum { font-size: 1.8em; color: white; text-shadow: 0 0 15px var(--neon-green); }
     </style>
 </head>
 <body>
@@ -54,8 +48,8 @@
 
 <div class="header">
     <div>
-        <div id="live-clock" style="font-size: 1.6em; font-weight: bold; color: #fff;">16:05:00</div>
-        <div style="font-size: 0.7em; color: var(--neon-blue); letter-spacing: 2px;">ECHELON PHASE: 1</div>
+        <div id="live-clock" style="font-size: 1.6em; font-weight: bold; color: #fff;">00:00:00</div>
+        <div style="font-size: 0.7em; color: var(--neon-blue);">ECHELON PROTOCOL v3.6</div>
     </div>
     <div style="text-align: right;">
         <div style="font-size: 0.6em; color: var(--neon-green);">BANK BALANCE:</div>
@@ -63,8 +57,8 @@
     </div>
 </div>
 
-<div class="panel" style="border-color: var(--neon-blue);">
-    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE SECTOR: 06.03 (ВХОД)</div>
+<div class="panel">
+    <div style="color: var(--neon-blue); font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid;">◈ BLUE SECTOR (ОЖИДАНИЕ)</div>
     <table class="log-table">
         <thead>
             <tr>
@@ -72,8 +66,7 @@
                 <th>БЫЛО</th>
                 <th>СТАВКА</th>
                 <th>WIN</th>
-                <th>LOSS</th>
-                <th>СТАТУС</th>
+                <th>ОТСЧЕТ (МИНУС ВРЕМЯ)</th>
             </tr>
         </thead>
         <tbody>
@@ -82,43 +75,14 @@
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>37.75</td>
-                <td>0.00</td>
-                <td class="status-wait">WAITING</td>
+                <td><span id="timer-lpz" class="timer-box">--:--:--</span></td>
             </tr>
             <tr>
                 <td style="text-align:left">Napoli (ТБ2.5)</td>
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>47.75</td>
-                <td>0.00</td>
-                <td class="status-wait">WAITING</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="logic-note">
-        <b>ХОЛОДНЫЙ АНАЛИЗ:</b> 100% банка в работе. Пятница — это фундамент. Если заходит оба матча, в субботу заходим с удвоенной силой. 
-    </div>
-</div>
-
-<div class="panel" style="border-color: var(--neon-red); opacity: 0.7;">
-    <div class="sector-title" style="color: var(--neon-red);">◈ RED SECTOR: 07.03 (РОСТ)</div>
-    <table class="log-table">
-        <tbody>
-            <tr>
-                <td style="text-align:left">Man City (П1+)</td>
-                <td>40.00</td>
-                <td>40.00</td>
-                <td>65.00</td>
-                <td>0.00</td>
-                <td>PENDING</td>
-            </tr>
-            <tr>
-                <td style="text-align:left">Bayern (ИТБ2.5)</td>
-                <td>40.00</td>
-                <td>40.00</td>
-                <td>67.00</td>
-                <td>0.00</td>
-                <td>PENDING</td>
+                <td><span id="timer-nap" class="timer-box">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
@@ -136,10 +100,15 @@
 </div>
 
 <script>
-    function syncSystem() {
+    function updateTimers() {
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
-        
+
+        // 20:30 - Leipzig
+        renderTimer('timer-lpz', 20, 30);
+        // 20:45 - Napoli
+        renderTimer('timer-nap', 20, 45);
+
         if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1100) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
@@ -147,7 +116,25 @@
         }
         window.lastSync = Date.now();
     }
-    setInterval(syncSystem, 1000);
+
+    function renderTimer(id, h, m) {
+        const target = new Date();
+        target.setHours(h, m, 0);
+        const diff = target - new Date();
+        const el = document.getElementById(id);
+
+        if (diff <= 0) {
+            el.innerHTML = "LIVE";
+            el.className = "status-live";
+        } else {
+            const hrs = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            el.innerText = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        }
+    }
+
+    setInterval(updateTimers, 1000);
 </script>
 
 </body>
