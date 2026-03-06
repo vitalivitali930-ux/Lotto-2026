@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v4.1.2</title>
+    <title>ZERO CHAOS | MONOLITH v4.1.3</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -12,12 +12,12 @@
         body { 
             background-color: var(--dark-bg); color: var(--neon-green); 
             font-family: var(--font); margin: 0; padding: 12px; font-size: 18px; line-height: 1.2;
+            padding-bottom: 50px;
         }
         #sync-error { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255, 0, 0, 0.95); z-index: 9999; text-align: center; 
             padding-top: 20%; font-size: 2em; font-weight: bold; color: white;
-            text-shadow: 0 0 20px black;
         }
         .header { 
             border: 2px solid var(--neon-green); padding: 12px; 
@@ -26,151 +26,159 @@
         }
         .panel { 
             background: var(--panel-bg); border: 1px solid var(--neon-green); 
-            padding: 12px; margin-bottom: 15px; position: relative;
+            padding: 12px; margin-bottom: 20px; position: relative;
             box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.1);
         }
-        .sector-title { font-size: 0.85em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; text-transform: uppercase; }
+        .sector-title { font-size: 0.9em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; text-transform: uppercase; padding-bottom: 5px;}
         
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.72em; table-layout: fixed; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; table-layout: fixed; }
         .log-table th { background: #002b00; padding: 8px 2px; border: 1px solid var(--neon-green); color: #fff; }
-        .log-table td { padding: 12px 2px; border: 1px solid #222; text-align: center; overflow: hidden; }
+        .log-table td { padding: 12px 4px; border: 1px solid #222; text-align: center; }
 
         .live-ticker {
             background: #000; border: 1px solid var(--neon-blue);
             margin-top: 10px; padding: 5px; font-size: 0.65em;
             color: var(--neon-blue); overflow: hidden; white-space: nowrap;
         }
-        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 20s linear infinite; }
+        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
         @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-
-        .admin-panel { display: flex; gap: 5px; margin-top: 10px; }
-        .btn-goal { 
-            background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red);
-            padding: 6px; font-size: 0.6em; cursor: pointer; flex-grow: 1;
-        }
 
         .status-wait { color: var(--neon-blue); }
         .status-live { color: var(--neon-red); font-weight: bold; animation: haloPulse 1.5s infinite; }
         @keyframes haloPulse { 0%, 100% { opacity: 1; text-shadow: 0 0 5px var(--neon-red); } 50% { opacity: 0.6; text-shadow: 0 0 15px var(--neon-red); } }
 
         .big-sum { font-size: 1.4em; color: white; text-shadow: 0 0 10px var(--neon-green); }
-        .countdown-timer { font-size: 0.9em; display: block; margin-top: 2px; color: #fff; }
+        .countdown-timer { font-size: 0.85em; display: block; margin-top: 4px; color: #fff; border: 1px solid #333; padding: 2px; background: #000;}
+        
+        .analysis-note { font-size: 0.6em; color: #888; margin-top: 8px; font-style: italic; line-height: 1.1; }
     </style>
 </head>
 <body>
 
-<div id="sync-error">SYNC ERROR. DATA IS OUTDATED<br><small style="font-size:0.5em">CHECK SYSTEM TIME (CH)</small></div>
+<div id="sync-error">SYNC ERROR. DATA IS OUTDATED<br><small>CHECK SYSTEM TIME</small></div>
 
 <div class="header">
     <div>
         <div id="live-clock" style="font-size: 1.3em;">00:00:00</div>
-        <div style="font-size: 0.5em; color: var(--neon-blue);">ECHELON 1.1 | SPARK-DRIVE</div>
+        <div style="font-size: 0.5em; color: var(--neon-blue);">MONOLITH v4.1.3 | SPARK-DRIVE</div>
     </div>
     <div style="text-align: right;">
-        <div style="font-size: 0.5em;">BANK (VCHF):</div>
+        <div style="font-size: 0.5em;">CURRENT BANK:</div>
         <div class="big-sum">50.00</div>
     </div>
 </div>
 
 <div class="panel" style="border-color: var(--neon-blue);">
-    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE PHASE (06.03 - REAL LIVE)</div>
+    <div class="sector-title" style="color: var(--neon-blue);">◈ BLUE PHASE (06.03 - LIVE)</div>
     <table class="log-table">
         <thead>
-            <tr>
-                <th style="width: 35%;">EVENT</th>
-                <th>BET</th>
-                <th>WIN</th>
-                <th>STATUS</th>
-            </tr>
+            <tr><th style="width: 40%;">MATCH</th><th>BET</th><th>WIN</th><th>STATUS</th></tr>
         </thead>
         <tbody>
             <tr>
-                <td style="text-align:left;">Napoli П1</td>
+                <td style="text-align:left;">Napoli - Torino</td>
                 <td>25.00</td>
                 <td>38.50</td>
-                <td id="stat-nap" class="status-wait">WAIT<span id="t-nap" class="countdown-timer">--:--:--</span></td>
+                <td id="stat-nap"><span id="t-nap" class="countdown-timer">--:--:--</span></td>
             </tr>
             <tr>
-                <td style="text-align:left;">Nice П1</td>
+                <td style="text-align:left;">Nice - Montpellier</td>
                 <td>25.00</td>
-                <td>42.25</td>
-                <td id="stat-nice" class="status-wait">WAIT<span id="t-nice" class="countdown-timer">--:--:--</span></td>
+                <td>41.00</td>
+                <td id="stat-nice"><span id="t-nice" class="countdown-timer">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
-    <div class="live-ticker"><div class="ticker-text" id="ticker-content">СИНХРОНИЗАЦИЯ С РЕАЛЬНЫМ LIVE: НАПОЛИ (16') | НИЦЦА (1'). СИСТЕМА ЧИСТА...</div></div>
-    <div class="admin-panel">
-        <button class="btn-goal" onclick="recordGoal('NAPOLI')">GOAL NAPOLI</button>
-        <button class="btn-goal" onclick="recordGoal('NICE')">GOAL NICE</button>
-    </div>
+    <div class="analysis-note">Наполи дома доминирует. Ницца борется за еврокубки. Риск минимален.</div>
 </div>
 
-<div class="panel" style="border-color: var(--neon-red); opacity: 0.9;">
-    <div class="sector-title" style="color: var(--neon-red);">◈ RED PHASE (07.03)</div>
+<div class="panel" style="border-color: var(--neon-red);">
+    <div class="sector-title" style="color: var(--neon-red);">◈ RED PHASE (07.03 - PREDICT)</div>
     <table class="log-table">
         <tbody>
             <tr>
-                <td style="width: 35%; text-align:left;">Man City П1</td>
-                <td>25.00</td>
-                <td>36.50</td>
-                <td>PENDING</td>
+                <td style="width: 40%; text-align:left;">Man City (П1)</td>
+                <td style="color:#666;">--.--</td>
+                <td style="color:#666;">--.--</td>
+                <td id="stat-mcy"><span id="t-mcy" class="countdown-timer">--:--:--</span></td>
+            </tr>
+            <tr>
+                <td style="text-align:left;">Bayern-RB (ТБ 2.5)</td>
+                <td style="color:#666;">--.--</td>
+                <td style="color:#666;">--.--</td>
+                <td id="stat-bay"><span id="t-bay" class="countdown-timer">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
+    <div class="analysis-note">Сити обязан брать очки дома. В Мюнхене ожидается "перестрелка".</div>
 </div>
 
-<audio id="goal-sound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+<div class="panel" style="border-color: var(--neon-gold);">
+    <div class="sector-title" style="color: var(--neon-gold);">◈ GOLD PHASE (08.03 - TARGET)</div>
+    <table class="log-table">
+        <tbody>
+            <tr>
+                <td style="width: 40%; text-align:left;">Villarreal - Real Madrid</td>
+                <td style="color:var(--neon-gold);">ALL IN</td>
+                <td style="color:var(--neon-gold);">~210.00</td>
+                <td id="stat-rma"><span id="t-rma" class="countdown-timer">--:--:--</span></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="analysis-note">Мадрид - машина для побед в решающих стадиях. Финальный аккорд.</div>
+</div>
+
+<div class="live-ticker"><div class="ticker-text" id="ticker-content">СИНХРОНИЗАЦИЯ С РЕАЛЬНЫМ МИРОМ: НАПОЛИ (LIVE) | НИЦЦА (LIVE) | ЗАВТРА: СИТИ И БАВАРИЯ...</div></div>
 
 <script>
-    let lastSixSync = Date.now();
+    let lastSync = Date.now();
 
     function update() {
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
         
-        if (Math.abs(Date.now() - lastSixSync) > 2000) {
+        if (Math.abs(Date.now() - lastSync) > 2000) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
             document.getElementById('sync-error').style.display = 'none';
         }
-        lastSixSync = Date.now();
+        lastSync = Date.now();
 
-        // Реальное время старта матчей 6 марта 2026
-        timer('t-nap', 20, 45); // Наполи - Торино
-        timer('t-nice', 21, 0); // Ницца - Монпелье
+        // TODAY 06.03
+        timer('t-nap', 6, 20, 45); 
+        timer('t-nice', 6, 21, 0);
+
+        // SATURDAY 07.03
+        timer('t-mcy', 7, 16, 0);
+        timer('t-bay', 7, 18, 30);
+
+        // SUNDAY 08.03
+        timer('t-rma', 8, 21, 0);
     }
 
-    function timer(id, h, m) {
-        const target = new Date(2026, 2, 6, h, m, 0);
+    function timer(id, day, h, m) {
+        const target = new Date(2026, 2, day, h, m, 0);
         const now = new Date();
         const diff = target - now;
         const el = document.getElementById(id);
         const stat = el.parentElement;
 
         if (diff <= 0) {
-            stat.className = "status-live";
-            const elapsedMs = now - target;
-            const elapsedMins = Math.floor(elapsedMs / 60000);
-            const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
-            
-            let displayTime = `${elapsedMins}' ${String(elapsedSecs).padStart(2,'0')}"`;
-            if (elapsedMins >= 45 && elapsedMins < 60) displayTime = `HT | ${elapsedMins}'`;
-            if (elapsedMins >= 60) displayTime = `2nd H | ${elapsedMins}'`;
-            
-            el.innerText = `LIVE: ${displayTime}`;
+            const elapsedMins = Math.floor((now - target) / 60000);
+            if (elapsedMins < 120) { // Если матч идет (примерно 2 часа)
+                stat.className = "status-live";
+                el.innerText = `LIVE: ${elapsedMins}'`;
+            } else {
+                stat.className = "";
+                el.innerText = "FINISHED";
+            }
         } else {
-            stat.className = "status-wait";
+            const d = Math.floor(diff / 86400000);
+            const hrs = Math.floor((diff % 86400000) / 3600000);
             const mins = Math.floor((diff % 3600000) / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
-            el.innerText = `START IN: ${mins}:${String(secs).padStart(2,'0')}`;
+            el.innerText = (d > 0 ? d + "d " : "") + `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
         }
-    }
-
-    function recordGoal(team) {
-        try { document.getElementById('goal-sound').play(); } catch(e) {}
-        const ticker = document.getElementById('ticker-content');
-        ticker.innerText = `[${new Date().toLocaleTimeString()}] ALERT: GOAL BY ${team}! BANK PROTECTION ACTIVE.`;
-        ticker.style.color = 'var(--neon-red)';
     }
 
     setInterval(update, 1000);
