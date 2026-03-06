@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.2.1</title>
+    <title>ZERO CHAOS | MONOLITH v2.3</title>
     <style>
         :root {
             --neon-green: #00ff41;
+            --neon-blue: #00f2ff;
             --dark-bg: #050505;
             --panel-bg: #0d0d0d;
             --danger: #ff3e3e;
@@ -31,33 +32,30 @@
             margin-bottom: 10px; box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
         }
 
-        .clock-box { font-size: 1.2em; font-weight: bold; }
-        .day-stat { font-size: 0.7em; text-align: right; }
-
         .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; }
+        
+        /* Спортивный хаб - Синий сектор */
+        .sports-panel { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 242, 255, 0.1); }
+        .bet-card { border-bottom: 1px dotted var(--neon-blue); padding: 8px 0; font-size: 0.75em; }
+        .bet-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; }
 
         .asset-card { border-bottom: 1px solid #222; padding: 12px 0; display: flex; flex-direction: column; gap: 8px; }
-        .asset-info { display: flex; justify-content: space-between; align-items: center; }
         .ticker { font-size: 1em; font-weight: bold; color: white; }
         
-        .trade-controls { display: flex; gap: 5px; align-items: center; margin-top: 5px; }
         .trade-input { 
             background: #000; border: 1px solid var(--neon-green); color: var(--neon-green); 
-            padding: 10px; width: 60px; font-family: var(--font); outline: none; text-align: center;
+            padding: 10px; width: 60px; font-family: var(--font); text-align: center;
         }
 
-        .btn { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 10px; cursor: pointer; font-family: var(--font); font-weight: bold; font-size: 0.8em; transition: 0.2s; }
-        .btn:active { background: var(--neon-green); color: black; }
-        .btn-buy { flex-grow: 1; }
-        .btn-sell { border-color: var(--danger); color: var(--danger); min-width: 80px; }
-
-        .pos { color: #00ff41; } .neg { color: #ff3e3e; }
+        .btn { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 10px; cursor: pointer; font-family: var(--font); font-weight: bold; font-size: 0.8em; }
+        .btn-sell { border-color: var(--danger); color: var(--danger); }
 
         .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; }
-        .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; }
 
-        .advisor-area { background: #000a00; border-left: 3px solid var(--neon-green); padding: 8px; height: 60px; overflow-y: auto; font-size: 0.7em; }
+        .advisor-area { background: #000a00; border-left: 3px solid var(--neon-green); padding: 8px; height: 50px; overflow-y: auto; font-size: 0.7em; }
         .reset-btn { font-size: 0.6em; color: #555; border: none; background: none; cursor: pointer; }
+        .blue-text { color: var(--neon-blue); }
     </style>
 </head>
 <body>
@@ -66,12 +64,34 @@
 
 <div class="header">
     <div>
-        <div id="live-clock" class="clock-box">00:00:00</div>
+        <div id="live-clock" style="font-size: 1.2em; font-weight: bold;">00:00:00</div>
         <div style="font-size: 0.6em; opacity: 0.6;">START: <span id="start-val">1000.00</span></div>
     </div>
-    <div class="day-stat">
+    <div style="text-align: right; font-size: 0.7em;">
         <div>DAILY P&L:</div>
         <div id="daily-pl" style="font-weight: bold;">+0.00 EUR (0%)</div>
+    </div>
+</div>
+
+<div class="panel sports-panel">
+    <div style="font-size: 0.8em; font-weight: bold; margin-bottom: 8px;">◈ SPORTS HUB (BLUE SECTOR)</div>
+    <div id="sports-container">
+        <div class="bet-card">
+            <div class="bet-header"><span>LEIPZIG vs GLADBACH</span> <span class="blue-text">LIVE</span></div>
+            <div>Ордер: 25.00€ (Чистыми: 24.00€) | Цель: П1 (1.55)</div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span>Прогноз: <span class="blue-text">WIN (82%)</span></span>
+                <span>Итог: <span style="color:gray">WAITING...</span></span>
+            </div>
+        </div>
+        <div class="bet-card">
+            <div class="bet-header"><span>NAPOLI vs ROMA</span> <span class="blue-text">LIVE</span></div>
+            <div>Ордер: 25.00€ (Чистыми: 24.00€) | Цель: ТБ 2.5 (1.95)</div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span>Прогноз: <span class="blue-text">GOALS (64%)</span></span>
+                <span>Итог: <span style="color:gray">WAITING...</span></span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -80,19 +100,16 @@
 </div>
 
 <div class="panel">
-    <div id="advisor-log" class="advisor-area"> > Навигатор v2.2.1: Таймер синхронизации оптимизирован. </div>
+    <div id="advisor-log" class="advisor-area"> > Навигатор v2.3: Спортивный хаб интегрирован. </div>
 </div>
 
 <div class="balance-bar">
-    <div class="total-row">
-        <span style="font-size: 0.7em;">CASH:</span>
-        <span id="cash-balance" style="font-weight: bold; color: white;">1000.00</span>
-    </div>
-    <div class="total-row" style="border-top: 1px solid #333; padding-top: 5px;">
-        <span style="font-size: 0.7em;">TOTAL EQUITY:</span>
+    <div class="total-row"><span>CASH:</span><span id="cash-balance" style="color: white;">1000.00</span></div>
+    <div class="total-row" style="border-top: 1px solid #333; margin-top: 5px; padding-top: 5px;">
+        <span>TOTAL EQUITY:</span>
         <span id="total-equity" style="font-size: 1.1em; font-weight: bold; color: var(--neon-green);">1000.00</span>
     </div>
-    <div style="text-align: center; margin-top: 5px;"><button class="reset-btn" onclick="wipeData()">[СБРОС СЕССИИ]</button></div>
+    <div style="text-align: center; margin-top: 5px;"><button class="reset-btn" onclick="wipeData()">[СБРОС]</button></div>
 </div>
 
 <script>
@@ -103,23 +120,18 @@
             'BTC': { name: 'Monster (BTC)', qty: 0, price: 60850.00, invested: 0 },
             'RHM': { name: 'Rheinmetall', qty: 0, price: 542.40, invested: 0 },
             'SAP': { name: 'SAP SE', qty: 0, price: 184.20, invested: 0 },
-            'ADS': { name: 'Adidas AG', qty: 0, price: 215.10, invested: 0 },
-            'P911': { name: 'Porsche AG', qty: 0, price: 72.45, invested: 0 },
-            'DTE': { name: 'D. Telekom', qty: 0, price: 28.14, invested: 0 }
+            'ADS': { name: 'Adidas AG', qty: 0, price: 215.10, invested: 0 }
         }
     };
 
-    let state = JSON.parse(localStorage.getItem('monolith_v2_2')) || INITIAL_STATE;
+    let state = JSON.parse(localStorage.getItem('monolith_v2_3')) || INITIAL_STATE;
 
-    function save() { localStorage.setItem('monolith_v2_2', JSON.stringify(state)); }
+    function save() { localStorage.setItem('monolith_v2_3', JSON.stringify(state)); }
     function wipeData() { if(confirm("Сбросить?")) { state = JSON.parse(JSON.stringify(INITIAL_STATE)); save(); render(); } }
 
     function updateTime() {
         document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH', { hour12: false });
-        // Увеличен допуск до 5 секунд (5000ms) для стабильности мобильных браузеров
-        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 5000) {
-            document.getElementById('sync-error').style.display = 'block';
-        }
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 5000) document.getElementById('sync-error').style.display = 'block';
         window.lastSync = Date.now();
     }
 
@@ -142,27 +154,26 @@
                     </div>
                     <div style="display:flex; justify-content:space-between; font-size:0.65em; opacity:0.8;">
                         <span>In: ${asset.invested.toFixed(2)}€ | Val: ${currentVal.toFixed(2)}€</span>
-                        <span class="${profitPct>=0?'pos':'neg'}">${profitPct >= 0 ? '▲' : '▼'} ${profitPct.toFixed(2)}%</span>
+                        <span style="color:${profitPct>=0?'#00ff41':'#ff3e3e'}">${profitPct >= 0 ? '▲' : '▼'} ${profitPct.toFixed(2)}%</span>
                     </div>
-                    <div class="trade-controls">
-                        <input type="number" id="input-${ticker}" class="trade-input" placeholder="€" value="${state.balance > 101 ? 100 : Math.floor(state.balance - 1)}">
-                        <button class="btn btn-buy" onclick="executeTrade('${ticker}', 'buy')">BUY</button>
+                    <div class="trade-controls" style="display:flex; gap:5px; margin-top:5px;">
+                        <input type="number" id="input-${ticker}" class="trade-input" value="${Math.floor(state.balance - 1)}">
+                        <button class="btn" style="flex-grow:1" onclick="executeTrade('${ticker}', 'buy')">BUY</button>
                         <button class="btn btn-sell" onclick="executeTrade('${ticker}', 'sell')">SELL ALL</button>
                     </div>
                 </div>`;
         }
 
         const totalEquity = state.balance + totalAssetVal;
-        const dailyPL = totalEquity - state.startBalance;
-        const dailyPLPct = (dailyPL / state.startBalance) * 100;
-
         document.getElementById('cash-balance').innerText = state.balance.toFixed(2);
         document.getElementById('total-equity').innerText = totalEquity.toFixed(2);
         document.getElementById('start-val').innerText = state.startBalance.toFixed(2);
         
+        const dailyPL = totalEquity - state.startBalance;
+        const dailyPLPct = (dailyPL / state.startBalance) * 100;
         const plEl = document.getElementById('daily-pl');
-        plEl.innerText = `${dailyPL >= 0 ? '+' : ''}${dailyPL.toFixed(2)} EUR (${dailyPLPct.toFixed(2)}%)`;
-        plEl.className = `day-stat ${dailyPL >= 0 ? 'pos' : 'neg'}`;
+        plEl.innerText = `${dailyPL >= 0 ? '+' : ''}${dailyPL.toFixed(2)}€ (${dailyPLPct.toFixed(2)}%)`;
+        plEl.style.color = dailyPL >= 0 ? '#00ff41' : '#ff3e3e';
     }
 
     function executeTrade(ticker, side) {
@@ -172,10 +183,7 @@
         let amount = parseFloat(input.value);
 
         if (side === 'buy') {
-            if (isNaN(amount) || amount <= 0 || state.balance < (amount + 1)) {
-                log.innerHTML = `> [!] ОШИБКА: Мало кэша<br>` + log.innerHTML;
-                return;
-            }
+            if (isNaN(amount) || amount <= 0 || state.balance < (amount + 1)) return;
             const sprPrice = asset.price * 1.001;
             asset.qty += (amount / sprPrice);
             asset.invested += amount;
@@ -184,10 +192,9 @@
         } else {
             if (asset.qty <= 0) return;
             const sellPr = asset.price * 0.999;
-            const cashIn = asset.qty * sellPr;
-            state.balance += (cashIn - 1);
-            log.innerHTML = `> SELL ${ticker}: +${cashIn.toFixed(2)}€ (Fee 1€)<br>` + log.innerHTML;
+            state.balance += (asset.qty * sellPr) - 1;
             asset.qty = 0; asset.invested = 0;
+            log.innerHTML = `> SELL ${ticker} (Fee 1€)<br>` + log.innerHTML;
         }
         save(); render();
     }
