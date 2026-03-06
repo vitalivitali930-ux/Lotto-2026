@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.7 FINAL</title>
+    <title>ZERO CHAOS | MONOLITH v3.8</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -11,7 +11,7 @@
         }
         body { 
             background-color: var(--dark-bg); color: var(--neon-green); 
-            font-family: var(--font); margin: 0; padding: 15px; font-size: 18px; 
+            font-family: var(--font); margin: 0; padding: 12px; font-size: 18px; 
         }
         #sync-error { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -19,20 +19,24 @@
             padding-top: 20%; font-size: 1.8em; font-weight: bold; color: white;
         }
         .header { 
-            border: 2px solid var(--neon-green); padding: 15px; 
+            border: 2px solid var(--neon-green); padding: 12px; 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
         }
         .panel { 
             background: var(--panel-bg); border: 1px solid var(--neon-green); 
-            padding: 15px; margin-bottom: 20px; overflow: hidden; /* ЗАЩИТА РАМОК */
+            padding: 12px; margin-bottom: 20px; overflow: hidden;
         }
         .sector-title { font-size: 1em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; }
         
-        /* УЛУЧШЕННАЯ ТАБЛИЦА: НИЧЕГО НЕ ВЫЛЕЗАЕТ */
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; table-layout: fixed; }
-        .log-table th { background: #002b00; padding: 10px 5px; text-align: left; border: 1px solid var(--neon-green); }
-        .log-table td { padding: 12px 5px; border: 1px solid #333; word-wrap: break-word; vertical-align: middle; }
+        /* ТАБЛИЦА БЕЗ ПЕРЕНОСОВ */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.72em; table-layout: fixed; }
+        .log-table th { background: #002b00; padding: 8px 2px; text-align: center; border: 1px solid var(--neon-green); overflow: hidden; }
+        .log-table td { 
+            padding: 12px 2px; border: 1px solid #333; 
+            text-align: center; 
+            white-space: nowrap; /* ЦИФРЫ НЕ РВУТСЯ */
+            overflow: hidden;
+        }
 
         .logic-note { 
             background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-blue);
@@ -40,13 +44,13 @@
         }
         
         .status-wait { color: var(--neon-blue); font-weight: bold; }
-        .countdown { display: block; font-size: 0.9em; color: #fff; margin-top: 4px; }
+        .countdown { display: block; font-size: 0.85em; color: #fff; margin-top: 4px; }
         .status-live { color: var(--neon-red); font-weight: bold; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.3; } }
 
         .footer-stats { 
             background: #1a1a1a; padding: 15px; border: 2px solid var(--neon-green); 
-            margin-top: auto; display: flex; justify-content: space-between;
+            display: flex; justify-content: space-between;
         }
         .big-sum { font-size: 1.5em; color: white; text-shadow: 0 0 10px var(--neon-green); }
     </style>
@@ -58,11 +62,11 @@
 <div class="header">
     <div>
         <div id="live-clock" style="font-size: 1.4em; font-weight: bold;">00:00:00</div>
-        <div style="font-size: 0.6em; color: var(--neon-blue);">ECHELON PHASE: 1 (WEEK)</div>
+        <div style="font-size: 0.6em; color: var(--neon-blue);">ECHELON PHASE: 1</div>
     </div>
     <div style="text-align: right;">
-        <div style="font-size: 0.6em;">CURRENT BANK:</div>
-        <div class="big-sum"><span id="display-bank">50.00</span> EUR</div>
+        <div style="font-size: 0.6em;">BANK:</div>
+        <div class="big-sum"><span id="display-bank">50.00</span></div>
     </div>
 </div>
 
@@ -71,23 +75,23 @@
     <table class="log-table">
         <thead>
             <tr>
-                <th style="width: 35%;">СОБЫТИЕ</th>
+                <th style="width: 28%;">МАТЧ</th>
                 <th>БЫЛО</th>
-                <th>СТАВКА</th>
+                <th>BET</th>
                 <th>WIN</th>
                 <th style="width: 30%;">СТАТУС</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Leipzig П1</td>
+                <td style="text-align:left; white-space: normal;">Leipzig П1</td>
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>37.75</td>
                 <td class="status-wait">WAITING<span id="t-lpz" class="countdown">--:--:--</span></td>
             </tr>
             <tr>
-                <td>Napoli ТБ</td>
+                <td style="text-align:left; white-space: normal;">Napoli ТБ</td>
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>47.75</td>
@@ -96,7 +100,7 @@
         </tbody>
     </table>
     <div class="logic-note">
-        <b>ЛОГИКА:</b> Заход полным банком на фаворитов. Проверка стабильности системы v3.7.
+        <b>ЛОГИКА:</b> Стабилизация v3.8. Цифры зафиксированы.
     </div>
 </div>
 
@@ -105,14 +109,14 @@
     <table class="log-table">
         <tbody>
             <tr>
-                <td style="width: 35%;">Man City+</td>
+                <td style="width: 28%; text-align:left;">City П1+</td>
                 <td>80.00</td>
                 <td>40.00</td>
                 <td>65.00</td>
                 <td style="width: 30%;">PENDING</td>
             </tr>
             <tr>
-                <td style="width: 35%;">Bayern ИТБ</td>
+                <td style="width: 28%; text-align:left;">Bayern ТБ</td>
                 <td>40.00</td>
                 <td>40.00</td>
                 <td>67.00</td>
@@ -124,8 +128,8 @@
 
 <div class="footer-stats">
     <div>
-        <div style="font-size: 0.6em;">START (06.03):</div>
-        <div style="font-weight: bold;">50.00 EUR</div>
+        <div style="font-size: 0.6em;">START:</div>
+        <div style="font-weight: bold;">50.00</div>
     </div>
     <div style="text-align: right;">
         <div style="font-size: 0.6em;">PROJECTION:</div>
@@ -137,8 +141,6 @@
     function syncSystem() {
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
-        
-        // ОБРАТНЫЙ ОТСЧЕТ
         updateTimer('t-lpz', 20, 30);
         updateTimer('t-nap', 20, 45);
 
@@ -154,9 +156,10 @@
         const target = new Date(); target.setHours(h, m, 0);
         const diff = target - new Date();
         const el = document.getElementById(id);
+        if(!el) return;
         if (diff <= 0) {
             el.parentElement.className = "status-live";
-            el.innerText = "В ИГРЕ (LIVE)";
+            el.innerText = "LIVE";
         } else {
             const hrs = Math.floor(diff / 3600000);
             const mins = Math.floor((diff % 3600000) / 60000);
@@ -166,6 +169,5 @@
     }
     setInterval(syncSystem, 1000);
 </script>
-
 </body>
 </html>
