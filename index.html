@@ -1,417 +1,621 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ZERO CHAOS | THE SWISS MONOLITH</title>
-    
-    <svg style="position: absolute; width: 0; height: 0;">
-        <filter id="brushed-steel">
-            <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" stitchTiles="stitch"/>
-            <feColorMatrix type="saturate" values="0"/>
-            <feComponentTransfer><feFuncA type="linear" slope="0.1"/></feComponentTransfer>
-            <feBlend in="SourceGraphic" mode="multiply"/>
-        </filter>
-        <filter id="metal-bevel">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
-            <feSpecularLighting in="blur" surfaceScale="7" specularConstant="1.2" specularExponent="40" lighting-color="#ffffff" result="spec">
-                <fePointLight x="-10000" y="-15000" z="20000"/>
-            </feSpecularLighting>
-            <feComposite in="spec" in2="SourceAlpha" operator="in" result="specOut"/>
-            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
-        </filter>
-    </svg>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VCHF MONOLITH | SWISS TREASURY</title>
     <style>
         :root {
-            --steel-dark: #121213;
+            /* Palette: Heavy Metal & Gold Hot */
+            --bg-metal: #121213;
             --steel-mid: #242426;
-            --steel-light: #3a3a3d;
             --gold-hot: #fcf6ba;
-            --gold-dim: rgba(197, 160, 89, 0.4);
-            --cherry-blood: #1a0101;
-            --transition-heavy: 2.5s cubic-bezier(0.7, 0, 0.3, 1);
+            --gold-shadow: rgba(252, 246, 186, 0.3);
+            --steel-shadow: rgba(0, 0, 0, 0.9);
+            
+            /* Geometry */
+            --bolt-size: 42px;
+            --vault-size: 320px;
+            --perspective: 2000px;
+            --recoil: 0.98;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            background: #000; overflow: hidden; font-family: 'Cinzel', serif;
-            color: #fff; touch-action: none;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        #monolith-app {
-            position: relative; width: 100vw; height: 100vh;
-            display: flex; perspective: 2000px; overflow: hidden;
-        }
-
-        /* STAGE 0: ЭКРАН ПРИЗЫВА */
-        #gate-screen {
-            position: absolute; inset: 0; z-index: 1000;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: var(--transition-heavy);
-            transform-style: preserve-3d;
-        }
-
-        .brand-engraving { text-align: center; margin-bottom: 5vh; filter: url(#metal-bevel); }
-        .brand-engraving h1 {
-            font-size: clamp(2em, 9vw, 4.5em); letter-spacing: 15px;
-            color: var(--steel-light); margin: 0; text-transform: uppercase;
-            font-weight: 900;
-        }
-        .brand-engraving p {
-            font-size: 0.7em; letter-spacing: 8px; color: var(--gold-dim);
-            margin-top: 15px; text-transform: uppercase;
-        }
-
-        .ignition-btn {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--steel-light);
-            padding: 20px 50px; color: var(--gold-hot); font-size: 0.9em;
-            letter-spacing: 5px; cursor: pointer; transition: 0.6s;
-            position: relative; overflow: hidden; text-transform: uppercase;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-        }
-        .ignition-btn:hover {
-            border-color: var(--gold-hot); background: rgba(197, 160, 89, 0.05);
-            box-shadow: 0 0 40px rgba(197, 160, 89, 0.15);
-        }
-
-        .vault-mode #gate-screen { transform: translateZ(-1500px); opacity: 0; pointer-events: none; }
-
-        /* STAGE 1: КАРКАС ТРЕЗОРА */
-        #vault-chamber {
-            position: absolute; inset: 0;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; transform: translateZ(-500px) scale(0.8);
-            transition: 3s cubic-bezier(0.19, 1, 0.22, 1);
-            pointer-events: none; z-index: 100;
-        }
-        .vault-mode #vault-chamber { opacity: 1; transform: translateZ(0) scale(1); pointer-events: auto; }
-        /* ГЛУБИНА И ЗАТЕМНЕНИЕ */
-        .vault-shroud {
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 45%, transparent 15%, rgba(0,0,0,0.95) 85%);
-            pointer-events: none; z-index: 150;
-        }
-
-        /* ВНУТРЕННЕЕ ХРАНИЛИЩЕ (БАРХАТ) */
-        .vault-void {
-            position: absolute; inset: 0;
-            background: var(--cherry-blood);
-            box-shadow: inset 0 0 250px #000;
-            z-index: -1;
-        }
-
-        /* СТВОРКИ (3D VOLUME DOORS) */
-        .gate {
-            width: 50.5%; height: 100%; position: relative;
-            background: radial-gradient(circle at center, var(--steel-mid) 0%, #050505 100%);
-            border: 1px solid rgba(255,255,255,0.03);
-            box-shadow: inset 0 0 100px #000;
-            transition: 3.5s cubic-bezier(0.7, 0, 0.15, 1);
-            transform-style: preserve-3d;
+        body {
+            background: var(--bg-metal);
+            color: var(--gold-hot);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: var(--perspective);
         }
 
-        /* ТВОЯ ТОЛЩИНА СТАЛИ (ФАСКИ) */
-        .gate-l { 
-            border-right: 6px solid #2a2a2c; 
-            transform-origin: left center;
-            filter: url(#brushed-steel);
-        }
-        .gate-r { 
-            border-left: 6px solid #2a2a2c; 
-            transform-origin: right center;
-            filter: url(#brushed-steel);
+        #monolith-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
         }
 
-        /* СВЕТОВОЙ БЛИК НА СТЫКЕ (ВОЗВРАЩЕНО) */
-        .gate-l::after, .gate-r::after {
-            content: ""; position: absolute; top: 0; width: 1px; height: 100%;
-            background: linear-gradient(to bottom, transparent, var(--gold-hot), transparent);
-            opacity: 0.2; z-index: 5;
-        }
-        .gate-l::after { right: 0; }
-        .gate-r::after { left: 0; }
-
-        /* ЭФФЕКТ РАЗРЫВА */
-        .monolith-open .gate-l { 
-            transform: rotateY(-110deg) translateZ(150px); 
-            opacity: 0.2; filter: blur(5px);
-        }
-        .monolith-open .gate-r { 
-            transform: rotateY(110deg) translateZ(150px); 
-            opacity: 0.2; filter: blur(5px);
+        /* Фоновый гул (Визуальный) */
+        #monolith-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, #1a1a1b 0%, #000 80%);
+            z-index: -1;
+            animation: atmospheric-hum 10s infinite alternate ease-in-out;
         }
 
-        /* ИНДИКАТОР КОДА */
-        #code-panel {
-            position: absolute; bottom: 8%; left: 50%; 
-            transform: translateX(-50%); display: flex; gap: 12px;
-            z-index: 300; pointer-events: none;
+        @keyframes atmospheric-hum {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(1.05); }
         }
-        .slot {
-            width: 45px; height: 65px; background: #050505;
-            border: 1px solid #1a1a1c; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--gold-hot); font-size: 1.8em; font-weight: bold;
-            box-shadow: inset 0 0 20px #000; transition: 0.5s;
+
+        /* Контейнер Сейфа */
+        .vault-door {
+            position: relative;
+            width: var(--vault-size);
+            height: var(--vault-size);
+            background: linear-gradient(145deg, #1e1e1f, #121213);
+            border: 4px solid var(--steel-mid);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 50px var(--steel-shadow),
+                inset 0 0 30px #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 10;
         }
-    </style>
-    <style>
-        /* ГЛАВНЫЙ ЦЕНТРАЛЬНЫЙ УЗЕЛ */
-        #main-hub {
-            position: absolute; left: 50%; top: 45%; 
-            transform: translate(-50%, -50%);
-            width: 92vw; height: 92vw; 
-            max-width: 440px; max-height: 440px;
-            z-index: 250; display: flex; align-items: center; justify-content: center;
+
+        /* Центральный индикатор (Золотая Искра) */
+        .vault-core {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, var(--gold-hot) 0%, #b8860b 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--gold-shadow);
+            z-index: 15;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vault-core::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--gold-hot);
+            animation: haloPulse 2s infinite;
+            pointer-events: none; /* Фикс мобильных кликов */
+        }
+
+        @keyframes haloPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* Экран Биржи (Скрыт до активации) */
+        #exchange-terminal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-metal);
+            opacity: 0;
             pointer-events: none;
+            z-index: 5;
+            transition: opacity 1.5s ease-in;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* КОЛЬЦО ИЗ ТВОЕГО ИСХОДНИКА */
-        .hub-ring {
-            position: absolute; inset: 0; border-radius: 50%;
-            background: conic-gradient(
-                from 0deg, 
-                var(--steel-dark) 0%, var(--steel-light) 25%, 
-                var(--steel-dark) 50%, var(--steel-mid) 75%, 
-                var(--steel-dark) 100%
-            );
-            box-shadow: 0 40px 80px rgba(0,0,0,0.9), inset 0 0 50px #000, 0 0 0 10px #0a0a0a;
-            filter: url(#metal-bevel);
-        }
-
-        #bolt-system {
-            position: absolute; width: 100%; height: 100%;
-            transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        #exchange-terminal.active {
+            opacity: 1;
             pointer-events: auto;
         }
-
-        .bolt-shaft {
-            position: absolute; top: 50%; left: 50%;
-            width: 46%; height: 16px; /* Чуть короче для мобилы */
-            background: linear-gradient(90deg, #3a3a3d, #050505);
-            transform-origin: 0% 50%;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.7);
-            display: flex; align-items: center;
-        }
-
-        .bolt-terminal {
-            position: absolute; right: -40px; 
-            width: 70px; height: 70px;
-            background: radial-gradient(circle at 35% 35%, #4e4e52 0%, #050505 100%);
-            border: 3px solid #1a1a1c; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.5s;
-            box-shadow: 0 15px 30px #000, inset 0 2px 10px rgba(255,255,255,0.15);
-        }
-
-        .bolt-terminal span {
-            color: var(--gold-dim); font-size: 1.6em; font-weight: 900;
-            transition: 0.4s; pointer-events: none;
-        }
-
-        /* ТВОЁ ЯДРО И ПУЛЬСАЦИЯ */
-        .hub-core {
-            position: relative; width: 130px; height: 130px;
-            background: #080808; border-radius: 50%;
-            border: 4px double #222; z-index: 300;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: inset 0 0 45px #000;
-        }
-
-        .core-halo {
-            position: absolute; width: 60px; height: 60px;
-            background: var(--gold-dim); border-radius: 50%;
-            filter: blur(25px); opacity: 0.25;
-            animation: pulseCore 4.5s infinite ease-in-out;
-        }
-
-        @keyframes pulseCore {
-            0%, 100% { transform: scale(1); opacity: 0.2; }
-            50% { transform: scale(1.6); opacity: 0.45; }
-        }
     </style>
-    <div id="vault-chamber">
-        <div class="vault-shroud"></div>
-        <div class="vault-void"></div>
-        <div id="gate-l" class="gate gate-l"></div>
-        <div id="gate-r" class="gate gate-r"></div>
-
-        <div id="main-hub">
-            <div class="hub-ring"></div>
-            <div id="bolt-system"></div>
-            <div class="hub-core">
-                <div class="core-halo"></div>
-                <span style="font-size: 50px; color: #111; filter: drop-shadow(0 0 3px var(--gold-dim));">Σ</span>
+</head>
+<body>
+    <div id="monolith-wrapper">
+        <div class="vault-door" id="main-vault">
+            <div class="vault-core" id="core-trigger"></div>
             </div>
-        </div>
 
-        <div id="code-panel">
-            <div class="slot"></div><div class="slot"></div>
-            <div class="slot"></div><div class="slot"></div>
-            <div class="slot"></div><div class="slot"></div>
+        <div id="exchange-terminal">
+            <canvas id="gold-chart"></canvas>
+            <div id="stats-panel"></div>
         </div>
     </div>
 
-    <script>
-    let audioCtx;
-    const symbols = ['₿', 'Ξ', '₮', '₣', '£', '¥'];
-    const boltBox = document.getElementById('bolt-system');
-    const codeSlots = document.querySelectorAll('.slot');
-    let vaultStep = 0;
 
-    function masterAudioInit() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+
+
+
+    <style>
+    /* Геометрия 6 Ригелей */
+    .bolt {
+        position: absolute;
+        width: var(--bolt-size);
+        height: 80px;
+        background: linear-gradient(to bottom, #2a2a2c 0%, #121213 100%);
+        border: 2px solid var(--steel-mid);
+        border-radius: 4px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        cursor: pointer;
+        transform-origin: center 160px; /* Центр вращения - центр сейфа */
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+        z-index: 12;
     }
 
-    // Генерация ригелей с твоим расчетом углов
-    symbols.forEach((sym, i) => {
-        const angle = i * 60;
-        const shaft = document.createElement('div');
-        shaft.className = 'bolt-shaft';
-        shaft.style.transform = `rotate(${angle}deg)`;
-        shaft.innerHTML = `
-            <div class="bolt-terminal" onclick="engageLock(this, '${sym}')">
-                <span style="transform: rotate(-${angle}deg);">${sym}</span>
-            </div>
-        `;
-        boltBox.appendChild(shaft);
-    });
-
-    function playVaultSound() {
-        if (!audioCtx) return;
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(60, audioCtx.currentTime);
-        gain1.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-        
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'square';
-        osc2.frequency.setValueAtTime(900, audioCtx.currentTime);
-        gain2.gain.setValueAtTime(0.06, audioCtx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
-
-        osc1.connect(gain1); gain1.connect(audioCtx.destination);
-        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-        osc1.start(); osc1.stop(audioCtx.currentTime + 0.6);
-        osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
+    /* Золотая маркировка на каждом ригеле */
+    .bolt::before {
+        content: '';
+        width: 60%;
+        height: 4px;
+        background: var(--gold-hot);
+        box-shadow: 0 0 10px var(--gold-shadow);
+        border-radius: 2px;
     }
 
-    function engageLock(element, symbol) {
-        if (vaultStep >= 6 || element.classList.contains('locked-bolt')) return;
-
-        playVaultSound();
-        document.getElementById('monolith-app').classList.add('vault-impact');
-        setTimeout(() => document.getElementById('monolith-app').classList.remove('vault-impact'), 150);
-
-        element.classList.add('locked-bolt');
-        element.style.transform = "translateX(-100px)";
-        element.style.opacity = "0.3";
-        
-        const text = element.querySelector('span');
-        text.style.color = 'var(--gold-hot)';
-        text.style.textShadow = '0 0 15px var(--gold-hot)';
-
-        if (codeSlots[vaultStep]) {
-            codeSlots[vaultStep].innerText = symbol;
-            codeSlots[vaultStep].style.borderColor = 'var(--gold-hot)';
-            codeSlots[vaultStep].style.boxShadow = '0 0 15px rgba(252, 246, 186, 0.2)';
-        }
-        
-        vaultStep++;
-        boltBox.style.transform = `rotate(${vaultStep * 60}deg)`;
-
-        if (vaultStep === 6) setTimeout(executeRupture, 1200);
+    .bolt::after {
+        content: attr(data-index);
+        color: var(--gold-hot);
+        font-size: 10px;
+        font-weight: bold;
+        opacity: 0.5;
+        pointer-events: none;
     }
 
-    function engageMonolith() {
-        document.getElementById('monolith-app').classList.add('vault-mode');
-        masterAudioInit();
-        setTimeout(() => {
-            if(audioCtx) {
-                const o = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                o.type = 'sawtooth';
-                o.frequency.setValueAtTime(35, audioCtx.currentTime);
-                g.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3);
-                o.connect(g); g.connect(audioCtx.destination);
-                o.start(); o.stop(audioCtx.currentTime + 3);
-            }
-        }, 500);
+    .bolt:active {
+        transform: scale(var(--recoil));
+        filter: brightness(1.2);
     }
-    </script>
+
+    /* Специфические позиции для 6 ригелей (60 градусов шаг) */
+    .bolt[data-index="1"] { transform: rotate(0deg) translateY(-140px); }
+    .bolt[data-index="2"] { transform: rotate(60deg) translateY(-140px); }
+    .bolt[data-index="3"] { transform: rotate(120deg) translateY(-140px); }
+    .bolt[data-index="4"] { transform: rotate(180deg) translateY(-140px); }
+    .bolt[data-index="5"] { transform: rotate(240deg) translateY(-140px); }
+    .bolt[data-index="6"] { transform: rotate(300deg) translateY(-140px); }
+
+    /* Состояние "Активирован" */
+    .bolt.active {
+        border-color: var(--gold-hot);
+        box-shadow: 0 0 20px var(--gold-shadow);
+        background: linear-gradient(to bottom, #3a3a3c 0%, #1e1e1f 100%);
+    }
+
+    /* Индикатор прогресса в центре */
+    #progress-ring {
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border: 1px dashed rgba(252, 246, 186, 0.1);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 11;
+    }
+</style>
+
+
+
+
+
+
+
 <script>
-    function executeRupture() {
-        const app = document.getElementById('monolith-app');
-        const chamber = document.getElementById('vault-chamber');
+// Zero_Chaos_Audio_Engine
+const SonicForge = {
+    ctx: null,
+    isInitialized: false,
+
+    init() {
+        if (this.isInitialized) return;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.isInitialized = true;
+        console.log("🔱 Sonic Forge: Activated at 40Hz-900Hz");
+    },
+
+    // Тяжелый удар металла (900Hz Layer)
+    playClick() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
         
-        // 1. ОТКАТ ГИДРАВЛИКИ
-        chamber.style.transform = "translateZ(-400px) scale(0.92)";
-        chamber.style.filter = "brightness(1.8) contrast(1.2)";
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.1);
         
-        if (audioCtx) {
-            const o = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            o.type = 'lowpass';
-            o.frequency.setValueAtTime(30, audioCtx.currentTime);
-            g.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 4);
-            o.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 4);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+    },
+
+    // Глубокий гул открытия (40Hz Rumble)
+    playRupture() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(40, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 2);
+        
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.5, this.ctx.currentTime + 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 2);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 2);
+    }
+};
+</script>
+
+
+<script>
+// Logic_Gates: Нулевой Хаос
+const VaultLogic = {
+    activeBolts: new Set(),
+    requiredSequence: [1, 2, 3, 4, 5, 6], // Порядок активации по кругу
+    currentStep: 0,
+    isLocked: true,
+
+    init() {
+        const vault = document.getElementById('main-vault');
+        // Динамическое создание ригелей (если их нет в HTML)
+        for (let i = 1; i <= 6; i++) {
+            const bolt = document.createElement('div');
+            bolt.className = 'bolt';
+            bolt.setAttribute('data-index', i);
+            bolt.style.transform = `rotate(${(i - 1) * 60}deg) translateY(-140px)`;
+            
+            // Событие активации (Mobile First)
+            bolt.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                SonicForge.init(); // Разблокировка звука при первом касании
+                this.activateBolt(i, bolt);
+            });
+            
+            vault.appendChild(bolt);
+        }
+    },
+
+    activateBolt(index, element) {
+        if (!this.isLocked || this.activeBolts.has(index)) return;
+
+        // Эффект отдачи (Recoil)
+        element.style.transform += ' scale(0.9)';
+        setTimeout(() => element.style.transform = element.style.transform.replace(' scale(0.9)', ''), 100);
+
+        SonicForge.playClick();
+
+        if (index === this.requiredSequence[this.currentStep]) {
+            this.activeBolts.add(index);
+            element.classList.add('active');
+            this.currentStep++;
+            
+            // Визуальный отклик центра
+            document.getElementById('core-trigger').style.boxShadow = `0 0 ${this.currentStep * 15}px var(--gold-hot)`;
+
+            if (this.currentStep === 6) {
+                this.unlock();
+            }
+        } else {
+            this.reset();
+        }
+    },
+
+    reset() {
+        this.currentStep = 0;
+        this.activeBolts.clear();
+        document.querySelectorAll('.bolt').forEach(b => b.classList.remove('active'));
+        document.getElementById('core-trigger').style.boxShadow = '0 0 20px var(--gold-shadow)';
+        // Звук ошибки (тяжелый диссонанс можно добавить позже)
+    },
+
+    unlock() {
+        this.isLocked = false;
+        SonicForge.playRupture();
+        
+        // Переход к Window 5
+        TransitionEngine.start();
+    }
+};
+
+window.addEventListener('DOMContentLoaded', () => VaultLogic.init());
+</script>
+
+
+
+
+
+    <script>
+// Transition_Engine: Эффект Разрыва
+const TransitionEngine = {
+    start() {
+        const vault = document.getElementById('main-vault');
+        const terminal = document.getElementById('exchange-terminal');
+        const wrapper = document.getElementById('monolith-wrapper');
+
+        // 1. Вращение и уход в перспективу
+        vault.style.transform = 'translateZ(-500px) rotateY(180deg) scale(0)';
+        vault.style.opacity = '0';
+
+        // 2. Активация Терминала
+        setTimeout(() => {
+            terminal.classList.add('active');
+            wrapper.style.background = 'radial-gradient(circle, #1a1a1b 0%, #000 100%)';
+            
+            // Инициализация Canvas Биржи (Window 6)
+            ExchangeCore.init();
+        }, 800);
+    }
+};
+</script>
+
+
+
+
+
+
+
+    <script>
+// Exchange_Core: Ядро Биржи VCHF
+const ExchangeCore = {
+    canvas: null,
+    ctx: null,
+    points: [],
+    maxPoints: 50,
+    currentPrice: 1.0842, // Базовая цена VCHF/Gold
+
+    init() {
+        this.canvas = document.getElementById('gold-chart');
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        // Наполнение первичными данными
+        for(let i = 0; i < this.maxPoints; i++) {
+            this.points.push(this.currentPrice + (Math.random() - 0.5) * 0.002);
         }
 
-        // 2. РАЗРЫВ СТВОРОК
-        setTimeout(() => {
-            app.classList.add('monolith-open');
-            
-            if (audioCtx) {
-                const noiseNode = audioCtx.createBufferSource();
-                const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < buffer.length; i++) data[i] = Math.random() * 2 - 1;
-                noiseNode.buffer = buffer;
-                const noiseGain = audioCtx.createGain();
-                noiseGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                noiseGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2);
-                noiseNode.connect(noiseGain);
-                noiseGain.connect(audioCtx.destination);
-                noiseNode.start();
-            }
+        this.animate();
+    },
 
-            // 3. ПЕРЕХОД В БЕЛЫЙ ШУМ
-            setTimeout(() => {
-                app.style.transition = "2s";
-                app.style.filter = "brightness(12) blur(30px)";
-                app.style.opacity = "0";
-                
-                setTimeout(() => {
-                    console.log("ZERO CHAOS: REDIRECTING TO CORE...");
-                    // Здесь будет переход на терминал биржи
-                    // window.location.href = 'exchange.html';
-                }, 1500);
-            }, 3000);
-        }, 1000);
+    resize() {
+        this.canvas.width = window.innerWidth * 0.9;
+        this.canvas.height = window.innerHeight * 0.4;
+    },
+
+    drawGrid() {
+        this.ctx.strokeStyle = 'rgba(252, 246, 186, 0.05)';
+        this.ctx.lineWidth = 1;
+        for(let i = 0; i < this.canvas.width; i += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(i, 0);
+            this.ctx.lineTo(i, this.canvas.height);
+            this.ctx.stroke();
+        }
+    },
+
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawGrid();
+
+        // Отрисовка "Золотого Графика"
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = '#fcf6ba';
+        this.ctx.lineWidth = 3;
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = 'rgba(252, 246, 186, 0.5)';
+
+        const stepX = this.canvas.width / (this.maxPoints - 1);
+        
+        this.points.forEach((p, i) => {
+            const x = i * stepX;
+            const y = this.canvas.height - ((p - 1.08) * 5000); // Масштабирование
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        });
+
+        this.ctx.stroke();
+
+        // Симуляция живого рынка
+        if (Math.random() > 0.8) {
+            this.currentPrice += (Math.random() - 0.5) * 0.0005;
+            this.points.shift();
+            this.points.push(this.currentPrice);
+        }
+
+        requestAnimationFrame(() => this.animate());
+    }
+};
+</script>
+
+
+
+
+
+
+    <script>
+// Data_Streams: Логика прибыли VCHF
+const MarketOracle = {
+    basePrice: 1.0842,
+    volatility: 0.00015,
+    trend: 0.00001, // Швейцарская стабильность (медленный рост)
+
+    update() {
+        const delta = (Math.random() - 0.45) * this.volatility + this.trend;
+        this.basePrice += delta;
+        
+        // Обновление UI данных
+        const priceElement = document.getElementById('price-vchf');
+        if (priceElement) {
+            const oldPrice = parseFloat(priceElement.innerText);
+            priceElement.innerText = this.basePrice.toFixed(4);
+            priceElement.style.color = this.basePrice >= oldPrice ? '#fcf6ba' : '#ff4d4d';
+        }
+    },
+
+    getFormattedPrice() {
+        return this.basePrice.toFixed(4) + " VCHF";
+    }
+};
+
+// Запуск оракула при активации биржи
+setInterval(() => {
+    if (!VaultLogic.isLocked) MarketOracle.update();
+}, 2000);
+</script>
+
+
+    <style>
+    /* Дизайн Терминала */
+    #stats-panel {
+        width: 90%;
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        font-family: 'Courier New', monospace;
     }
 
-    const impactCSS = document.createElement('style');
-    impactCSS.innerHTML = `
-        .vault-impact { animation: impactEffect 0.15s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes impactEffect {
-            10%, 90% { transform: translate3d(-1px, 1px, 0); }
-            20%, 80% { transform: translate3d(2px, -1px, 0); }
-            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
-            40%, 60% { transform: translate3d(3px, 0, 0); }
-        }
+    .stat-card {
+        background: #1a1a1b;
+        border: 1px solid var(--steel-mid);
+        padding: 15px;
+        text-align: center;
+        box-shadow: inset 0 0 10px #000;
+        position: relative;
+    }
+
+    .stat-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; margin-bottom: 5px; }
+    .stat-value { font-size: 22px; font-weight: bold; color: var(--gold-hot); text-shadow: 0 0 10px var(--gold-shadow); }
+
+    .trade-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 20px;
+        width: 90%;
+    }
+
+    .btn-trade {
+        flex: 1;
+        padding: 20px;
+        background: linear-gradient(145deg, #242426, #121213);
+        border: 2px solid var(--steel-mid);
+        color: var(--gold-hot);
+        font-weight: bold;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 5px 5px 15px #000;
+    }
+
+    .btn-trade:active {
+        transform: translateY(3px);
+        box-shadow: 2px 2px 5px #000;
+        border-color: var(--gold-hot);
+    }
+
+    .btn-buy { border-right: 4px solid #fcf6ba; }
+    .btn-sell { border-left: 4px solid #666; }
+</style>
+
+<script>
+    const uiTemplate = `
+        <div class="stat-card">
+            <div class="stat-label">Swiss Treasury (VCHF)</div>
+            <div id="price-vchf" class="stat-value">1.0842</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Gold Reserve (Oz)</div>
+            <div class="stat-value">1,240.50</div>
+        </div>
+        <div class="trade-actions">
+            <button class="btn-trade btn-buy">Acquire VCHF</button>
+            <button class="btn-trade btn-sell">Liquidate</button>
+        </div>
     `;
-    document.head.appendChild(impactCSS);
-    console.log("Zero Chaos: Monolith Core v1.1.9 Fully Deployed.");
+    // Эта часть будет вставлена в DOM через IntegrityGuard
+</script>
+
+
+
+
+
+    <script>
+// Integrity_Guard: Финализация и сборка
+const IntegrityGuard = {
+    seal() {
+        console.log("🔱 MONOLITH: Finalized. Integrity 100%.");
+        
+        // Вставка UI в терминал
+        const statsPanel = document.getElementById('stats-panel');
+        if (statsPanel) statsPanel.innerHTML = uiTemplate;
+
+        // Фикс мобильного рендеринга (force layout)
+        window.scrollTo(0, 0);
+        document.body.style.height = window.innerHeight + 'px';
+    },
+
+    report() {
+        return {
+            status: "Zero_Chaos_Active",
+            vault: VaultLogic.isLocked ? "Secure" : "Unlocked",
+            core: "VCHF_Pulse_40Hz",
+            manifest: "Integrity_Over_Brevity"
+        };
+    }
+};
+
+// Запуск системы
+window.onload = () => {
+    IntegrityGuard.seal();
+    console.table(IntegrityGuard.report());
+};
 </script>
 </body>
 </html>
+
+
+    
+    
