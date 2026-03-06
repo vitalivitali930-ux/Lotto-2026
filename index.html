@@ -3,105 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.3</title>
+    <title>ZERO CHAOS | MONOLITH v3.4 FINAL</title>
     <style>
         :root {
-            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131;
+            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
             --dark-bg: #050505; --panel-bg: #0d0d0d; --font: 'Courier New', monospace;
         }
         body { 
             background-color: var(--dark-bg); color: var(--neon-green); 
-            font-family: var(--font); margin: 0; padding: 15px; font-size: 20px; 
+            font-family: var(--font); margin: 0; padding: 15px; font-size: 18px; 
+        }
+        #sync-error { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255, 0, 0, 0.9); z-index: 9999; text-align: center; 
+            padding-top: 20%; font-size: 1.8em; font-weight: bold; color: white;
         }
         .header { 
-            border-bottom: 2px solid var(--neon-green); padding-bottom: 10px;
-            display: flex; justify-content: space-between; margin-bottom: 25px; 
+            border: 2px solid var(--neon-green); padding: 15px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
         }
-        .log-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .log-table th { 
-            border-bottom: 2px solid var(--neon-green); padding: 10px 5px; 
-            text-align: left; font-size: 0.7em; color: var(--neon-blue);
+        .panel { 
+            background: var(--panel-bg); border: 1px solid var(--neon-green); 
+            padding: 15px; margin-bottom: 20px;
         }
-        .log-table td { padding: 15px 5px; border-bottom: 1px solid #222; font-size: 0.8em; }
+        .sector-title { font-size: 1em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; }
         
-        .bank-display { text-align: right; }
-        .bank-label { font-size: 0.5em; color: var(--neon-blue); display: block; }
-        .bank-total { font-size: 1.5em; font-weight: bold; color: #fff; }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; }
+        .log-table th { background: #002b00; padding: 10px; text-align: left; border: 1px solid var(--neon-green); }
+        .log-table td { padding: 12px 8px; border: 1px solid #333; }
 
-        .status-wait { color: var(--neon-blue); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .logic-note { 
+            background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-blue);
+            padding: 10px; margin-top: 10px; font-size: 0.8em; color: #a0faff;
+        }
         
-        .panel { background: var(--panel-bg); border: 1px solid #333; padding: 15px; border-radius: 5px; }
+        .status-wait { color: var(--neon-blue); animation: pulse 2s infinite; font-weight: bold; }
+        @keyframes pulse { 50% { opacity: 0.3; } }
+
+        .footer-stats { 
+            background: #1a1a1a; padding: 15px; border: 2px solid var(--neon-green); 
+            margin-top: auto; display: flex; justify-content: space-between;
+        }
+        .big-sum { font-size: 1.5em; color: white; text-shadow: 0 0 10px var(--neon-green); }
     </style>
 </head>
 <body>
 
+<div id="sync-error">SYNC ERROR. DATA IS OUTDATED</div>
+
 <div class="header">
     <div>
-        <div style="font-size: 1.2em; font-weight: bold; letter-spacing: 2px;">MONOLITH</div>
-        <div style="font-size: 0.6em; color: #666;">ECHELON PROTOCOL ACTIVE</div>
+        <div id="live-clock" style="font-size: 1.4em; font-weight: bold;">00:00:00</div>
+        <div style="font-size: 0.6em; color: var(--neon-blue);">ECHELON PHASE: 1 (WEEK)</div>
     </div>
-    <div class="bank-display">
-        <span class="bank-label">TOTAL BANK (EUR)</span>
-        <span class="bank-total" id="current-bank">50.00</span>
+    <div style="text-align: right;">
+        <div style="font-size: 0.6em;">CURRENT BANK:</div>
+        <div class="big-sum"><span id="display-bank">50.00</span> EUR</div>
     </div>
 </div>
 
-<div class="panel">
+<div class="panel" style="border-color: var(--neon-blue);">
+    <div class="sector-title" style="color: var(--neon-blue);">◈ СЕКТОР BLUE: ПЯТНИЦА (06.03)</div>
     <table class="log-table">
         <thead>
             <tr>
-                <th>ДЕНЬ</th>
-                <th>МАТЧ</th>
-                <th>ВХОД</th>
-                <th>ИТОГ</th>
+                <th>СОБЫТИЕ</th>
+                <th>БЫЛО</th>
+                <th>СТАВКА</th>
+                <th>ВЫИГРЫШ</th>
                 <th>СТАТУС</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>06.03</td>
-                <td>Leipzig П1</td>
+                <td>Leipzig - П1</td>
+                <td>25.00</td>
                 <td>25.00</td>
                 <td>37.75</td>
                 <td class="status-wait">WAITING</td>
             </tr>
             <tr>
-                <td>06.03</td>
-                <td>Napoli ТБ</td>
+                <td>Napoli - ТБ 2.5</td>
+                <td>25.00</td>
                 <td>25.00</td>
                 <td>47.75</td>
                 <td class="status-wait">WAITING</td>
             </tr>
+        </tbody>
+    </table>
+    <div class="logic-note">
+        <b>ЛОГИКА:</b> Мы заходим полным банком на фаворитов дома. Психология толпы сегодня на стороне Гладбаха (верят в камбэк), но цифры говорят за Лейпциг.
+    </div>
+</div>
+
+<div class="panel" style="border-color: var(--neon-red); opacity: 0.8;">
+    <div class="sector-title" style="color: var(--neon-red);">◈ СЕКТОР RED: СУББОТА (07.03)</div>
+    <table class="log-table">
+        <tbody>
             <tr>
-                <td>07.03</td>
-                <td>City П1+</td>
+                <td>Man City - П1+</td>
+                <td>80.00</td>
                 <td>40.00</td>
                 <td>65.00</td>
-                <td style="color:#444">PENDING</td>
+                <td>PENDING</td>
             </tr>
             <tr>
-                <td>07.03</td>
-                <td>Bayern ТБ</td>
+                <td>Bayern - ИТБ 2.5</td>
+                <td>40.00</td>
                 <td>40.00</td>
                 <td>67.00</td>
-                <td style="color:#444">PENDING</td>
-            </tr>
-            <tr>
-                <td>08.03</td>
-                <td>Real M П1</td>
-                <td>60.00</td>
-                <td>92.00</td>
-                <td style="color:#444">PENDING</td>
+                <td>PENDING</td>
             </tr>
         </tbody>
     </table>
 </div>
 
-<div style="margin-top: 20px; font-size: 0.6em; color: #555; text-align: center; border-top: 1px solid #222; padding-top: 10px;">
-    МАНИФЕСТ МОНОЛИТА: МЫ ВЕДЕМ УЧЕТ КАЖДОГО ЦЕНТА.<br>
-    СЛЕДУЮЩЕЕ ОБНОВЛЕНИЕ ПОСЛЕ ФИНАЛЬНОГО СВИСТКА.
+<div class="panel" style="border-color: var(--neon-gold); opacity: 0.6;">
+    <div class="sector-title" style="color: var(--neon-gold);">◈ СЕКТОР GOLD: ВОСКРЕСЕНЬЕ (08.03)</div>
+    <div style="font-size: 0.8em; padding: 10px;">
+        Ожидаемая цель к 22:00: <span style="color: var(--neon-gold); font-weight: bold;">~210.00 EUR</span><br>
+        Матч дня: Real Madrid vs Athletic (П1)
+    </div>
 </div>
+
+<div class="footer-stats">
+    <div>
+        <div style="font-size: 0.6em;">START (06.03):</div>
+        <div style="font-weight: bold;">50.00 EUR</div>
+    </div>
+    <div style="text-align: right;">
+        <div style="font-size: 0.6em;">PROJECTION:</div>
+        <div style="font-weight: bold; color: var(--neon-gold);">+320%</div>
+    </div>
+</div>
+
+<script>
+    function syncSystem() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
+        
+        // ПРОВЕРКА SIX EXCHANGE (1 СЕКУНДА)
+        if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1100) {
+            document.getElementById('sync-error').style.display = 'block';
+        } else {
+            document.getElementById('sync-error').style.display = 'none';
+        }
+        window.lastSync = Date.now();
+    }
+    setInterval(syncSystem, 1000);
+</script>
 
 </body>
 </html>
