@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v3.4 FINAL</title>
+    <title>ZERO CHAOS | MONOLITH v3.7 FINAL</title>
     <style>
         :root {
             --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
@@ -25,20 +25,23 @@
         }
         .panel { 
             background: var(--panel-bg); border: 1px solid var(--neon-green); 
-            padding: 15px; margin-bottom: 20px;
+            padding: 15px; margin-bottom: 20px; overflow: hidden; /* ЗАЩИТА РАМОК */
         }
         .sector-title { font-size: 1em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid; }
         
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; }
-        .log-table th { background: #002b00; padding: 10px; text-align: left; border: 1px solid var(--neon-green); }
-        .log-table td { padding: 12px 8px; border: 1px solid #333; }
+        /* УЛУЧШЕННАЯ ТАБЛИЦА: НИЧЕГО НЕ ВЫЛЕЗАЕТ */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.75em; table-layout: fixed; }
+        .log-table th { background: #002b00; padding: 10px 5px; text-align: left; border: 1px solid var(--neon-green); }
+        .log-table td { padding: 12px 5px; border: 1px solid #333; word-wrap: break-word; vertical-align: middle; }
 
         .logic-note { 
             background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-blue);
             padding: 10px; margin-top: 10px; font-size: 0.8em; color: #a0faff;
         }
         
-        .status-wait { color: var(--neon-blue); animation: pulse 2s infinite; font-weight: bold; }
+        .status-wait { color: var(--neon-blue); font-weight: bold; }
+        .countdown { display: block; font-size: 0.9em; color: #fff; margin-top: 4px; }
+        .status-live { color: var(--neon-red); font-weight: bold; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.3; } }
 
         .footer-stats { 
@@ -68,32 +71,32 @@
     <table class="log-table">
         <thead>
             <tr>
-                <th>СОБЫТИЕ</th>
+                <th style="width: 35%;">СОБЫТИЕ</th>
                 <th>БЫЛО</th>
                 <th>СТАВКА</th>
-                <th>ВЫИГРЫШ</th>
-                <th>СТАТУС</th>
+                <th>WIN</th>
+                <th style="width: 30%;">СТАТУС</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Leipzig - П1</td>
+                <td>Leipzig П1</td>
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>37.75</td>
-                <td class="status-wait">WAITING</td>
+                <td class="status-wait">WAITING<span id="t-lpz" class="countdown">--:--:--</span></td>
             </tr>
             <tr>
-                <td>Napoli - ТБ 2.5</td>
+                <td>Napoli ТБ</td>
                 <td>25.00</td>
                 <td>25.00</td>
                 <td>47.75</td>
-                <td class="status-wait">WAITING</td>
+                <td class="status-wait">WAITING<span id="t-nap" class="countdown">--:--:--</span></td>
             </tr>
         </tbody>
     </table>
     <div class="logic-note">
-        <b>ЛОГИКА:</b> Мы заходим полным банком на фаворитов дома. Психология толпы сегодня на стороне Гладбаха (верят в камбэк), но цифры говорят за Лейпциг.
+        <b>ЛОГИКА:</b> Заход полным банком на фаворитов. Проверка стабильности системы v3.7.
     </div>
 </div>
 
@@ -102,29 +105,21 @@
     <table class="log-table">
         <tbody>
             <tr>
-                <td>Man City - П1+</td>
+                <td style="width: 35%;">Man City+</td>
                 <td>80.00</td>
                 <td>40.00</td>
                 <td>65.00</td>
-                <td>PENDING</td>
+                <td style="width: 30%;">PENDING</td>
             </tr>
             <tr>
-                <td>Bayern - ИТБ 2.5</td>
+                <td style="width: 35%;">Bayern ИТБ</td>
                 <td>40.00</td>
                 <td>40.00</td>
                 <td>67.00</td>
-                <td>PENDING</td>
+                <td style="width: 30%;">PENDING</td>
             </tr>
         </tbody>
     </table>
-</div>
-
-<div class="panel" style="border-color: var(--neon-gold); opacity: 0.6;">
-    <div class="sector-title" style="color: var(--neon-gold);">◈ СЕКТОР GOLD: ВОСКРЕСЕНЬЕ (08.03)</div>
-    <div style="font-size: 0.8em; padding: 10px;">
-        Ожидаемая цель к 22:00: <span style="color: var(--neon-gold); font-weight: bold;">~210.00 EUR</span><br>
-        Матч дня: Real Madrid vs Athletic (П1)
-    </div>
 </div>
 
 <div class="footer-stats">
@@ -143,13 +138,31 @@
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', {hour12: false});
         
-        // ПРОВЕРКА SIX EXCHANGE (1 СЕКУНДА)
+        // ОБРАТНЫЙ ОТСЧЕТ
+        updateTimer('t-lpz', 20, 30);
+        updateTimer('t-nap', 20, 45);
+
         if(window.lastSync && Math.abs(Date.now() - window.lastSync) > 1100) {
             document.getElementById('sync-error').style.display = 'block';
         } else {
             document.getElementById('sync-error').style.display = 'none';
         }
         window.lastSync = Date.now();
+    }
+
+    function updateTimer(id, h, m) {
+        const target = new Date(); target.setHours(h, m, 0);
+        const diff = target - new Date();
+        const el = document.getElementById(id);
+        if (diff <= 0) {
+            el.parentElement.className = "status-live";
+            el.innerText = "В ИГРЕ (LIVE)";
+        } else {
+            const hrs = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            el.innerText = `-${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        }
     }
     setInterval(syncSystem, 1000);
 </script>
