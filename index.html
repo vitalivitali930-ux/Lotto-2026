@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.9</title>
+    <title>ZERO CHAOS | MONOLITH v3.0</title>
     <style>
         :root {
-            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131;
+            --neon-green: #00ff41; --neon-blue: #00f2ff; --neon-red: #ff3131; --neon-gold: #ffea00;
             --dark-bg: #050505; --panel-bg: #0d0d0d; --font: 'Courier New', monospace;
         }
         body { background-color: var(--dark-bg); color: var(--neon-green); font-family: var(--font); margin: 0; padding: 10px; display: flex; flex-direction: column; min-height: 100vh; }
         .header { border: 1px solid var(--neon-green); padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; }
-        .sports-panel { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; position: relative; }
+        .sector-blue { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .sector-red { border-color: var(--neon-red); color: var(--neon-red); opacity: 0.7; }
+        .sector-gold { border-color: var(--neon-gold); color: var(--neon-gold); opacity: 0.5; }
         .bet-card { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.75em; }
+        .math-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.9em; background: rgba(0,0,0,0.5); padding: 4px; }
+        .status-tag { position: absolute; top: 5px; right: 10px; font-size: 0.6em; font-weight: bold; text-transform: uppercase; }
         .timer-val { font-weight: bold; color: #fff; background: #002b36; padding: 2px 6px; border-radius: 3px; }
-        .logic-block { background: #00151a; border-left: 2px solid var(--neon-blue); padding: 5px; margin-top: 5px; color: #a0faff; font-size: 0.85em; }
-        .error-tag { color: var(--neon-red); font-weight: bold; }
         .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; }
         .total-row { display: flex; justify-content: space-between; align-items: center; }
-        .advisor-area { background: #000a00; border-left: 3px solid var(--neon-green); padding: 8px; height: 50px; overflow-y: auto; font-size: 0.7em; }
     </style>
 </head>
 <body>
@@ -27,77 +28,88 @@
 <div class="header">
     <div>
         <div id="live-clock" style="font-size: 1.2em; font-weight: bold;">00:00:00</div>
-        <div style="font-size: 0.6em; opacity: 0.6;">START: 1000.00</div>
+        <div style="font-size: 0.6em; opacity: 0.6;">START DEP: 50.00 EUR</div>
     </div>
     <div style="text-align: right; font-size: 0.7em;">
-        <div>DAILY P&L:</div>
-        <div id="daily-pl" style="font-weight: bold;">0.00 EUR</div>
+        <div>PROJECTED SUNDAY:</div>
+        <div style="font-weight: bold; color: var(--neon-gold);">~210.00 EUR</div>
     </div>
 </div>
 
-<div class="panel sports-panel">
-    <div style="font-size: 0.8em; font-weight: bold;">◈ BLUE SECTOR: PSYCHOLOGY & ODDS</div>
-    
+<div class="panel sector-blue">
+    <span class="status-tag">ACTIVE SECTOR</span>
+    <div style="font-size: 0.8em; font-weight: bold;">◈ ПЯТНИЦА (06.03) | ПЕРВИЧНЫЙ ВХОД</div>
     <div class="bet-card">
-        <div style="display:flex; justify-content:space-between;">
-            <span>LEIPZIG vs GLADBACH (П1)</span>
-            <span id="timer-lpz" class="timer-val">--:--:--</span>
-        </div>
-        <div class="logic-block">
-            <b>ЛОГИКА:</b> Лейпциг дома — это машина. У Гладбаха «дырявая» защита в гостях.<br>
-            <span class="error-tag">ОШИБКА ТОЛПЫ:</span> Попытка ставить на «громкое имя» Боруссии, игнорируя текущую форму.
+        <div>LEIPZIG vs GLADBACH | П1 (1.55) | <span id="t1" class="timer-val">--:--:--</span></div>
+        <div class="math-row">
+            <span>БЫЛО: 25.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 37.75</span>
         </div>
     </div>
-
     <div class="bet-card">
-        <div style="display:flex; justify-content:space-between;">
-            <span>NAPOLI vs ROMA (ТБ 2.5)</span>
-            <span id="timer-nap" class="timer-val">--:--:--</span>
-        </div>
-        <div class="logic-block">
-            <b>ЛОГИКА:</b> Обе команды играют в атаку. Статистика личных встреч сулит голы.<br>
-            <span class="error-tag">ОШИБКА ТОЛПЫ:</span> Ставка на «Ничью» из-за страха проигрыша обеих сторон.
+        <div>NAPOLI vs ROMA | ТБ 2.5 (1.95) | <span id="t2" class="timer-val">--:--:--</span></div>
+        <div class="math-row">
+            <span>БЫЛО: 25.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 47.75</span>
         </div>
     </div>
 </div>
 
-<div class="panel">
-    <div id="advisor-log" class="advisor-area"> > Навигатор v2.9: Модуль психологии внедрен. Капитан, изучай причины Хаоса. </div>
+<div class="panel sector-red">
+    <span class="status-tag">WAITING FOR REINVEST</span>
+    <div style="font-size: 0.8em; font-weight: bold;">◈ СУББОТА (07.03) | АГРЕССИВНЫЙ РОСТ</div>
+    <div class="bet-card">
+        <div>MAN CITY vs BOURNEMOUTH | П1+ТБ 2.5 (1.65)</div>
+        <div class="math-row">
+            <span>БЫЛО: 40.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 65.00</span>
+        </div>
+    </div>
+    <div class="bet-card">
+        <div>BAYERN vs HOFFENHEIM | ИТБ 2.5 (1.70)</div>
+        <div class="math-row">
+            <span>БЫЛО: 40.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 67.00</span>
+        </div>
+    </div>
+</div>
+
+<div class="panel sector-gold">
+    <span class="status-tag">LOCKED UNTIL SUN</span>
+    <div style="font-size: 0.8em; font-weight: bold;">◈ ВОСКРЕСЕНЬЕ (08.03) | ФИКСАЦИЯ ПРИБЫЛИ</div>
+    <div class="bet-card">
+        <div>REAL MADRID vs ATHLETIC | П1 (1.55)</div>
+        <div class="math-row">
+            <span>БЫЛО: 60.00</span> <span>СТАЛО: [?]</span> <span>БУДЕТ: 92.00</span>
+        </div>
+    </div>
 </div>
 
 <div class="balance-bar">
-    <div class="total-row"><span>CASH:</span><span id="cash-balance">1000.00</span></div>
-    <div class="total-row" style="border-top: 1px solid #333; margin-top: 5px; padding-top: 5px;">
-        <span>TOTAL EQUITY:</span>
-        <span id="total-equity" style="font-size: 1.1em; font-weight: bold; color: var(--neon-green);">1000.00</span>
+    <div class="total-row"><span>ТЕКУЩИЙ КЭШ:</span><span id="cash-balance">50.00</span></div>
+    <div class="total-row" style="border-top: 1px solid #333; margin-top: 5px; padding-top: 5px; color: var(--neon-gold);">
+        <span>ОЖИДАЕМЫЙ ИТОГ (22:00):</span>
+        <span id="total-equity" style="font-weight: bold;">~210.00</span>
     </div>
 </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('monolith_v2_9')) || { balance: 1000.00, startBalance: 1000.00 };
-
     function updateSystem() {
         const now = new Date();
         document.getElementById('live-clock').innerText = now.toLocaleTimeString('de-CH', { hour12: false });
-        updateTimer('timer-lpz', 20, 30);
-        updateTimer('timer-nap', 20, 45);
-        document.getElementById('cash-balance').innerText = state.balance.toFixed(2);
-        document.getElementById('total-equity').innerText = state.balance.toFixed(2);
+        
+        updateTimer('t1', 20, 30);
+        updateTimer('t2', 20, 45);
     }
 
     function updateTimer(id, h, m) {
         const target = new Date(); target.setHours(h, m, 0);
         const diff = target - new Date();
         const el = document.getElementById(id);
-        if (diff <= 0) { el.innerText = "LIVE"; el.style.background = "#410000"; }
+        if (diff <= 0) { el.innerText = "LIVE"; }
         else {
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            el.innerText = `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
         }
     }
-
     setInterval(updateSystem, 1000);
 </script>
 </body>
