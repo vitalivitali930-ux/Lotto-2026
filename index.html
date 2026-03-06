@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO CHAOS | MONOLITH v2.0</title>
+    <title>ZERO CHAOS | MONOLITH v2.1</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -14,13 +14,9 @@
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: var(--neon-green);
-            font-family: var(--font);
-            margin: 0; padding: 10px;
-            box-sizing: border-box;
-            display: flex; flex-direction: column;
-            min-height: 100vh;
+            background-color: var(--dark-bg); color: var(--neon-green);
+            font-family: var(--font); margin: 0; padding: 10px;
+            box-sizing: border-box; display: flex; flex-direction: column; min-height: 100vh;
         }
 
         #sync-error {
@@ -30,52 +26,31 @@
         }
 
         .header {
-            border: 1px solid var(--neon-green);
-            padding: 10px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid var(--neon-green); padding: 10px;
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px; box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
-            font-size: 0.8em;
         }
 
-        .clock-box { font-size: 1.4em; font-weight: bold; }
+        .clock-box { font-size: 1.2em; font-weight: bold; }
+        .day-stat { font-size: 0.7em; text-align: right; }
 
-        .panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-green);
-            padding: 12px; margin-bottom: 10px;
-        }
+        .panel { background: var(--panel-bg); border: 1px solid var(--neon-green); padding: 12px; margin-bottom: 10px; }
 
-        .asset-card {
-            border-bottom: 1px solid #222;
-            padding: 15px 0;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-
+        .asset-card { border-bottom: 1px solid #222; padding: 12px 0; display: flex; flex-direction: column; gap: 5px; }
         .asset-info { display: flex; justify-content: space-between; align-items: center; }
-        .ticker { font-size: 1.1em; font-weight: bold; color: white; }
-        .profit-pct { font-size: 0.9em; font-weight: bold; }
+        .ticker { font-size: 1em; font-weight: bold; color: white; }
         .pos { color: #00ff41; } .neg { color: #ff3e3e; }
 
-        .btn-group { display: flex; gap: 10px; }
-        .btn {
-            flex: 1; background: transparent; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 12px; cursor: pointer;
-            font-family: var(--font); font-weight: bold;
-        }
-
+        .btn-group { display: flex; gap: 8px; margin-top: 5px; }
+        .btn { flex: 1; background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); padding: 12px; cursor: pointer; font-family: var(--font); font-weight: bold; font-size: 0.8em; }
         .btn:active { background: var(--neon-green); color: black; }
         .btn-sell { border-color: var(--danger); color: var(--danger); }
 
-        .balance-bar {
-            background: #1a1a1a; padding: 15px; border: 1px solid var(--neon-green);
-            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
-        }
+        .balance-bar { background: #1a1a1a; padding: 12px; border: 1px solid var(--neon-green); margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; }
 
-        .advisor-area {
-            background: #000a00; border-left: 3px solid var(--neon-green);
-            padding: 10px; height: 80px; overflow-y: auto; font-size: 0.75em;
-        }
-        
-        .reset-btn { font-size: 0.6em; color: gray; border: none; background: none; cursor: pointer; }
+        .advisor-area { background: #000a00; border-left: 3px solid var(--neon-green); padding: 8px; height: 70px; overflow-y: auto; font-size: 0.7em; }
+        .reset-btn { font-size: 0.6em; color: #555; border: none; background: none; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -85,11 +60,11 @@
 <div class="header">
     <div>
         <div id="live-clock" class="clock-box">00:00:00</div>
-        <div style="opacity: 0.6;">GERMANY HUB | NEO-MODE</div>
+        <div style="font-size: 0.6em; opacity: 0.6;">START: <span id="start-val">1000.00</span></div>
     </div>
-    <div style="text-align: right;">
-        <button class="reset-btn" onclick="wipeData()">[СБРОС СЕССИИ]</button>
-        <div id="sync-status" style="color: var(--neon-green);">● MEMORY ACTIVE</div>
+    <div class="day-stat">
+        <div>DAILY P&L:</div>
+        <div id="daily-pl" style="font-weight: bold;">+0.00 EUR (0%)</div>
     </div>
 </div>
 
@@ -98,18 +73,24 @@
 </div>
 
 <div class="panel">
-    <div id="advisor-log" class="advisor-area">
-        > Система v2.0 загружена. Память активна. Жду приказов.
-    </div>
+    <div id="advisor-log" class="advisor-area"> > Навигатор v2.1: Гибкий лот активен. </div>
 </div>
 
 <div class="balance-bar">
-    <div style="font-size: 0.8em;">EUR BALANCE:</div>
-    <div id="total-balance" style="font-size: 1.3em; font-weight: bold; color: white;">1000.00</div>
+    <div class="total-row">
+        <span style="font-size: 0.7em;">CASH (EUR):</span>
+        <span id="cash-balance" style="font-weight: bold; color: white;">1000.00</span>
+    </div>
+    <div class="total-row" style="border-top: 1px solid #333; pt: 5px;">
+        <span style="font-size: 0.7em;">TOTAL EQUITY:</span>
+        <span id="total-equity" style="font-size: 1.1em; font-weight: bold; color: var(--neon-green);">1000.00</span>
+    </div>
+    <button class="reset-btn" onclick="wipeData()">WIPE ALL & RESET TO 1000</button>
 </div>
 
 <script>
     const INITIAL_STATE = {
+        startBalance: 1000.00,
         balance: 1000.00,
         portfolio: {
             'BTC': { name: 'Monster (BTC)', qty: 0, price: 60850.00, buyPrice: 0 },
@@ -121,11 +102,10 @@
         }
     };
 
-    let state = JSON.parse(localStorage.getItem('monolith_v2')) || INITIAL_STATE;
+    let state = JSON.parse(localStorage.getItem('monolith_v2_1')) || INITIAL_STATE;
 
-    function save() { localStorage.setItem('monolith_v2', JSON.stringify(state)); }
-
-    function wipeData() { if(confirm("Сбросить баланс до 1000?")) { state = INITIAL_STATE; save(); render(); } }
+    function save() { localStorage.setItem('monolith_v2_1', JSON.stringify(state)); }
+    function wipeData() { if(confirm("Сбросить всё?")) { state = JSON.parse(JSON.stringify(INITIAL_STATE)); save(); render(); } }
 
     function updateTime() {
         document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('de-CH', { hour12: false });
@@ -136,49 +116,69 @@
     function render() {
         const container = document.getElementById('asset-container');
         container.innerHTML = '';
+        let totalAssetVal = 0;
+
         for (let ticker in state.portfolio) {
             const asset = state.portfolio[ticker];
             let profit = 0;
-            if(asset.qty > 0 && asset.buyPrice > 0) {
-                profit = ((asset.price - asset.buyPrice) / asset.buyPrice) * 100;
-            }
+            let currentVal = asset.qty * asset.price;
+            totalAssetVal += currentVal;
+
+            if(asset.qty > 0 && asset.buyPrice > 0) profit = ((asset.price - asset.buyPrice) / asset.buyPrice) * 100;
+
+            // Умная сумма покупки
+            let canBuy = Math.floor(Math.min(state.balance - 1, 100));
+            if (canBuy < 0) canBuy = 0;
+
             container.innerHTML += `
                 <div class="asset-card">
                     <div class="asset-info">
                         <span class="ticker">${asset.name}</span>
                         <span class="price">${asset.price.toFixed(2)}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.7em; opacity:0.7;">
-                        <span>В портфеле: ${asset.qty.toFixed(ticker==='BTC'?4:2)}</span>
-                        <span class="profit-pct ${profit>=0?'pos':'neg'}">P/L: ${profit.toFixed(2)}%</span>
+                    <div style="display:flex; justify-content:space-between; font-size:0.65em; opacity:0.7;">
+                        <span>Hold: ${asset.qty.toFixed(ticker==='BTC'?4:2)} (${currentVal.toFixed(2)}€)</span>
+                        <span class="${profit>=0?'pos':'neg'}">P/L: ${profit.toFixed(2)}%</span>
                     </div>
                     <div class="btn-group">
-                        <button class="btn" onclick="executeTrade('${ticker}', 'buy')">BUY 100€</button>
+                        <button class="btn" onclick="executeTrade('${ticker}', 'buy')">BUY ${canBuy>0?canBuy:''}€</button>
                         <button class="btn btn-sell" onclick="executeTrade('${ticker}', 'sell')">SELL ALL</button>
                     </div>
                 </div>`;
         }
-        document.getElementById('total-balance').innerText = state.balance.toFixed(2);
+
+        const totalEquity = state.balance + totalAssetVal;
+        const dailyPL = totalEquity - state.startBalance;
+        const dailyPLPct = (dailyPL / state.startBalance) * 100;
+
+        document.getElementById('cash-balance').innerText = state.balance.toFixed(2);
+        document.getElementById('total-equity').innerText = totalEquity.toFixed(2);
+        document.getElementById('start-val').innerText = state.startBalance.toFixed(2);
+        
+        const plEl = document.getElementById('daily-pl');
+        plEl.innerText = `${dailyPL >= 0 ? '+' : ''}${dailyPL.toFixed(2)} EUR (${dailyPLPct.toFixed(2)}%)`;
+        plEl.className = `day-stat ${dailyPL >= 0 ? 'pos' : 'neg'}`;
     }
 
     function executeTrade(ticker, side) {
         const asset = state.portfolio[ticker];
         const log = document.getElementById('advisor-log');
-        const amount = 100;
+        let amount = Math.min(state.balance - 1, 100);
 
         if (side === 'buy') {
-            if (state.balance < amount + 1) return;
-            const spreadPrice = asset.price * 1.001;
-            if(asset.qty === 0) asset.buyPrice = spreadPrice;
-            else asset.buyPrice = (asset.buyPrice + spreadPrice) / 2;
-            asset.qty += (amount / spreadPrice);
+            if (amount <= 0) return;
+            const sprPrice = asset.price * 1.001;
+            if(asset.qty === 0) asset.buyPrice = sprPrice;
+            else asset.buyPrice = ((asset.buyPrice * asset.qty) + (sprPrice * (amount/sprPrice))) / (asset.qty + (amount/sprPrice));
+            asset.qty += (amount / sprPrice);
             state.balance -= (amount + 1);
-            log.innerHTML = `> BUY ${ticker} @ ${spreadPrice.toFixed(2)}<br>` + log.innerHTML;
+            log.innerHTML = `> BUY ${ticker} for ${amount.toFixed(2)}€<br>` + log.innerHTML;
         } else {
             if (asset.qty <= 0) return;
-            const sellPrice = asset.price * 0.999;
-            state.balance += (asset.qty * sellPrice) - 1;
-            log.innerHTML = `> SELL ${ticker}. Profit: ${((sellPrice-asset.buyPrice)/asset.buyPrice*100).toFixed(2)}%<br>` + log.innerHTML;
+            const sellPr = asset.price * 0.999;
+            const cashIn = asset.qty * sellPr;
+            state.balance += (cashIn - 1);
+            log.innerHTML = `> SELL ${ticker} for ${cashIn.toFixed(2)}€<br>` + log.innerHTML;
             asset.qty = 0; asset.buyPrice = 0;
         }
         save(); render();
