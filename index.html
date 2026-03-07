@@ -2,6 +2,215 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, vertical-align=top">
+    
+    <meta name="theme-color" content="#1a1c1e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="color-scheme" content="dark">
+
+    <title>ZERO_CHAOS // TERMINAL_1000_SLOTS</title>
+    <style>
+        :root {
+            --bg: radial-gradient(circle at top, #1a1c1e 0%, #050607 100%);
+            --gold: linear-gradient(135deg, #fcf6ba 0%, #bf953f 100%);
+            --gold-solid: #fcf6ba;
+            --steel: rgba(45, 45, 48, 0.6);
+            --glass: rgba(74, 4, 4, 0.22); 
+            --danger: #ff5f5f;
+            --spotlight: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.22) 0%, transparent 75%);
+            --rings: radial-gradient(circle at var(--ox, -10%) var(--oy, -10%), transparent 0%, transparent 35%, rgba(0, 0, 0, 0.5) 36%, rgba(94, 10, 10, 0.12) 37%, transparent 39%, transparent 60%, rgba(0, 0, 0, 0.55) 61%, rgba(74, 4, 4, 0.18) 62%, transparent 65%);
+            --grid: linear-gradient(rgba(252, 246, 186, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(252, 246, 186, 0.03) 1px, transparent 1px);
+        }
+        
+        body {
+            background: var(--bg); background-image: var(--grid); background-size: 20px 20px; background-attachment: fixed;
+            color: var(--gold-solid); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; padding-bottom: 120px;
+            letter-spacing: 0.5px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; color-scheme: dark;
+        }
+
+        h2 { font-weight: 300; letter-spacing: 6px; text-shadow: 0 0 20px rgba(252, 246, 186, 0.2); text-align: center; margin-bottom: 40px; text-transform: uppercase; cursor: crosshair; }
+
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+
+        .card {
+            position: relative; background: var(--glass); background-image: var(--rings); backdrop-filter: blur(10px);
+            border: 1px solid rgba(252, 246, 186, 0.1); border-left: 2px solid rgba(252, 246, 186, 0.2); border-top: 1px solid rgba(252, 246, 186, 0.45); 
+            border-radius: 12px; padding: 20px; text-align: center; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.9), inset 0 0 30px rgba(74, 4, 4, 0.3); overflow: hidden;
+        }
+
+        .card:nth-child(3n) { --ox: 110%; --oy: -20%; }
+        .card:nth-child(3n+1) { --ox: -40%; --oy: 120%; }
+        .card:nth-child(3n+2) { --ox: 60%; --oy: -40%; }
+
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 100%; background: var(--spotlight); pointer-events: none; z-index: 2; }
+
+        .card-img {
+            width: 100%; height: 130px; background: linear-gradient(180deg, #000 0%, #1a0101 100%); border-radius: 8px;
+            margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #4a0404;
+            border: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 1; overflow: hidden;
+        }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .price { color: rgba(252, 246, 186, 0.85); font-size: 0.85rem; margin: 10px 0; font-weight: bold; position: relative; z-index: 1; }
+
+        button {
+            margin-top: 10px; width: 100%; background: var(--gold); border: none; border-radius: 6px;
+            color: #000; padding: 10px; font-weight: bold; font-size: 0.75rem; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; position: relative; z-index: 3;
+        }
+
+        #cart-bar {
+            position: fixed; bottom: 20px; left: 15px; right: 15px; background: rgba(10, 11, 12, 0.98);
+            backdrop-filter: blur(25px); border: 1px solid rgba(252, 246, 186, 0.35); border-radius: 15px;
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; box-sizing: border-box; z-index: 100;
+        }
+
+        /* АДМИН-ПАНЕЛЬ */
+        #admin-panel {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #050607; z-index: 500; padding: 20px; box-sizing: border-box; border: 2px solid var(--gold-solid);
+        }
+        .admin-input { background: #1a1c1e; border: 1px solid var(--gold-solid); color: #fff; width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body onclick="activateFullscreen()">
+
+    <h2 id="logo" onclick="adminTrigger()">VCHF // ARSENAL</h2>
+    
+    <div class="shop-grid" id="main-grid"></div>
+
+    <div id="cart-bar" onclick="toggleCart(event)">
+        <span id="cart-info" style="font-size: 0.8rem; font-weight: bold;">СЕЙФ ПУСТ</span>
+        <button style="width: auto; margin: 0; padding: 8px 20px; background: none; border: 1px solid var(--gold-solid); color: var(--gold-solid);">ОТКРЫТЬ</button>
+    </div>
+
+    <div id="admin-panel">
+        <span class="close-btn" onclick="adminTrigger()" style="float:right; cursor:pointer;">[ ЗАКРЫТЬ ]</span>
+        <h3>CONSOLE // ADMIN_0000</h3>
+        <hr border="1" color="#bf953f">
+        
+        <p>АКТИВАЦИЯ СЛОТА (ВСТАВИТЬ КЛЮЧ)</p>
+        <input type="number" id="slot-id" class="admin-input" placeholder="ID Слота (1-1000)">
+        <textarea id="slot-key" class="admin-input" placeholder="Вставьте ключ продавца" rows="3"></textarea>
+        <button onclick="activateSlot()">ПРИМЕНИТЬ К МОНОЛИТУ</button>
+
+        <p style="margin-top:30px;">ГЕНЕРАТОР КЛЮЧА (ДЛЯ ПРОДАВЦА)</p>
+        <input type="text" id="p-name" class="admin-input" placeholder="Название товара">
+        <input type="number" id="p-price" class="admin-input" placeholder="Цена VCHF">
+        <input type="text" id="p-img" class="admin-input" placeholder="Ссылка на фото">
+        <button onclick="generateKey()" style="background: var(--steel); color: #fff;">СОЗДАТЬ КЛЮЧ</button>
+        <div id="key-output" style="font-size: 0.6rem; word-break: break-all; margin-top: 10px; color: #888;"></div>
+    </div>
+
+    <div id="cart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:200; padding:30px;">
+        <span class="close-btn" onclick="toggleCart(event)">[ ЗАКРЫТЬ ]</span>
+        <div id="cart-list"></div>
+        <div id="cart-total"></div>
+    </div>
+
+    <script>
+        // МАНИФЕСТ МОНОЛИТА: Новый код = старый + введенная функция.
+        const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSfx(f, t, d) {
+            const o = AudioCtx.createOscillator(); const g = AudioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, AudioCtx.currentTime);
+            g.gain.setValueAtTime(0.1, AudioCtx.currentTime); o.connect(g); g.connect(AudioCtx.destination);
+            o.start(); o.stop(AudioCtx.currentTime + d);
+        }
+
+        let adminClicks = 0;
+        function adminTrigger() {
+            adminClicks++;
+            if(adminClicks >= 3) {
+                const p = prompt("ENTER ACCESS CODE:");
+                if(p === "0000") {
+                    document.getElementById('admin-panel').style.display = 'block';
+                }
+                adminClicks = 0;
+            } else if (document.getElementById('admin-panel').style.display === 'block') {
+                document.getElementById('admin-panel').style.display = 'none';
+            }
+        }
+
+        // БАЗА ДАННЫХ (ЛОКАЛЬНАЯ ДЛЯ ТЕСТА)
+        let products = JSON.parse(localStorage.getItem('monolith_db')) || [];
+        if(products.length === 0) {
+            for (let i = 1; i <= 15; i++) {
+                products.push({ id: i, name: `SLOT_FREE_${i}`, price: 0, img: '' });
+            }
+        }
+
+        let cart = JSON.parse(localStorage.getItem('monolith_cart')) || [];
+        
+        function renderGrid() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            products.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-img">${item.img ? `<img src="${item.img}">` : `UNIT_${item.id}`}</div>
+                    <div style="font-size: 0.75rem;">${item.name}</div>
+                    <div class="price">${item.price} VCHF</div>
+                    <button onclick="event.stopPropagation(); addToCart(${item.id})">В СЕЙФ</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ГЕНЕРАЦИЯ И АКТИВАЦИЯ
+        function generateKey() {
+            const data = {
+                n: document.getElementById('p-name').value,
+                p: document.getElementById('p-price').value,
+                i: document.getElementById('p-img').value
+            };
+            const key = btoa(encodeURIComponent(JSON.stringify(data)));
+            document.getElementById('key-output').innerText = key;
+            playSfx(600, 'sine', 0.2);
+        }
+
+        function activateSlot() {
+            const id = document.getElementById('slot-id').value;
+            const key = document.getElementById('slot-key').value;
+            try {
+                const data = JSON.parse(decodeURIComponent(atob(key)));
+                const index = products.findIndex(p => p.id == id);
+                if(index !== -1) {
+                    products[index].name = data.n;
+                    products[index].price = parseInt(data.p);
+                    products[index].img = data.i;
+                    localStorage.setItem('monolith_db', JSON.stringify(products));
+                    renderGrid();
+                    alert("СЛОТ АКТИВИРОВАН. СКАЧАЙТЕ ОБНОВЛЕННУЮ БАЗУ (В РАЗРАБОТКЕ)");
+                }
+            } catch(e) { alert("ОШИБКА КЛЮЧА"); }
+        }
+
+        function addToCart(id) {
+            playSfx(880, 'sine', 0.1);
+            const p = products.find(i => i.id === id);
+            cart.push(p);
+            localStorage.setItem('monolith_cart', JSON.stringify(cart));
+            updateCartBar();
+        }
+
+        function updateCartBar() {
+            document.getElementById('cart-info').innerText = cart.length > 0 ? `АКТИВОВ: ${cart.length}` : 'СЕЙФ ПУСТ';
+        }
+
+        function activateFullscreen() { /* Эталонная функция */ }
+
+        renderGrid();
+        updateCartBar();
+    </script>
+</body>
+</html>
+ И добавить только  функцию!!<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZERO_CHAOS // MONOLITH_ETALON</title>
     <style>
