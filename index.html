@@ -61,6 +61,20 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; /* Указываем, что сюда нужно нажать */
+        }
+
+        /* 🔱 НОВАЯ ПУЛЬСИРУЮЩАЯ ТОЧКА 🔱 */
+        .pulse-point {
+            width: 8px; height: 8px; background: var(--gold-solid); border-radius: 50%;
+            margin-top: 40px; box-shadow: 0 0 15px var(--gold-solid);
+            animation: pointPulse 2s infinite ease-in-out;
+            position: relative;
+        }
+        @keyframes pointPulse {
+            0% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 5px var(--gold-solid); }
+            50% { transform: scale(2.5); opacity: 1; box-shadow: 0 0 25px var(--gold-solid); }
+            100% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 5px var(--gold-solid); }
         }
 
         .particle-text {
@@ -88,8 +102,7 @@
             50% { opacity: 1; transform: scale(1.1); }
         }
 
-        /* 🔱 УСКОРЕННОЕ ПРОЯВЛЕНИЕ (2.5s вместо 7.5s) 🔱 */
-        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 1.5s forwards 2.5s; }
+        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; }
         
         h1 { 
             font-size: 1.5rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;
@@ -116,8 +129,7 @@
             100% { filter: drop-shadow(0 0 2px rgba(252,246,186,0.1)); } 
         }
 
-        /* 🔱 УСКОРЕННОЕ ПРОЯВЛЕНИЕ СЕТКИ (2.5s вместо 7.5s) 🔱 */
-        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 1.5s forwards 2.5s; }
+        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; }
         @keyframes fadeInMain { from { opacity: 0; } to { opacity: 1; } }
 
         .card {
@@ -215,14 +227,16 @@
         }
     </style>
 </head>
-<body onclick="activateFullscreen()">
+<body id="monolith-body">
 
-    <div id="intro-overlay">
+    <div id="intro-overlay" onclick="initMonolith()">
         <div class="intro-dust"></div>
         <div class="particle-text">
             Hear the butterflies sing.<br>
             See the chaos vanish.
         </div>
+        <div class="pulse-point"></div>
+        <div style="margin-top: 25px; font-size: 0.5rem; letter-spacing: 5px; opacity: 0.4;">[ ZUM ПРИКОСНУТЬСЯ ]</div>
     </div>
 
     <header class="header-container" id="main-header">
@@ -273,22 +287,57 @@
         <div class="modal-content" id="modal-content" onclick="event.stopPropagation()"></div>
     </div>
 
+    <footer class="footer-ritual">
+        <div class="cherry-brand">Hear the butterflies sing. See the chaos vanish.</div>
+        <div class="monolith-subtext">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
+        <div class="copyright-tag">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
+    </footer>
+
     <script>
         const MY_PHONE = "41793666072";
 
-        // 🔱 УСКОРЕННЫЙ JS ТАЙМИНГ (3 секунды вместо 8) 🔱
-        setTimeout(() => {
+        // 🔱 ГЕНЕРАТОР КРИСТАЛЬНОГО ЗВУКА (СИНТЕЗ) 🔱
+        function playCrystalSound() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(2500, context.currentTime); 
+                oscillator.frequency.exponentialRampToValueAtTime(1200, context.currentTime + 0.6);
+
+                gainNode.gain.setValueAtTime(0.08, context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+
+                oscillator.start();
+                oscillator.stop(context.currentTime + 0.6);
+            } catch(e) { console.error("Audio failed", e); }
+        }
+
+        // 🔱 ИНИЦИАЦИЯ МОНОЛИТА (ЕДИНЫЙ ВХОД) 🔱
+        function initMonolith() {
+            playCrystalSound(); // Звук
+            
+            // Фуллскрин
+            let de = document.documentElement;
+            if (de.requestFullscreen) de.requestFullscreen();
+
+            // Анимация твоего эталонного тайминга
             const overlay = document.getElementById('intro-overlay');
             overlay.style.opacity = '0';
             overlay.style.pointerEvents = 'none';
+
             setTimeout(() => {
                 overlay.style.display = 'none';
+                // Плавное проявление контента (твои 2.5s задержки в CSS теперь срабатывают здесь)
+                document.getElementById('main-header').style.animation = 'fadeInMain 1.5s forwards';
+                document.getElementById('main-grid').style.animation = 'fadeInMain 1.5s forwards';
+                console.log("HERZLICH WILLKOMMEN IM MONOLITH.");
             }, 1500);
-        }, 3000);
-
-        function activateFullscreen() {
-            let de = document.documentElement;
-            if (de.requestFullscreen) de.requestFullscreen();
         }
 
         function updateSwissClock() {
@@ -380,11 +429,5 @@
             window.scrollTo(0,0);
         }
     </script>
-
-   <footer class="footer-ritual">
-        <div class="cherry-brand">Hear the butterflies sing. See the chaos vanish.</div>
-        <div class="monolith-subtext">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
-        <div class="copyright-tag">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
-   </footer>
 </body>
 </html>
