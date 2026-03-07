@@ -79,7 +79,6 @@
             position: relative; z-index: 1; letter-spacing: 2px; text-transform: uppercase;
         }
 
-        /* 🔱 INFO BUTTON NO BRACKETS 🔱 */
         .info-btn {
             width: 100%; padding: 5px 0; background: rgba(0,0,0,0.4); border: 1px solid rgba(252,246,186,0.2);
             border-radius: 4px; color: var(--gold-solid); font-size: 0.55rem; letter-spacing: 3px;
@@ -95,7 +94,6 @@
 
         .rent-tag { font-size: 0.45rem; color: var(--gold-solid); opacity: 0.8; margin-top: 8px; letter-spacing: 1px; border-top: 1px solid rgba(252, 246, 186, 0.1); padding-top: 8px; width: 80%; }
 
-        /* 🔱 ZENTRALE BUTTON (SYNC WITH TITLE) 🔱 */
         .back-btn {
             position: sticky; top: 20px; z-index: 100; margin-bottom: 20px; padding: 12px 50px;
             background: var(--glass); background-image: var(--rings); backdrop-filter: blur(15px);
@@ -108,7 +106,6 @@
         }
         .back-btn:hover { transform: scale(1.05); border-color: var(--gold-solid); }
 
-        /* 🔱 MODAL 🔱 */
         #info-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 1000;
@@ -118,6 +115,14 @@
             background: var(--glass); border: 1px solid var(--gold-solid); border-radius: 12px;
             padding: 30px; text-align: center; max-width: 350px; box-shadow: 0 0 40px #000;
         }
+
+        /* 🔱 CONTACT TERMINAL STYLE 🔱 */
+        .comm-btn-modal {
+            width: 100%; padding: 12px 0; background: rgba(0,0,0,0.4); border: 1px solid var(--gold-solid);
+            border-radius: 6px; color: var(--gold-solid); font-size: 0.7rem; letter-spacing: 3px;
+            margin-top: 10px; transition: 0.3s; cursor: pointer; text-decoration: none; display: block;
+        }
+        .comm-btn-modal:hover { background: var(--gold-solid); color: #000; }
 
         @keyframes slideIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
     </style>
@@ -131,32 +136,32 @@
 
     <div class="shop-grid" id="main-grid">
         <div class="card" onclick="openSector('GESUNDHEIT')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Gesundheit</div>
             <div class="category-desc">Optimierung von Körper und Geist</div>
         </div>
         <div class="card" onclick="openSector('CRAFT_FOOD')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Craft Food</div>
             <div class="category-desc">Exklusive natürliche Ressourcen</div>
         </div>
         <div class="card" onclick="openSector('WERKSTATT')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Werkstatt</div>
-            <div class="category-desc">Präzision und digitale Kunst</div>
+            <div class="category-desc">Präзision und digitale Kunst</div>
         </div>
         <div class="card" onclick="openSector('LOGISTIK')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Logistik</div>
             <div class="category-desc">Effiziente Transportlösungen</div>
         </div>
         <div class="card" onclick="openSector('TOURISMUS')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Tourismus</div>
             <div class="category-desc">Raum für Erholung</div>
         </div>
         <div class="card" onclick="openSector('MEDIEN')">
-            <div class="info-btn" onclick="showInfo(event)">INFO</div>
+            <div class="info-btn" onclick="showGeneralInfo(event)">INFO</div>
             <div class="category-title">Medien</div>
             <div class="category-desc">Informationsfeld Kontrolle</div>
         </div>
@@ -168,17 +173,14 @@
         <div class="matrix-grid" id="matrix-display"></div>
     </div>
 
-    <div id="info-modal" onclick="this.style.display='none'">
-        <div class="modal-content">
-            <div style="font-weight: 900; letter-spacing: 2px; color: var(--gold-solid); margin-bottom: 15px; text-transform: uppercase;">System Info</div>
-            <div style="font-size: 0.8rem; line-height: 1.5; color: #fff;">
-                Hier können Sie Ihre Waren platzieren (Werbung) oder die gewünschten Ressourcen finden.
+    <div id="info-modal" onclick="closeModal()">
+        <div class="modal-content" id="modal-content" onclick="event.stopPropagation()">
             </div>
-            <div style="margin-top: 20px; font-size: 0.5rem; opacity: 0.4;">[ ZUM SCHLIESSEN TIPPEN ]</div>
-        </div>
     </div>
 
     <script>
+        const MY_PHONE = "41793666072";
+
         function activateFullscreen() {
             let de = document.documentElement;
             if (de.requestFullscreen) de.requestFullscreen();
@@ -191,8 +193,33 @@
         }
         setInterval(updateSwissClock, 1000); updateSwissClock();
 
-        function showInfo(event) {
+        function closeModal() { document.getElementById('info-modal').style.display = 'none'; }
+
+        function showGeneralInfo(event) {
             event.stopPropagation();
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div style="font-weight: 900; letter-spacing: 2px; color: var(--gold-solid); margin-bottom: 15px; text-transform: uppercase;">System Info</div>
+                <div style="font-size: 0.8rem; line-height: 1.5; color: #fff;">
+                    Hier können Sie Ihre Waren platzieren (Werbung) oder die gewünschten Ressourcen finden.
+                </div>
+                <div style="margin-top: 20px; font-size: 0.5rem; opacity: 0.4;">[ ZUM SCHLIESSEN TIPPEN ]</div>
+            `;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function requestReservation(sector, slotIndex) {
+            const slotNum = slotIndex.toString().padStart(2, '0');
+            const message = encodeURIComponent(`Grüezi! Ich möchte Platz №${slotNum} im Sektor ${sector} reservieren.`);
+            
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <div style="font-weight: 900; letter-spacing: 2px; color: var(--gold-solid); margin-bottom: 15px; text-transform: uppercase;">Platz №${slotNum}</div>
+                <div style="font-size: 0.7rem; color: #fff; margin-bottom: 20px;">RESERVIERUNG FÜR ${sector}</div>
+                <a href="https://wa.me/${MY_PHONE}?text=${message}" target="_blank" class="comm-btn-modal">WHATSAPP</a>
+                <a href="https://t.me/+${MY_PHONE}" target="_blank" class="comm-btn-modal">TELEGRAM</a>
+                <div style="margin-top: 20px; font-size: 0.5rem; opacity: 0.4;">[ ZUM SCHLIESSEN TIPPEN ]</div>
+            `;
             document.getElementById('info-modal').style.display = 'flex';
         }
 
@@ -224,15 +251,22 @@
             const names = sectorData[name] || [];
             const links = sectorLinks[name] || [];
 
-            for (let i = 1; i <= 36; i++) {
+            // 🔱 ЦИКЛ ИЗМЕНЕН НА 18 СЛОТОВ 🔱
+            for (let i = 1; i <= 18; i++) {
                 const isLinked = i <= 3;
-                const price = Math.round(100 - ((i - 1) * (100 / 35)));
+                const price = Math.round(100 - ((i - 1) * (100 / 17)));
                 const card = document.createElement(isLinked ? 'a' : 'div');
                 card.className = `card slot-card ${isLinked ? '' : 'vacant'}`;
-                if (isLinked) { card.href = links[i-1]; card.target = '_blank'; }
+                
+                if (isLinked) { 
+                    card.href = links[i-1]; card.target = '_blank'; 
+                } else {
+                    card.onclick = () => requestReservation(name, i);
+                }
+
                 card.innerHTML = `
                     <div class="card-img">SLOT_${i.toString().padStart(2, '0')}</div>
-                    <div class="category-title" style="font-size: 0.7rem;">${isLinked ? names[i-1] : 'VERFÜGBAR'}</div>
+                    <div class="category-title" style="font-size: 0.7rem;">${isLinked ? names[i-1] : 'PLATZ RESERVIEREN'}</div>
                     <div class="category-desc" style="font-size: 0.45rem;">${isLinked ? 'VERBINDUNG OK' : 'BEREIT'}</div>
                     <div class="rent-tag">MONATLICHE MIETE: ${price} Chf</div>
                 `;
@@ -250,7 +284,7 @@
 
    <div style="margin-top: 100px; padding-bottom: 50px; text-align: center; opacity: 0.2;">
         <div style="font-size: 0.6rem; letter-spacing: 12px; text-transform: uppercase; margin-bottom: 10px;">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
-        <div style="font-size: 0.5rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-solid);">© ISKRA BRODYAGA // ALLE RECHTE VORBEHALTEN</div>
+        <div style="font-size: 0.5rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-solid);">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
     </div>
 </body>
 </html>
