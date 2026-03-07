@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
 
-    <title>ZERO_CHAOS // TERMINAL_FOUR_PILLARS</title>
+    <title>ZERO_CHAOS // TERMINAL_2x2_CORE</title>
     <style>
         :root {
             /* ПАЛИТРА: ТЕХНО-АНТРАЦИТ И МЕТАЛЛИЗИРОВАННЫЙ МАХАГОН */
@@ -17,7 +17,6 @@
             --gold-solid: #fcf6ba;
             --steel: rgba(45, 45, 48, 0.6);
             --glass: rgba(74, 4, 4, 0.22); 
-            --danger: #ff5f5f;
             --spotlight: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.22) 0%, transparent 75%);
             
             /* ФОРМУЛА: КОНТРАСТНЫЙ СРЕЗ */
@@ -45,10 +44,13 @@
             color: var(--gold-solid);
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0; padding: 20px;
-            padding-bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             letter-spacing: 0.5px;
-            -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
+            overflow: hidden;
             color-scheme: dark;
         }
 
@@ -57,19 +59,22 @@
             letter-spacing: 12px;
             text-shadow: 0 0 20px rgba(252, 246, 186, 0.2);
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             text-transform: uppercase;
         }
 
+        /* 🔱 ГЕОМЕТРИЯ 2х2 🔱 */
         .shop-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 1 / 1;
         }
 
-        /* КАРТОЧКА: ТЕХНО-ЛОЖЕМЕНТ */
+        /* КАРТОЧКА: ТЕХНО-ЛОЖЕМЕНТ (ЭТАЛОН) */
         .card {
             position: relative;
             background: var(--glass);
@@ -79,7 +84,11 @@
             border-left: 2px solid rgba(252, 246, 186, 0.2);
             border-top: 1px solid rgba(252, 246, 186, 0.45); 
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             box-shadow: 0 15px 45px rgba(0,0,0,0.9), inset 0 0 30px rgba(74, 4, 4, 0.3);
@@ -87,6 +96,7 @@
             cursor: pointer;
         }
 
+        /* УНИКАЛЬНЫЕ СРЕЗЫ ДЛЯ 2х2 */
         .card:nth-child(1) { --ox: 110%; --oy: -20%; }
         .card:nth-child(2) { --ox: -40%; --oy: 120%; }
         .card:nth-child(3) { --ox: 60%; --oy: -40%; }
@@ -103,159 +113,90 @@
         }
 
         .card:hover {
-            transform: translateY(-10px) scale(1.02);
+            transform: scale(1.05);
             border-color: var(--gold-solid);
             box-shadow: 0 25px 60px rgba(0,0,0,1), 0 0 20px rgba(252, 246, 186, 0.1);
+            z-index: 10;
         }
 
         .card-img {
-            width: 100%; height: 160px;
+            width: 80%; height: 50%;
             background: linear-gradient(180deg, #000 0%, #1a0101 100%);
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem; color: #4a0404;
+            font-size: 0.7rem; color: #4a0404;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
             z-index: 1;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
         }
 
         .category-title {
             font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 4px;
+            font-size: 1rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--gold-solid);
-            margin: 15px 0;
+            margin: 5px 0;
             position: relative; z-index: 1;
         }
 
-        button {
-            margin-top: 20px; width: 100%;
-            background: var(--gold);
-            border: none; border-radius: 6px;
-            color: #000; padding: 12px; 
-            font-weight: bold; font-size: 0.8rem;
-            cursor: pointer; transition: 0.3s;
-            text-transform: uppercase;
-            position: relative; z-index: 3;
+        .category-desc {
+            font-size: 0.65rem; 
+            opacity: 0.6; 
             letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative; z-index: 1;
         }
 
-        button:hover { opacity: 0.9; box-shadow: 0 0 15px rgba(252, 246, 186, 0.5); }
-
-        /* СЕЙФ-БАР (PREMIUM GLASS) */
-        #cart-bar {
-            position: fixed; bottom: 20px; left: 15px; right: 15px;
-            background: rgba(10, 11, 12, 0.98);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(252, 246, 186, 0.35);
-            border-radius: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 25px; box-sizing: border-box; z-index: 100;
-            box-shadow: 0 -15px 60px rgba(0,0,0,0.95);
-        }
-
-        #cart-modal {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; 
-            background: radial-gradient(circle, #1a1c1e 0%, #050607 100%);
-            z-index: 200; overflow-y: auto; padding: 30px; box-sizing: border-box;
-        }
-
-        .close-btn { 
-            color: #888; float: right; cursor: pointer; 
-            font-size: 0.8rem; letter-spacing: 2px;
-        }
-        .close-btn:hover { color: var(--gold-solid); }
+        /* УДАЛЕНЫ СТИЛИ КОРЗИНЫ И СЕЙФ-БАРА */
     </style>
 </head>
 <body onclick="activateFullscreen()">
 
     <h2>VCHF // ARSENAL</h2>
     
-    <div class="shop-grid" id="main-grid"></div>
-
-    <div id="cart-bar" onclick="toggleCart(event)">
-        <span id="cart-info" style="font-size: 0.8rem; font-weight: bold;">СЕЙФ ПУСТ</span>
-        <button style="width: auto; margin: 0; padding: 8px 20px; background: none; border: 1px solid var(--gold-solid); color: var(--gold-solid);">ОТКРЫТЬ</button>
-    </div>
-
-    <div id="cart-modal">
-        <span class="close-btn" onclick="toggleCart(event)">[ ВЕРНУТЬСЯ К ОБЗОРУ ]</span>
-        <h3 style="border-bottom: 1px solid var(--gold-solid); padding-bottom: 15px; font-weight: 300; letter-spacing: 3px;">ДЕПОЗИТАРИЙ</h3>
-        <div id="cart-list"></div>
-        <div id="cart-total" style="margin-top: 30px; text-align: right; font-size: 1.2rem; color: var(--gold-solid);"></div>
-        <button onclick="clearCart(event)" style="color: var(--danger); border-color: var(--danger); background: none; margin-top: 40px; border: 1px solid var(--danger);">ОБНУЛИТЬ СЕЙФ</button>
+    <div class="shop-grid" id="main-grid">
+        <div class="card" onclick="openSector('INTELLECT')">
+            <div class="card-img">INTELLECT_NODE</div>
+            <div class="category-title">Intellect</div>
+            <div class="category-desc">Услуги & Креатив</div>
+        </div>
+        <div class="card" onclick="openSector('CRAFT_FOOD')">
+            <div class="card-img">CRAFT_NODE</div>
+            <div class="category-title">Craft Food</div>
+            <div class="category-desc">Частный ресурс</div>
+        </div>
+        <div class="card" onclick="openSector('WORKSHOP')">
+            <div class="card-img">WORKSHOP_NODE</div>
+            <div class="category-title">Workshop</div>
+            <div class="category-desc">Мастерская & Цех</div>
+        </div>
+        <div class="card" onclick="openSector('WAY')">
+            <div class="card-img">WAY_NODE</div>
+            <div class="category-title">Way</div>
+            <div class="category-desc">Логистика & Путь</div>
+        </div>
     </div>
 
     <script>
-        const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSfx(freq, type, duration) {
-            if (AudioCtx.state === 'suspended') AudioCtx.resume();
-            const osc = AudioCtx.createOscillator();
-            const gain = AudioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, AudioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, AudioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(AudioCtx.destination);
-            osc.start(); osc.stop(AudioCtx.currentTime + duration);
-        }
-
         function activateFullscreen() {
-            let doc = window.document;
-            let docEl = doc.documentElement;
-            if (!doc.fullscreenElement) {
-                if (docEl.requestFullscreen) docEl.requestFullscreen();
-            }
+            let docEl = document.documentElement;
+            if (docEl.requestFullscreen) docEl.requestFullscreen();
         }
-
-        /* 🔱 ВВОДНЫЕ: ЧЕТЫРЕ КАТЕГОРИИ 🔱 */
-        const categories = [
-            { id: 1, name: "INTELLECT", label: "Услуги & Креатив" },
-            { id: 2, name: "CRAFT FOOD", label: "Частный ресурс" },
-            { id: 3, name: "WORKSHOP", label: "Мастерская & Цех" },
-            { id: 4, name: "WAY", label: "Логистика & Путь" }
-        ];
-
-        const grid = document.getElementById('main-grid');
-
-        categories.forEach(cat => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.onclick = () => {
-                playSfx(440, 'sine', 0.2);
-                console.log(`Переход в категорию: ${cat.name}`);
-            };
-            card.innerHTML = `
-                <div class="card-img">${cat.name}_SECTOR</div>
-                <div class="category-title">${cat.name}</div>
-                <div style="font-size: 0.7rem; opacity: 0.6; letter-spacing: 1px;">${cat.label}</div>
-                <button onclick="event.stopPropagation(); openSector('${cat.name}')">ВОЙТИ В СЛОТЫ</button>
-            `;
-            grid.appendChild(card);
-        });
 
         function openSector(name) {
-            playSfx(660, 'square', 0.1);
-            alert(`Вход в сектор: ${name}`);
-        }
-
-        function toggleCart(e) {
-            if(e) e.stopPropagation();
-            playSfx(110, 'triangle', 0.2);
-            const modal = document.getElementById('cart-modal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function clearCart(e) {
-            if(e) e.stopPropagation();
-            playSfx(50, 'sawtooth', 0.4);
-            toggleCart();
+            // Базовая логика для будущего перехода
+            console.log(`АРХИТЕКТОР: Вход в сектор ${name}`);
+            // Здесь будет развертка 25 слотов
         }
     </script>
+
+    <div style="position: fixed; bottom: 20px; opacity: 0.15; font-size: 0.6rem; letter-spacing: 10px;">
+        МАНІФЕСТ МОНОЛІТА // 2026
+    </div>
+
 </body>
 </html>
