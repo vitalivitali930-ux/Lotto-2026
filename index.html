@@ -23,6 +23,7 @@
             margin: 0; padding: 20px;
             padding-bottom: 100px;
             letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         h2 {
@@ -138,6 +139,20 @@
     </div>
 
     <script>
+        // ЗВУКОВОЙ ДВИЖОК
+        const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSfx(freq, type, duration) {
+            if (AudioCtx.state === 'suspended') AudioCtx.resume();
+            const osc = AudioCtx.createOscillator();
+            const gain = AudioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, AudioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, AudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(AudioCtx.destination);
+            osc.start(); osc.stop(AudioCtx.currentTime + duration);
+        }
+
         const products = [];
         for (let i = 1; i <= 15; i++) {
             products.push({ id: i, name: `MOTIVE_0${i}`, price: (1000 + i * 150) });
@@ -159,6 +174,7 @@
         });
 
         function addToCart(id) {
+            playSfx(880, 'sine', 0.1);
             const product = products.find(p => p.id === id);
             cart.push(product);
             saveCart();
@@ -172,6 +188,7 @@
         }
 
         function toggleCart() {
+            playSfx(110, 'triangle', 0.2);
             const modal = document.getElementById('cart-modal');
             modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
             renderCart();
@@ -196,6 +213,7 @@
         }
 
         function clearCart() {
+            playSfx(50, 'sawtooth', 0.4);
             cart = [];
             saveCart();
             toggleCart();
