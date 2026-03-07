@@ -230,7 +230,7 @@
         </div>
     </div>
 
-    <header class="header-container">
+    <header class="header-container" id="main-header">
         <h1>ZERO CHAOS.CH</h1><br>
         <div id="swiss-clock">SYNCHRONISIERUNG...</div>
     </header>
@@ -281,10 +281,12 @@
     <script>
         const MY_PHONE = "41793666072";
 
-        // 🔱 ОБНОВЛЕННЫЙ ТАЙМИНГ INTRO (8 СЕКУНД) 🔱
+        // 🔱 ИСПРАВЛЕННЫЙ ТАЙМИНГ INTRO (8 СЕКУНД + РАЗБЛОКИРОВКА КЛИКОВ) 🔱
         setTimeout(() => {
             const overlay = document.getElementById('intro-overlay');
             overlay.style.opacity = '0';
+            // Искра: Разблокируем нажатия сразу после начала затухания
+            overlay.style.pointerEvents = 'none';
             setTimeout(() => {
                 overlay.style.display = 'none';
             }, 2500);
@@ -310,7 +312,7 @@
             content.innerHTML = `
                 <div style="font-weight: 900; letter-spacing: 2px; color: var(--gold-solid); margin-bottom: 15px; text-transform: uppercase;">System Info</div>
                 <div style="font-size: 0.8rem; line-height: 1.5; color: #fff;">
-                    Hier können Sie Ihre Waren platzieren (Werbung) или die gewünschten Ressourcen finden.
+                    Hier können Sie Ihre Waren platzieren (Werbung) oder die gewünschten Ressourcen finden.
                 </div>
                 <div style="margin-top: 20px; font-size: 0.5rem; opacity: 0.4;">[ ZUM SCHLIESSEN TIPPEN ]</div>
             `;
@@ -351,7 +353,9 @@
         };
 
         function openSector(name) {
+            // Искра: Прячем сетку и заголовок, открываем матрицу
             document.getElementById('main-grid').style.display = 'none';
+            document.getElementById('main-header').style.display = 'none';
             document.getElementById('matrix-container').style.display = 'flex';
             document.getElementById('active-sector-title').innerText = name;
             const display = document.getElementById('matrix-display');
@@ -384,7 +388,9 @@
         }
 
         function closeSector() {
+            // Искра: Жестко возвращаем видимость всем элементам централи
             document.getElementById('main-grid').style.display = 'grid';
+            document.getElementById('main-header').style.display = 'block';
             document.getElementById('matrix-container').style.display = 'none';
             window.scrollTo(0,0);
         }
