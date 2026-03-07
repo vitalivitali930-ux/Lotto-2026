@@ -40,6 +40,7 @@
             --bg: radial-gradient(circle at top, #1a1c1e 0%, #050607 100%);
             --gold: linear-gradient(135deg, #fcf6ba 0%, #bf953f 100%);
             --gold-solid: #fcf6ba;
+            --cherry: #9b0101;
             --glass: rgba(74, 4, 4, 0.22); 
             --spotlight: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.22) 0%, transparent 75%);
             --rings: radial-gradient(circle at var(--ox, -10%) var(--oy, -10%), transparent 0%, transparent 35%, rgba(0, 0, 0, 0.5) 36%, rgba(94, 10, 10, 0.12) 37%, transparent 39%, transparent 60%, rgba(0, 0, 0, 0.55) 61%, rgba(74, 4, 4, 0.18) 62%, transparent 65%);
@@ -53,25 +54,27 @@
             min-height: 100vh; overflow-x: hidden; color-scheme: dark;
         }
 
-        /* 🔱 INTRO SCREEN (5 SECONDS RITUAL) 🔱 */
+        /* 🔱 УЛУЧШЕННОЕ ИНТРО: 8 СЕКУНД ЭКШЕНА 🔱 */
         #intro-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center;
-            transition: opacity 1.5s ease;
+            transition: opacity 2s ease;
         }
         #intro-text {
-            font-weight: 300; letter-spacing: 12px; font-size: 0.9rem; text-transform: uppercase;
-            color: var(--gold-solid); opacity: 0; animation: introRitual 5s forwards; text-align: center;
-            padding: 20px;
+            font-weight: 300; letter-spacing: 15px; font-size: clamp(0.6rem, 2vw, 1rem); text-transform: uppercase;
+            color: var(--gold-solid); opacity: 0; text-align: center; padding: 40px;
+            animation: particleRitual 8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: blur(15px);
         }
-        @keyframes introRitual {
-            0% { opacity: 0; filter: blur(10px); transform: scale(0.95); }
-            30% { opacity: 1; filter: blur(0); transform: scale(1); }
-            70% { opacity: 1; filter: blur(0); transform: scale(1); }
-            100% { opacity: 0; filter: blur(5px); transform: scale(1.05); }
+        @keyframes particleRitual {
+            0% { opacity: 0; filter: blur(20px) contrast(2); transform: scale(0.8) translateY(20px); letter-spacing: 30px; }
+            20% { opacity: 0; }
+            50% { opacity: 1; filter: blur(0px) contrast(1); transform: scale(1) translateY(0); letter-spacing: 15px; }
+            80% { opacity: 1; filter: blur(0px) contrast(1); transform: scale(1) translateY(0); }
+            100% { opacity: 0; filter: blur(15px) contrast(2); transform: scale(1.1) translateY(-20px); letter-spacing: 20px; }
         }
 
-        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 1.5s forwards 5s; }
+        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 2s forwards 8s; }
         
         h1 { 
             font-size: 1.5rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;
@@ -98,7 +101,7 @@
             100% { filter: drop-shadow(0 0 2px rgba(252,246,186,0.1)); } 
         }
 
-        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 1.5s forwards 5s; }
+        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 2s forwards 8s; }
         @keyframes fadeInMain { from { opacity: 0; } to { opacity: 1; } }
 
         .card {
@@ -123,7 +126,7 @@
         }
 
         .info-btn {
-            width: 100%; padding: 5px 0; background: rgba(0,0,0,0.4); border: 1px solid rgba(252,246,186,0.2);
+            width: 100%; padding: 5px 0; background: rgba(0,0,0,0.4); border: 1px solid rgba(252, 246, 186, 0.2);
             border-radius: 4px; color: var(--gold-solid); font-size: 0.55rem; letter-spacing: 3px;
             margin-bottom: 8px; transition: 0.3s; z-index: 10;
         }
@@ -131,14 +134,6 @@
 
         .category-title { font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-solid); margin: 5px 0; position: relative; z-index: 1; }
         .category-desc { font-size: 0.5rem; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 1; }
-
-        /* 🔱 MATRIX VERTICAL SLOGAN 🔱 */
-        .vertical-slogan {
-            position: fixed; right: 10px; top: 50%; transform: translateY(-50%) rotate(90deg);
-            font-size: 0.45rem; letter-spacing: 8px; text-transform: uppercase; opacity: 0.15;
-            color: var(--gold-solid); pointer-events: none; white-space: nowrap; z-index: 5;
-            display: none;
-        }
 
         #matrix-container { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; animation: slideIn 0.5s ease; }
         .matrix-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; margin-top: 30px; }
@@ -176,25 +171,29 @@
 
         @keyframes slideIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
 
-        /* 🔱 FOOTER SLOGAN ANIMATION 🔱 */
+        /* 🔱 ЯРКО-ВИШНЕВЫЙ ФУТЕР 🔱 */
         .butterfly-vanish {
-            font-size: 0.5rem; letter-spacing: 10px; text-transform: uppercase;
-            margin-top: 30px; opacity: 0.3; animation: glowPulse 5s infinite;
+            font-size: clamp(0.4rem, 1.5vw, 0.55rem); letter-spacing: clamp(5px, 2vw, 12px); text-transform: uppercase;
+            margin-top: 30px; color: var(--cherry); font-weight: 900;
+            text-shadow: 0 0 10px rgba(155, 1, 1, 0.5);
+            animation: cherryPulse 4s infinite ease-in-out;
+        }
+        @keyframes cherryPulse {
+            0%, 100% { opacity: 0.4; filter: brightness(1); }
+            50% { opacity: 1; filter: brightness(1.5); }
         }
     </style>
 </head>
 <body onclick="activateFullscreen()">
 
     <div id="intro-overlay">
-        <div id="intro-text">Hear the butterflies sing. See the chaos vanish.</div>
+        <div id="intro-text">Hear the butterflies sing.<br>See the chaos vanish.</div>
     </div>
 
     <header class="header-container">
         <h1>ZERO CHAOS.CH</h1><br>
         <div id="swiss-clock">SYNCHRONISIERUNG...</div>
     </header>
-
-    <div class="vertical-slogan" id="matrix-slogan">Hear the butterflies sing. See the chaos vanish.</div>
 
     <main class="shop-grid" id="main-grid">
         <section class="card" onclick="openSector('GESUNDHEIT')">
@@ -242,12 +241,12 @@
     <script>
         const MY_PHONE = "41793666072";
 
-        // 🔱 INTRO LOGIC (5 SECONDS) 🔱
+        // 🔱 INTRO TIMING (8 SECONDS) 🔱
         setTimeout(() => {
             const overlay = document.getElementById('intro-overlay');
             overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 1500);
-        }, 5000);
+            setTimeout(() => overlay.style.display = 'none', 2000);
+        }, 8000);
 
         function activateFullscreen() {
             let de = document.documentElement;
@@ -312,7 +311,6 @@
         function openSector(name) {
             document.getElementById('main-grid').style.display = 'none';
             document.getElementById('matrix-container').style.display = 'flex';
-            document.getElementById('matrix-slogan').style.display = 'block';
             document.getElementById('active-sector-title').innerText = name;
             const display = document.getElementById('matrix-display');
             display.innerHTML = '';
@@ -346,14 +344,13 @@
         function closeSector() {
             document.getElementById('main-grid').style.display = 'grid';
             document.getElementById('matrix-container').style.display = 'none';
-            document.getElementById('matrix-slogan').style.display = 'none';
             window.scrollTo(0,0);
         }
     </script>
 
-   <footer style="margin-top: 100px; padding-bottom: 50px; text-align: center; opacity: 0.2;">
+   <footer style="margin-top: 100px; padding-bottom: 50px; text-align: center; opacity: 0.3;">
         <div class="butterfly-vanish">Hear the butterflies sing. See the chaos vanish.</div>
-        <div style="font-size: 0.6rem; letter-spacing: 12px; text-transform: uppercase; margin: 20px 0 10px 0;">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
+        <div style="font-size: 0.6rem; letter-spacing: 12px; text-transform: uppercase; margin: 25px 0 10px 0;">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
         <div style="font-size: 0.5rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-solid);">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
     </footer>
 </body>
