@@ -66,23 +66,21 @@
             transition: opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 🔱 ИСПРАВЛЕННЫЙ ЭФФЕКТ ЧАСТИЦ (БЕЗ ДЁРГАНИЯ) 🔱 */
+        /* 🔱 ИСПРАВЛЕННЫЙ ЭФФЕКТ: ВСПЛЫВАНИЕ И ЗАТУХАНИЕ (БЕЗ ДЁРГАНИЯ) 🔱 */
         .particle-text {
             font-weight: 300; letter-spacing: 18px; font-size: 1rem; text-transform: uppercase;
             color: var(--gold-solid); text-align: center; position: relative;
-            /* Искра: GPU ускорение для стабилизации */
-            will-change: transform, opacity, filter;
-            backface-visibility: hidden;
-            transform: translateZ(0);
+            /* Искра: Используем только прозрачность и блюр для 100% плавности */
+            will-change: opacity, filter;
             animation: assembly 8s infinite ease-in-out;
-            text-shadow: 0 0 30px rgba(252, 246, 186, 0);
+            text-shadow: 0 0 30px rgba(252, 246, 186, 0.3);
         }
 
         @keyframes assembly {
-            0% { opacity: 0; filter: blur(30px) brightness(2); transform: scale(0.7) rotateX(45deg) translateZ(0); letter-spacing: 50px; }
-            30% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1) rotateX(0deg) translateZ(0); letter-spacing: 18px; }
-            70% { opacity: 1; filter: blur(0px) brightness(1.2); transform: scale(1.02) rotateX(0deg) translateZ(0); letter-spacing: 20px; }
-            100% { opacity: 0; filter: blur(20px) brightness(0.5); transform: scale(1.3) rotateX(-20deg) translateZ(0); letter-spacing: 40px; }
+            0% { opacity: 0; filter: blur(20px); }
+            15% { opacity: 1; filter: blur(0px); }
+            85% { opacity: 1; filter: blur(0px); }
+            100% { opacity: 0; filter: blur(15px); }
         }
 
         /* Дополнительный визуальный слой для глубины */
@@ -312,7 +310,7 @@
             content.innerHTML = `
                 <div style="font-weight: 900; letter-spacing: 2px; color: var(--gold-solid); margin-bottom: 15px; text-transform: uppercase;">System Info</div>
                 <div style="font-size: 0.8rem; line-height: 1.5; color: #fff;">
-                    Hier können Sie Ihre Waren platzieren (Werbung) oder die gewünschten Ressourcen finden.
+                    Hier können Sie Ihre Waren platzieren (Werbung) или die gewünschten Ressourcen finden.
                 </div>
                 <div style="margin-top: 20px; font-size: 0.5rem; opacity: 0.4;">[ ZUM SCHLIESSEN TIPPEN ]</div>
             `;
