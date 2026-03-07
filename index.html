@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
 
-    <title>ZERO_CHAOS // TERMINAL_PREMIUM_MATRIX</title>
+    <title>ZERO_CHAOS // TERMINAL_RENTAL_MATRIX</title>
     <style>
         :root {
             --bg: radial-gradient(circle at top, #1a1c1e 0%, #050607 100%);
@@ -32,13 +32,9 @@
         .shop-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
-            max-width: 700px;
-            transition: 0.5s;
+            gap: 20px; width: 100%; max-width: 700px; transition: 0.5s;
         }
 
-        /* ЭТАЛОННАЯ КАРТОЧКА (СЛОТ) */
         .card {
             position: relative; background: var(--glass); background-image: var(--rings); backdrop-filter: blur(10px);
             border: 1px solid rgba(252, 246, 186, 0.1); border-left: 2px solid rgba(252, 246, 186, 0.2); border-top: 1px solid rgba(252, 246, 186, 0.45); 
@@ -54,7 +50,7 @@
         .card:hover { transform: scale(1.03); border-color: var(--gold-solid); box-shadow: 0 20px 50px rgba(0,0,0,1); z-index: 10; }
 
         .card-img {
-            width: 100%; height: 80px; background: linear-gradient(180deg, #000 0%, #1a0101 100%);
+            width: 100%; height: 60px; background: linear-gradient(180deg, #000 0%, #1a0101 100%);
             border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;
             font-size: 0.5rem; color: #4a0404; border: 1px solid rgba(255,255,255,0.05);
             position: relative; z-index: 1; letter-spacing: 2px; text-transform: uppercase;
@@ -63,7 +59,6 @@
         .category-title { font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-solid); margin: 5px 0; position: relative; z-index: 1; }
         .category-desc { font-size: 0.5rem; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 1; }
 
-        /* СПЕЦИФИКАЦИЯ МАТРИЦЫ */
         #matrix-container {
             display: none; width: 100%; max-width: 800px; 
             flex-direction: column; align-items: center;
@@ -76,8 +71,10 @@
             gap: 15px; width: 100%; margin-top: 30px;
         }
 
-        .slot-card.vacant { opacity: 0.4; filter: grayscale(1); cursor: default; }
-        .slot-card.vacant:hover { transform: none; border-color: rgba(252, 246, 186, 0.1); }
+        .slot-card.vacant { opacity: 0.6; }
+        .slot-card.vacant .card-img { color: #2a0202; }
+
+        .rent-tag { font-size: 0.45rem; color: var(--gold-solid); opacity: 0.8; margin-top: 8px; letter-spacing: 1px; border-top: 1px solid rgba(252, 246, 186, 0.1); padding-top: 8px; width: 80%; }
 
         .back-btn {
             position: sticky; top: 20px; z-index: 100;
@@ -90,7 +87,6 @@
         .back-btn:hover { background: var(--gold-solid); color: #000; }
 
         @keyframes slideIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
-
     </style>
 </head>
 <body onclick="activateFullscreen()">
@@ -143,11 +139,11 @@
         }
 
         const sectorData = {
-            'HEALTH': ['Инвитро', 'Биохакинг', 'Аптека'],
-            'CRAFT_FOOD': ['Ферма', 'Шеф-маркет', 'Вино'],
-            'WORKSHOP': ['Леруа', 'GitHub', 'Habr'],
-            'WAY': ['Карты', 'Такси', 'РЖД'],
-            'TOURISM': ['Авиасейлс', 'Островок', 'TripAdvisor'],
+            'HEALTH': ['Invitro', 'Biohacking', 'Pharmacy'],
+            'CRAFT_FOOD': ['Farm', 'Chef-Market', 'Wine'],
+            'WORKSHOP': ['Leroy', 'GitHub', 'Habr'],
+            'WAY': ['Maps', 'Taxi', 'Railways'],
+            'TOURISM': ['Aviasales', 'Ostrovok', 'TripAdvisor'],
             'MEDIA': ['Telegram', 'YouTube', 'VC.ru']
         };
 
@@ -176,6 +172,8 @@
 
             for (let i = 1; i <= 36; i++) {
                 const isLinked = i <= 3;
+                const price = Math.round(100 - ((i - 1) * (100 / 35))); // Базовая цена для теста
+                
                 const card = document.createElement(isLinked ? 'a' : 'div');
                 card.className = `card slot-card ${isLinked ? '' : 'vacant'}`;
                 
@@ -185,9 +183,10 @@
                 }
 
                 card.innerHTML = `
-                    <div class="card-img" style="height: 40px; font-size: 0.4rem;">SLOT_${i.toString().padStart(2, '0')}</div>
+                    <div class="card-img">SLOT_${i.toString().padStart(2, '0')}</div>
                     <div class="category-title" style="font-size: 0.7rem;">${isLinked ? names[i-1] : 'VACANT'}</div>
-                    <div class="category-desc" style="font-size: 0.45rem;">${isLinked ? 'DATA_LINK_OK' : 'EMPTY_SLOT'}</div>
+                    <div class="category-desc" style="font-size: 0.45rem;">${isLinked ? 'DATA_LINK_OK' : 'AVAILABLE'}</div>
+                    <div class="rent-tag">MONTHLY RENT: ${price} VCHF</div>
                 `;
                 display.appendChild(card);
             }
