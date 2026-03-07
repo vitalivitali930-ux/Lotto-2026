@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
 
-    <title>ZERO_CHAOS // TERMINAL_2x18_EXPANSION</title>
+    <title>ZERO_CHAOS // TERMINAL_PREMIUM_MATRIX</title>
     <style>
         :root {
             --bg: radial-gradient(circle at top, #1a1c1e 0%, #050607 100%);
@@ -27,103 +27,75 @@
             min-height: 100vh; overflow-x: hidden; color-scheme: dark;
         }
 
-        h2 { font-weight: 300; letter-spacing: 12px; text-shadow: 0 0 20px rgba(252, 246, 186, 0.2); text-align: center; margin: 40px 0; text-transform: uppercase; transition: opacity 0.5s; }
+        h2 { font-weight: 300; letter-spacing: 12px; text-shadow: 0 0 20px rgba(252, 246, 186, 0.2); text-align: center; margin: 40px 0; text-transform: uppercase; }
 
-        /* 🔱 ГЛАВНАЯ СЕТКА 🔱 */
         .shop-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             width: 100%;
             max-width: 700px;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.5s;
         }
 
+        /* ЭТАЛОННАЯ КАРТОЧКА (СЛОТ) */
         .card {
             position: relative; background: var(--glass); background-image: var(--rings); backdrop-filter: blur(10px);
             border: 1px solid rgba(252, 246, 186, 0.1); border-left: 2px solid rgba(252, 246, 186, 0.2); border-top: 1px solid rgba(252, 246, 186, 0.45); 
             border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             box-shadow: 0 15px 45px rgba(0,0,0,0.9), inset 0 0 30px rgba(74, 4, 4, 0.3);
-            overflow: hidden; cursor: pointer;
+            overflow: hidden; cursor: pointer; text-decoration: none; color: inherit;
         }
 
         .card:nth-child(2n) { --ox: 110%; --oy: 20%; }
         .card:nth-child(2n+1) { --ox: -20%; --oy: 80%; }
         .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 100%; background: var(--spotlight); pointer-events: none; z-index: 2; }
-
         .card:hover { transform: scale(1.03); border-color: var(--gold-solid); box-shadow: 0 20px 50px rgba(0,0,0,1); z-index: 10; }
 
         .card-img {
-            width: 100%; height: 100px; background: linear-gradient(180deg, #000 0%, #1a0101 100%);
+            width: 100%; height: 80px; background: linear-gradient(180deg, #000 0%, #1a0101 100%);
             border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 0.6rem; color: #4a0404; border: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.5rem; color: #4a0404; border: 1px solid rgba(255,255,255,0.05);
             position: relative; z-index: 1; letter-spacing: 2px; text-transform: uppercase;
         }
 
-        .category-title { font-weight: bold; font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-solid); margin: 5px 0; position: relative; z-index: 1; }
-        .category-desc { font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 1; }
+        .category-title { font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-solid); margin: 5px 0; position: relative; z-index: 1; }
+        .category-desc { font-size: 0.5rem; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 1; }
 
-        /* 🔱 МАГАЗИН СЛОТОВ (2x18) 🔱 */
+        /* СПЕЦИФИКАЦИЯ МАТРИЦЫ */
         #matrix-container {
-            display: none; width: 100%; max-width: 700px; 
+            display: none; width: 100%; max-width: 800px; 
             flex-direction: column; align-items: center;
-            animation: fadeIn 0.6s ease;
+            animation: slideIn 0.5s ease;
         }
 
         .matrix-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px; width: 100%; margin-top: 20px;
+            gap: 15px; width: 100%; margin-top: 30px;
         }
 
-        .slot {
-            background: rgba(10, 11, 12, 0.8);
-            border: 1px solid rgba(252, 246, 186, 0.1);
-            border-radius: 6px; padding: 12px;
-            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;
-            color: rgba(252, 246, 186, 0.4);
-            display: flex; justify-content: space-between; align-items: center;
-            transition: all 0.3s; text-decoration: none;
-            position: relative; overflow: hidden;
-        }
-
-        .slot.active {
-            border-color: rgba(252, 246, 186, 0.4);
-            color: var(--gold-solid);
-            background: var(--glass);
-            box-shadow: inset 0 0 15px rgba(74, 4, 4, 0.2);
-        }
-
-        .slot.active:hover {
-            background: rgba(252, 246, 186, 0.1);
-            transform: translateX(5px);
-            border-color: var(--gold-solid);
-        }
-
-        .slot::after {
-            content: 'VACANT'; font-size: 0.5rem; opacity: 0.3;
-        }
-        .slot.active::after {
-            content: 'LINKED'; opacity: 0.8; color: #bf953f;
-        }
+        .slot-card.vacant { opacity: 0.4; filter: grayscale(1); cursor: default; }
+        .slot-card.vacant:hover { transform: none; border-color: rgba(252, 246, 186, 0.1); }
 
         .back-btn {
-            margin-bottom: 30px; padding: 10px 30px;
-            background: none; border: 1px solid var(--gold-solid);
-            color: var(--gold-solid); cursor: pointer;
-            text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem;
-            transition: 0.3s;
+            position: sticky; top: 20px; z-index: 100;
+            margin-bottom: 20px; padding: 12px 40px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            border: 1px solid var(--gold-solid); color: var(--gold-solid);
+            cursor: pointer; text-transform: uppercase; letter-spacing: 5px; font-size: 0.7rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: 0.3s;
         }
         .back-btn:hover { background: var(--gold-solid); color: #000; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
 
     </style>
 </head>
 <body onclick="activateFullscreen()">
 
-    <h2 id="main-title">VCHF // ARSENAL</h2>
+    <h2 id="terminal-header">VCHF // ARSENAL</h2>
 
     <div class="shop-grid" id="main-grid">
         <div class="card" onclick="openSector('HEALTH')">
@@ -159,9 +131,9 @@
     </div>
 
     <div id="matrix-container">
-        <button class="back-btn" onclick="closeSector()">[ ВЕРНУТЬСЯ В АРСЕНАЛ ]</button>
-        <h3 id="sector-name" style="letter-spacing: 8px; font-weight: 300; text-transform: uppercase;"></h3>
-        <div class="matrix-grid" id="matrix-grid"></div>
+        <button class="back-btn" onclick="closeSector()">[ ВЕРНУТЬСЯ ]</button>
+        <h3 id="active-sector-title" style="letter-spacing: 15px; font-weight: 300; text-transform: uppercase; color: var(--gold-solid); margin-bottom: 0;"></h3>
+        <div class="matrix-grid" id="matrix-display"></div>
     </div>
 
     <script>
@@ -171,6 +143,15 @@
         }
 
         const sectorData = {
+            'HEALTH': ['Инвитро', 'Биохакинг', 'Аптека'],
+            'CRAFT_FOOD': ['Ферма', 'Шеф-маркет', 'Вино'],
+            'WORKSHOP': ['Леруа', 'GitHub', 'Habr'],
+            'WAY': ['Карты', 'Такси', 'РЖД'],
+            'TOURISM': ['Авиасейлс', 'Островок', 'TripAdvisor'],
+            'MEDIA': ['Telegram', 'YouTube', 'VC.ru']
+        };
+
+        const sectorLinks = {
             'HEALTH': ['https://www.invitro.ru', 'https://biohacking.org', 'https://apteka.ru'],
             'CRAFT_FOOD': ['https://lavkalavka.com', 'https://www.chefmarket.ru', 'https://winestyle.ru'],
             'WORKSHOP': ['https://leroymerlin.ru', 'https://github.com', 'https://habr.com'],
@@ -180,30 +161,35 @@
         };
 
         function openSector(name) {
-            const grid = document.getElementById('main-grid');
-            const matrix = document.getElementById('matrix-container');
-            const title = document.getElementById('main-title');
-            const matrixGrid = document.getElementById('matrix-grid');
-            const sectorTitle = document.getElementById('sector-name');
+            const mainGrid = document.getElementById('main-grid');
+            const matrixCont = document.getElementById('matrix-container');
+            const display = document.getElementById('matrix-display');
+            const header = document.getElementById('active-sector-title');
 
-            grid.style.display = 'none';
-            title.style.opacity = '0.3';
-            matrix.style.display = 'flex';
-            sectorTitle.innerText = name;
-            matrixGrid.innerHTML = '';
+            mainGrid.style.display = 'none';
+            matrixCont.style.display = 'flex';
+            header.innerText = name;
+            display.innerHTML = '';
 
-            const links = sectorData[name] || [];
+            const names = sectorData[name] || [];
+            const links = sectorLinks[name] || [];
 
             for (let i = 1; i <= 36; i++) {
                 const isLinked = i <= 3;
-                const slot = document.createElement(isLinked ? 'a' : 'div');
-                slot.className = `slot ${isLinked ? 'active' : ''}`;
+                const card = document.createElement(isLinked ? 'a' : 'div');
+                card.className = `card slot-card ${isLinked ? '' : 'vacant'}`;
+                
                 if (isLinked) {
-                    slot.href = links[i-1];
-                    slot.target = '_blank';
+                    card.href = links[i-1];
+                    card.target = '_blank';
                 }
-                slot.innerHTML = `<span>SLOT_${i.toString().padStart(2, '0')}</span>`;
-                matrixGrid.appendChild(slot);
+
+                card.innerHTML = `
+                    <div class="card-img" style="height: 40px; font-size: 0.4rem;">SLOT_${i.toString().padStart(2, '0')}</div>
+                    <div class="category-title" style="font-size: 0.7rem;">${isLinked ? names[i-1] : 'VACANT'}</div>
+                    <div class="category-desc" style="font-size: 0.45rem;">${isLinked ? 'DATA_LINK_OK' : 'EMPTY_SLOT'}</div>
+                `;
+                display.appendChild(card);
             }
             window.scrollTo(0,0);
         }
@@ -211,11 +197,11 @@
         function closeSector() {
             document.getElementById('main-grid').style.display = 'grid';
             document.getElementById('matrix-container').style.display = 'none';
-            document.getElementById('main-title').style.opacity = '1';
+            window.scrollTo(0,0);
         }
     </script>
 
-    <div style="margin-top: 50px; opacity: 0.1; font-size: 0.5rem; letter-spacing: 10px; text-align: center; padding-bottom: 20px;">
+    <div style="margin-top: 100px; opacity: 0.1; font-size: 0.5rem; letter-spacing: 10px; text-align: center; padding-bottom: 40px;">
         МАНІФЕСТ МОНОЛІТА // 2026 // NULL_CHAOS
     </div>
 
