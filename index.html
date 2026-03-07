@@ -3,99 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZERO_CHAOS // TERMINAL_15</title>
+    <title>ZERO_CHAOS // TERMINAL_15_ELITE</title>
     <style>
         :root {
-            --bg: #121213;
-            --gold: #fcf6ba;
-            --steel: #242426;
-            --danger: #ff4d4d;
+            /* Палитра благородных материалов */
+            --bg: radial-gradient(circle at top, #1c1c1f 0%, #0d0d0e 100%);
+            --gold: linear-gradient(135deg, #fcf6ba 0%, #bf953f 100%);
+            --gold-solid: #fcf6ba;
+            --steel: rgba(45, 45, 48, 0.6);
+            --glass: rgba(255, 255, 255, 0.03);
+            --danger: #ff5f5f;
         }
+        
         body {
-            background: var(--bg); color: var(--gold);
-            font-family: sans-serif; margin: 0; padding: 20px;
-            padding-bottom: 80px; /* Место для кнопки корзины */
-        }
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .card {
-            background: #1a1a1b; border: 1px solid var(--steel);
-            padding: 15px; text-align: center; transition: 0.3s;
-        }
-        .card:active { border-color: var(--gold); transform: scale(0.95); }
-        .card-img {
-            width: 100%; height: 120px; background: #000; margin-bottom: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.7rem; color: #444;
-        }
-        .price { color: #888; font-size: 0.9rem; }
-        button {
-            margin-top: 10px; width: 100%;
-            background: none; border: 1px solid var(--gold);
-            color: var(--gold); padding: 8px; cursor: pointer;
+            background: var(--bg);
+            background-attachment: fixed;
+            color: var(--gold-solid);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px;
+            padding-bottom: 100px;
+            letter-spacing: 0.5px;
         }
 
-        /* КОРЗИНА (FLOATING BAR) */
+        h2 {
+            font-weight: 300;
+            letter-spacing: 6px;
+            text-shadow: 0 0 15px rgba(252, 246, 186, 0.3);
+            margin-bottom: 40px;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        /* ЭТАЛОННАЯ КАРТОЧКА */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(252, 246, 186, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .card:active {
+            transform: scale(0.97);
+            border-color: var(--gold-solid);
+            box-shadow: 0 0 20px rgba(252, 246, 186, 0.2);
+        }
+
+        .card-img {
+            width: 100%; height: 130px;
+            background: linear-gradient(180deg, #000 0%, #1a1a1b 100%);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6rem; color: #333;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .price { 
+            color: rgba(252, 246, 186, 0.7); 
+            font-size: 0.85rem; 
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        button {
+            margin-top: 10px; width: 100%;
+            background: var(--gold);
+            border: none; border-radius: 6px;
+            color: #000; padding: 10px; 
+            font-weight: bold; font-size: 0.75rem;
+            cursor: pointer; transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(252, 246, 186, 0.4); }
+
+        /* СЕЙФ-БАР (PREMIUM GLASS) */
         #cart-bar {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--steel); border-top: 1px solid var(--gold);
+            position: fixed; bottom: 15px; left: 15px; right: 15px;
+            background: rgba(36, 36, 38, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(252, 246, 186, 0.3);
+            border-radius: 15px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; box-sizing: border-box; z-index: 100;
+            padding: 15px 25px; box-sizing: border-box; z-index: 100;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
         }
 
         /* МОДАЛЬНОЕ ОКНО */
         #cart-modal {
             display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-            z-index: 200; overflow-y: auto; padding: 20px; box-sizing: border-box;
+            width: 100%; height: 100%; 
+            background: radial-gradient(circle, rgba(28,28,31,0.98) 0%, rgba(13,13,14,1) 100%);
+            z-index: 200; overflow-y: auto; padding: 30px; box-sizing: border-box;
         }
+
         .cart-item {
             display: flex; justify-content: space-between;
-            border-bottom: 1px solid var(--steel); padding: 10px 0;
+            border-bottom: 1px solid rgba(252, 246, 186, 0.1); 
+            padding: 15px 0;
         }
-        .close-btn { color: var(--danger); float: right; cursor: pointer; }
+
+        .close-btn { 
+            color: #888; float: right; cursor: pointer; 
+            font-size: 0.8rem; letter-spacing: 2px;
+        }
+        .close-btn:hover { color: var(--gold-solid); }
     </style>
 </head>
 <body>
 
-    <h2 style="letter-spacing: 2px; text-align: center;">SHOP // 15_ASSETS</h2>
+    <h2 style="text-align: center;">VCHF // ARSENAL</h2>
     
     <div class="shop-grid" id="main-grid"></div>
 
     <div id="cart-bar" onclick="toggleCart()">
-        <span id="cart-info">СЕЙФ ПУСТ</span>
-        <button style="width: auto; margin: 0; padding: 5px 15px;">ОТКРЫТЬ</button>
+        <span id="cart-info" style="font-size: 0.8rem; font-weight: bold;">СЕЙФ ПУСТ</span>
+        <button style="width: auto; margin: 0; padding: 8px 20px; background: none; border: 1px solid var(--gold-solid); color: var(--gold-solid);">ОТКРЫТЬ</button>
     </div>
 
     <div id="cart-modal">
-        <span class="close-btn" onclick="toggleCart()">[ ЗАКРЫТЬ ]</span>
-        <h3 style="border-bottom: 1px solid var(--gold);">ДЕПОЗИТАРИЙ</h3>
+        <span class="close-btn" onclick="toggleCart()">[ ВЕРНУТЬСЯ К ОБЗОРУ ]</span>
+        <h3 style="border-bottom: 1px solid var(--gold-solid); padding-bottom: 15px; font-weight: 300; letter-spacing: 3px;">ДЕПОЗИТАРИЙ</h3>
         <div id="cart-list"></div>
-        <div id="cart-total" style="margin-top: 20px; text-align: right; font-weight: bold;"></div>
-        <button onclick="clearCart()" style="color: var(--danger); border-color: var(--danger); margin-top: 30px;">ОБНУЛИТЬ СЕЙФ</button>
+        <div id="cart-total" style="margin-top: 30px; text-align: right; font-size: 1.2rem; color: var(--gold-solid);"></div>
+        <button onclick="clearCart()" style="color: var(--danger); border-color: var(--danger); background: none; margin-top: 40px; border: 1px solid var(--danger);">ОБНУЛИТЬ СЕЙФ</button>
     </div>
 
     <script>
         const products = [];
         for (let i = 1; i <= 15; i++) {
-            products.push({ id: i, name: `Позиция ${i}`, price: (1000 + i * 100) });
+            products.push({ id: i, name: `MOTIVE_0${i}`, price: (1000 + i * 150) });
         }
 
         let cart = JSON.parse(localStorage.getItem('monolith_cart')) || [];
         const grid = document.getElementById('main-grid');
 
-        // Рендер витрины
         products.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-img">IMAGE_${item.id}</div>
-                <div style="font-size: 0.8rem;">${item.name}</div>
+                <div class="card-img">VCHF_UNIT_${item.id}</div>
+                <div style="font-size: 0.75rem; letter-spacing: 1px;">${item.name}</div>
                 <div class="price">${item.price} VCHF</div>
-                <button onclick="addToCart(${item.id})">В СЕЙФ</button>
+                <button onclick="event.stopPropagation(); addToCart(${item.id})">В СЕЙФ</button>
             `;
             grid.appendChild(card);
         });
@@ -109,7 +167,8 @@
 
         function saveCart() {
             localStorage.setItem('monolith_cart', JSON.stringify(cart));
-            document.getElementById('cart-info').innerText = cart.length > 0 ? `В СЕЙФЕ: ${cart.length} ЕД.` : 'СЕЙФ ПУСТ';
+            const info = document.getElementById('cart-info');
+            info.innerText = cart.length > 0 ? `АКТИВОВ В СЕЙФЕ: ${cart.length}` : 'СЕЙФ ПУСТ';
         }
 
         function toggleCart() {
@@ -124,16 +183,16 @@
             list.innerHTML = '';
             let total = 0;
 
-            cart.forEach((item, index) => {
+            cart.forEach((item) => {
                 total += item.price;
                 list.innerHTML += `
                     <div class="cart-item">
-                        <span>${item.name}</span>
-                        <span>${item.price} VCHF</span>
+                        <span style="font-size: 0.9rem;">${item.name}</span>
+                        <span style="color: var(--gold-solid);">${item.price} VCHF</span>
                     </div>
                 `;
             });
-            totalDiv.innerText = `ИТОГО: ${total} VCHF`;
+            totalDiv.innerText = `ИТОГО К ДЕПОЗИТУ: ${total} VCHF`;
         }
 
         function clearCart() {
@@ -142,7 +201,6 @@
             toggleCart();
         }
 
-        // Первичная проверка при загрузке
         saveCart();
     </script>
 </body>
