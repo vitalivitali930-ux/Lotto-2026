@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, vertical-align=top">
     <title>ZERO_CHAOS // TERMINAL_15_ELITE</title>
     <style>
         :root {
@@ -21,15 +21,17 @@
             color: var(--gold-solid);
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0; padding: 20px;
-            padding-bottom: 100px;
+            padding-bottom: 120px;
             letter-spacing: 0.5px;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
 
         h2 {
             font-weight: 300;
             letter-spacing: 6px;
             text-shadow: 0 0 15px rgba(252, 246, 186, 0.3);
+            text-align: center;
             margin-bottom: 40px;
         }
 
@@ -88,7 +90,7 @@
 
         /* СЕЙФ-БАР (PREMIUM GLASS) */
         #cart-bar {
-            position: fixed; bottom: 15px; left: 15px; right: 15px;
+            position: fixed; bottom: 20px; left: 15px; right: 15px;
             background: rgba(36, 36, 38, 0.8);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(252, 246, 186, 0.3);
@@ -119,23 +121,23 @@
         .close-btn:hover { color: var(--gold-solid); }
     </style>
 </head>
-<body>
+<body onclick="activateFullscreen()">
 
-    <h2 style="text-align: center;">VCHF // ARSENAL</h2>
+    <h2>VCHF // ARSENAL</h2>
     
     <div class="shop-grid" id="main-grid"></div>
 
-    <div id="cart-bar" onclick="toggleCart()">
+    <div id="cart-bar" onclick="toggleCart(event)">
         <span id="cart-info" style="font-size: 0.8rem; font-weight: bold;">СЕЙФ ПУСТ</span>
         <button style="width: auto; margin: 0; padding: 8px 20px; background: none; border: 1px solid var(--gold-solid); color: var(--gold-solid);">ОТКРЫТЬ</button>
     </div>
 
     <div id="cart-modal">
-        <span class="close-btn" onclick="toggleCart()">[ ВЕРНУТЬСЯ К ОБЗОРУ ]</span>
+        <span class="close-btn" onclick="toggleCart(event)">[ ВЕРНУТЬСЯ К ОБЗОРУ ]</span>
         <h3 style="border-bottom: 1px solid var(--gold-solid); padding-bottom: 15px; font-weight: 300; letter-spacing: 3px;">ДЕПОЗИТАРИЙ</h3>
         <div id="cart-list"></div>
         <div id="cart-total" style="margin-top: 30px; text-align: right; font-size: 1.2rem; color: var(--gold-solid);"></div>
-        <button onclick="clearCart()" style="color: var(--danger); border-color: var(--danger); background: none; margin-top: 40px; border: 1px solid var(--danger);">ОБНУЛИТЬ СЕЙФ</button>
+        <button onclick="clearCart(event)" style="color: var(--danger); border-color: var(--danger); background: none; margin-top: 40px; border: 1px solid var(--danger);">ОБНУЛИТЬ СЕЙФ</button>
     </div>
 
     <script>
@@ -151,6 +153,17 @@
             gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + duration);
             osc.connect(gain); gain.connect(AudioCtx.destination);
             osc.start(); osc.stop(AudioCtx.currentTime + duration);
+        }
+
+        // ФУНКЦИЯ ПОЛНОГО ПОГРУЖЕНИЯ
+        function activateFullscreen() {
+            let doc = window.document;
+            let docEl = doc.documentElement;
+            let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            }
         }
 
         const products = [];
@@ -187,7 +200,8 @@
             info.innerText = cart.length > 0 ? `АКТИВОВ В СЕЙФЕ: ${cart.length}` : 'СЕЙФ ПУСТ';
         }
 
-        function toggleCart() {
+        function toggleCart(e) {
+            if(e) e.stopPropagation();
             playSfx(110, 'triangle', 0.2);
             const modal = document.getElementById('cart-modal');
             modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
@@ -212,7 +226,8 @@
             totalDiv.innerText = `ИТОГО К ДЕПОЗИТУ: ${total} VCHF`;
         }
 
-        function clearCart() {
+        function clearCart(e) {
+            if(e) e.stopPropagation();
             playSfx(50, 'sawtooth', 0.4);
             cart = [];
             saveCart();
