@@ -18,6 +18,7 @@
             --steel: rgba(45, 45, 48, 0.6);
             --glass: rgba(74, 4, 4, 0.12); /* Вишневое полупрозрачное стекло */
             --danger: #ff5f5f;
+            --spotlight: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.15) 0%, transparent 70%);
         }
         
         body {
@@ -48,22 +49,40 @@
             gap: 20px;
         }
 
-        /* ЭТАЛОННАЯ КАРТОЧКА С ВИШНЕВЫМ ОТБЛЕСКОМ */
+        /* ЭТАЛОННАЯ КАРТОЧКА С ВЕРХНИМ СВЕТОМ */
         .card {
+            position: relative;
             background: var(--glass);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(252, 246, 186, 0.15);
+            border: 1px solid rgba(252, 246, 186, 0.1);
+            border-top: 1px solid rgba(252, 246, 186, 0.3); /* Подсветка верхней грани */
             border-radius: 12px;
             padding: 20px;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 15px rgba(74, 4, 4, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 15px rgba(74, 4, 4, 0.2);
+            overflow: hidden;
+        }
+
+        /* ЭФФЕКТ МУЗЕЙНОГО СОФИТА */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: var(--spotlight);
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
 
         .card:active {
             transform: scale(0.97);
             border-color: var(--gold-solid);
             box-shadow: 0 0 25px rgba(74, 4, 4, 0.5);
+        }
+
+        .card:active::before {
+            opacity: 1;
+            background: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.3) 0%, transparent 70%);
         }
 
         .card-img {
@@ -74,6 +93,8 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 0.6rem; color: #4a0404;
             border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 1;
         }
 
         .price { 
@@ -81,6 +102,7 @@
             font-size: 0.85rem; 
             margin: 10px 0;
             font-weight: bold;
+            position: relative; z-index: 1;
         }
 
         button {
@@ -91,6 +113,7 @@
             font-weight: bold; font-size: 0.75rem;
             cursor: pointer; transition: 0.3s;
             text-transform: uppercase;
+            position: relative; z-index: 1;
         }
 
         button:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(252, 246, 186, 0.4); }
@@ -98,7 +121,7 @@
         /* СЕЙФ-БАР (PREMIUM GLASS) */
         #cart-bar {
             position: fixed; bottom: 20px; left: 15px; right: 15px;
-            background: rgba(42, 2, 2, 0.85); /* Глубокий вишневый фон */
+            background: rgba(42, 2, 2, 0.85);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(252, 246, 186, 0.3);
             border-radius: 15px;
