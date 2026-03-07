@@ -9,30 +9,25 @@
             --bg: #121213;
             --gold: #fcf6ba;
             --steel: #242426;
+            --danger: #ff4d4d;
         }
         body {
             background: var(--bg); color: var(--gold);
             font-family: sans-serif; margin: 0; padding: 20px;
+            padding-bottom: 80px; /* Место для кнопки корзины */
         }
-        /* Сетка магазина */
         .shop-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
-        /* Карточка товара */
         .card {
-            background: #1a1a1b;
-            border: 1px solid var(--steel);
-            padding: 15px;
-            text-align: center;
-            transition: 0.3s;
+            background: #1a1a1b; border: 1px solid var(--steel);
+            padding: 15px; text-align: center; transition: 0.3s;
         }
         .card:active { border-color: var(--gold); transform: scale(0.95); }
-        
         .card-img {
-            width: 100%; height: 120px;
-            background: #000; margin-bottom: 10px;
+            width: 100%; height: 120px; background: #000; margin-bottom: 10px;
             display: flex; align-items: center; justify-content: center;
             font-size: 0.7rem; color: #444;
         }
@@ -40,42 +35,115 @@
         button {
             margin-top: 10px; width: 100%;
             background: none; border: 1px solid var(--gold);
-            color: var(--gold); padding: 5px; cursor: pointer;
+            color: var(--gold); padding: 8px; cursor: pointer;
         }
+
+        /* КОРЗИНА (FLOATING BAR) */
+        #cart-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--steel); border-top: 1px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; box-sizing: border-box; z-index: 100;
+        }
+
+        /* МОДАЛЬНОЕ ОКНО */
+        #cart-modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            z-index: 200; overflow-y: auto; padding: 20px; box-sizing: border-box;
+        }
+        .cart-item {
+            display: flex; justify-content: space-between;
+            border-bottom: 1px solid var(--steel); padding: 10px 0;
+        }
+        .close-btn { color: var(--danger); float: right; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <h2 style="letter-spacing: 2px; text-align: center;">SHOP // 15_ASSETS</h2>
     
-    <div class="shop-grid" id="main-grid">
-        </div>
+    <div class="shop-grid" id="main-grid"></div>
+
+    <div id="cart-bar" onclick="toggleCart()">
+        <span id="cart-info">СЕЙФ ПУСТ</span>
+        <button style="width: auto; margin: 0; padding: 5px 15px;">ОТКРЫТЬ</button>
+    </div>
+
+    <div id="cart-modal">
+        <span class="close-btn" onclick="toggleCart()">[ ЗАКРЫТЬ ]</span>
+        <h3 style="border-bottom: 1px solid var(--gold);">ДЕПОЗИТАРИЙ</h3>
+        <div id="cart-list"></div>
+        <div id="cart-total" style="margin-top: 20px; text-align: right; font-weight: bold;"></div>
+        <button onclick="clearCart()" style="color: var(--danger); border-color: var(--danger); margin-top: 30px;">ОБНУЛИТЬ СЕЙФ</button>
+    </div>
 
     <script>
-        // 1. БАЗА ДАННЫХ (15 ПОЗИЦИЙ)
         const products = [];
         for (let i = 1; i <= 15; i++) {
-            products.push({
-                id: i,
-                name: `Позиция ${i}`,
-                price: `${(1000 + i * 100)} VCHF`
-            });
+            products.push({ id: i, name: `Позиция ${i}`, price: (1000 + i * 100) });
         }
 
-        // 2. ГЕНЕРАТОР (КУЗНИЦА)
+        let cart = JSON.parse(localStorage.getItem('monolith_cart')) || [];
         const grid = document.getElementById('main-grid');
 
+        // Рендер витрины
         products.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div class="card-img">IMAGE_SLOT_${item.id}</div>
+                <div class="card-img">IMAGE_${item.id}</div>
                 <div style="font-size: 0.8rem;">${item.name}</div>
-                <div class="price">${item.price}</div>
-                <button onclick="alert('Выбрано: ${item.name}')">В СЕЙФ</button>
+                <div class="price">${item.price} VCHF</div>
+                <button onclick="addToCart(${item.id})">В СЕЙФ</button>
             `;
             grid.appendChild(card);
         });
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            saveCart();
+            renderCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem('monolith_cart', JSON.stringify(cart));
+            document.getElementById('cart-info').innerText = cart.length > 0 ? `В СЕЙФЕ: ${cart.length} ЕД.` : 'СЕЙФ ПУСТ';
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            const totalDiv = document.getElementById('cart-total');
+            list.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <span>${item.name}</span>
+                        <span>${item.price} VCHF</span>
+                    </div>
+                `;
+            });
+            totalDiv.innerText = `ИТОГО: ${total} VCHF`;
+        }
+
+        function clearCart() {
+            cart = [];
+            saveCart();
+            toggleCart();
+        }
+
+        // Первичная проверка при загрузке
+        saveCart();
     </script>
 </body>
 </html>
