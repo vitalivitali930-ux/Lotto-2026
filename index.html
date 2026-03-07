@@ -40,7 +40,6 @@
             --bg: radial-gradient(circle at top, #1a1c1e 0%, #050607 100%);
             --gold: linear-gradient(135deg, #fcf6ba 0%, #bf953f 100%);
             --gold-solid: #fcf6ba;
-            /* 🔱 НОВЫЙ ЦВЕТ: ГЛУБОКАЯ ВИШНЯ 🔱 */
             --cherry-blood: #9b0101;
             --cherry-glow: rgba(155, 1, 1, 0.6);
             --glass: rgba(74, 4, 4, 0.22); 
@@ -54,47 +53,43 @@
             color: var(--gold-solid); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh; overflow-x: hidden; color-scheme: dark;
-            /* Искра: Добавлено сглаживание шрифтов */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* 🔱 РАСШИРЕННЫЙ БЛОК INTRO (РОСТ КОДА) 🔱 */
         #intro-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 🔱 ИСПРАВЛЕННЫЙ ЭФФЕКТ: ВСПЛЫВАНИЕ И ЗАТУХАНИЕ (БЕЗ ДЁРГАНИЯ) 🔱 */
         .particle-text {
             font-weight: 300; letter-spacing: 18px; font-size: 1rem; text-transform: uppercase;
             color: var(--gold-solid); text-align: center; position: relative;
-            /* Искра: Используем только прозрачность и блюр для 100% плавности */
             will-change: opacity, filter;
-            animation: assembly 8s infinite ease-in-out;
+            animation: assembly 3.5s infinite ease-in-out;
             text-shadow: 0 0 30px rgba(252, 246, 186, 0.3);
         }
 
         @keyframes assembly {
             0% { opacity: 0; filter: blur(20px); }
-            15% { opacity: 1; filter: blur(0px); }
-            85% { opacity: 1; filter: blur(0px); }
+            30% { opacity: 1; filter: blur(0px); }
+            70% { opacity: 1; filter: blur(0px); }
             100% { opacity: 0; filter: blur(15px); }
         }
 
-        /* Дополнительный визуальный слой для глубины */
         .intro-dust {
             position: absolute; width: 100%; height: 100%; pointer-events: none;
             background: radial-gradient(circle, rgba(191,149,63,0.05) 0%, transparent 70%);
-            animation: dustPulse 8s infinite;
+            animation: dustPulse 4s infinite;
         }
         @keyframes dustPulse {
             0%, 100% { opacity: 0; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.1); }
         }
 
-        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 2.5s forwards 7.5s; }
+        /* 🔱 УСКОРЕННОЕ ПРОЯВЛЕНИЕ (2.5s вместо 7.5s) 🔱 */
+        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 1.5s forwards 2.5s; }
         
         h1 { 
             font-size: 1.5rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;
@@ -121,7 +116,8 @@
             100% { filter: drop-shadow(0 0 2px rgba(252,246,186,0.1)); } 
         }
 
-        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 2.5s forwards 7.5s; }
+        /* 🔱 УСКОРЕННОЕ ПРОЯВЛЕНИЕ СЕТКИ (2.5s вместо 7.5s) 🔱 */
+        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 1.5s forwards 2.5s; }
         @keyframes fadeInMain { from { opacity: 0; } to { opacity: 1; } }
 
         .card {
@@ -191,7 +187,6 @@
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(30px); filter: blur(15px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 
-        /* 🔱 РАСШИРЕННЫЙ ФУТЕР (ВИШНЕВОЕ КЛЕЙМО) 🔱 */
         .footer-ritual {
             margin-top: 120px; padding-bottom: 60px; text-align: center;
         }
@@ -281,16 +276,15 @@
     <script>
         const MY_PHONE = "41793666072";
 
-        // 🔱 ИСПРАВЛЕННЫЙ ТАЙМИНГ INTRO (8 СЕКУНД + РАЗБЛОКИРОВКА КЛИКОВ) 🔱
+        // 🔱 УСКОРЕННЫЙ JS ТАЙМИНГ (3 секунды вместо 8) 🔱
         setTimeout(() => {
             const overlay = document.getElementById('intro-overlay');
             overlay.style.opacity = '0';
-            // Искра: Разблокируем нажатия сразу после начала затухания
             overlay.style.pointerEvents = 'none';
             setTimeout(() => {
                 overlay.style.display = 'none';
-            }, 2500);
-        }, 8000);
+            }, 1500);
+        }, 3000);
 
         function activateFullscreen() {
             let de = document.documentElement;
@@ -353,29 +347,21 @@
         };
 
         function openSector(name) {
-            // Искра: Прячем сетку и заголовок, открываем матрицу
             document.getElementById('main-grid').style.display = 'none';
             document.getElementById('main-header').style.display = 'none';
             document.getElementById('matrix-container').style.display = 'flex';
             document.getElementById('active-sector-title').innerText = name;
             const display = document.getElementById('matrix-display');
             display.innerHTML = '';
-
             const names = sectorData[name] || [];
             const links = sectorLinks[name] || [];
-
             for (let i = 1; i <= 18; i++) {
                 const isLinked = i <= 3;
                 const price = Math.round(100 - ((i - 1) * (100 / 17)));
                 const card = document.createElement(isLinked ? 'a' : 'div');
                 card.className = `card slot-card ${isLinked ? '' : 'vacant'}`;
-                
-                if (isLinked) { 
-                    card.href = links[i-1]; card.target = '_blank'; 
-                } else {
-                    card.onclick = () => requestReservation(name, i);
-                }
-
+                if (isLinked) { card.href = links[i-1]; card.target = '_blank'; } 
+                else { card.onclick = () => requestReservation(name, i); }
                 card.innerHTML = `
                     <div class="card-img">SLOT_${i.toString().padStart(2, '0')}</div>
                     <div class="category-title" style="font-size: 0.7rem;">${isLinked ? names[i-1] : 'PLATZ RESERVIEREN'}</div>
@@ -388,7 +374,6 @@
         }
 
         function closeSector() {
-            // Искра: Жестко возвращаем видимость всем элементам централи
             document.getElementById('main-grid').style.display = 'grid';
             document.getElementById('main-header').style.display = 'block';
             document.getElementById('matrix-container').style.display = 'none';
@@ -400,6 +385,6 @@
         <div class="cherry-brand">Hear the butterflies sing. See the chaos vanish.</div>
         <div class="monolith-subtext">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
         <div class="copyright-tag">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
-        </footer>
+   </footer>
 </body>
 </html>
