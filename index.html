@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, vertical-align=top">
     
     <title>ZERO CHAOS | Exklusive Business Slots Schweiz</title>
-    <meta name="description" content="ZERO CHAOS - Die exklusive Schweizer Plattform für Business-Slots, Ressourcen-Optimierung und digitale Präzision in Zürich.">
+    <meta name="description" content="ZERO CHAOS - Die exklusive Schweizer Plattform für Business-Slots, Ressourcen-Optimierung und digitale Präзision in Zürich.">
     <meta name="keywords" content="Business Slots, Werbung Zürich, Zero Chaos, Exklusive Ressourcen, Logistik Schweiz, Biohacking, Craft Food">
     <meta name="author" content="Iskra Brodyaga">
     
@@ -53,9 +53,27 @@
             min-height: 100vh; overflow-x: hidden; color-scheme: dark;
         }
 
-        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; }
+        /* 🔱 INTRO SCREEN (5 SECONDS RITUAL) 🔱 */
+        #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+        #intro-text {
+            font-weight: 300; letter-spacing: 12px; font-size: 0.9rem; text-transform: uppercase;
+            color: var(--gold-solid); opacity: 0; animation: introRitual 5s forwards; text-align: center;
+            padding: 20px;
+        }
+        @keyframes introRitual {
+            0% { opacity: 0; filter: blur(10px); transform: scale(0.95); }
+            30% { opacity: 1; filter: blur(0); transform: scale(1); }
+            70% { opacity: 1; filter: blur(0); transform: scale(1); }
+            100% { opacity: 0; filter: blur(5px); transform: scale(1.05); }
+        }
+
+        .header-container { text-align: center; margin: 30px 0 20px 0; width: 100%; opacity: 0; animation: fadeInMain 1.5s forwards 5s; }
         
-        h1 { /* По факту: h1 - главный сигнал для дедушки Гугла */
+        h1 { 
             font-size: 1.5rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin: 0;
             background: linear-gradient(180deg, #fcf6ba 30%, #bf953f 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -80,7 +98,8 @@
             100% { filter: drop-shadow(0 0 2px rgba(252,246,186,0.1)); } 
         }
 
-        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; }
+        .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 700px; transition: 0.5s; opacity: 0; animation: fadeInMain 1.5s forwards 5s; }
+        @keyframes fadeInMain { from { opacity: 0; } to { opacity: 1; } }
 
         .card {
             position: relative; background: var(--glass); background-image: var(--rings); backdrop-filter: blur(10px);
@@ -112,6 +131,14 @@
 
         .category-title { font-weight: bold; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-solid); margin: 5px 0; position: relative; z-index: 1; }
         .category-desc { font-size: 0.5rem; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 1; }
+
+        /* 🔱 MATRIX VERTICAL SLOGAN 🔱 */
+        .vertical-slogan {
+            position: fixed; right: 10px; top: 50%; transform: translateY(-50%) rotate(90deg);
+            font-size: 0.45rem; letter-spacing: 8px; text-transform: uppercase; opacity: 0.15;
+            color: var(--gold-solid); pointer-events: none; white-space: nowrap; z-index: 5;
+            display: none;
+        }
 
         #matrix-container { display: none; width: 100%; max-width: 800px; flex-direction: column; align-items: center; animation: slideIn 0.5s ease; }
         .matrix-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; margin-top: 30px; }
@@ -148,14 +175,26 @@
         .comm-btn-modal:hover { background: var(--gold-solid); color: #000; }
 
         @keyframes slideIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+
+        /* 🔱 FOOTER SLOGAN ANIMATION 🔱 */
+        .butterfly-vanish {
+            font-size: 0.5rem; letter-spacing: 10px; text-transform: uppercase;
+            margin-top: 30px; opacity: 0.3; animation: glowPulse 5s infinite;
+        }
     </style>
 </head>
 <body onclick="activateFullscreen()">
+
+    <div id="intro-overlay">
+        <div id="intro-text">Hear the butterflies sing. See the chaos vanish.</div>
+    </div>
 
     <header class="header-container">
         <h1>ZERO CHAOS.CH</h1><br>
         <div id="swiss-clock">SYNCHRONISIERUNG...</div>
     </header>
+
+    <div class="vertical-slogan" id="matrix-slogan">Hear the butterflies sing. See the chaos vanish.</div>
 
     <main class="shop-grid" id="main-grid">
         <section class="card" onclick="openSector('GESUNDHEIT')">
@@ -202,6 +241,13 @@
 
     <script>
         const MY_PHONE = "41793666072";
+
+        // 🔱 INTRO LOGIC (5 SECONDS) 🔱
+        setTimeout(() => {
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 1500);
+        }, 5000);
 
         function activateFullscreen() {
             let de = document.documentElement;
@@ -266,6 +312,7 @@
         function openSector(name) {
             document.getElementById('main-grid').style.display = 'none';
             document.getElementById('matrix-container').style.display = 'flex';
+            document.getElementById('matrix-slogan').style.display = 'block';
             document.getElementById('active-sector-title').innerText = name;
             const display = document.getElementById('matrix-display');
             display.innerHTML = '';
@@ -299,12 +346,14 @@
         function closeSector() {
             document.getElementById('main-grid').style.display = 'grid';
             document.getElementById('matrix-container').style.display = 'none';
+            document.getElementById('matrix-slogan').style.display = 'none';
             window.scrollTo(0,0);
         }
     </script>
 
    <footer style="margin-top: 100px; padding-bottom: 50px; text-align: center; opacity: 0.2;">
-        <div style="font-size: 0.6rem; letter-spacing: 12px; text-transform: uppercase; margin-bottom: 10px;">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
+        <div class="butterfly-vanish">Hear the butterflies sing. See the chaos vanish.</div>
+        <div style="font-size: 0.6rem; letter-spacing: 12px; text-transform: uppercase; margin: 20px 0 10px 0;">MONOLITH MANIFESTO // 2026 // NULL_CHAOS</div>
         <div style="font-size: 0.5rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold-solid);">© ISKRA BRODYAGA // ALLE RECHTE ВORBEHALTEN</div>
     </footer>
 </body>
