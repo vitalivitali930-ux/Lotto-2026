@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
 
-    <title>ZERO_CHAOS // TERMINAL_15_ELITE</title>
+    <title>ZERO_CHAOS // TERMINAL_1000_SLOTS</title>
     <style>
         :root {
             /* ПАЛИТРА: ТЕХНО-АНТРАЦИТ И МЕТАЛЛИЗИРОВАННЫЙ МАХАГОН */
@@ -39,7 +39,7 @@
         
         body {
             background: var(--bg);
-            background-image: var(--grid); /* Наложение сетки */
+            background-image: var(--grid);
             background-size: 20px 20px;
             background-attachment: fixed;
             color: var(--gold-solid);
@@ -59,6 +59,7 @@
             text-align: center;
             margin-bottom: 40px;
             text-transform: uppercase;
+            cursor: crosshair;
         }
 
         .shop-grid {
@@ -74,7 +75,6 @@
             background-image: var(--rings); 
             backdrop-filter: blur(10px);
             border: 1px solid rgba(252, 246, 186, 0.1);
-            /* Rim Light: боковое свечение для ухода от эффекта камня */
             border-left: 2px solid rgba(252, 246, 186, 0.2);
             border-top: 1px solid rgba(252, 246, 186, 0.45); 
             border-radius: 12px;
@@ -91,7 +91,6 @@
         .card:nth-child(3n+2) { --ox: 60%; --oy: -40%; }
         .card:nth-child(5n) { --ox: 20%; --oy: 140%; }
 
-        /* МУЗЕЙНЫЙ СОФИТ */
         .card::before {
             content: '';
             position: absolute;
@@ -108,11 +107,6 @@
             box-shadow: 0 0 50px rgba(74, 4, 4, 0.8);
         }
 
-        .card:active::before {
-            opacity: 1;
-            background: radial-gradient(circle at 50% 0%, rgba(252, 246, 186, 0.45) 0%, transparent 70%);
-        }
-
         .card-img {
             width: 100%; height: 130px;
             background: linear-gradient(180deg, #000 0%, #1a0101 100%);
@@ -123,7 +117,9 @@
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
             z-index: 1;
+            overflow: hidden;
         }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; }
 
         .price { 
             color: rgba(252, 246, 186, 0.85); 
@@ -144,9 +140,6 @@
             position: relative; z-index: 3;
         }
 
-        button:hover { opacity: 0.9; box-shadow: 0 0 15px rgba(252, 246, 186, 0.5); }
-
-        /* СЕЙФ-БАР (PREMIUM GLASS) */
         #cart-bar {
             position: fixed; bottom: 20px; left: 15px; right: 15px;
             background: rgba(10, 11, 12, 0.98);
@@ -158,7 +151,6 @@
             box-shadow: 0 -15px 60px rgba(0,0,0,0.95);
         }
 
-        /* ДЕПОЗИТАРИЙ */
         #cart-modal {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%; 
@@ -176,18 +168,47 @@
             color: #888; float: right; cursor: pointer; 
             font-size: 0.8rem; letter-spacing: 2px;
         }
-        .close-btn:hover { color: var(--gold-solid); }
+
+        /* АДМИН-ПАНЕЛЬ (НОВАЯ ФУНКЦИЯ) */
+        #admin-panel {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #050607; z-index: 500; padding: 20px; box-sizing: border-box; 
+            border: 2px solid var(--gold-solid); overflow-y: auto;
+        }
+        .admin-input { 
+            background: #1a1c1e; border: 1px solid var(--gold-solid); 
+            color: #fff; width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; 
+            box-sizing: border-box; font-family: monospace;
+        }
     </style>
 </head>
 <body onclick="activateFullscreen()">
 
-    <h2>VCHF // ARSENAL</h2>
+    <h2 id="logo" onclick="adminTrigger()">VCHF // ARSENAL</h2>
     
     <div class="shop-grid" id="main-grid"></div>
 
     <div id="cart-bar" onclick="toggleCart(event)">
         <span id="cart-info" style="font-size: 0.8rem; font-weight: bold;">СЕЙФ ПУСТ</span>
         <button style="width: auto; margin: 0; padding: 8px 20px; background: none; border: 1px solid var(--gold-solid); color: var(--gold-solid);">ОТКРЫТЬ</button>
+    </div>
+
+    <div id="admin-panel">
+        <span class="close-btn" onclick="adminTrigger()">[ ЗАКРЫТЬ КОНСОЛЬ ]</span>
+        <h3 style="color: var(--gold-solid); font-weight: 300; letter-spacing: 4px;">CONSOLE // ADMIN_0000</h3>
+        <div style="height: 1px; background: var(--gold); margin: 20px 0;"></div>
+        
+        <p style="font-size: 0.7rem; color: var(--gold-solid);">АКТИВАЦИЯ СЛОТА (ДЛЯ АРХИТЕКТОРА)</p>
+        <input type="number" id="slot-id" class="admin-input" placeholder="ID Слота (1-1000)">
+        <textarea id="slot-key" class="admin-input" placeholder="Вставьте ключ от продавца" rows="3"></textarea>
+        <button onclick="activateSlot()">ПРИМЕНИТЬ К МОНОЛИТУ</button>
+
+        <p style="font-size: 0.7rem; color: var(--gold-solid); margin-top: 40px;">ГЕНЕРАТОР КЛЮЧА (ДЛЯ ПРОДАВЦА)</p>
+        <input type="text" id="p-name" class="admin-input" placeholder="Название товара">
+        <input type="number" id="p-price" class="admin-input" placeholder="Цена VCHF">
+        <input type="text" id="p-img" class="admin-input" placeholder="Ссылка на фото (URL)">
+        <button onclick="generateKey()" style="background: var(--steel); color: #fff;">СФОРМИРОВАТЬ КЛЮЧ</button>
+        <div id="key-output" style="font-size: 0.6rem; word-break: break-all; margin-top: 15px; color: #555; background: #000; padding: 10px; border-radius: 4px;"></div>
     </div>
 
     <div id="cart-modal">
@@ -199,7 +220,7 @@
     </div>
 
     <script>
-        // ЗВУКОВОЙ ДВИЖОК
+        // МАНИФЕСТ МОНОЛИТА: Старый код + Новая функция
         const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(freq, type, duration) {
             if (AudioCtx.state === 'suspended') AudioCtx.resume();
@@ -217,44 +238,90 @@
             let doc = window.document;
             let docEl = doc.documentElement;
             let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-            
-            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-                requestFullScreen.call(docEl);
+            if (!doc.fullscreenElement) requestFullScreen.call(docEl);
+        }
+
+        // АДМИН-ЛОГИКА
+        let adminClicks = 0;
+        function adminTrigger() {
+            adminClicks++;
+            if(adminClicks >= 3) {
+                const p = prompt("ENTER ACCESS CODE:");
+                if(p === "0000") {
+                    document.getElementById('admin-panel').style.display = 'block';
+                    playSfx(440, 'square', 0.2);
+                }
+                adminClicks = 0;
+            } else if (document.getElementById('admin-panel').style.display === 'block') {
+                document.getElementById('admin-panel').style.display = 'none';
             }
         }
 
-        const products = [];
-        for (let i = 1; i <= 15; i++) {
-            products.push({ id: i, name: `MOTIVE_0${i}`, price: (1000 + i * 150) });
+        // БАЗА ДАННЫХ
+        let products = JSON.parse(localStorage.getItem('monolith_db')) || [];
+        if(products.length === 0) {
+            for (let i = 1; i <= 15; i++) {
+                products.push({ id: i, name: `MOTIVE_0${i}`, price: (1000 + i * 150), img: '' });
+            }
         }
 
         let cart = JSON.parse(localStorage.getItem('monolith_cart')) || [];
-        const grid = document.getElementById('main-grid');
+        
+        function renderGrid() {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            products.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-img">${item.img ? `<img src="${item.img}">` : `VCHF_UNIT_${item.id}`}</div>
+                    <div style="font-size: 0.75rem; letter-spacing: 1px;">${item.name}</div>
+                    <div class="price">${item.price} VCHF</div>
+                    <button onclick="event.stopPropagation(); addToCart(${item.id})">В СЕЙФ</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
 
-        products.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="card-img">VCHF_UNIT_${item.id}</div>
-                <div style="font-size: 0.75rem; letter-spacing: 1px;">${item.name}</div>
-                <div class="price">${item.price} VCHF</div>
-                <button onclick="event.stopPropagation(); addToCart(${item.id})">В СЕЙФ</button>
-            `;
-            grid.appendChild(card);
-        });
+        function generateKey() {
+            const data = {
+                n: document.getElementById('p-name').value,
+                p: document.getElementById('p-price').value,
+                i: document.getElementById('p-img').value
+            };
+            const key = btoa(encodeURIComponent(JSON.stringify(data)));
+            document.getElementById('key-output').innerText = key;
+            playSfx(600, 'sine', 0.2);
+        }
+
+        function activateSlot() {
+            const id = document.getElementById('slot-id').value;
+            const key = document.getElementById('slot-key').value;
+            try {
+                const data = JSON.parse(decodeURIComponent(atob(key)));
+                const index = products.findIndex(p => p.id == id);
+                if(index !== -1) {
+                    products[index].name = data.n;
+                    products[index].price = parseInt(data.p);
+                    products[index].img = data.i;
+                    localStorage.setItem('monolith_db', JSON.stringify(products));
+                    renderGrid();
+                    playSfx(1000, 'sine', 0.5);
+                    alert("СЛОТ " + id + " ОБНОВЛЕН.");
+                }
+            } catch(e) { alert("ОШИБКА КЛЮЧА"); }
+        }
 
         function addToCart(id) {
             playSfx(880, 'sine', 0.1);
             const product = products.find(p => p.id === id);
             cart.push(product);
             saveCart();
-            renderCart();
         }
 
         function saveCart() {
             localStorage.setItem('monolith_cart', JSON.stringify(cart));
-            const info = document.getElementById('cart-info');
-            info.innerText = cart.length > 0 ? `АКТИВОВ В СЕЙФЕ: ${cart.length}` : 'СЕЙФ ПУСТ';
+            document.getElementById('cart-info').innerText = cart.length > 0 ? `АКТИВОВ В СЕЙФЕ: ${cart.length}` : 'СЕЙФ ПУСТ';
         }
 
         function toggleCart(e) {
@@ -270,7 +337,6 @@
             const totalDiv = document.getElementById('cart-total');
             list.innerHTML = '';
             let total = 0;
-
             cart.forEach((item) => {
                 total += item.price;
                 list.innerHTML += `
@@ -291,6 +357,7 @@
             toggleCart();
         }
 
+        renderGrid();
         saveCart();
     </script>
 </body>
