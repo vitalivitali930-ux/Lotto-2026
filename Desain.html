@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>ISKRA & VAGABUND | Swiss Digital Sovereignty</title>
+    <meta name="description" content="Exklusives Schweizer Digital-Design. Absolute Souveränität, Null Tracking, maximale Performance. Geboren in der Schweiz.">
+    <meta name="keywords" content="Swiss Design, Digital Sovereignty, High Performance Web, Zero Tracking, Iskra Vagabund">
+    
+    <meta property="og:title" content="ISKRA & VAGABUND | Swiss Digital Sovereignty">
+    <meta property="og:description" content="Precision is not an option. Born in Switzerland.">
+    <meta property="og:image" content="1771489965074(1).png">
+    <meta property="og:type" content="website">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "ISKRA & VAGABUND",
+      "image": "1771489965074(1).png",
+      "description": "Exklusives Schweizer Digital-Design. Absolute Souveränität, Null Tracking, maximale Performance.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "CH",
+        "addressLocality": "Bern"
+      },
+      "url": "https://monolith.ch",
+      "priceRange": "$$$",
+      "knowsAbout": ["Digital Sovereignty", "High Performance Web", "Swiss Precision Design"]
+    }
+    </script>
+
+    <style>
+        :root {
+            --swiss-red: #D52B1E;
+            --neon-gold: #FFCF40;
+            --carbon: #000000;
+            --l-red: #ff003c;
+            --l-blue: #00f2ff;
+            --l-green: #39ff14;
+            --l-orange: #ff6600;
+        }
+
+        html, body { 
+            background-color: var(--carbon) !important; 
+            margin: 0; padding: 0; 
+            width: 100%; height: 100%;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        /* Скрытые элементы для SEO без влияния на дизайн */
+        .visually-hidden {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0, 0, 0, 0); border: 0;
+        }
+
+        #ambient-canvas {
+            position: fixed; inset: 0;
+            z-index: 0; pointer-events: none;
+            opacity: 0; transition: opacity 3s ease;
+        }
+
+        #marble-frame {
+            position: fixed; inset: 0;
+            border: 15px solid transparent;
+            border-image: linear-gradient(45deg, #4a0000, #8b0000, #2a0000, #d52b1e) 1;
+            box-shadow: inset 0 0 50px #000;
+            z-index: 999; opacity: 0; transition: 3s ease;
+            pointer-events: none;
+        }
+
+        #laser-intro {
+            position: fixed; inset: 0;
+            background: #000; z-index: 2000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .laser-svg {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 2001;
+        }
+
+        .laser-line {
+            fill: none; stroke-width: 3;
+            filter: blur(1px) drop-shadow(0 0 15px currentColor);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        .engraving-box {
+            position: relative; z-index: 2002; text-align: center;
+            width: 95%; max-width: 1400px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .row { display: block; width: 100%; white-space: nowrap; min-height: 60px; }
+
+        .letter-container {
+            display: inline-block; position: relative; font-weight: 900;
+            color: rgba(255,255,255,0.02); 
+            text-transform: uppercase;
+            transition: transform 0.6s ease, opacity 0.6s ease;
+        }
+
+        .layer {
+            position: absolute; left: 0; top: 0; width: 0; height: 100%;
+            overflow: hidden; white-space: nowrap;
+            transition: width 0.1s linear;
+        }
+        
+        .shine-trigger .layer.b-polish::after {
+            content: "";
+            position: absolute; top: 0; left: -150%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+            transform: skewX(-25deg);
+            animation: letterShine 0.8s forwards;
+        }
+
+        @keyframes letterShine { 100% { left: 150%; } }
+
+        .b-outline { color: transparent; -webkit-text-stroke: 1px var(--l-red); z-index: 1; }
+        .b-fill { color: #554400; z-index: 2; }
+        .b-volume { color: var(--neon-gold); text-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 3; }
+        .b-polish { color: #fff; filter: drop-shadow(0 0 15px #fff); z-index: 4; mix-blend-mode: overlay; }
+
+        #particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 2005; }
+        .plasma-dot {
+            position: absolute; width: 25px; height: 25px;
+            border-radius: 50%; filter: blur(6px);
+            mix-blend-mode: screen; pointer-events: none;
+            z-index: 2004; opacity: 0;
+        }
+        main {
+            position: relative; width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; padding: 100px 20px;
+            opacity: 0; transition: 4s cubic-bezier(0.2, 0, 0.2, 1);
+            transform: translateY(100px);
+            z-index: 2;
+        }
+        main.show { opacity: 1; transform: translateY(0); }
+
+        .monolith-obj {
+            width: 160px; height: 160px;
+            background: url('1771489965074(1).png') center/cover;
+            border: 1px solid var(--neon-gold); border-radius: 20px;
+            box-shadow: 0 0 60px rgba(255, 207, 64, 0.4);
+            margin-bottom: 40px;
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+        }
+
+        .title { 
+            font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 900; line-height: 1.1;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px; text-align: center;
+        }
+
+        .btn-gold {
+            display: inline-block;
+            padding: 20px 50px; background: var(--neon-gold); color: #000;
+            text-decoration: none; font-weight: 900; letter-spacing: 2px;
+            border-radius: 5px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            animation: heartBeat 2.5s infinite ease-in-out;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 207, 64, 0); }
+            50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(255, 207, 64, 0.4); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 207, 64, 0); }
+        }
+
+        .market-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px; width: 100%; max-width: 1200px; margin-top: 100px;
+        }
+
+        .market-card {
+            background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(255,207,64,0.1);
+            padding: 40px; border-radius: 15px; backdrop-filter: blur(15px);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .market-card:hover { border-color: var(--neon-gold); }
+        .market-card h3 { color: #fff; margin-bottom: 15px; letter-spacing: 2px; }
+        .market-card p { color: #777; line-height: 1.6; font-size: 15px; }
+
+        footer { 
+            margin-top: 100px; padding-bottom: 40px; text-align: center;
+            opacity: 0.3; font-size: 10px; letter-spacing: 3px; color: #fff; 
+        }
+    </style>
+</head>
+<body>
+    <canvas id="ambient-canvas"></canvas>
+    <div id="marble-frame"></div>
+
+    <h2 class="visually-hidden">Premium Swiss Digital Design and Sovereignty Architecture</h2>
+
+    <section id="laser-intro" aria-hidden="false">
+        <canvas id="particle-canvas"></canvas>
+        <svg class="laser-svg">
+            <line class="laser-line" id="l-red" x1="0" y1="0" stroke="var(--l-red)" />
+            <line class="laser-line" id="l-blue" x1="100%" y1="0" stroke="var(--l-blue)" />
+            <line class="laser-line" id="l-green" x1="0" y1="100%" stroke="var(--l-green)" />
+            <line class="laser-line" id="l-orange" x1="100%" y1="100%" stroke="var(--l-orange)" />
+        </svg>
+
+        <div class="engraving-box" id="target">
+            <div class="row" id="row-1"></div>
+            <div class="row" id="row-2"></div>
+        </div>
+        
+        <div class="plasma-dot" id="p-red" style="background: var(--l-red);"></div>
+        <div class="plasma-dot" id="p-blue" style="background: var(--l-blue);"></div>
+        <div class="plasma-dot" id="p-green" style="background: var(--l-green);"></div>
+        <div class="plasma-dot" id="p-orange" style="background: var(--l-orange);"></div>
+    </section>
+
+    <main id="site">
+        <div class="monolith-obj" id="logo-parallax" role="img" aria-label="Iskra Vagabund Monolith Logo"></div>
+        <header class="hero-text">
+            <p class="subtitle">Swiss Digital Excellence</p>
+            <h1 class="title">PRECISION IS NOT<br>AN OPTION.</h1>
+            <p style="color: #666; font-size: 18px; margin-bottom: 40px;">Absolute Souveränität, Null Tracking, maximale Performance.</p>
+            <a href="mailto:contact@monolith.ch" class="btn-gold">Initiate Contact</a>
+        </header>
+
+        <section class="market-grid">
+            <article class="market-card" onmousemove="tiltEffect(event, this)" onmouseleave="resetTilt(this)">
+                <h3>01. INDEPENDENCE</h3>
+                <p>Keine Drittanbieter. Ihr Code gehört Ihnen. Ein digitales Asset ohne Fixkosten.</p>
+            </article>
+            <article class="market-card" onmousemove="tiltEffect(event, this)" onmouseleave="resetTilt(this)">
+                <h3>02. SPEED AS LUXURY</h3>
+                <p>Optimierung на уровне ядра. Ladezeiten unter 0.4 Sekunden.</p>
+            </article>
+            <article class="market-card" onmousemove="tiltEffect(event, this)" onmouseleave="resetTilt(this)">
+                <h3>03. DISKRETION</h3>
+                <p>Zero-Cookie-Architektur. Schutz der Privatsphäre durch technische Überlegenheit.</p>
+            </article>
+        </section>
+
+        <footer>MADE IN SWITZERLAND | 2026 | МАНИФЕСТ МОНОЛИТА | PROTOCOL 7.8</footer>
+    </main>
+    <script>
+        const row1Str = "BORN IN SWITZERLAND";
+        const row2Str = "ULTIMATE PRECISION";
+        
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const ambientCanvas = document.getElementById('ambient-canvas');
+        const aCtx = ambientCanvas.getContext('2d');
+        
+        let particles = [];
+        let ambientParticles = [];
+        
+        const lasers = {
+            red: { el: document.getElementById('l-red'), dot: document.getElementById('p-red'), delay: 0, class: 'b-outline', color: '#ff003c' },
+            blue: { el: document.getElementById('l-blue'), dot: document.getElementById('p-blue'), delay: 900, class: 'b-fill', color: '#00f2ff' },
+            green: { el: document.getElementById('l-green'), dot: document.getElementById('p-green'), delay: 1800, class: 'b-volume', color: '#39ff14' },
+            orange: { el: document.getElementById('l-orange'), dot: document.getElementById('p-orange'), delay: 2700, class: 'b-polish', color: '#ff6600' }
+        };
+
+        class Particle {
+            constructor(x, y, color, speedMult = 1, forceToCenter = false) {
+                this.x = x; this.y = y; this.color = color;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * (8 * speedMult);
+                this.speedY = (Math.random() - 0.5) * (8 * speedMult);
+                this.forceToCenter = forceToCenter;
+                this.life = 1.0; this.decay = Math.random() * 0.02 + 0.01;
+            }
+            update() {
+                if (this.forceToCenter) {
+                    this.speedX += (window.innerWidth / 2 - this.x) * 0.06;
+                    this.speedY += (window.innerHeight / 2 - this.y) * 0.06;
+                }
+                this.x += this.speedX; this.y += this.speedY; this.life -= this.decay;
+            }
+            draw() {
+                ctx.globalAlpha = this.life; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        class AmbientGold {
+            constructor() {
+                this.x = Math.random() * ambientCanvas.width;
+                this.y = Math.random() * ambientCanvas.height;
+                this.size = Math.random() * 2;
+                this.speedY = Math.random() * 0.5 + 0.2;
+                this.opacity = Math.random() * 0.4;
+            }
+            update() { this.y -= this.speedY; if (this.y < 0) this.y = ambientCanvas.height; }
+            draw() {
+                aCtx.fillStyle = `rgba(255, 207, 64, ${this.opacity})`;
+                aCtx.beginPath(); aCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); aCtx.fill();
+            }
+        }
+
+        function createRow(text, rowId) {
+            const container = document.getElementById(rowId);
+            text.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.className = 'letter-container';
+                span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                ['b-outline', 'b-fill', 'b-volume', 'b-polish'].forEach(cls => {
+                    const layer = document.createElement('span');
+                    layer.className = `layer ${cls}`;
+                    layer.id = `${cls}-${rowId}-${i}`;
+                    layer.innerHTML = char === ' ' ? '&nbsp;' : char;
+                    span.appendChild(layer);
+                });
+                container.appendChild(span);
+            });
+        }
+
+        function calculateTypography() {
+            const target = document.getElementById('target');
+            if(!target) return;
+            const containerWidth = target.offsetWidth;
+            const rows = [row1Str, row2Str];
+            rows.forEach((text, index) => {
+                const charCount = text.length;
+                const baseSize = Math.floor(containerWidth / charCount * 1.3);
+                const finalSize = Math.min(baseSize, 48);
+                const elements = document.querySelectorAll(`#row-${index + 1} .letter-container`);
+                elements.forEach(el => {
+                    el.style.fontSize = finalSize + 'px';
+                    el.style.letterSpacing = (finalSize / 5) + 'px';
+                });
+            });
+        }
+
+        async function runLaser(type) {
+            const config = lasers[type];
+            await new Promise(r => setTimeout(r, config.delay));
+            config.el.style.opacity = "1"; config.dot.style.opacity = "1";
+            const rowsIds = ['row-1', 'row-2'];
+            for (const rowId of rowsIds) {
+                const letters = document.querySelectorAll(`#${rowId} .letter-container`);
+                for (let i = 0; i < letters.length; i++) {
+                    const r = letters[i].getBoundingClientRect();
+                    const x = r.left + r.width / 2; const y = r.top + r.height / 2;
+                    config.el.setAttribute('x2', x); config.el.setAttribute('y2', y);
+                    config.dot.style.left = (x - 12) + 'px'; config.dot.style.top = (y - 12) + 'px';
+                    for(let j=0; j<6; j++) particles.push(new Particle(x, y, config.color));
+                    const layer = document.getElementById(`${config.class}-${rowId}-${i}`);
+                    if(layer) { layer.style.width = '100%'; layer.style.opacity = '1'; }
+                    await new Promise(res => setTimeout(res, 45));
+                }
+            }
+            config.el.style.opacity = "0"; config.dot.style.opacity = "0";
+            if (type === 'orange') {
+                document.querySelectorAll('.letter-container').forEach((el, index) => {
+                    setTimeout(() => el.classList.add('shine-trigger'), index * 30);
+                });
+                setTimeout(startAnnihilation, 1200);
+            }
+        }
+
+        async function startAnnihilation() {
+            document.querySelectorAll('.letter-container').forEach(letter => {
+                const r = letter.getBoundingClientRect();
+                for(let i=0; i<30; i++) particles.push(new Particle(r.left + r.width/2, r.top + r.height/2, '#fff', 4, true));
+                letter.classList.add('annihilate');
+            });
+            setTimeout(finish, 1300);
+        }
+
+        function finish() {
+            const intro = document.getElementById('laser-intro');
+            if(intro) intro.style.opacity = '0';
+            document.getElementById('marble-frame').style.opacity = '1';
+            document.getElementById('ambient-canvas').style.opacity = '1';
+            document.getElementById('site').classList.add('show');
+            setTimeout(() => { if(intro) intro.style.display = 'none'; document.body.style.overflowY = 'auto'; }, 1500);
+        }
+
+        function tiltEffect(e, el) {
+            const r = el.getBoundingClientRect();
+            el.style.transform = `perspective(1000px) rotateX(${(r.height/2 - (e.clientY - r.top))/15}deg) rotateY(${(e.clientX - r.left - r.width/2)/15}deg)`;
+        }
+        function resetTilt(el) { el.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`; }
+
+        window.addEventListener('scroll', () => {
+            const s = window.pageYOffset;
+            const logo = document.getElementById('logo-parallax');
+            if(logo) logo.style.transform = `translateY(${s * 0.25}px) rotate(${s * 0.03}deg)`;
+        });
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => { p.update(); p.draw(); if(p.life <= 0) particles.splice(i, 1); });
+            requestAnimationFrame(animateParticles);
+        }
+
+        function drawAmbient() {
+            aCtx.clearRect(0, 0, ambientCanvas.width, ambientCanvas.height);
+            ambientParticles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(drawAmbient);
+        }
+
+        window.onload = () => {
+            canvas.width = ambientCanvas.width = window.innerWidth;
+            canvas.height = ambientCanvas.height = window.innerHeight;
+            createRow(row1Str, 'row-1'); createRow(row2Str, 'row-2');
+            calculateTypography();
+            for(let i=100; i>0; i--) ambientParticles.push(new AmbientGold());
+            animateParticles(); drawAmbient();
+            ['red', 'blue', 'green', 'orange'].forEach(runLaser);
+        };
+        window.onresize = () => { canvas.width = ambientCanvas.width = window.innerWidth; canvas.height = ambientCanvas.height = window.innerHeight; calculateTypography(); };
+    </script>
+</body>
+</html>
