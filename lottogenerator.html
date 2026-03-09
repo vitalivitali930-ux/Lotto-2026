@@ -264,12 +264,20 @@
             font-size: 10px; 
             cursor: pointer; 
             transition: 0.3s; 
+            text-decoration: none; /* Для ссылок */
         } 
 
         .nav-item.active { 
             color: var(--main-color); 
             transform: translateY(-3px); 
         } 
+
+        /* Спец-эффект для кнопки перехода */
+        .nav-item.special-link {
+            text-shadow: 0 0 10px var(--neon);
+            filter: drop-shadow(0 0 5px var(--neon));
+            animation: candle-glow 3s infinite;
+        }
 
         .nav-item span { 
             display: block; 
@@ -557,7 +565,6 @@
             font-weight: 800; 
             cursor: pointer; 
         }
-        
         @keyframes pulse-hot { 
             from { box-shadow: 0 0 15px #ff4500; transform: scale(1.02); } 
             to { box-shadow: 0 0 30px #ff4500; transform: scale(1.1); } 
@@ -667,6 +674,7 @@
         <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
         <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
         <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
+        <a href="zerochaosspiel.html" class="nav-item special-link" style="text-decoration:none;"><span>🌀</span><label>ZERO</label></a>
     </div>
 </div> 
 
@@ -674,6 +682,7 @@
     /* Spark Memory Note: 
        Project: Bi-Turbo Ultimate (Lotto)
        Integrity Check: randomFill replaced with Rainbow Wave Engine. 
+       Transition Button: Added to Nav-Bar.
        Protocol: 1.1 Active.
     */
     const canvas = document.getElementById('introCanvas');
@@ -860,7 +869,6 @@
 
     /**
      * МАНИФЕСТ МОНОЛИТА: ОБНОВЛЕННАЯ ФУНКЦИЯ RANDOMFILL (RAINBOW ENGINE)
-     * ОПИСАНИЕ: Постепенная радужная волна, хаос, затем золотая фиксация.
      */
     async function randomFill() {
         if (isProcessing) return;
@@ -869,20 +877,17 @@
         const rainbowColors = ['flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver'];
         const allCells = document.querySelectorAll('.cell');
         
-        // 1. Сброс и Очистка (Протокол Integrity)
         selected = [];
         activeSmartTool = null;
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         allCells.forEach(c => c.className = 'cell');
         sndShuffle.play();
 
-        // 2. Радужная Вспышка (Энергия системы)
         allCells.forEach((c, i) => {
             c.classList.add(rainbowColors[i % rainbowColors.length]);
         });
         await delay(600);
         
-        // 3. Турбо-хаос (Бегающие огни 1.5 сек)
         let startTime = Date.now();
         while (Date.now() - startTime < 1500) {
             allCells.forEach(c => { if (!c.classList.contains('selected')) c.className = 'cell'; });
@@ -896,7 +901,6 @@
             await delay(60);
         }
 
-        // 4. Драматическая фиксация (Золотой выбор по одному)
         allCells.forEach(c => c.className = 'cell');
         while (selected.length < 6) {
             let r = Math.floor(Math.random() * 42) + 1;
@@ -909,7 +913,6 @@
             }
         }
 
-        // 5. Суперчисло (Завершение ритуала)
         superNum = Math.floor(Math.random() * 6) + 1;
         document.querySelectorAll('.super-cell').forEach((sc, idx) => {
             sc.classList.toggle('selected', idx + 1 === superNum);
