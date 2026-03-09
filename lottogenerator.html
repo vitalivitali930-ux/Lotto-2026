@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <title>Lotto - Движок VCHF Ultimate 2.0 | Swiss Precision System</title>
-    <meta name="description" content="Der ultimative Schweizer Lottogenerator mit VCHF-Präзision. Smart-Filter и эксклюзивная система Bi-Turbo Ultimate.">
-    <meta name="keywords" content="Lotto, Lottogenerator, Schweiz, VCHF, Smart-Filter, Jackpot">
-    <meta name="robots" content="index, follow">
-    
+    <title>Lotto - Движок VCHF Ultimate 2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -25,11 +20,11 @@
             --cold-color: #1e90ff;
             --process-color: #00ffff;
             --neon-blue: #00a3ff;
-            
+            /* Константы Интро */
             --gold: #ffcc00;
             --onyx: #050505;
             --neon: #00f3ff;
-            
+            /* Радужные акценты для новой функции */
             --lime: #32CD32;
             --cyan: #00ffff;
             --cherry: #C511A4;
@@ -44,19 +39,18 @@
             margin: 0; 
             padding: 0;
             overflow: hidden; 
+            transition: background 0.5s ease;
             width: 100%; 
             height: 100%;
         } 
 
-        /* Стили Интро - ВОЗВРАТ ИЕРАРХИИ */
+        /* Стили Интро (Canvas Engine) */
         #introCanvas { 
-            position: fixed; 
+            position: absolute; 
             top: 0; 
             left: 0; 
-            z-index: 50000; 
+            z-index: 20001; 
             pointer-events: none; 
-            width: 100%;
-            height: 100%;
         } 
 
         #ui-layer {
@@ -65,7 +59,7 @@
             left: 0; 
             width: 100%; 
             height: 100%;
-            z-index: 49999; 
+            z-index: 20002; 
             display: flex; 
             flex-direction: column;
             justify-content: center; 
@@ -99,13 +93,38 @@
             text-shadow: 0 0 10px var(--neon);
         } 
 
-        /* Темы интерфейса */
-        body.theme-cherry { --main-color: #C511A4; --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); --theme-glow: rgba(197, 17, 164, 0.35); } 
-        body.theme-silver { --main-color: #c0c0c0; --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); --theme-glow: rgba(192, 192, 192, 0.35); } 
-        body.theme-lime { --main-color: #32CD32; --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); --theme-glow: rgba(50, 205, 50, 0.35); } 
-        body.theme-cyan { --main-color: #00ffff; --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); --theme-glow: rgba(0, 255, 255, 0.35); } 
-        body.theme-gold { --main-color: #d4af37; --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); --theme-glow: rgba(212, 175, 55, 0.35); }
+        /* Темы интерфейса - Протокол Эдельвейс */
+        body.theme-cherry { 
+            --main-color: #C511A4; 
+            --main-gradient: linear-gradient(145deg, #FF1493, #C511A4); 
+            --theme-glow: rgba(197, 17, 164, 0.35); 
+        } 
 
+        body.theme-silver { 
+            --main-color: #c0c0c0; 
+            --main-gradient: linear-gradient(145deg, #e0e0e0, #c0c0c0); 
+            --theme-glow: rgba(192, 192, 192, 0.35); 
+        } 
+
+        body.theme-lime { 
+            --main-color: #32CD32; 
+            --main-gradient: linear-gradient(145deg, #adff2f, #32CD32); 
+            --theme-glow: rgba(50, 205, 50, 0.35); 
+        } 
+
+        body.theme-cyan { 
+            --main-color: #00ffff; 
+            --main-gradient: linear-gradient(145deg, #e0ffff, #00ffff); 
+            --theme-glow: rgba(0, 255, 255, 0.35); 
+        } 
+
+        body.theme-gold { 
+            --main-color: #d4af37; 
+            --main-gradient: linear-gradient(145deg, #f9e27d, #d4af37); 
+            --theme-glow: rgba(212, 175, 55, 0.35); 
+        }
+
+        /* Оптимизированное ЦВЕТНОЕ Дыхание */
         @keyframes sphere-breathe {
             0%, 100% { 
                 box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6), 0 0 5px var(--main-color);
@@ -119,881 +138,805 @@
             }
         } 
 
+        /* Анимационные классы вспышек для Rainbow Wave */
         .cell.flash-gold { background: var(--gold); box-shadow: 0 0 15px var(--gold); color: #000; border-color: #fff; transform: scale(1.1); }
         .cell.flash-lime { background: var(--lime); box-shadow: 0 0 15px var(--lime); color: #000; border-color: #fff; transform: scale(1.1); }
         .cell.flash-cyan { background: var(--cyan); box-shadow: 0 0 15px var(--cyan); color: #000; border-color: #fff; transform: scale(1.1); }
         .cell.flash-cherry { background: var(--cherry); box-shadow: 0 0 15px var(--cherry); color: #000; border-color: #fff; transform: scale(1.1); }
         .cell.flash-silver { background: var(--silver); box-shadow: 0 0 15px var(--silver); color: #000; border-color: #fff; transform: scale(1.1); }
 
+        @keyframes processing-flash {
+            0% { 
+                background: var(--process-color); 
+                box-shadow: 0 0 25px var(--process-color); 
+                transform: scale(1.15); 
+            }
+            100% { 
+                background: var(--white-sphere); 
+                box-shadow: none; 
+                transform: scale(1); 
+            }
+        } 
+
+        .cell.processing-flash { 
+            animation: processing-flash 0.15s ease-out; 
+            z-index: 5; 
+        } 
+
+        @keyframes candle-glow {
+            0%, 100% { 
+                opacity: 0.6; 
+                transform: scale(1); 
+                filter: drop-shadow(0 0 5px var(--main-color)); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.15); 
+                filter: drop-shadow(0 0 15px var(--main-color)); 
+            }
+        } 
+
+        .candle { 
+            animation: candle-glow 2s infinite ease-in-out; 
+        } 
+
+        #legal-overlay {
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.92); 
+            backdrop-filter: blur(15px); 
+            z-index: 30000;
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 25px;
+        } 
+
+        .legal-box {
+            background: #111; 
+            border: 2px solid var(--main-color);
+            padding: 30px; 
+            border-radius: 25px; 
+            max-width: 320px; 
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 20px var(--theme-glow);
+        } 
+
+        .lang-panel { 
+            position: relative; 
+            height: 65px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1001; 
+        } 
+
+        .lang-btn { 
+            font-size: 30px; 
+            cursor: pointer; 
+            position: absolute; 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 5; 
+        }
+        
+        .pos-ru { transform: translate(-100px, 45px); }
+        .pos-fr { transform: translate(-50px, 70px); }
+        .pos-de { transform: translate(0px, 80px); }
+        .pos-en { transform: translate(50px, 70px); }
+        .pos-ua { transform: translate(100px, 45px); } 
+
         #app-content { 
             display: none; 
             opacity: 0; 
             transition: opacity 1s ease; 
             height: 100vh; 
-            width: 100%;
             overflow: hidden; 
-            position: relative;
-            z-index: 10;
         } 
 
-        /* БЛОК ПОРТАЛА - ПРАВИЛЬНЫЙ ОТСТУП */
-        .portal-nav {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            padding: 15px;
-            margin-top: 10px;
-        }
+        .page { 
+            height: calc(100vh - 75px); 
+            overflow-y: auto; 
+            display: none; 
+            padding: 15px 0 30px; 
+        } 
 
-        .portal-link {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--main-color);
-            border-radius: 14px;
-            padding: 12px 5px;
-            color: #fff;
-            text-decoration: none;
-            font-size: 10px;
-            font-family: 'Orbitron', sans-serif;
-            transition: 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .portal-link:active {
-            transform: scale(0.95);
-            background: var(--main-color);
-            color: #000;
-        }
-
-        .page { height: calc(100vh - 120px); overflow-y: auto; display: none; padding: 15px 0; } 
-        .page.active { display: block; } 
-        
+        .page.active { 
+            display: block; 
+        } 
         .nav-bar {
             position: fixed; 
             bottom: 0; 
             left: 0; 
             right: 0; 
-            height: 75px;
-            background: rgba(10,10,10,0.98); 
+            height: 70px;
+            background: rgba(10,10,10,0.95); 
             display: flex; 
             justify-content: space-around;
             align-items: center; 
-            border-top: 2px solid var(--main-color); 
+            border-top: 1.5px solid var(--main-color); 
             z-index: 1000;
         } 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #666;
-            text-decoration: none;
-            font-size: 10px;
-            transition: 0.3s;
-            position: relative;
-        }
 
-        .nav-item.active { color: var(--main-color); }
+        .nav-item { 
+            color: #666; 
+            font-size: 10px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        } 
 
-        .nav-icon {
-            width: 28px;
-            height: 28px;
-            margin-bottom: 4px;
-            fill: currentColor;
-            filter: drop-shadow(0 0 5px transparent);
-            transition: 0.3s;
-        }
+        .nav-item.active { 
+            color: var(--main-color); 
+            transform: translateY(-3px); 
+        } 
 
-        .nav-item.active .nav-icon { filter: drop-shadow(0 0 8px var(--main-color)); }
+        .nav-item span { 
+            display: block; 
+            font-size: 24px; 
+            margin-bottom: 2px; 
+        } 
 
-        /* СЕТКА ШАРОВ (ГЕНЕРАТОР) */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            padding: 20px;
-            max-width: 450px;
-            margin: 0 auto;
-        }
+        .balance-container { 
+            display: flex; 
+            gap: 10px; 
+            padding: 0 15px 15px; 
+        } 
 
-        .cell {
-            aspect-ratio: 1;
-            background: var(--white-sphere);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
+        .bal-card { 
+            flex: 1; 
+            border-radius: 12px; 
+            padding: 12px; 
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); 
+            border: 1.5px solid #444; 
+            transition: all 0.4s ease; 
+            cursor: pointer; 
+            opacity: 0.5; 
+            filter: grayscale(0.7) brightness(0.8);
+        } 
+
+        .bal-card.active-wallet { 
+            opacity: 1; 
+            filter: grayscale(0) brightness(1.2); 
+            border-color: var(--main-color); 
+            background: rgba(255, 255, 255, 0.07); 
+            box-shadow: 0 0 15px var(--main-color); 
+            transform: scale(1.05); 
+        } 
+
+        .bal-val { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #32CD32; 
+        } 
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 10px; 
+            padding: 0 15px; 
+            max-width: 400px; 
+            margin: 0 auto; 
+        } 
+
+        .cell { 
+            aspect-ratio: 1/1; 
+            background: var(--white-sphere); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
             justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.8), 0 5px 12px rgba(0,0,0,0.6);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-        }
-
-        .cell::after {
-            content: '';
-            position: absolute;
-            top: 15%;
-            left: 15%;
-            width: 30%;
-            height: 30%;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-
-        .cell.selected {
-            background: var(--gold-sphere);
-            color: #000;
-            transform: scale(1.1) rotateZ(360deg);
-            box-shadow: 0 0 20px var(--theme-glow), inset -2px -2px 5px rgba(0,0,0,0.5);
-            animation: haloPulse 2s infinite ease-in-out;
-        }
-
-        @keyframes haloPulse {
-            0% { box-shadow: 0 0 5px var(--main-color), inset -2px -2px 5px rgba(0,0,0,0.5); }
-            50% { box-shadow: 0 0 25px var(--main-color), inset -2px -2px 5px rgba(0,0,0,0.5); }
-            100% { box-shadow: 0 0 5px var(--main-color), inset -2px -2px 5px rgba(0,0,0,0.5); }
-        }
-
-        /* Кнопки управления */
-        .controls { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-
-        .btn-main {
-            background: var(--main-gradient);
-            border: none;
-            padding: 18px;
-            border-radius: 16px;
-            color: #000;
-            font-weight: 800;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            letter-spacing: 2px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn-main:active { transform: scale(0.96); filter: brightness(1.2); }
-
-        /* УМНЫЕ ИНСТРУМЕНТЫ (HOT/COLD) */
-        .smart-tools {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 20px;
-        }
-
-        .tool-card {
-            background: rgba(20,20,20,0.8);
+            font-weight: 800; 
+            color: var(--cell-text); 
+            font-size: 19px; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; 
+            position: relative; 
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 12px;
-            text-align: left;
-        }
+            animation: sphere-breathe 4s infinite ease-in-out;
+        } 
 
-        .tool-card h4 { margin: 0 0 8px 0; font-size: 10px; color: #888; text-transform: uppercase; }
-        .tool-val { font-size: 18px; font-weight: bold; font-family: 'Orbitron', sans-serif; }
-        .tool-val.hot { color: var(--hot-color); text-shadow: 0 0 10px rgba(255,69,0,0.5); }
-        .tool-val.cold { color: var(--cold-color); text-shadow: 0 0 10px rgba(30,144,255,0.5); }
+        .cell.selected { 
+            background: var(--main-gradient); 
+            color: #000; 
+            transform: scale(1.1) translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 30px var(--main-color); 
+            border: 2px solid #fff; 
+            z-index: 10; 
+            animation: none; 
+        }
+        .ticket-card { 
+            background: rgba(255,255,255,0.05); 
+            border: 1.2px solid #333; 
+            border-radius: 16px; 
+            padding: 15px; 
+            margin: 0 15px 12px; 
+            text-align: left; 
+        } 
+
+        .ticket-nums { 
+            display: flex; 
+            gap: 8px; 
+            margin: 10px 0; 
+            flex-wrap: wrap; 
+        } 
+
+        .mini-ball { 
+            width: 30px; 
+            height: 30px; 
+            background: #000; 
+            border: 1px solid var(--main-color); 
+            border-radius: 50%; 
+            color: #fff; 
+            font-size: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 800; 
+        } 
+
+        .super-ball-mini { 
+            background: #ff4500 !important; 
+            color: #fff !important; 
+            border: none; 
+        } 
+
+        .ticket-controls { 
+            margin-bottom: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+        } 
+
+        .smart-tools { 
+            display: flex; 
+            gap: 8px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+        } 
+
+        .tool-btn { 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            border: 1px solid var(--main-color); 
+            background: rgba(0,0,0,0.6); 
+            color: #fff; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        } 
+
+        .tool-btn.active-tool { 
+            background: var(--main-color); 
+            color: #000; 
+            font-weight: bold; 
+        }
+        
+        .stats-period { 
+            display: flex; 
+            justify-content: center; 
+            gap: 5px; 
+            height: 30px; 
+        } 
+
+        .p-btn { 
+            font-size: 10px; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            border: 1px solid #444; 
+            background: #222; 
+            color: #888; 
+            cursor: pointer; 
+        } 
+
+        .p-btn.active { 
+            border-color: var(--main-color); 
+            color: #fff; 
+            box-shadow: 0 0 10px var(--main-color); 
+        } 
+
+        .counter-box { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            background: rgba(255,255,255,0.1); 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            border: 1px solid var(--main-color); 
+        } 
+
+        .btn-round { 
+            width: 35px; 
+            height: 35px; 
+            border-radius: 50%; 
+            border: 1.5px solid var(--main-color); 
+            background: none; 
+            color: #fff; 
+            font-size: 20px; 
+            cursor: pointer; 
+        } 
+
+        .total-display { 
+            margin: 15px 0; 
+            font-size: 18px; 
+            color: #fff; 
+        } 
+
+        #display-total { 
+            color: var(--neon-blue); 
+            font-weight: 900; 
+        } 
+        .super-title { 
+            margin: 25px 0 10px; 
+            font-size: 14px; 
+            color: var(--main-color); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        } 
+
+        .super-grid { 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            padding-bottom: 20px; 
+        } 
+
+        .super-cell { 
+            width: 58px; 
+            height: 58px; 
+            background: var(--white-sphere); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--cell-text); 
+            font-weight: 900; 
+            font-size: 24px; 
+            cursor: pointer; 
+            transition: 0.4s; 
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: sphere-breathe 4s infinite ease-in-out;
+        } 
+
+        .super-cell.selected { 
+            transform: scale(1.2); 
+            background: var(--main-gradient); 
+            color: #000; 
+            border: 2px solid #fff; 
+            box-shadow: 0 0 30px var(--main-color); 
+            animation: none; 
+        } 
+
+        .theme-toggle { 
+            position: fixed; 
+            top: 15px; 
+            right: 15px; 
+            font-size: 26px; 
+            z-index: 1001; 
+            cursor: pointer; 
+        } 
+
+        .theme-panel { 
+            position: fixed; 
+            top: 65px; 
+            right: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            z-index: 1000; 
+            background: rgba(0,0,0,0.95); 
+            padding: 15px; 
+            border-radius: 25px; 
+            border: 1px solid var(--main-color); 
+            transition: 0.3s; 
+            transform: translateX(120px); 
+        } 
+
+        .theme-panel.open { 
+            transform: translateX(0); 
+        } 
+
+        .dot { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            border: 2px solid #fff; 
+            cursor: pointer; 
+        } 
+
+        .btn-main { 
+            width: 85%; 
+            padding: 22px; 
+            border-radius: 18px; 
+            font-size: 20px; 
+            margin-top: 10px; 
+            background: var(--main-gradient); 
+            color: #000; 
+            border: none; 
+            font-weight: 800; 
+            cursor: pointer; 
+        }
+        
+        @keyframes pulse-hot { 
+            from { box-shadow: 0 0 15px #ff4500; transform: scale(1.02); } 
+            to { box-shadow: 0 0 30px #ff4500; transform: scale(1.1); } 
+        }
+        @keyframes pulse-cold { 
+            from { box-shadow: 0 0 15px #1e90ff; transform: scale(1.02); } 
+            to { box-shadow: 0 0 30px #1e90ff; transform: scale(1.1); } 
+        } 
+
+        .cell.is-hot { 
+            border: 3px solid #ff4500 !important; 
+            box-shadow: 0 0 25px #ff4500 !important; 
+            animation: pulse-hot 1.2s 3 alternate; 
+            z-index: 5; 
+        } 
+
+        .cell.is-cold { 
+            border: 3px solid #1e90ff !important; 
+            box-shadow: 0 0 25px #1e90ff !important; 
+            animation: pulse-cold 1.2s 3 alternate; 
+            z-index: 5; 
+        } 
+
+        .cell.is-sleeping { 
+            border: 3px solid var(--process-color) !important; 
+            box-shadow: 0 0 25px var(--process-color) !important; 
+            animation: pulse-hot 1.2s 3 alternate; 
+        }
     </style>
 </head>
-<body class="theme-gold">
-
-    <canvas id="introCanvas"></canvas>
-    
-    <div id="ui-layer">
-        <div class="logo-box-intro" id="introLogo">
-            <img src="https://i.postimg.cc/0269S9Yy/vchf2.png" alt="VCHF LOGO">
-        </div>
-        <div class="status-label-intro" id="statusLabel">Initializing...</div>
+<body> 
+<div id="legal-overlay">
+    <div class="legal-box">
+        <div id="legal-content" style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; color: #eee;"></div>
+        <button class="btn-main" onclick="acceptLegal()" id="legal-agree-btn" style="width:100%; margin-top:0; padding:15px;"></button>
     </div>
+</div> 
 
-    <div id="app-content">
-        
-        <div class="portal-nav">
-            <a href="info.html" class="portal-link">
-                <span style="font-size: 18px;">ℹ️</span>
-                <span>INFO</span>
-            </a>
-            <a href="https://vchf.ch" class="portal-link">
-                <span style="font-size: 18px;">🌐</span>
-                <span>VCHF.CH</span>
-            </a>
-            <a href="legal.html" class="portal-link">
-                <span style="font-size: 18px;">⚖️</span>
-                <span>LEGAL</span>
-            </a>
-        </div>
+<canvas id="introCanvas"></canvas>
+<div id="ui-layer">
+    <div id="mainLogoIntro" class="logo-box-intro">
+        <img src="1771489965074(1).png" alt="Logo">
+    </div>
+    <div id="mainStatusIntro" class="status-label-intro">INITIALIZING ENGINE...</div>
+</div> 
 
-        <div id="main-page" class="page active">
-            <div class="grid-container" id="grid"></div>
-            
+<div id="app-content">
+    <div id="page-play" class="page active">
+        <div class="lang-panel" id="dynamic-langs"></div>
+        <div class="theme-toggle" onclick="document.querySelector('.theme-panel').classList.toggle('open')">🎨</div>
+        <div class="theme-panel">
+            <div class="dot" style="background: #d4af37;" onclick="setTheme('gold')"></div>
+            <div class="dot" style="background: #32CD32;" onclick="setTheme('lime')"></div>
+            <div class="dot" style="background: #00ffff;" onclick="setTheme('cyan')"></div>
+            <div class="dot" style="background: #C511A4;" onclick="setTheme('cherry')"></div>
+            <div class="dot" style="background: #c0c0c0;" onclick="setTheme('silver')"></div>
+        </div> 
+
+        <div class="balance-container">
+            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
+                <div style="font-size:10px;">VIRTUAL VCHF</div>
+                <div class="bal-val" id="vchf-val">100.00</div>
+            </div>
+            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
+                <div style="font-size:10px;">REAL CHF</div>
+                <div class="bal-val" id="chf-val">0.00</div>
+            </div>
+        </div> 
+
+        <div class="ticket-controls">
             <div class="smart-tools">
-                <div class="tool-card">
-                    <h4>Hot Number</h4>
-                    <div class="tool-val hot" id="hotNum">--</div>
-                </div>
-                <div class="tool-card">
-                    <h4>Cold Number</h4>
-                    <div class="tool-val cold" id="coldNum">--</div>
-                </div>
+                <button class="tool-btn" onclick="togglePick('hot')" id="btn-hot">🔥 HOT</button>
+                <button class="tool-btn" onclick="togglePick('cold')" id="btn-cold">❄️ COLD</button>
+                <button class="tool-btn" onclick="togglePick('sleeping')" id="btn-sleeping">💤 SLEEPING</button>
+                <button class="tool-btn" onclick="randomFill()">🎲 RANDOM</button>
             </div>
+            <div class="stats-period" id="stats-p-box">
+                <button class="p-btn active" onclick="setPeriod('month')" id="p-month">MONTH</button>
+                <button class="p-btn" onclick="setPeriod('year')" id="p-year">YEAR</button>
+                <button class="p-btn" onclick="setPeriod('all')" id="p-all">ALL TIME</button>
+            </div>
+            <div class="counter-box">
+                <button class="btn-round" onclick="updateTicketCount(-1)">−</button>
+                <span style="font-size: 20px; font-weight: bold;"><span id="ticket-count">1</span> ×</span>
+                <button class="btn-round" onclick="updateTicketCount(1)">+</button>
+            </div>
+        </div> 
 
-            <div class="controls">
-                <button class="btn-main" onclick="generateUltimate()">Generate Ultimate</button>
-            </div>
+        <div class="grid" id="main-grid"></div>
+        <div id="l-super" class="super-title">SUPERZAHL</div>
+        <div class="super-grid" id="s-grid"></div>
+        <div class="total-display">
+            <span id="l-total">Total</span>: <span id="display-total">2.50 VCHF</span>
         </div>
+        <button class="btn-main" id="main-btn" onclick="runEngine()">TICKET BESTÄTIGEN</button>
+    </div> 
 
-        <nav class="nav-bar">
-            <a href="#" class="nav-item active" onclick="showPage('main-page', this)">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                <span>HOME</span>
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('stats-page', this)">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z"/></svg>
-                <span>STATS</span>
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('settings-page', this)">
-                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.21.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                <span>SETTINGS</span>
-            </a>
-        </nav>
+    <div id="page-tickets" class="page">
+        <h2 id="l-active-tickets-title" style="color: var(--main-color);">MEINE TICKETS</h2>
+        <div id="active-list"></div>
+    </div> 
+    <div id="page-stats" class="page">
+        <h2 id="l-personal-stats-title" style="color: var(--main-color);">STATISTIK</h2>
+        <div class="grid" id="personal-heatmap"></div>
+    </div> 
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('play', this)"><span>🎲</span><label id="n-game">SPIEL</label></div>
+        <div class="nav-item" onclick="showPage('tickets', this)"><span>🎟️</span><label id="n-tickets">TICKETS</label></div>
+        <div class="nav-item" onclick="showPage('stats', this)"><span>📊</span><label id="n-stats">STATS</label></div>
     </div>
+</div> 
+
 <script>
-    // --- ПАРАМЕТРЫ МОНОЛИТА ---
-    const CONFIG = {
-        gridSize: 42,
-        selectCount: 6,
-        themes: ['gold', 'lime', 'cyan', 'cherry', 'silver'],
-        statusTexts: [
-            "CONNECTING TO VCHF...",
-            "LOADING GOLDEN RATIO...",
-            "CALCULATING CHAOS...",
-            "READY FOR ULTIMATE"
-        ]
-    };
-
-    let currentTheme = 'gold';
-
-    // --- СИСТЕМА ИНТРО (ВОССТАНОВЛЕНИЕ) ---
+    /* Spark Memory Note: 
+       Project: Bi-Turbo Ultimate (Lotto)
+       Integrity Check: randomFill replaced with Rainbow Wave Engine. 
+       Protocol: 1.1 Active.
+    */
     const canvas = document.getElementById('introCanvas');
     const ctx = canvas.getContext('2d');
-    const uiLayer = document.getElementById('ui-layer');
-    const appContent = document.getElementById('app-content');
-    const introLogo = document.getElementById('introLogo');
-    const statusLabel = document.getElementById('statusLabel');
+    const statusIntro = document.getElementById('mainStatusIntro');
+    const logoIntro = document.getElementById('mainLogoIntro');
+    const tg = window.Telegram.WebApp; 
+    tg.expand(); 
 
-    let particles = [];
+    const sndClick = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+    const sndShuffle = new Audio('https://www.soundjay.com/misc/sounds/marbles-shake-1.mp3');
+    const sndWin = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'); 
 
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    let realStatsDB = {};
+    let myTickets = JSON.parse(localStorage.getItem('vchf_user_tickets')) || [];
+    let selected = [], superNum = null, currentPeriod = 'month', ticketCount = 1, currentCurrency = 'VCHF', currentLang = 'en', pendingLang = 'en', bgsTimer = null;
+    let activeSmartTool = null; 
+    let isProcessing = false; // Защита для новой функции
+    const realPrice = 2.50; 
 
-    class Particle {
-        constructor() {
-            this.reset();
-        }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 2 + 1;
-            this.speedX = (Math.random() - 0.5) * 2;
-            this.speedY = (Math.random() - 0.5) * 2;
-            this.color = Math.random() > 0.5 ? '#d4af37' : '#ffffff';
-            this.opacity = Math.random();
-        }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-        }
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.globalAlpha = this.opacity;
-            ctx.fill();
-        }
-    }
+    const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
+    }; 
+    const legalDict = {
+        ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
+        ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
+        de: { title: "Schweizer Gesetz (BGS)", text: "Gemäss dem Bundesgesetz über Geldspiele (BGS) ist die Teilnahme erst ab <b>18 Jahren</b> gestattet. Bestätigen Sie Ihr Einverständnis.", btn: "ICH BIN 18 JAHRE ALT" },
+        en: { title: "Swiss Law (BGS)", text: "According to the Swiss Federal Act on Gambling (BGS), participation is only allowed for persons over <b>18 years</b> old. Please confirm your agreement.", btn: "I AM 18 YEARS OLD" },
+        fr: { title: "Loi Suisse (BGS)", text: "Согласно Loi fédérale sur les jeux d'argent (BGS), la participation est réservée aux personnes de plus de <b>18 ans</b>. Veuillez confirmer votre accord.", btn: "J'AI 18 ANS" }
+    }; 
 
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < 100; i++) particles.push(new Particle());
-    }
+    const spheresIntro = [
+        { x: 0.15, y: 0.25, colors: ['#000', '#ffcc00', '#000'], label: 'DE' },
+        { x: 0.85, y: 0.25, colors: ['#eee', '#ffffff', '#eee'], label: 'EN' },
+        { x: 0.15, y: 0.50, colors: ['#0057b7', '#ffd700'], label: 'UA' },
+        { x: 0.85, y: 0.50, colors: ['#fff', '#0039a6', '#d52b1e'], label: 'RU' },
+        { x: 0.15, y: 0.75, colors: ['#002395', '#ffffff', '#ed2939'], label: 'FR' },
+        { x: 0.85, y: 0.75, colors: ['#008c45', '#f4f5f0', '#cd212a'], label: 'IT' }
+    ];
+    let drawnItems = spheresIntro.map(s => ({ ...s, grow: 0, ink: 0 }));
+    let l1 = { x: window.innerWidth/2, y: 0 }, l2 = { x: window.innerWidth/2, y: window.innerHeight };
+    let step1 = 0, step2 = 0, active2 = false, fadeIntro = 1.0; 
+
+    function drawSphereIntro(s) {
+        if (s.grow <= 0) return;
+        const x = s.x * canvas.width, y = s.y * canvas.height, r = 42 * s.grow;
+        ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(0,0,0,1)';
+        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+        let gBody = ctx.createRadialGradient(x-15, y-15, r/10, x, y, r);
+        gBody.addColorStop(0, '#fff'); gBody.addColorStop(0.5, '#444'); gBody.addColorStop(1, '#050505');
+        ctx.fillStyle = gBody; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+        if (s.ink > 0) {
+            ctx.save(); ctx.beginPath(); ctx.arc(x, y, r-2, 0, 7); ctx.clip();
+            let gFlag = ctx.createLinearGradient(x-r, y-r, x+r, y+r);
+            s.colors.forEach((c, i) => gFlag.addColorStop(i/(s.colors.length-1), c));
+            ctx.globalAlpha = s.ink; ctx.fillStyle = gFlag; ctx.fill(); ctx.restore(); ctx.globalAlpha = 1;
+        }
+        let gGlass = ctx.createRadialGradient(x-15, y-15, 2, x-10, y-10, r);
+        gGlass.addColorStop(0, 'rgba(255,255,255,0.9)'); gGlass.addColorStop(0.3, 'rgba(255,255,255,0.1)'); gGlass.addColorStop(1, 'rgba(0,0,0,0.5)');
+        ctx.fillStyle = gGlass; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    } 
 
     function animateIntro() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-        requestAnimationFrame(animateIntro);
-    }
-
-    // --- ФАЗЫ ЗАПУСКА ---
-    async function startSequence() {
-        initParticles();
-        animateIntro();
-
-        // 1. Появление Лого
-        setTimeout(() => { introLogo.style.opacity = '1'; }, 500);
-
-        // 2. Смена статусов
-        for (let i = 0; i < CONFIG.statusTexts.length; i++) {
-            statusLabel.innerText = CONFIG.statusTexts[i];
-            await new Promise(r => setTimeout(r, 1200));
-        }
-
-        // 3. ФИНАЛ: Переход к контенту
-        uiLayer.style.opacity = '0';
-        canvas.style.transition = 'opacity 1.5s ease';
-        canvas.style.opacity = '0';
-
-        setTimeout(() => {
-            uiLayer.style.display = 'none';
+        if (fadeIntro <= 0.01) {
+            document.getElementById('ui-layer').style.display = 'none';
             canvas.style.display = 'none';
-            appContent.style.display = 'block';
-            setTimeout(() => { 
-                appContent.style.opacity = '1';
-                initGrid(); // Инициализация сетки только после интро!
-            }, 50);
-        }, 1500);
-    }
-
-    // --- ГЕНЕРАТОР И СЕТКА ---
-    function initGrid() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= CONFIG.gridSize; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.innerText = i;
-            cell.id = `cell-${i}`;
-            grid.appendChild(cell);
-        }
-    }
-
-    function generateUltimate() {
-        // Сброс старых
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected', 'flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver'));
-        
-        let numbers = [];
-        while(numbers.length < CONFIG.selectCount) {
-            let r = Math.floor(Math.random() * CONFIG.gridSize) + 1;
-            if(!numbers.includes(r)) numbers.push(r);
-        }
-
-        numbers.sort((a,b) => a-b).forEach((n, idx) => {
-            setTimeout(() => {
-                const cell = document.getElementById(`cell-${n}`);
-                cell.classList.add('selected');
-                // Визуальный эффект вспышки текущей темы
-                cell.classList.add(`flash-${currentTheme}`);
-                
-                // Звуковой фидбек (опционально)
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                }
-            }, idx * 150);
-        });
-
-        // Обновление Smart Tools (имитация анализа)
-        document.getElementById('hotNum').innerText = numbers[0];
-        document.getElementById('coldNum').innerText = Math.floor(Math.random() * 42) + 1;
-    }
-
-    function showPage(pageId, navEl) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        navEl.classList.add('active');
-    }
-
-    // Запуск при загрузке
-    window.onload = startSequence;
-</script>
-<script>
-    // --- РАСШИРЕННЫЙ ДВИЖОК КОНФИГУРАЦИИ ---
-    const i18n = {
-        ru: {
-            title: "УЛЬТИМАТИВНЫЙ ГЕНЕРАТОР",
-            generate: "ГЕНЕРИРОВАТЬ ХАОС",
-            stats: "АНАЛИТИКА",
-            settings: "НАСТРОЙКИ",
-            hot: "ГОРЯЧЕЕ",
-            cold: "ХОЛОДНОЕ",
-            theme: "ПАЛИТРА",
-            lang: "ЯЗЫК"
-        },
-        en: {
-            title: "ULTIMATE GENERATOR",
-            generate: "GENERATE CHAOS",
-            stats: "ANALYTICS",
-            settings: "SETTINGS",
-            hot: "HOT",
-            cold: "COLD",
-            theme: "PALETTE",
-            lang: "LANGUAGE"
-        }
-    };
-
-    let currentLang = 'ru';
-
-    // --- МОДУЛЬ СМЕНЫ ТЕМЫ (ПАЛИТРА) ---
-    function applyTheme(themeName) {
-        currentTheme = themeName;
-        const root = document.documentElement;
-        
-        const palettes = {
-            gold:   { primary: '#d4af37', shadow: 'rgba(212, 175, 55, 0.5)' },
-            lime:   { primary: '#32cd32', shadow: 'rgba(50, 205, 50, 0.5)' },
-            cyan:   { primary: '#00ffff', shadow: 'rgba(0, 255, 255, 0.5)' },
-            cherry: { primary: '#ff0040', shadow: 'rgba(255, 0, 64, 0.5)' },
-            silver: { primary: '#c0c0c0', shadow: 'rgba(192, 192, 192, 0.5)' }
-        };
-
-        const theme = palettes[themeName];
-        root.style.setProperty('--primary-color', theme.primary);
-        root.style.setProperty('--glow-color', theme.shadow);
-        
-        // Визуальный отклик на кнопках выбора
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.style.border = btn.dataset.theme === themeName ? `2px solid white` : 'none';
-        });
-
-        console.log(`[Нулевой хаос]: Тема изменена на ${themeName}`);
-    }
-
-    // --- МОДУЛЬ ЛОКАЛИЗАЦИИ ---
-    function setLanguage(lang) {
-        currentLang = lang;
-        const t = i18n[lang];
-        
-        document.querySelector('.header-title').innerText = t.title;
-        document.querySelector('.main-btn span').innerText = t.generate;
-        document.getElementById('nav-stats-label').innerText = t.stats;
-        document.getElementById('nav-settings-label').innerText = t.settings;
-        
-        // Обновляем статистические метки
-        document.querySelectorAll('.stat-label').forEach(el => {
-            if(el.innerText.includes('ГОРЯЧЕЕ') || el.innerText.includes('HOT')) el.innerText = t.hot;
-            if(el.innerText.includes('ХОЛОДНОЕ') || el.innerText.includes('COLD')) el.innerText = t.cold;
-        });
-
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === lang);
-        });
-    }
-
-    // --- МОДУЛЬ РЕАЛЬНОЙ СТАТИСТИКИ (ЛОГИКА) ---
-    // Имитация базы данных последних тиражей
-    const lotoHistory = [
-        [4, 12, 22, 31, 38, 42],
-        [1, 5, 19, 20, 25, 40],
-        [7, 11, 22, 28, 33, 39],
-        [3, 12, 15, 22, 30, 41]
-    ];
-
-    function updateLiveStats() {
-        const flatHistory = lotoHistory.flat();
-        const counts = {};
-        
-        flatHistory.forEach(n => counts[n] = (counts[n] || 0) + 1);
-        
-        // Сортируем по частоте
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-        
-        const hot = sorted[0][0]; // Самое частое
-        const cold = Math.floor(Math.random() * 42) + 1; // Для примера, число которого нет в последних 4 тиражах
-
-        document.getElementById('hotNum').innerText = hot;
-        document.getElementById('coldNum').innerText = cold;
-
-        // Обновляем график (если добавим визуализацию в Window 5)
-        renderMiniGraph(sorted.slice(0, 5));
-    }
-
-    function renderMiniGraph(topNumbers) {
-        const container = document.getElementById('statsGraph');
-        if(!container) return;
-        
-        container.innerHTML = '';
-        topNumbers.forEach(item => {
-            const bar = document.createElement('div');
-            bar.className = 'graph-bar';
-            bar.style.height = `${(item[1] / 5) * 100}%`;
-            bar.innerHTML = `<span class="bar-val">${item[0]}</span>`;
-            container.appendChild(bar);
-        });
-    }
-
-    // --- ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ---
-    function initSettings() {
-        // Слушатели для палитры
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.onclick = () => applyTheme(btn.dataset.theme);
-        });
-
-        // Слушатели для языка
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.onclick = () => setLanguage(btn.dataset.lang);
-        });
-
-        updateLiveStats();
-    }
-
-    // Добавляем в общий запуск
-    const originalInitGrid = initGrid;
-    initGrid = function() {
-        originalInitGrid();
-        initSettings();
-    };
-</script>
-
-<style>
-    /* Доп. стили для графиков и кнопок настроек */
-    .graph-container {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-around;
-        height: 60px;
-        margin-top: 15px;
-        border-bottom: 1px solid var(--primary-color);
-    }
-    .graph-bar {
-        width: 15px;
-        background: var(--primary-color);
-        position: relative;
-        transition: height 0.5s ease;
-    }
-    .bar-val {
-        position: absolute;
-        top: -18px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 10px;
-        color: var(--primary-color);
-    }
-    .settings-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        padding: 20px;
-    }
-    .btn-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .theme-btn, .lang-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: 0.3s;
-    }
-    .lang-btn {
-        border-radius: 5px;
-        background: #222;
-        color: white;
-        font-size: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .lang-btn.active {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-</style>
-<div id="stats-page" class="page">
-    <div class="stats-container" style="padding: 20px;">
-        <h3 class="header-title" style="color: var(--main-color); font-family: 'Orbitron', sans-serif;">LIVE ANALYTICS</h3>
-        
-        <div class="tool-card" style="width: 100%; margin-bottom: 20px;">
-            <h4 class="stat-label">LAST DRAW (SWISS LOS)</h4>
-            <div id="last-draw-numbers" style="display: flex; justify-content: space-around; margin-top: 10px;">
-                <div class="cell-mini">--</div>
-                <div class="cell-mini">--</div>
-                <div class="cell-mini">--</div>
-                <div class="cell-mini">--</div>
-                <div class="cell-mini">--</div>
-                <div class="cell-mini">--</div>
-            </div>
-        </div>
-
-        <div class="graph-box">
-            <h4 class="stat-label">FREQUENCY CHART (TOP 5)</h4>
-            <div class="graph-container" id="statsGraph"></div>
-        </div>
-
-        <div class="manifesto-box" style="margin-top: 30px; opacity: 0.4; font-size: 9px; border-top: 1px solid #333; padding-top: 10px;">
-            <p>МАНИФЕСТ МОНОЛИТА: Протокол 11.0. Данные синхронизированы с узлом Swiss Precision. Ошибки исключены.</p>
-        </div>
-    </div>
-</div>
-
-<div id="settings-page" class="page">
-    <div class="settings-grid">
-        <div class="setting-item">
-            <h4 class="stat-label">PALETTE</h4>
-            <div class="btn-group">
-                <div class="theme-btn" data-theme="gold" style="background: #d4af37;"></div>
-                <div class="theme-btn" data-theme="lime" style="background: #32cd32;"></div>
-                <div class="theme-btn" data-theme="cyan" style="background: #00ffff;"></div>
-                <div class="theme-btn" data-theme="cherry" style="background: #ff0040;"></div>
-                <div class="theme-btn" data-theme="silver" style="background: #c0c0c0;"></div>
-            </div>
-        </div>
-        <div class="setting-item">
-            <h4 class="stat-label">LANGUAGE</h4>
-            <div class="btn-group">
-                <div class="lang-btn active" data-lang="ru">RU</div>
-                <div class="lang-btn" data-lang="en">EN</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .cell-mini {
-        width: 35px;
-        height: 35px;
-        background: var(--gold-sphere);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        color: #000;
-        font-weight: bold;
-        box-shadow: 0 0 10px var(--theme-glow);
-    }
-    .graph-box {
-        background: rgba(255,255,255,0.03);
-        border-radius: 15px;
-        padding: 15px;
-        border: 1px ridge var(--main-color);
-    }
-</style>
-
-<script>
-    // --- ПАРСЕР РЕАЛЬНЫХ ДАННЫХ (SWISS API MOCKUP) ---
-    async function fetchSwissData() {
-        console.log("[Нулевой хаос]: Запрос к узлу Swisslos...");
-        
-        try {
-            // В реальном Telegram-боте здесь будет URL твоего прокси-сервера
-            // Пока имитируем успешный Fetch с задержкой для солидности
-            await new Promise(r => setTimeout(r, 2000));
-            
-            const realData = {
-                numbers: [5, 12, 18, 25, 33, 41],
-                date: "2026-03-09"
-            };
-
-            updateDrawUI(realData.numbers);
-        } catch (e) {
-            console.error("ОШИБКА СИНХРОНИЗАЦИИ. Переход на резервные данные.");
-            updateDrawUI([2, 14, 21, 28, 35, 42]); // Резерв
-        }
-    }
-
-    function updateDrawUI(nums) {
-        const container = document.getElementById('last-draw-numbers');
-        container.innerHTML = '';
-        nums.forEach(n => {
-            const d = document.createElement('div');
-            d.className = 'cell-mini';
-            d.innerText = n;
-            container.appendChild(d);
-        });
-    }
-
-    // Вызываем при активации страницы статистики
-    const originalShowPage = showPage;
-    showPage = function(pageId, navEl) {
-        originalShowPage(pageId, navEl);
-        if(pageId === 'stats-page') {
-            fetchSwissData();
-            updateLiveStats();
-        }
-    };
-</script>
-<script>
-    // --- УДАЛЕНИЕ СЛЕДОВ TELEGRAM И ПЕРЕХОД НА WEB-СТАНДАРТ ---
-    
-    // Заменяем Haptic Telegram на стандартную вибрацию смартфона
-    function triggerHaptic(type) {
-        if ("vibrate" in navigator) {
-            if (type === 'medium') navigator.vibrate(20);
-            if (type === 'heavy') navigator.vibrate([30, 50, 30]);
-        }
-    }
-
-    // --- МОДЕРНИЗИРОВАННЫЙ ГЕНЕРАТОР (RAINBOW ENGINE) ---
-    function generateUltimate() {
-        const grid = document.querySelectorAll('.cell');
-        if (grid.length === 0) return;
-
-        // Сброс и запуск вибрации начала
-        triggerHaptic('heavy');
-        
-        grid.forEach(c => {
-            c.classList.remove('selected', 'flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver');
-            c.style.transform = 'scale(1) rotateZ(0deg)';
-        });
-        
-        let numbers = [];
-        while(numbers.length < CONFIG.selectCount) {
-            let r = Math.floor(Math.random() * CONFIG.gridSize) + 1;
-            if(!numbers.includes(r)) numbers.push(r);
-        }
-
-        // Эффект последовательного «взлета» сфер
-        numbers.sort((a,b) => a-b).forEach((n, idx) => {
-            setTimeout(() => {
-                const cell = document.getElementById(`cell-${n}`);
-                cell.classList.add('selected');
-                cell.classList.add(`flash-${currentTheme}`);
-                cell.style.transform = `scale(1.1) rotateZ(${360 + idx * 10}deg)`;
-                
-                triggerHaptic('medium');
-            }, idx * 200); // Чуть медленнее для драматизма
-        });
-
-        // Прямое обновление аналитики после генерации
-        updateLiveStats();
-    }
-
-    // --- ОБРАБОТКА ОШИБОК И ЗАВИСАНИЙ ---
-    window.onerror = function(msg, url, line) {
-        console.error(`[Критический сбой Монолита]: ${msg} на строке ${line}`);
-        // Авто-восстановление системы
-        if(appContent.style.display === 'block' && appContent.style.opacity === '0') {
-            appContent.style.opacity = '1';
-        }
-        return false;
-    };
-
-    // --- ИНТЕГРАЦИЯ ПОРТАЛА (ВНУТРЕННИЕ ССЫЛКИ) ---
-    // Чтобы info.html не открывался как "белый лист", мы перехватываем клик
-    document.querySelectorAll('.portal-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const url = this.getAttribute('href');
-            if (url.includes('.html')) {
-                // Здесь можно вставить логику загрузки контента в модальное окно,
-                // чтобы не покидать zero-chaos.ch
-                console.log(`[Навигация]: Переход на ${url}`);
-            }
-        });
-    });
-
-    // --- ФИНАЛЬНЫЙ ТАЙМ-ШТАМП (СИНХРОНИЗАЦИЯ) ---
-    function updateSystemTime() {
-        const now = new Date();
-        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
-                        now.getMinutes().toString().padStart(2, '0') + ":" + 
-                        now.getSeconds().toString().padStart(2, '0');
-        
-        // Если у нас будет поле времени в UI:
-        const timeEl = document.getElementById('sync-time');
-        if(timeEl) timeEl.innerText = `SYNC: ${timeStr} | NODE: zero-chaos.ch`;
-    }
-    setInterval(updateSystemTime, 1000);
-
-</script>
-
-<style>
-    /* Улучшения для мобильных браузеров на домене .ch */
-    * {
-        -webkit-tap-highlight-color: transparent; /* Убираем синее выделение при клике в Safari */
-        outline: none;
-    }
-
-    #app-content {
-        /* Добавляем инерционный скролл для iOS */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Анимация появления контента */
-    @keyframes contentUnveil {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-
-    .page.active {
-        animation: contentUnveil 0.5s ease-out forwards;
-    }
-</style>
-    // --- ПОЛНАЯ СБОРКА И ЗАПУСК ---
-    
-    /**
-     * @project: Zero Chaos VCHF Ultimate
-     * @version: 2.0.0
-     * @domain: zero-chaos.ch
-     * @author: Нулевой хаос (AI Assistant)
-     * @note: Код написан по протоколам Монолита. Целостность подтверждена.
-     */
-
-    // Инициализация при полной загрузке DOM
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("--- ZERO CHAOS SYSTEM ONLINE ---");
-        
-        // Запуск последовательности интро
-        if (typeof startSequence === 'function') {
-            startSequence();
-        } else {
-            // Резервный запуск, если интро не прогрузилось
             document.getElementById('app-content').style.display = 'block';
-            document.getElementById('app-content').style.opacity = '1';
-            initGrid();
+            setTimeout(() => document.getElementById('app-content').style.opacity = '1', 50);
+            return;
         }
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        ctx.globalAlpha = fadeIntro;
+        if (step1 < spheresIntro.length) {
+            let target = drawnItems[step1]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
+            ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(l1.x, l1.y);
+            ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 1; ctx.stroke();
+            l1.x += (tx - l1.x) * 0.08; l1.y += (ty - l1.y) * 0.08;
+            if (Math.abs(l1.x-tx)<2) { if (target.grow < 1) target.grow += 0.04; else step1++; }
+        }
+        if (active2 && step2 < spheresIntro.length) {
+            let target = drawnItems[step2]; let tx = target.x * canvas.width, ty = target.y * canvas.height;
+            ctx.beginPath(); ctx.moveTo(canvas.width/2, canvas.height); ctx.lineTo(l2.x, l2.y);
+            ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 1.5; ctx.stroke();
+            l2.x += (tx - l2.x) * 0.08; l2.y += (ty - l2.y) * 0.08;
+            if (Math.abs(l2.x-tx)<2) { if (target.ink < 1) target.ink += 0.03; else step2++; }
+        }
+        drawnItems.forEach(drawSphereIntro);
+        if (step2 === spheresIntro.length) {
+            statusIntro.innerText = "GLOBAL LOTTO POOL"; statusIntro.style.color = "var(--gold)";
+            setTimeout(() => { fadeIntro -= 0.01; document.getElementById('ui-layer').style.opacity = fadeIntro; }, 2000);
+        }
+        requestAnimationFrame(animateIntro);
+    } 
 
-        // Авто-установка темы из памяти (если была выбрана ранее)
-        const savedTheme = localStorage.getItem('vchf-theme') || 'gold';
-        applyTheme(savedTheme);
+    function renderLangPanel(isExpanded) {
+        const container = document.getElementById('dynamic-langs'); container.innerHTML = '';
+        const main = document.createElement('span'); main.className = 'lang-btn' + (!localStorage.getItem('vchf_lang') ? ' candle' : '');
+        main.innerHTML = (currentLang === 'en' ? '🇺🇸' : currentLang === 'ru' ? '🇷🇺' : currentLang === 'ua' ? '🇺🇦' : currentLang === 'de' ? '🇩🇪' : '🇫🇷');
+        main.onclick = () => { renderLangPanel(!isExpanded); tg.HapticFeedback.impactOccurred('light'); };
+        container.appendChild(main);
+        if (isExpanded) {
+            const order = ['ru', 'fr', 'de', 'en', 'ua']; const icons = { ru:'🇷🇺', fr:'🇫🇷', de:'🇩🇪', en:'🇺🇸', ua:'🇺🇦' };
+            order.forEach(l => {
+                const btn = document.createElement('span'); btn.className = `lang-btn pos-${l}`; btn.innerHTML = icons[l];
+                btn.onclick = () => selectLang(l); container.appendChild(btn);
+            });
+        }
+    }
+    function selectLang(l) { if (bgsTimer) clearTimeout(bgsTimer); pendingLang = l; showLegal(l); }
+    function showLegal(l) {
+        const overlay = document.getElementById('legal-overlay'); const content = document.getElementById('legal-content');
+        content.innerHTML = `<h3 style="color:var(--main-color);margin-top:0;">${legalDict[l].title}</h3>${legalDict[l].text}`;
+        document.getElementById('legal-agree-btn').innerText = legalDict[l].btn;
+        overlay.style.display = 'flex'; document.getElementById('app-content').style.filter = 'blur(10px)';
+    }
+    function acceptLegal() {
+        currentLang = pendingLang; localStorage.setItem('vchf_lang', currentLang); localStorage.setItem('vchf_legal_accepted', 'true');
+        document.getElementById('legal-overlay').style.display = 'none'; document.getElementById('app-content').style.filter = 'none';
+        setLang(currentLang); renderLangPanel(false); tg.HapticFeedback.notificationOccurred('success');
+    }
+    function togglePick(type) {
+        activeSmartTool = type; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        if (document.getElementById(`btn-${type}`)) document.getElementById(`btn-${type}`).classList.add('active-tool');
+        selected = []; document.querySelectorAll('.cell').forEach(c => { c.classList.remove('is-hot', 'is-cold', 'is-sleeping', 'selected'); c.style.animation = 'none'; });
+        const pIdx = currentPeriod === 'month' ? 0 : currentPeriod === 'year' ? 1 : 2;
+        let sorted = Object.keys(realStatsDB).map(n => ({ num: parseInt(n), val: realStatsDB[n][pIdx] }));
+        if (type === 'hot') sorted.sort((a, b) => b.val - a.val); else sorted.sort((a, b) => a.val - b.val);
+        selected = sorted.slice(0, 6).map(i => i.num);
+        selected.forEach(n => { const el = document.getElementById(`cell-${n}`); if (el) el.classList.add('selected', `is-${type}`); });
+        superNum = Math.floor(Math.random() * 6) + 1;
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => sc.classList.toggle('selected', idx + 1 === superNum));
+        sndWin.play();
+    }
+    function showPage(pId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pId).classList.add('active'); el.classList.add('active');
+        if(pId === 'tickets') renderTickets(); if(pId === 'stats') renderHeatmap();
+    }
+    function renderTickets() {
+        const container = document.getElementById('active-list'); container.innerHTML = '';
+        myTickets.forEach(t => {
+            const card = document.createElement('div'); card.className = 'ticket-card';
+            card.innerHTML = `<div style="font-size:11px;color:#888;">ID: ${t.timestamp}</div><div class="ticket-nums">${t.nums.map(n => `<div class="mini-ball">${n}</div>`).join('')}<div class="mini-ball super-ball-mini">${t.super}</div></div>`;
+            container.appendChild(card);
+        });
+    }
+    function renderHeatmap() {
+        const grid = document.getElementById('personal-heatmap'); grid.innerHTML = '';
+        for(let i=1; i<=42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.innerText = i;
+            if(realStatsDB[i][2] > 450) c.style.boxShadow = `inset 0 0 15px var(--main-color)`;
+            grid.appendChild(c);
+        }
+    }
+    function setLang(l) {
+        currentLang = l; const d = dict[l]; document.getElementById('main-btn').innerText = d.btn;
+        document.getElementById('l-super').innerText = d.super; document.getElementById('l-total').innerText = d.total;
+        ['month', 'year', 'all'].forEach(p => document.getElementById(`p-${p}`).innerText = d[p]);
+        ['game', 'tickets', 'stats'].forEach(n => document.getElementById(`n-${n}`).innerText = d[n]);
+        document.getElementById('l-active-tickets-title').innerText = d.activeT;
+        document.getElementById('l-personal-stats-title').innerText = d.stats;
+    }
+    function handleCellClick(i) {
+        if (isProcessing) return;
+        sndClick.currentTime = 0; sndClick.play(); activeSmartTool = null; 
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        if(selected.includes(i)) selected = selected.filter(n => n !== i); else if(selected.length < 6) selected.push(i);
+        refreshGrid();
+    }
+    function refreshGrid() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+        for (let i = 1; i <= 42; i++) {
+            const c = document.createElement('div'); c.className = 'cell'; c.id = `cell-${i}`; c.innerText = i;
+            if (selected.includes(i)) { c.classList.add('selected'); c.style.animation = 'none'; }
+            else { c.style.animation = 'sphere-breathe 4s infinite ease-in-out'; c.style.animationDelay = `${(Math.random()*2).toFixed(2)}s`; }
+            c.onclick = () => handleCellClick(i); grid.appendChild(c);
+        }
+    }
 
-        // Авто-установка языка
-        const savedLang = localStorage.getItem('vchf-lang') || 'ru';
-        setLanguage(savedLang);
-    });
-
-    // Расширение функции темы для сохранения в LocalStorage
-    const baseApplyTheme = applyTheme;
-    applyTheme = function(themeName) {
-        baseApplyTheme(themeName);
-        localStorage.setItem('vchf-theme', themeName);
+    /**
+     * МАНИФЕСТ МОНОЛИТА: ОБНОВЛЕННАЯ ФУНКЦИЯ RANDOMFILL (RAINBOW ENGINE)
+     * ОПИСАНИЕ: Постепенная радужная волна, хаос, затем золотая фиксация.
+     */
+    async function randomFill() {
+        if (isProcessing) return;
+        isProcessing = true;
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        const rainbowColors = ['flash-gold', 'flash-lime', 'flash-cyan', 'flash-cherry', 'flash-silver'];
+        const allCells = document.querySelectorAll('.cell');
         
-        // Меняем favicon или цвет темы в браузере (для мобильных)
-        const metaTheme = document.querySelector('meta[name="theme-color"]');
-        if (metaTheme) {
-            const colors = { gold: '#d4af37', lime: '#32cd32', cyan: '#00ffff', cherry: '#ff0040', silver: '#c0c0c0' };
-            metaTheme.setAttribute('content', colors[themeName]);
+        // 1. Сброс и Очистка (Протокол Integrity)
+        selected = [];
+        activeSmartTool = null;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
+        allCells.forEach(c => c.className = 'cell');
+        sndShuffle.play();
+
+        // 2. Радужная Вспышка (Энергия системы)
+        allCells.forEach((c, i) => {
+            c.classList.add(rainbowColors[i % rainbowColors.length]);
+        });
+        await delay(600);
+        
+        // 3. Турбо-хаос (Бегающие огни 1.5 сек)
+        let startTime = Date.now();
+        while (Date.now() - startTime < 1500) {
+            allCells.forEach(c => { if (!c.classList.contains('selected')) c.className = 'cell'; });
+            for(let i=0; i<6; i++) {
+                let r = Math.floor(Math.random() * 42) + 1;
+                let target = document.getElementById('cell-' + r);
+                if (target && !target.classList.contains('selected')) {
+                    target.classList.add(rainbowColors[Math.floor(Math.random() * rainbowColors.length)]);
+                }
+            }
+            await delay(60);
         }
-    };
 
-    // Расширение функции языка для сохранения
-    const baseSetLang = setLanguage;
-    setLanguage = function(lang) {
-        baseSetLang(lang);
-        localStorage.setItem('vchf-lang', lang);
-    };
+        // 4. Драматическая фиксация (Золотой выбор по одному)
+        allCells.forEach(c => c.className = 'cell');
+        while (selected.length < 6) {
+            let r = Math.floor(Math.random() * 42) + 1;
+            if (!selected.includes(r)) {
+                selected.push(r);
+                const target = document.getElementById('cell-' + r);
+                target.className = 'cell selected';
+                tg.HapticFeedback.impactOccurred('medium');
+                await delay(250 + (selected.length * 100));
+            }
+        }
 
+        // 5. Суперчисло (Завершение ритуала)
+        superNum = Math.floor(Math.random() * 6) + 1;
+        document.querySelectorAll('.super-cell').forEach((sc, idx) => {
+            sc.classList.toggle('selected', idx + 1 === superNum);
+        });
+        
+        sndWin.play();
+        isProcessing = false;
+        refreshGrid();
+    }
+
+    function updateTicketCount(v) { ticketCount = Math.max(1, ticketCount + v); document.getElementById('ticket-count').innerText = ticketCount; updatePriceDisplay(); }
+    function switchCurrency(t) { currentCurrency = t; document.getElementById('card-vchf').classList.toggle('active-wallet', t === 'VCHF'); document.getElementById('card-chf').classList.toggle('active-wallet', t === 'CHF'); updatePriceDisplay(); }
+    function updatePriceDisplay() { document.getElementById('display-total').innerText = `${(ticketCount * realPrice).toFixed(2)} ${currentCurrency}`; }
+    function setTheme(t) { document.body.className = 'theme-' + t; const c = {gold:'#d4af37', lime:'#32CD32', silver:'#c0c0c0', cyan:'#00ffff', cherry:'#C511A4'}; document.documentElement.style.setProperty('--main-color', c[t]); refreshGrid(); }
+    function setPeriod(p) { currentPeriod = p; document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', b.id === `p-${p}`)); if (activeSmartTool) togglePick(activeSmartTool); }
+    function runEngine() { if(selected.length===6 && superNum) { myTickets.push({nums:[...selected], super:superNum, timestamp:new Date().toLocaleString()}); localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets)); tg.showAlert(dict[currentLang].status); selected=[]; superNum=null; refreshGrid(); } else tg.showAlert("Select 6+1!"); }
+    
+    window.onload = () => {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const saved = localStorage.getItem('vchf_lang'); if(saved) { currentLang=saved; setLang(saved); renderLangPanel(false); }
+        else { currentLang='en'; renderLangPanel(false); bgsTimer=setTimeout(()=>showLegal('en'), 10000); }
+        for(let i=1; i<=42; i++) realStatsDB[i] = [Math.floor(Math.random()*5), Math.floor(Math.random()*20), 300+Math.floor(Math.random()*200)];
+        refreshGrid(); updatePriceDisplay();
+        const sgrid = document.getElementById('s-grid');
+        for(let i=1;i<=6;i++){ const sc=document.createElement('div'); sc.className='super-cell'; sc.innerText=i; sc.onclick=()=>{if(isProcessing)return; superNum=i; document.querySelectorAll('.super-cell').forEach(el=>el.classList.toggle('selected', el.innerText==i));}; sgrid.appendChild(sc); }
+        setTimeout(() => { logoIntro.style.opacity = '1'; statusIntro.innerText = "HELVETIC LUCK LOADING..."; setTimeout(() => requestAnimationFrame(animateIntro), 2000); setTimeout(() => active2 = true, 3000); }, 1000);
+    };
 </script>
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#d4af37">
-
 </body>
 </html>
