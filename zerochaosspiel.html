@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html lang='ru'>
-<head>
+<html lang='de'> <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <meta name="description" content="VCHF 2.0 Bi-Turbo: Das ultimative monolithische Peer-to-Peer Kartenspiel. Erlebe den Geist von VCHF.">
+    <meta name="keywords" content="VCHF, Bi-Turbo, Kartenspiel, P2P, PeerJS, Monolith, VCHF Geist">
+    <meta property="og:title" content="VCHF 2.0 - Bi-Turbo Ultimate">
+    <meta property="og:image" content="1771489965074(1).png">
+    
     <title>VCHF 2.0 - Bi-Turbo Ultimate Monolith</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -20,6 +24,33 @@
             background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
             height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
             transition: filter 0.5s ease;
+        }
+
+        /* МАНИФЕСТ МОНОЛИТА: Кастомное окно выбора комнаты */
+        #custom-room-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            z-index: 8000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--space-dark); border: 2px solid var(--gold);
+            padding: 40px; border-radius: 25px; text-align: center;
+            box-shadow: 0 0 40px rgba(255, 207, 64, 0.3), inset 0 0 20px rgba(0,0,0,0.5);
+            width: 85%; max-width: 400px; animation: modalEntry 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalEntry { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-content h2 { color: var(--gold); font-size: 14px; letter-spacing: 4px; margin-bottom: 25px; text-transform: uppercase; }
+        .modal-content input {
+            width: 100%; background: #000; border: 1px solid var(--spark-neon);
+            padding: 15px; color: var(--spark-neon); text-align: center; font-size: 20px;
+            border-radius: 12px; margin-bottom: 25px; outline: none; box-shadow: 0 0 10px rgba(0, 250, 154, 0.2);
+        }
+        
+        /* Правила на немецком */
+        .regeln-box {
+            font-size: 10px; color: rgba(255,255,255,0.6); text-align: left; margin-top: 20px;
+            border-top: 1px solid rgba(255,207,64,0.2); padding-top: 15px; line-height: 1.4;
         }
 
         #net-status {
@@ -147,9 +178,24 @@
     </style>
 </head>
 <body>
+    <div id="custom-room-modal">
+        <div class="modal-content">
+            <h2>ZIMMER NUMMER</h2>
+            <input type="text" id="room-input" placeholder="0000" maxlength="6">
+            <button class="action" onclick="confirmRoomSelection()">BESTÄTIGEN</button>
+            <div class="regeln-box">
+                <b>Regeln:</b><br>
+                1. Chaos-Phase: Karten ziehen.<br>
+                2. Trumpf: Suite oben rechts schlägt alles.<br>
+                3. Kampf: Höhere Karte oder Trumpf legen.<br>
+                4. Sieg: Wer zuerst leer ist, gewinnt.
+            </div>
+        </div>
+    </div>
+
     <div id="search-overlay">
         <div class="scanner-line"></div>
-        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">ПОИСК АБОНЕНТА...</div>
+        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">SUCHE TEILNEHMER...</div>
     </div>
 
     <div id="net-status" onclick="copyMyID()">
@@ -158,12 +204,12 @@
             <div class="net-logo"></div>
         </div>
         <div class="net-info">
-            <span id="room-info">ОЖИДАНИЕ...</span>
+            <span id="room-info">WARTEN...</span>
             <span id="peer-id">TAP TO COPY LINK</span>
         </div>
     </div>
 
-    <button id="btn-start-center" onclick="startNetwork()">ВХОД В МОНОЛИТ</button>
+    <button id="btn-start-center" onclick="startNetwork()">EINTRITT IN DEN MONOLITHEN</button>
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
 
@@ -178,9 +224,9 @@
             <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px; cursor:pointer;" onclick='toggleHand()'>↕</button>
         </div>
         <div class='action-btns'>
-            <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>ГОТОВНОСТЬ</button>
-            <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>БИТО</button>
-            <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>ВЗЯТЬ</button>
+            <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>BEREITSCHAFT</button>
+            <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>ABGELEGT</button>
+            <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>NEHMEN</button>
         </div>
         <div class='suits-grid' id='main-hand'>
             <div id='s-spades' class='suit-row'></div>
@@ -190,7 +236,7 @@
         </div>
     </div>
 <script>
-    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта
+    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта с немецкой локализацией
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -214,15 +260,29 @@
         if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
     }
 
+    // Новая функция обработки выбора комнаты
     function startNetwork() {
         const urlParams = new URLSearchParams(window.location.search);
         let roomNum = urlParams.get('room');
+        
         if (!roomNum) {
-            roomNum = prompt("НОМЕР КОМНАТЫ:");
-            if (!roomNum) return;
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
-            window.history.pushState({path: newUrl}, '', newUrl);
+            document.getElementById('custom-room-modal').style.display = 'flex';
+        } else {
+            proceedToConnection(roomNum);
         }
+    }
+
+    function confirmRoomSelection() {
+        const val = document.getElementById('room-input').value.trim();
+        if (!val) return;
+        document.getElementById('custom-room-modal').style.display = 'none';
+        
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${val}`;
+        window.history.pushState({path: newUrl}, '', newUrl);
+        proceedToConnection(val);
+    }
+
+    function proceedToConnection(roomNum) {
         const finalID = "VCHF_MONO_" + roomNum.trim();
         document.getElementById('btn-start-center').style.display = 'none';
         document.getElementById('search-overlay').style.display = 'flex';
@@ -248,15 +308,15 @@
 
         if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
             isDisconnected = true;
-            showMsg("СВЯЗЬ ПРЕРВАНА...", true);
+            showMsg("VERBINDUNG UNTERBROCHEN...", true);
             document.body.style.filter = "grayscale(1) brightness(0.5)";
-            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ...";
+            document.getElementById('peer-id').textContent = "WARTEN...";
         }
     }
 
     function attemptConnect(targetID, roomName) {
         searchAttempt++;
-        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
+        document.getElementById('room-info').textContent = "SUCHE: " + roomName;
         conn = peer.connect(targetID, { reliable: true });
 
         let connectTimeout = setTimeout(() => {
@@ -274,15 +334,15 @@
             myRole = 'host';
             document.getElementById('search-overlay').style.display = 'none';
             document.getElementById('room-info').textContent = "ROOM: " + oNum;
-            document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
+            document.getElementById('peer-id').textContent = "WARTE AUF GAST...";
             document.getElementById('radar').style.display = 'block';
             document.getElementById('radar').style.animation = 'radarBeam 4s infinite';
-            showMsg("ТЫ ХОЗЯИН");
+            showMsg("DU BIST DER HOST");
         });
         peer.on('connection', (c) => { 
             conn = c; 
             setupConn(); 
-            showMsg("ИГРОК ВОШЕЛ");
+            showMsg("SPIELER EINGETRETEN");
             document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
         });
     }
@@ -293,7 +353,7 @@
             if (timeoutToClear) clearTimeout(timeoutToClear);
             document.getElementById('search-overlay').style.display = 'none';
             document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
+            document.getElementById('peer-id').textContent = "VERBUNDEN OK";
             document.getElementById('radar').style.display = 'block';
             document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
             lastHeartbeat = Date.now();
@@ -308,12 +368,12 @@
                 isDisconnected = false;
                 document.getElementById('status-msg').classList.remove('active');
                 document.body.style.filter = "none";
-                document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
+                document.getElementById('peer-id').textContent = "VERBUNDEN OK";
             }
             return;
         }
 
-        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
+        if (data.type === 'READY') { remoteReady = true; showMsg("GEGNER BEREIT"); checkStart(); }
         if (data.type === 'SYNC_DECK') { 
             vchf.deck = data.deck; vchf.trump = data.trump; 
             renderTrumpUI(); startChaosPhase(); 
@@ -330,7 +390,7 @@
     
     function sendReady() {
         localReady = true; document.getElementById('btn-ready').style.display = 'none';
-        if(conn) conn.send({type: 'READY'}); showMsg("ОЖИДАНИЕ..."); checkStart();
+        if(conn) conn.send({type: 'READY'}); showMsg("WARTEN..."); checkStart();
     }
 
     function checkStart() {
@@ -362,7 +422,7 @@
                 if (vchf.phase === 'PICK' && !card.used) {
                     const canIPick = (myRole === 'host') ? (vchf.pHand.length <= vchf.eCount) : (vchf.pHand.length < vchf.eCount);
                     if (canIPick) { if (conn) conn.send({type: 'PICK', idx: i}); executePick(i, 'player'); }
-                    else { showMsg("ЖДИ ВРАГА"); }
+                    else { showMsg("WARTE AUF GEGNER"); }
                 } 
             };
         });
@@ -380,8 +440,8 @@
             vchf.eCount++; n.style.top = "-150px"; n.style.opacity = "0";
             setTimeout(() => n.remove(), 600);
         }
-        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); }
+        document.getElementById('enemy-stat').textContent = `GEGNER KARTEN: ${vchf.eCount}`;
+        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("KAMPF!"); renderBattleTable(); }
     }
 
     function fillSlot(card) {
@@ -398,11 +458,11 @@
     function playCard(card) {
         const isAtt = vchf.table.length % 2 === 0;
         if (isAtt) {
-            if (myRole !== vchf.attacker) return showMsg("ВРАГ АТАКУЕТ");
-            if (!canAttack(card)) return showMsg("НЕЛЬЗЯ ПОДКИНУТЬ");
+            if (myRole !== vchf.attacker) return showMsg("GEGNER GREIFT AN");
+            if (!canAttack(card)) return showMsg("UNMÖGLICHER ZUG");
         } else {
-            if (myRole === vchf.attacker) return showMsg("ТЫ АТАКУЕШЬ");
-            if (!canDefend(card)) return showMsg("НЕ КРОЕТ!");
+            if (myRole === vchf.attacker) return showMsg("DU GREIFST AN");
+            if (!canDefend(card)) return showMsg("NICHT DECKBAR!");
         }
         vchf.pHand = vchf.pHand.filter(c => c !== card);
         const slot = document.getElementById(`slot-${card.s}-${card.r}`);
@@ -441,14 +501,14 @@
     function handleBito() { syncBito(); if(conn) conn.send({type: 'ACTION', cmd: 'BITO'}); }
     function syncBito() {
         vchf.table = []; vchf.attacker = (vchf.attacker === 'host' ? 'guest' : 'host'); vchf.turn = vchf.attacker;
-        setTimeout(renderBattleTable, 600); showMsg("БИТО!");
+        setTimeout(renderBattleTable, 600); showMsg("ABGELEGT!");
     }
 
     function handleTake() { syncTake(); if(conn) conn.send({type: 'ACTION', cmd: 'TAKE'}); }
     function syncTake() {
         vchf.table.forEach(m => { if (vchf.attacker !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); } else { vchf.eCount++; } });
         vchf.table = []; vchf.turn = vchf.attacker;
-        setTimeout(renderBattleTable, 600); showMsg("ВЗЯТО");
+        setTimeout(renderBattleTable, 600); showMsg("GENOMMEN");
     }
 
     function checkBattleEnd() {
@@ -456,7 +516,7 @@
         if (vchf.pHand.length === 0 || vchf.eCount === 0) {
             setTimeout(() => {
                 const iW = vchf.pHand.length === 0, eW = vchf.eCount === 0;
-                if (iW && eW) showMsg("НИЧЬЯ"); else if (iW) showMsg("ПОБЕДА!"); else if (eW) showMsg("ПОРАЖЕНИЕ");
+                if (iW && eW) showMsg("UNENTSCHIEDEN"); else if (iW) showMsg("SIEG!"); else if (eW) showMsg("NIEDERLAGE");
             }, 1000);
         }
     }
@@ -469,7 +529,7 @@
 
     function copyMyID() {
         const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => showMsg("ССЫЛКА КОПИРОВАНА"));
+        navigator.clipboard.writeText(url).then(() => showMsg("LINK KOPIERT"));
     }
 
     window.onload = () => {
