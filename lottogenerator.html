@@ -632,15 +632,23 @@
         </div> 
 
         <div class="balance-container">
-            <div class="bal-card active-wallet" id="card-vchf" onclick="switchCurrency('VCHF')">
-                <div style="font-size:10px;">VIRTUAL VCHF</div>
-                <div class="bal-val" id="vchf-val">100.00</div>
+            <div class="bal-card active-wallet" id="card-vchf">
+                <div id="l-spent" style="font-size:10px;">EINGESETZT (VCHF)</div>
+                <input type="number" id="vchf-val" class="bal-val" step="0.01" 
+       style="background:none; border:none; color:#32CD32; width:100%; font-family:inherit; font-size:20px; font-weight:bold; outline:none;" 
+       onfocus="focusCard('card-vchf')" 
+       onchange="saveBalance()">
             </div>
-            <div class="bal-card" id="card-chf" onclick="switchCurrency('CHF')">
-                <div style="font-size:10px;">REAL CHF</div>
-                <div class="bal-val" id="chf-val">0.00</div>
+            <div class="bal-card" id="card-chf">
+                <div id="l-won" style="font-size:10px;">GEWONNEN (CHF)</div>
+                <input type="number" id="chf-val" class="bal-val" step="0.01" 
+       style="background:none; border:none; color:#32CD32; width:100%; font-family:inherit; font-size:20px; font-weight:bold; outline:none;" 
+       onfocus="focusCard('card-chf')" 
+       onchange="saveBalance()">
+
             </div>
-        </div> 
+        </div>
+
 
         <div class="ticket-controls">
             <div class="smart-tools">
@@ -715,13 +723,36 @@
     let isProcessing = false; 
     const realPrice = 2.50; 
 
-    const dict = {
-        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО" },
-        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО" },
-        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT" },
-        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED" },
-        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ" }
-    }; 
+        function saveBalance() {
+        const vchf = document.getElementById('vchf-val').value;
+        const chf = document.getElementById('chf-val').value;
+        localStorage.setItem('vchf_balance_saved', vchf);
+        localStorage.setItem('chf_balance_saved', chf);
+    }
+
+    function loadBalance() {
+        const savedVCHF = localStorage.getItem('vchf_balance_saved') || "100.00";
+        const savedCHF = localStorage.getItem('chf_balance_saved') || "0.00";
+        document.getElementById('vchf-val').value = savedVCHF;
+        document.getElementById('chf-val').value = savedCHF;
+    }
+    function focusCard(cardId) {
+        // Убираем золотую рамку у обеих карточек
+        document.getElementById('card-vchf').classList.remove('active-wallet');
+        document.getElementById('card-chf').classList.remove('active-wallet');
+        
+        // Добавляем рамку той, на которую ты нажал
+        document.getElementById(cardId).classList.add('active-wallet');
+    }
+
+        const dict = {
+        ru: { btn: "ПОДТВЕРДИТЬ", super: "БОНУСНОЕ ЧИСЛО", month: "МЕСЯЦ", year: "ГОД", all: "ЗА ВСЁ ВРЕМЯ", total: "Итого", status: "Статус обновлён!", game: "ИГРА", tickets: "БИЛЕТЫ", stats: "СТАТС", activeT: "МОИ БИЛЕТЫ", hit: "ЛИЧНАЯ КАРТА", del: "УДАЛИТЬ", lock: "ЗАБЛОКИРОВАНО", spent: "ЗАТРАЧЕНО (VCHF)", won: "ВЫИГРАНО (CHF)" },
+        ua: { btn: "ПІДТВЕРДИТИ", super: "БОНУСНЕ ЧИСЛО", month: "МІСЯЦЬ", year: "РІК", all: "ЗА ВЕСЬ ЧАС", total: "Разом", status: "Статус оновлено!", game: "ГРА", tickets: "КВИТКИ", stats: "СТАТС", activeT: "МОЇ КВИТКИ", hit: "ОСОБИСТА КАРТА", del: "ВИДАЛИТИ", lock: "ЗАБЛОКОВАНО", spent: "ВИТРАЧЕНО (VCHF)", won: "ВИГРАНО (CHF)" },
+        de: { btn: "BESTÄTIGEN", super: "SUPERZAHL", month: "MONAT", year: "JAHR", all: "ALLE ZEIT", total: "Gesamt", status: "Status aktualisiert!", game: "SPIEL", tickets: "TICKETS", stats: "STATS", activeT: "MEINE TICKETS", hit: "PERSÖNLICHE KARTE", del: "LÖSCHEN", lock: "GESPERRT", spent: "EINGESETZT (VCHF)", won: "GEWONNEN (CHF)" },
+        en: { btn: "CONFIRM", super: "SUPER NUMBER", month: "MONTH", year: "YEAR", all: "ALL TIME", total: "Total", status: "Status updated!", game: "GAME", tickets: "TICKETS", stats: "STATS", activeT: "MY TICKETS", hit: "PERSONAL MAP", del: "DELETE", lock: "LOCKED", spent: "SPENT (VCHF)", won: "WON (CHF)" },
+        fr: { btn: "CONFIRMER", super: "SUPER NOMBRE", month: "MOIS", year: "AN", all: "TOUT LE TEMPS", total: "Total", status: "Statut mis à jour!", game: "JEU", tickets: "BILLETS", stats: "STATS", activeT: "MES BILLETS", hit: "CARTE PERSO", del: "SUPPRIMER", lock: "VERROUILLÉ", spent: "MISÉ (VCHF)", won: "GAGNÉ (CHF)" }
+    };
+
     const legalDict = {
         ru: { title: "Закон Швейцарии (BGS)", text: "Согласно Федеральному закону Швейцарии об азартных играх (BGS), участие разрешено только лицам старше <b>18 лет</b>. Подтвердите своё согласие.", btn: "МНЕ ЕСТЬ 18 ЛЕТ" },
         ua: { title: "Закон Швейцарії (BGS)", text: "Згідно з Федеральним законом Швейцарії про азартні ігри (BGS), участие дозволена лише особам старше <b>18 років</b>. Підтвердьте свою згоду.", btn: "МЕНІ Є 18 РОКІВ" },
@@ -807,18 +838,34 @@
             });
         }
     }
-    function selectLang(l) { if (bgsTimer) clearTimeout(bgsTimer); pendingLang = l; showLegal(l); }
-    function showLegal(l) {
-        const overlay = document.getElementById('legal-overlay'); const content = document.getElementById('legal-content');
+    function selectLang(l) { 
+    if (bgsTimer) clearTimeout(bgsTimer); 
+    pendingLang = l; 
+    const d = dict[l]; 
+    document.getElementById('l-spent').innerText = d.spent;
+    document.getElementById('l-won').innerText = d.won;
+    showLegal(l);
+}
+
+        function showLegal(l) {
+        const overlay = document.getElementById('legal-overlay'); 
+        const content = document.getElementById('legal-content');
         content.innerHTML = `<h3 style="color:var(--main-color);margin-top:0;">${legalDict[l].title}</h3>${legalDict[l].text}`;
         document.getElementById('legal-agree-btn').innerText = legalDict[l].btn;
-        overlay.style.display = 'flex'; document.getElementById('app-content').style.filter = 'blur(10px)';
+        overlay.style.display = 'flex'; 
+        document.getElementById('app-content').style.filter = 'blur(10px)';
     }
-    function acceptLegal() {
-        currentLang = pendingLang; localStorage.setItem('vchf_lang', currentLang); localStorage.setItem('vchf_legal_accepted', 'true');
-        document.getElementById('legal-overlay').style.display = 'none'; document.getElementById('app-content').style.filter = 'none';
-        setLang(currentLang); renderLangPanel(false); tg.HapticFeedback.notificationOccurred('success');
+
+        function acceptLegal() {
+        currentLang = pendingLang; 
+        localStorage.setItem('vchf_lang', currentLang);
+        document.getElementById('legal-overlay').style.display = 'none';
+        document.getElementById('app-content').style.filter = 'none';
+        setLang(currentLang); 
+        renderLangPanel(false);
     }
+
+
     function togglePick(type) {
         activeSmartTool = type; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active-tool'));
         if (document.getElementById(`btn-${type}`)) document.getElementById(`btn-${type}`).classList.add('active-tool');
@@ -940,6 +987,7 @@
     function runEngine() { if(selected.length===6 && superNum) { myTickets.push({nums:[...selected], super:superNum, timestamp:new Date().toLocaleString()}); localStorage.setItem('vchf_user_tickets', JSON.stringify(myTickets)); tg.showAlert(dict[currentLang].status); selected=[]; superNum=null; refreshGrid(); } else tg.showAlert("Select 6+1!"); }
     
     window.onload = () => {
+        loadBalance();
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         const saved = localStorage.getItem('vchf_lang'); if(saved) { currentLang=saved; setLang(saved); renderLangPanel(false); }
         else { currentLang='en'; renderLangPanel(false); bgsTimer=setTimeout(()=>showLegal('en'), 10000); }          
