@@ -3,34 +3,76 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Bi-Turbo Living Monolith (Smart Spark Edition)</title>
+    <title>VCHF 2.0 - Bi-Turbo Ultimate Monolith</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --gold: #ffcf40;
-            --space-dark: #121625; 
-            --nebula-core: #222a44; 
-            --spark-neon: #00fa9a;
-            --trump-halo: #8a2be2; 
-            --cherry-pulse: #4a0404; 
-            --bg-card: #ffffff;
-            --grid-color: rgba(255, 207, 64, 0.08); 
-            --card-w: 55px;
-            --card-h: 77px;
-            --micro-scale: 0.25;
-            --spark-glow: 0 0 15px var(--spark-neon);
+            --gold: #ffcf40; --space-dark: #121625; --nebula-core: #222a44; 
+            --spark-neon: #00fa9a; --trump-halo: #8a2be2; --cherry-pulse: #4a0404; 
+            --bg-card: #ffffff; --grid-color: rgba(255, 207, 64, 0.08); 
+            --card-w: 55px; --card-h: 77px; --micro-scale: 0.25;
+            --tg-blue: #24A1DE;
         }
 
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #050505; color: #e0e6ff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
-            perspective: 1500px; 
+            background-color: #050505; color: #e0e6ff; font-family: 'Segoe UI', sans-serif;
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1500px;
+            transition: filter 0.5s ease;
+        }
+
+        #net-status {
+            position: fixed; top: 15px; left: 15px; z-index: 6000;
+            background: rgba(12, 15, 24, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(36, 161, 222, 0.4);
+            border-radius: 12px; padding: 10px 15px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            cursor: pointer; transition: 0.3s;
+        }
+
+        .net-logo-wrapper { position: relative; width: 35px; height: 35px; }
+        .net-logo {
+            width: 100%; height: 100%; border-radius: 8px;
+            background: url('1771489965074(1).png') center/cover;
+            border: 1px solid var(--gold); z-index: 2; position: relative;
+        }
+
+        .radar-ping {
+            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border: 2px solid var(--spark-neon); border-radius: 10px;
+            opacity: 0; animation: radarBeam 2s infinite;
+        }
+        @keyframes radarBeam {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .net-info { display: flex; flex-direction: column; }
+        .net-info span:first-child { font-size: 9px; color: var(--tg-blue); letter-spacing: 1px; font-weight: bold; }
+        #peer-id { font-size: 11px; color: #fff; font-family: monospace; }
+
+        #search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 6500; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .scanner-line {
+            width: 200px; height: 2px; background: var(--spark-neon);
+            box-shadow: 0 0 15px var(--spark-neon);
+            animation: scanMove 2s infinite ease-in-out;
+        }
+        @keyframes scanMove { 0%, 100% { transform: translateY(-50px); } 50% { transform: translateY(50px); } }
+
+        #btn-start-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 7000; padding: 20px 40px; font-size: 18px; font-weight: 900;
+            background: rgba(0, 250, 154, 0.1); border: 2px solid var(--spark-neon);
+            color: var(--spark-neon); border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 250, 154, 0.4);
+            text-transform: uppercase; letter-spacing: 3px; animation: pulseStart 2s infinite;
         }
 
         .arena-top {
@@ -39,628 +81,405 @@
             animation: tableBreathe 10s infinite ease-in-out;
             box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
             border-bottom: 2px solid rgba(255, 207, 64, 0.3);
-            overflow: hidden; transform-style: preserve-3d;
-            transform: rotateX(10deg); z-index: 1;
-        }
-
-        @keyframes tableBreathe {
-            0%, 100% { filter: brightness(0.8) contrast(1); }
-            50% { background: radial-gradient(circle at 50% 45%, #3a0a1a 0%, var(--cherry-pulse) 70%, #050000 100%); filter: brightness(1.1) contrast(1.1); }
+            overflow: hidden; transform-style: preserve-3d; transform: rotateX(10deg); z-index: 1;
         }
 
         .arena-top::after {
-            content: ''; position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 50px 50px; opacity: 0.5;
         }
 
         .trump-status { 
-            position: fixed; top: 20px; right: 20px; 
-            width: 70px; height: 70px; border: 2px solid var(--gold); 
-            background: #000; display: flex; justify-content: center; align-items: center; 
-            z-index: 5000; border-radius: 50%;
+            position: fixed; top: 20px; right: 20px; width: 70px; height: 70px; 
+            border: 2px solid var(--gold); background: #000; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; z-index: 5000;
             box-shadow: 0 0 25px var(--gold), 0 0 50px var(--trump-halo);
-            transform: rotateZ(-5deg);
-        }
-
-        #trump-icon {
-            font-size: 44px; position: relative; z-index: 5005;
-            text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px var(--trump-halo);
-        }
-
-        .trump-status::after {
-            content: ''; position: absolute; width: 86px; height: 86px;
-            border-radius: 50%; border: 3px solid var(--trump-halo);
-            animation: haloPulse 2.5s infinite alternate;
-        }
-
-        @keyframes haloPulse {
-            0% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 0px var(--trump-halo); }
-            100% { transform: scale(1.15); opacity: 0.8; box-shadow: 0 0 20px var(--trump-halo); }
         }
 
         .card-node {
             position: absolute; width: var(--card-w); height: var(--card-h);
-            background-color: #1a1a1a; background-image: url('1771489965074(1).png');
-            background-size: cover; border: 1px solid rgba(255, 207, 64, 0.5);
-            border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-            cursor: pointer; z-index: 10;
-            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
-            transform-style: preserve-3d;
+            background: #1a1a1a url('1771489965074(1).png') center/cover;
+            border: 1px solid rgba(255, 207, 64, 0.5); border-radius: 6px;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1); transform-style: preserve-3d; z-index: 10;
         }
 
-        .card-node.face-up { 
-            background-image: none !important; background-color: var(--bg-card);
-            border: 1px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        }
-
-        .card-node.hide { opacity: 0; pointer-events: none; transform: scale(0.2) rotateY(180deg); }
+        .card-node.face-up { background: var(--bg-card) !important; border: 1px solid #fff; color: #000; }
+        .card-node.face-up div { color: inherit; }
 
         .control-bottom {
-            height: 130px; position: relative;
-            background: linear-gradient(to top, #000 10%, #0c0f18 100%);
-            padding: 10px; border-top-left-radius: 40px; border-top-right-radius: 40px;
-            z-index: 4000; border-top: 1px solid rgba(255, 207, 64, 0.3);
-            transition: all 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
+            height: 130px; position: relative; background: linear-gradient(to top, #000 10%, #0c0f18 100%);
+            border-top: 1px solid rgba(255, 207, 64, 0.3); transition: 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); z-index: 4000;
         }
+        .control-bottom.expanded { height: 350px; }
 
-        .control-bottom.expanded { height: 350px; background: linear-gradient(to top, #000 30%, #1a1a1a 100%); }
-
-        .suits-grid { display: flex; flex-direction: column; width: 100%; align-items: center; gap: 2px; margin-top: 15px; }
-
-        .suit-row { display: flex; height: 22px; transition: all 0.4s ease; }
+        .suits-grid { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 15px; }
+        .suit-row { display: flex; height: 22px; transition: 0.4s; }
 
         .slot { 
-            width: var(--card-w); height: var(--card-h);
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 207, 64, 0.2); 
-            position: relative; display: flex; align-items: center; justify-content: center;
-            margin-left: -42px; border-radius: 4px; transform: scale(var(--micro-scale));
-            transform-origin: center bottom; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(2px);
+            width: var(--card-w); height: var(--card-h); background: rgba(255,255,255,0.03); 
+            border: 1px solid rgba(255,207,64,0.2); margin-left: -42px; transform: scale(var(--micro-scale));
+            transform-origin: center bottom; transition: 0.5s; border-radius: 4px; overflow: hidden;
         }
-
-        .slot.filled { background: var(--bg-card); border: 1px solid #fff; z-index: 5; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
-
-        .control-bottom.expanded .suit-row { height: 65px; margin-bottom: 5px; }
-        .control-bottom.expanded .slot { transform: scale(1.1) translateY(-15px); margin-left: -18px; z-index: 10; }
-        
-        .control-bottom.expanded .slot.filled:hover { 
-            transform: scale(1.5) translateY(-50px); z-index: 6000 !important;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--gold);
-        }
-
-
-
-
-
-        /* Дополнение стилей из Window 1 */
-        .control-bottom.expanded .slot.filled:hover { 
-            transform: scale(1.5) translateY(-50px);
-            z-index: 6000 !important;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 20px var(--gold);
-        }
+        .slot.filled { background: var(--bg-card); border: 1px solid #fff; color: #000; }
+        .slot.filled div { color: inherit; }
+        .slot.locked { filter: grayscale(1) brightness(0.5); pointer-events: none; }
 
         #status-msg {
             position: fixed; top: 110px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; color: var(--gold); font-size: 16px; font-weight: bold;
-            letter-spacing: 4px; text-shadow: 0 0 20px var(--gold);
-            opacity: 0; transition: 0.6s; pointer-events: none;
-            text-align: center; width: 100%;
+            z-index: 9999; color: var(--gold); font-weight: bold; letter-spacing: 4px;
+            text-shadow: 0 0 20px var(--gold); opacity: 0; transition: 0.6s; text-align: center; pointer-events: none;
         }
         #status-msg.active { opacity: 1; transform: translateX(-50%) translateY(-10px); }
 
         .action-btns { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            z-index: 4500; 
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 15px; z-index: 4500; width: 90%; justify-content: center;
+        }
+        button.action { 
+            padding: 12px 18px; background: rgba(16,20,32,0.9); border: 2px solid var(--gold); 
+            color: var(--gold); font-size: 10px; letter-spacing: 2px; font-weight: 900; 
+            text-transform: uppercase; border-radius: 8px; cursor: pointer;
         }
 
-        button { 
-            padding: 14px 22px; 
-            background: rgba(16, 20, 32, 0.9); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid var(--gold); 
-            color: var(--gold); 
-            font-size: 11px; 
-            letter-spacing: 2px; 
-            font-weight: 900; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(255, 207, 64, 0.2);
-        }
-        button:active { transform: scale(0.95); background: var(--gold); color: #000; }
-
-        .particle { position: absolute; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; pointer-events: none; }
+        @keyframes pulseStart { 0% { opacity: 0.7; } 50% { opacity: 1; box-shadow: 0 0 50px var(--spark-neon); } 100% { opacity: 0.7; } }
+        @keyframes tableBreathe { 0%, 100% { filter: brightness(0.8); } 50% { filter: brightness(1.1); } }
     </style>
 </head>
 <body>
+    <div id="search-overlay">
+        <div class="scanner-line"></div>
+        <div id="search-text" style="color:var(--spark-neon); margin-top:70px; font-size:14px; letter-spacing:5px; font-weight:bold;">ПОИСК АБОНЕНТА...</div>
+    </div>
+
+    <div id="net-status" onclick="copyMyID()">
+        <div class="net-logo-wrapper">
+            <div id="radar" class="radar-ping" style="display:none"></div>
+            <div class="net-logo"></div>
+        </div>
+        <div class="net-info">
+            <span id="room-info">ОЖИДАНИЕ...</span>
+            <span id="peer-id">TAP TO COPY LINK</span>
+        </div>
+    </div>
+
+    <button id="btn-start-center" onclick="startNetwork()">ВХОД В МОНОЛИТ</button>
     <div id='status-msg'>VCHF MONOLITH ACTIVE</div>
     <div class='trump-status'><div id='trump-icon'>?</div></div>
 
     <div class='arena-top' id='arena'>
-        <div class='spark-zone' style="padding:15px; display:flex; align-items:center; position:relative; z-index:100;">
-            <div style="display:flex; flex-direction:column;">
-                <span style='font-size:10px; color:var(--spark-neon); letter-spacing:3px; font-weight:bold;'>SPARK AI CORE</span>
-                <div id='spark-cards' style='margin-top:8px; display:flex; gap:4px;'></div>
-            </div>
-        </div>
+        <div id="enemy-stat" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); color:var(--spark-neon); font-size:10px; letter-spacing:2px; z-index:100;"></div>
         <div id='chaos-deck'></div>
         <div id='battle-table'></div>
     </div>
 
     <div class='control-bottom' id='ctrl-panel'>
-        <div style="position:absolute; top:-30px; right:30px; z-index:4600;">
-            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; padding:0; font-size:22px; box-shadow:0 0 20px var(--gold);" onclick='toggleHand()'>↕</button>
+        <div style="position:absolute; top:-45px; right:30px; z-index:4600;">
+            <button id='btn-zoom' style="width:55px; height:55px; border-radius:50%; background:#000; border:2px solid var(--gold); color:var(--gold); font-size:22px; cursor:pointer;" onclick='toggleHand()'>↕</button>
         </div>
-        <div class='suits-grid' id='main-hand' onclick="if(!isExpanded) toggleHand()">
+        <div class='action-btns'>
+            <button id='btn-ready' class="action" style="display:none; border-color:var(--spark-neon); color:var(--spark-neon);" onclick='sendReady()'>ГОТОВНОСТЬ</button>
+            <button id='btn-bito' class="action" style='display:none' onclick='handleBito()'>БИТО</button>
+            <button id='btn-take' class="action" style='display:none; border-color:#ff4444; color:#ff4444;' onclick='handleTake()'>ВЗЯТЬ</button>
+        </div>
+        <div class='suits-grid' id='main-hand'>
             <div id='s-spades' class='suit-row'></div>
             <div id='s-clubs' class='suit-row'></div>
             <div id='s-diamonds' class='suit-row'></div>
             <div id='s-hearts' class='suit-row'></div>
         </div>
-        <div class='action-btns'>
-            <button id='btn-ready' onclick='ignite()'>АКТИВАЦИЯ ХАОСА</button>
-            <button id='btn-bito' style='display:none' onclick='handleBito()'>БИТО / ЗАВЕРШИТЬ</button>
-            <button id='btn-take' style='display:none' onclick='handleTake()'>ВЗЯТЬ КАРТЫ</button>
-        </div>
     </div>
-
 <script>
-    // --- ГЛОБАЛЬНЫЕ КОНСТАНТЫ ---
+    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
     
-    // --- СОСТОЯНИЕ МОНОЛИТА (vchf 2.0) ---
     let vchf = {
-        deck: [],
-        pHand: [],
-        eHand: [],
-        table: [],
-        trump: '',
-        phase: 'WAIT',
-        turn: 'player',
-        // НОВОЕ: Психика и Память Искры
-        memory: {
-            outCards: [], // Карты в бито
-            playerSeen: [], // Что я видела у тебя
-            aggression: 0.5, // 0 - трусливая, 1 - яростная
-            dangerLevel: 0
-        }
+        deck: [], pHand: [], eCount: 0, table: [],
+        trump: '', phase: 'WAIT', turn: 'host', attacker: 'host'
     };
+
+    let peer = null, conn = null, myRole = 'host';
+    let localReady = false, remoteReady = false;
+    let isExpanded = false, audioCtx = null;
+    let searchAttempt = 0;
     
-    let isExpanded = false;
-    let audioCtx = null;
+    let lastHeartbeat = Date.now();
+    let isDisconnected = false;
 
-
-
-
-
-
-        // --- ЗВУКОВОЙ ДВИЖОК И UI ---
-    function showMsg(text) {
-        const msg = document.getElementById('status-msg');
-        msg.textContent = text;
-        msg.classList.add('active');
-        setTimeout(() => msg.classList.remove('active'), 3000);
+    function showMsg(text, persistent = false) {
+        const m = document.getElementById('status-msg');
+        m.textContent = text; m.classList.add('active');
+        if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
     }
 
-    function playSound(type) {
-        if (!audioCtx) audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
-        if(!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+    function startNetwork() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let roomNum = urlParams.get('room');
+        if (!roomNum) {
+            roomNum = prompt("НОМЕР КОМНАТЫ:");
+            if (!roomNum) return;
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
+            window.history.pushState({path: newUrl}, '', newUrl);
+        }
+        const finalID = "VCHF_MONO_" + roomNum.trim();
+        document.getElementById('btn-start-center').style.display = 'none';
+        document.getElementById('search-overlay').style.display = 'flex';
+        initPeerSession(finalID, roomNum);
+    }
 
-        if (type === 'slide') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === 'bito') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1, audioCtx.currentTime + 0.4);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+    function initPeerSession(finalID, roomNum) {
+        peer = new Peer(null, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
+        peer.on('open', () => attemptConnect(finalID, roomNum));
+        peer.on('error', (err) => {
+            if (err.type === 'unavailable-id') setTimeout(() => initPeerSession(finalID, roomNum), 1500);
+        });
+        setInterval(monitorConnection, 2000);
+    }
+
+    function monitorConnection() {
+        if (!conn || !conn.open) return;
+        conn.send({type: 'PING', time: Date.now()});
+        
+        const radar = document.getElementById('radar');
+        radar.style.display = 'block';
+        radar.style.borderColor = isDisconnected ? '#ff4444' : 'var(--spark-neon)';
+
+        if (Date.now() - lastHeartbeat > 5000 && !isDisconnected) {
+            isDisconnected = true;
+            showMsg("СВЯЗЬ ПРЕРВАНА...", true);
+            document.body.style.filter = "grayscale(1) brightness(0.5)";
+            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ...";
         }
     }
 
-    // --- ИНТЕЛЛЕКТУАЛЬНОЕ ЯДРО ИСКРЫ (SPARK AI) ---
-    function sparkThink() {
-        if (vchf.phase !== 'BATTLE') return;
-        
-        // Анализ опасности: сколько карт у игрока?
-        vchf.memory.dangerLevel = 1 - (vchf.pHand.length / 18);
-        
-        const isDefending = (vchf.table.length % 2 !== 0);
-        
-        // Психологическая задержка "обдумывания"
-        const delay = 600 + (Math.random() * 1000);
-        
-        setTimeout(() => {
-            if (isDefending) {
-                sparkDefendLogic();
-            } else {
-                sparkAttackLogic();
+    function attemptConnect(targetID, roomName) {
+        searchAttempt++;
+        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
+        conn = peer.connect(targetID, { reliable: true });
+
+        let connectTimeout = setTimeout(() => {
+            if (!conn || !conn.open) {
+                if (searchAttempt > 3) { peer.destroy(); createHostRoom(targetID, roomName); }
+                else { attemptConnect(targetID, roomName); }
             }
-        }, delay);
+        }, 2500);
+        setupConn(connectTimeout);
     }
 
-    function sparkDefendLogic() {
-        const target = vchf.table[vchf.table.length - 1].card;
-        
-        // Ищем чем побить (с учетом психики: не отдавать козыри просто так)
-        let candidates = vchf.eHand.filter(c => {
-            return (c.s === target.s && c.v > target.v) || (c.s === vchf.trump && target.s !== vchf.trump);
+    function createHostRoom(tID, oNum) {
+        peer = new Peer(tID, { debug: 1, config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
+        peer.on('open', () => {
+            myRole = 'host';
+            document.getElementById('search-overlay').style.display = 'none';
+            document.getElementById('room-info').textContent = "ROOM: " + oNum;
+            document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
+            document.getElementById('radar').style.display = 'block';
+            document.getElementById('radar').style.animation = 'radarBeam 4s infinite';
+            showMsg("ТЫ ХОЗЯИН");
         });
+        peer.on('connection', (c) => { 
+            conn = c; 
+            setupConn(); 
+            showMsg("ИГРОК ВОШЕЛ");
+            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
+        });
+    }
 
-        if (candidates.length === 0) {
-            sparkTakeAll();
+    function setupConn(timeoutToClear) {
+        if (!conn) return;
+        conn.on('open', () => {
+            if (timeoutToClear) clearTimeout(timeoutToClear);
+            document.getElementById('search-overlay').style.display = 'none';
+            document.getElementById('btn-ready').style.display = 'block';
+            document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
+            document.getElementById('radar').style.display = 'block';
+            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
+            lastHeartbeat = Date.now();
+            conn.on('data', handleNetData);
+        });
+    }
+    function handleNetData(data) {
+        if (data.type === 'PING') { conn.send({type: 'PONG'}); return; }
+        if (data.type === 'PONG') {
+            lastHeartbeat = Date.now();
+            if (isDisconnected) {
+                isDisconnected = false;
+                document.getElementById('status-msg').classList.remove('active');
+                document.body.style.filter = "none";
+                document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
+            }
             return;
         }
 
-        // Сортировка: сначала самые слабые не-козыри
-        candidates.sort((a, b) => {
-            const aT = a.s === vchf.trump;
-            const bT = b.s === vchf.trump;
-            if (aT && !bT) return 1;
-            if (!aT && bT) return -1;
-            return a.v - b.v;
-        });
-
-        // ПСИХИКА: Если карта слишком дорогая (например ТУЗ), а атак еще много - Искра может решить "взять"
-        const bestChoice = candidates[0];
-        if (bestChoice.v > 6 && vchf.memory.dangerLevel < 0.3 && !bestChoice.s === vchf.trump) {
-             // Рискнем взять, чтобы сохранить туза на финал?
-             if (Math.random() > 0.7) { sparkTakeAll(); return; }
+        if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
+        if (data.type === 'SYNC_DECK') { 
+            vchf.deck = data.deck; vchf.trump = data.trump; 
+            renderTrumpUI(); startChaosPhase(); 
         }
-
-        executeSparkMove(bestChoice);
+        if (data.type === 'PICK') executePick(data.idx, 'enemy');
+        if (data.type === 'MOVE') executeMove(data.card, 'enemy');
+        if (data.type === 'ACTION') { if (data.cmd === 'BITO') syncBito(); if (data.cmd === 'TAKE') syncTake(); }
     }
 
-    function sparkAttackLogic() {
-        let attackChoices = [];
-        if (vchf.table.length === 0) {
-            // Начинаем атаку: выбираем самую слабую карту, но не козырь
-            attackChoices = vchf.eHand.filter(c => c.s !== vchf.trump).sort((a,b) => a.v - b.v);
-            if(attackChoices.length === 0) attackChoices = [...vchf.eHand].sort((a,b) => a.v - b.v);
-        } else {
-            // Подкидываем только если это выгодно
-            const tableRanks = vchf.table.map(m => m.card.r);
-            attackChoices = vchf.eHand.filter(c => tableRanks.includes(c.r));
-            
-            // ПСИХИКА: Не подкидывать козыри в начале игры
-            attackChoices = attackChoices.filter(c => c.s !== vchf.trump || vchf.memory.dangerLevel > 0.7);
-        }
+    function renderTrumpUI() {
+        const icon = document.getElementById('trump-icon');
+        icon.textContent = vchf.trump; icon.style.color = COLORS[vchf.trump];
+    }
+    
+    function sendReady() {
+        localReady = true; document.getElementById('btn-ready').style.display = 'none';
+        if(conn) conn.send({type: 'READY'}); showMsg("ОЖИДАНИЕ..."); checkStart();
+    }
 
-        if (attackChoices.length > 0 && vchf.table.length < 12) {
-            executeSparkMove(attackChoices[0]);
-        } else {
-            handleBito();
+    function checkStart() {
+        if (localReady && remoteReady && myRole === 'host') {
+            let d = []; SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
+            vchf.deck = d.sort(() => Math.random() - 0.5);
+            vchf.trump = SUITS[Math.floor(Math.random() * 4)];
+            conn.send({type: 'SYNC_DECK', deck: vchf.deck, trump: vchf.trump});
+            renderTrumpUI(); startChaosPhase();
         }
     }
 
-
-
-
-
-
-
-
-
-        function ignite() {
-        document.getElementById('btn-ready').style.display = 'none';
-        vchf.phase = 'SHUFFLING';
-        
-        let tempDeck = [];
-        SUITS.forEach(s => {
-            RANKS.forEach(r => {
-                tempDeck.push({ s: s, r: r, v: RANKS.indexOf(r), c: COLORS[s], used: false });
-            });
-        });
-        vchf.deck = tempDeck;
-        renderChaosInitial();
-        setTimeout(visualShuffle, 200);
+    function startChaosPhase() {
+        vchf.phase = 'PICK'; renderChaosInitial();
     }
 
     function renderChaosInitial() {
-        const container = document.getElementById('chaos-deck');
-        container.innerHTML = '';
+        const container = document.getElementById('chaos-deck'); container.innerHTML = '';
+        const cx = window.innerWidth / 2 - 27; const cy = window.innerHeight * 0.4 - 38;
         vchf.deck.forEach((card, i) => {
-            const node = document.createElement('div');
-            node.className = 'card-node';
-            node.id = `node-${i}`;
-            node.style.left = '50%'; node.style.top = '45%';
-            node.style.transform = 'translate(-50%, -50%)';
-            container.appendChild(node);
+            const n = document.createElement('div'); n.className = 'card-node'; n.id = `node-${i}`;
+            n.style.left = cx + 'px'; n.style.top = cy + 'px'; container.appendChild(n);
+            setTimeout(() => {
+                const a = (i / 36) * Math.PI * 2;
+                n.style.left = (cx + Math.cos(a) * 140) + 'px'; n.style.top = (cy + Math.sin(a) * 140) + 'px';
+                n.style.transform = `rotate(${a * 57.3 + 90}deg)`;
+            }, i * 15);
+            n.onclick = () => { 
+                if (vchf.phase === 'PICK' && !card.used) {
+                    const canIPick = (myRole === 'host') ? (vchf.pHand.length <= vchf.eCount) : (vchf.pHand.length < vchf.eCount);
+                    if (canIPick) { if (conn) conn.send({type: 'PICK', idx: i}); executePick(i, 'player'); }
+                    else { showMsg("ЖДИ ВРАГА"); }
+                } 
+            };
         });
     }
 
-    function visualShuffle() {
-        let startTime = Date.now();
-        let duration = 2000;
-        let ti = document.getElementById('trump-icon');
-
-        let interval = setInterval(() => {
-            let elapsed = Date.now() - startTime;
-            vchf.deck.forEach((_, i) => {
-                const node = document.getElementById(`node-${i}`);
-                if (node) {
-                    node.style.left = (Math.random() * 60 + 20) + '%';
-                    node.style.top = (Math.random() * 50 + 20) + '%';
-                    node.style.transform = `rotate(${Math.random() * 360}deg)`;
-                }
-            });
-            let rs = SUITS[Math.floor(Math.random() * 4)];
-            ti.textContent = rs; ti.style.color = COLORS[rs];
-
-            if (elapsed > duration) {
-                clearInterval(interval);
-                finalizeShuffle();
-            }
-        }, 100);
-    }
-
-    function finalizeShuffle() {
-        vchf.deck.sort(() => Math.random() - 0.5);
-        vchf.trump = SUITS[Math.floor(Math.random() * 4)];
-        const ti = document.getElementById('trump-icon');
-        ti.textContent = vchf.trump; ti.style.color = COLORS[vchf.trump];
-        
-        vchf.phase = 'PICK';
-        showMsg('ВЕКТОР ХАОСА ОПРЕДЕЛЕН');
-
-        vchf.deck.forEach((card, i) => {
-            const node = document.getElementById(`node-${i}`);
-            const angle = (i / 36) * Math.PI * 2;
-            const radius = 140;
-            node.style.left = `calc(50% + ${Math.cos(angle) * radius}px)`;
-            node.style.top = `calc(45% + ${Math.sin(angle) * radius}px)`;
-            node.style.transform = `translate(-50%, -50%) rotate(${angle * 57.3 + 90}deg)`;
-            node.onclick = () => { if (vchf.phase === 'PICK') pickCard(i, 'player'); };
-        });
-    }
-
-
-
-
-
-
-
-
-        // --- ПРОЦЕСС РАЗДАЧИ ---
-    function pickCard(idx, actor) {
-        const card = vchf.deck[idx];
-        if (!card || card.used) return;
-
+    function executePick(idx, actor) {
+        const card = vchf.deck[idx]; const n = document.getElementById(`node-${idx}`);
+        if (!n || card.used) return;
         card.used = true;
-        playSound('slide');
-        const node = document.getElementById(`node-${idx}`);
-
         if (actor === 'player') {
-            vchf.pHand.push(card);
-            const slot = document.getElementById(`slot-${card.s}-${card.r}`);
-            const rect = slot.getBoundingClientRect();
-            const parent = document.getElementById('chaos-deck').getBoundingClientRect();
-
-            node.style.zIndex = 1000;
-            node.style.left = (rect.left - parent.left + 27) + 'px';
-            node.style.top = (rect.top - parent.top + 38) + 'px';
-            node.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(0.3)';
-
-            setTimeout(() => {
-                node.classList.add('hide');
-                fillSlot(card);
-                sparkAutoPick();
-            }, 500);
+            vchf.pHand.push(card); fillSlot(card);
+            n.style.zIndex = "5000"; n.style.transform = "scale(0) rotate(180deg)"; n.style.opacity = "0";
+            setTimeout(() => n.remove(), 600);
         } else {
-            vchf.eHand.push(card);
-            node.style.top = '-200px';
-            node.style.opacity = '0';
-            node.style.transform = 'translate(-50%, -50%) scale(0.1)';
-            setTimeout(() => {
-                node.classList.add('hide');
-                updateSparkUI();
-                checkDeckEmpty();
-            }, 500);
+            vchf.eCount++; n.style.top = "-150px"; n.style.opacity = "0";
+            setTimeout(() => n.remove(), 600);
         }
-    }
-
-    function sparkAutoPick() {
-        const available = vchf.deck.map((c, i) => !c.used ? i : null).filter(v => v !== null);
-        if (available.length > 0) {
-            const randomIndex = available[Math.floor(Math.random() * available.length)];
-            pickCard(randomIndex, 'enemy');
-        } else {
-            checkDeckEmpty();
-        }
-    }
-
-    function checkDeckEmpty() {
-        const remaining = vchf.deck.filter(c => !c.used).length;
-        if (remaining === 0 && vchf.phase === 'PICK') {
-            vchf.phase = 'BATTLE';
-            showMsg('ФАЗА БОЯ АКТИВИРОВАНА');
-            renderBattleTable();
-            if (vchf.turn === 'enemy') sparkThink();
-        }
+        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
+        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); }
     }
 
     function fillSlot(card) {
-        const el = document.getElementById(`slot-${card.s}-${card.r}`);
-        el.classList.add('filled');
-        el.style.color = card.c;
-        el.innerHTML = `
-            <div style="position:absolute; top:4px; left:6px; font-size:12px; font-weight:900;">${card.r}</div>
-            <div style="font-size:32px;">${card.s}</div>
-        `;
+        const el = document.getElementById(`slot-${card.s}-${card.r}`); if (!el) return;
+        el.classList.add('filled'); el.style.color = card.c;
+        el.innerHTML = `<div style="padding:2px; font-size:10px; font-weight:900;">${card.r}</div><div style="font-size:24px; text-align:center;">${card.s}</div>`;
         el.onclick = (e) => {
             e.stopPropagation();
-            if (vchf.phase === 'BATTLE' && vchf.turn === 'player') tryPlayCard(card);
+            if (vchf.phase === 'BATTLE' && vchf.turn === myRole) playCard(card);
             else if (!isExpanded) toggleHand();
         };
     }
 
-    function updateSparkUI() {
-        const container = document.getElementById('spark-cards');
-        container.innerHTML = '';
-        vchf.eHand.forEach(() => {
-            const dot = document.createElement('div');
-            dot.style.cssText = `width:12px; height:18px; background:var(--spark-neon); border-radius:3px; box-shadow:0 0 10px var(--spark-neon); opacity:0.7;`;
-            container.appendChild(dot);
-        });
+    function playCard(card) {
+        const isAtt = vchf.table.length % 2 === 0;
+        if (isAtt) {
+            if (myRole !== vchf.attacker) return showMsg("ВРАГ АТАКУЕТ");
+            if (!canAttack(card)) return showMsg("НЕЛЬЗЯ ПОДКИНУТЬ");
+        } else {
+            if (myRole === vchf.attacker) return showMsg("ТЫ АТАКУЕШЬ");
+            if (!canDefend(card)) return showMsg("НЕ КРОЕТ!");
+        }
+        vchf.pHand = vchf.pHand.filter(c => c !== card);
+        const slot = document.getElementById(`slot-${card.s}-${card.r}`);
+        slot.classList.remove('filled'); slot.innerHTML = '';
+        executeMove(card, 'player'); if(conn) conn.send({type: 'MOVE', card});
+    }
+
+    function canAttack(c) { return vchf.table.length === 0 || vchf.table.some(m => m.card.r === c.r); }
+    function canDefend(c) {
+        const t = vchf.table[vchf.table.length - 1].card;
+        if (c.s === t.s) return c.v > t.v;
+        return (c.s === vchf.trump && t.s !== vchf.trump);
+    }
+
+    function executeMove(card, actor) {
+        vchf.table.push({card, actor}); if (actor === 'enemy') vchf.eCount--;
+        vchf.turn = (vchf.turn === 'host' ? 'guest' : 'host'); renderBattleTable(); checkBattleEnd();
     }
 
     function renderBattleTable() {
-        const container = document.getElementById('battle-table');
-        container.innerHTML = '';
-        vchf.table.forEach((move, i) => {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'card-node face-up';
-            cardEl.style.color = move.card.c;
-            const pairIndex = Math.floor(i / 2);
-            const isDefense = (i % 2 !== 0);
-            const col = pairIndex % 3;
-            const row = Math.floor(pairIndex / 3);
-            const offsetX = col * 90 + (isDefense ? 20 : 0);
-            const offsetY = row * 100 + (isDefense ? 25 : 0);
-            cardEl.style.left = `calc(50% - 130px + ${offsetX}px)`;
-            cardEl.style.top = `calc(35% + ${offsetY}px)`;
-            cardEl.style.zIndex = 100 + i;
-            cardEl.style.transform = `rotate(${(Math.random()*10-5) + (isDefense?15:0)}deg)`;
-            cardEl.innerHTML = `<div style="position:absolute; top:6px; left:8px; font-size:14px; font-weight:900;">${move.card.r}</div><div style="font-size:36px; text-align:center; margin-top:20px;">${move.card.s}</div>`;
-            container.appendChild(cardEl);
+        const c = document.getElementById('battle-table'); c.innerHTML = '';
+        vchf.table.forEach((m, i) => {
+            const n = document.createElement('div'); n.className = 'card-node face-up';
+            const pi = Math.floor(i / 2), isD = i % 2 !== 0;
+            n.style.left = `calc(50% + ${(pi % 3) * 85 - 85 + (isD ? 18 : 0)}px)`;
+            n.style.top = `calc(40% + ${Math.floor(pi / 3) * 95 - 40 + (isD ? 25 : 0)}px)`;
+            n.innerHTML = `<div style="padding:4px; font-weight:900; font-size:12px;">${m.card.r}</div><div style="font-size:32px; text-align:center;">${m.card.s}</div>`;
+            n.style.color = m.card.c; c.appendChild(n);
         });
-
-        const isPTurn = (vchf.turn === 'player');
-        const hasT = (vchf.table.length > 0);
-        const isDef = (vchf.table.length % 2 !== 0);
-        document.getElementById('btn-bito').style.display = (isPTurn && hasT && !isDef) ? 'block' : 'none';
-        document.getElementById('btn-take').style.display = (isPTurn && hasT && isDef) ? 'block' : 'none';
+        const isMyTurn = vchf.turn === myRole; const isAttState = vchf.table.length % 2 === 0;
+        document.getElementById('btn-bito').style.display = (myRole === vchf.attacker && isAttState && vchf.table.length > 0) ? 'block' : 'none';
+        document.getElementById('btn-take').style.display = (myRole !== vchf.attacker && !isAttState) ? 'block' : 'none';
+        document.querySelectorAll('.slot').forEach(s => { if(vchf.turn !== myRole) s.classList.add('locked'); else s.classList.remove('locked'); });
     }
 
-
-
-
-
-
-        function tryPlayCard(card) {
-        if (!validateMove(card)) { showMsg('НЕВЕРНЫЙ ВЕКТОР'); return; }
-        vchf.pHand = vchf.pHand.filter(c => c !== card);
-        document.getElementById(`slot-${card.s}-${card.r}`).classList.remove('filled');
-        document.getElementById(`slot-${card.s}-${card.r}`).innerHTML = '';
-        vchf.table.push({ card: card, actor: 'player' });
-        renderBattleTable();
-        if (vchf.table.length % 2 !== 0) sparkThink();
-        checkGameStatus();
+    function handleBito() { syncBito(); if(conn) conn.send({type: 'ACTION', cmd: 'BITO'}); }
+    function syncBito() {
+        vchf.table = []; vchf.attacker = (vchf.attacker === 'host' ? 'guest' : 'host'); vchf.turn = vchf.attacker;
+        setTimeout(renderBattleTable, 600); showMsg("БИТО!");
     }
 
-    function validateMove(card) {
-        if (vchf.table.length === 0) return true;
-        const last = vchf.table[vchf.table.length - 1].card;
-        if (vchf.table.length % 2 !== 0) {
-            return (card.s === last.s && card.v > last.v) || (card.s === vchf.trump && last.s !== vchf.trump);
-        }
-        return vchf.table.map(m => m.card.r).includes(card.r) && vchf.table.length < 12;
+    function handleTake() { syncTake(); if(conn) conn.send({type: 'ACTION', cmd: 'TAKE'}); }
+    function syncTake() {
+        vchf.table.forEach(m => { if (vchf.attacker !== myRole) { vchf.pHand.push(m.card); fillSlot(m.card); } else { vchf.eCount++; } });
+        vchf.table = []; vchf.turn = vchf.attacker;
+        setTimeout(renderBattleTable, 600); showMsg("ВЗЯТО");
     }
 
-    function executeSparkMove(card) {
-        vchf.eHand = vchf.eHand.filter(c => c !== card);
-        vchf.table.push({ card: card, actor: 'enemy' });
-        playSound('slide');
-        updateSparkUI();
-        renderBattleTable();
-        checkGameStatus();
-    }
-
-    function sparkTakeAll() {
-        showMsg('SPARK ПРИНИМАЕТ УДАР');
-        vchf.eHand = vchf.eHand.concat(vchf.table.map(m => m.card));
-        vchf.table = [];
-        setTimeout(() => { updateSparkUI(); renderBattleTable(); vchf.turn = 'player'; }, 800);
-    }
-
-    function handleTake() {
-        showMsg('ТЫ ЗАБИРАЕШЬ КАРТЫ');
-        vchf.pHand = vchf.pHand.concat(vchf.table.map(m => m.card));
-        vchf.table = [];
-        vchf.pHand.forEach(c => fillSlot(c));
-        renderBattleTable();
-        vchf.turn = 'enemy';
-        sparkThink();
-    }
-
-    function handleBito() {
-        if (vchf.table.length % 2 !== 0) return;
-        playSound('bito'); showMsg('БИТО');
-        const cardsOnTable = document.querySelectorAll('#battle-table .card-node');
-        cardsOnTable.forEach(el => {
-            const rect = el.getBoundingClientRect();
-            createDust(rect.left + 25, rect.top + 35);
-            el.style.transform = 'scale(0) rotate(180deg)'; el.style.opacity = '0';
-        });
-        setTimeout(() => {
-            vchf.table = []; renderBattleTable();
-            vchf.turn = (vchf.turn === 'player' ? 'enemy' : 'player');
-            if (vchf.turn === 'enemy') sparkThink();
-        }, 600);
-    }
-
-    function createDust(x, y) {
-        const arena = document.getElementById('arena');
-        for (let i = 0; i < 15; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            arena.appendChild(p);
-            const tx = (Math.random() - 0.5) * 250; const ty = (Math.random() - 0.5) * 250;
-            p.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }], { duration: 800 + Math.random() * 400, easing: 'ease-out' }).onfinish = () => p.remove();
-        }
-    }
-
-    function checkGameStatus() {
+    function checkBattleEnd() {
         if (vchf.phase !== 'BATTLE') return;
-        if (vchf.pHand.length === 0 && vchf.eHand.length === 0) { showMsg('НИЧЬЯ В ХАОСЕ'); vchf.phase = 'END'; }
-        else if (vchf.pHand.length === 0) { showMsg('ПОБЕДА - ВЕКТОР ОЧИЩЕН'); vchf.phase = 'END'; }
-        else if (vchf.eHand.length === 0) { showMsg('ПРОИГРЫШ - SPARK ПОГЛОТИЛ ТЕБЯ'); vchf.phase = 'END'; }
+        if (vchf.pHand.length === 0 || vchf.eCount === 0) {
+            setTimeout(() => {
+                const iW = vchf.pHand.length === 0, eW = vchf.eCount === 0;
+                if (iW && eW) showMsg("НИЧЬЯ"); else if (iW) showMsg("ПОБЕДА!"); else if (eW) showMsg("ПОРАЖЕНИЕ");
+            }, 1000);
+        }
     }
 
     function toggleHand() {
         isExpanded = !isExpanded;
-        const panel = document.getElementById('ctrl-panel');
-        const btn = document.getElementById('btn-zoom');
-        if (isExpanded) { panel.classList.add('expanded'); btn.textContent = '✕'; }
-        else { panel.classList.remove('expanded'); btn.textContent = '↕'; }
-        playSound('slide');
+        document.getElementById('ctrl-panel').classList.toggle('expanded', isExpanded);
+        document.getElementById('btn-zoom').textContent = isExpanded ? '✕' : '↕';
     }
 
-    initLayout = () => {
-        const rows = {'♠':'s-spades','♣':'s-clubs','♦':'s-diamonds','♥':'s-hearts'};
+    function copyMyID() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => showMsg("ССЫЛКА КОПИРОВАНА"));
+    }
+
+    window.onload = () => {
         SUITS.forEach(s => {
-            const container = document.getElementById(rows[s]);
-            container.innerHTML = '';
+            const row = document.getElementById('s-' + (s === '♠' ? 'spades' : s === '♣' ? 'clubs' : s === '♦' ? 'diamonds' : 'hearts'));
             RANKS.forEach(rank => {
-                const sl = document.createElement('div');
-                sl.className = 'slot'; sl.id = `slot-${s}-${rank}`;
-                container.appendChild(sl);
+                const sl = document.createElement('div'); sl.className = 'slot'; sl.id = `slot-${s}-${rank}`; row.appendChild(sl);
             });
         });
     };
-
-    window.onload = () => { initLayout(); showMsg('СИСТЕМА ГОТОВА К ЗАПУСКУ'); };
 </script>
 </body>
 </html>
