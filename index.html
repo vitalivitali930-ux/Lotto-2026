@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -112,7 +111,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            const orderId = document.getElementById('order-id').value || "DRAFT";
+            const orderId = document.getElementById('order-id').value || "DRAFT-" + Math.floor(Math.random()*1000);
             const route = document.getElementById('route-info').value || "TBA";
             const truck = document.getElementById('truck-data').value || "TBA";
             const price = parseFloat(document.getElementById('net-price').value) || 0;
@@ -121,74 +120,103 @@
             const total = isVat ? (price * 1.081).toFixed(2) : price.toFixed(2);
             const extra = document.getElementById('extra-terms').value;
 
-            // Header
+            // Header: Red Bar & Logo
             doc.setFillColor(213, 43, 30);
-            doc.rect(0, 0, 210, 40, 'F');
+            doc.rect(0, 0, 210, 35, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(22);
             doc.setFont("helvetica", "bold");
-            doc.text("WERBUNG TO GO", 105, 20, null, null, "center");
-            doc.setFontSize(10);
-            doc.text("Information & Logistics Management | Egerkingen, Switzerland", 105, 28, null, null, "center");
+            doc.text("WERBUNG TO GO", 20, 18);
+            doc.setFontSize(8);
+            doc.text("LOGISTICS & INFORMATION MANAGEMENT | SWITZERLAND", 20, 25);
+            doc.text("UID: CHE-376.512.386\nEgerkingen, CH", 190, 15, null, null, "right");
 
-            // Body
-            doc.setTextColor(40, 40, 40);
-            doc.setFontSize(18);
-            doc.text("TRANSPORT ORDER: " + orderId, 20, 55);
+            // Title
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(14);
+            doc.text("TRANSPORT ORDER / CONFIRMATION: #" + orderId, 20, 45);
             
+            // Layout Grid
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.2);
+            doc.rect(20, 50, 170, 65); // Main box
+            doc.line(20, 72, 190, 72); // Row 1 line
+            doc.line(20, 93, 190, 93); // Row 2 line
+            doc.line(110, 50, 110, 115); // Vertical split
+
+            // Row 1: Carrier & Date
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.text("CARRIER / VEHICLE:", 25, 56);
+            doc.setFont("helvetica", "normal");
+            doc.text(truck, 25, 63, {maxWidth: 80});
+
+            doc.setFont("helvetica", "bold");
+            doc.text("DATE OF ISSUE:", 115, 56);
+            doc.setFont("helvetica", "normal");
+            doc.text(new Date().toLocaleDateString('de-CH'), 115, 63);
+
+            // Row 2: Route & Payment
+            doc.setFont("helvetica", "bold");
+            doc.text("ROUTE DETAILS:", 25, 78);
+            doc.setFont("helvetica", "normal");
+            doc.text(route, 25, 85, {maxWidth: 80});
+
+            doc.setFont("helvetica", "bold");
+            doc.text("PAYMENT TERMS:", 115, 78);
+            doc.setFont("helvetica", "normal");
+            doc.text("Standard: 45 days after POD delivery", 115, 85);
+
+            // Row 3: Freight Rate
+            doc.setFont("helvetica", "bold");
+            doc.text("TOTAL FREIGHT RATE:", 25, 99);
             doc.setFontSize(11);
-            doc.setFont("helvetica", "normal");
-            doc.text("Date: " + new Date().toLocaleDateString('de-CH'), 20, 62);
-            doc.text("Status: PRE-BOOKING (Pending Confirmation)", 20, 68);
+            doc.text(total + " EUR (Incl. " + vatVal + " VAT)", 25, 108);
 
-            // Table Box
-            doc.setDrawColor(200, 200, 200);
-            doc.rect(20, 75, 170, 70);
-            doc.line(20, 95, 190, 95);
-            doc.line(20, 115, 190, 115);
-
+            // Small Print: General Terms
+            doc.setFontSize(7);
             doc.setFont("helvetica", "bold");
-            doc.text("ROUTE / RELATIONS:", 25, 82);
+            doc.text("GENERAL TERMS & CONDITIONS:", 20, 125);
             doc.setFont("helvetica", "normal");
-            doc.text(route, 25, 90);
+            const terms = [
+                "1. Neutrality is strictly required. No direct contact with the shipper/consignee allowed.",
+                "2. Carrier must ensure valid CMR insurance (min. 100,000 EUR coverage).",
+                "3. No co-loading or transshipment without prior written consent from Werbung To Go.",
+                "4. Demurrage: First 24 hours for loading and unloading are free of charge.",
+                "5. All transport documents (POD/CMR) must be sent to billing@werbungtogo.ch within 48h.",
+                "6. This order is a legally binding contract under CMR convention and Swiss Law."
+            ];
+            doc.text(terms, 20, 130);
 
-            doc.setFont("helvetica", "bold");
-            doc.text("VEHICLE & DRIVER DETAILS:", 25, 102);
-            doc.setFont("helvetica", "normal");
-            doc.text(truck, 25, 110);
-
-            doc.setFont("helvetica", "bold");
-            doc.text("FINANCIAL DETAILS:", 25, 122);
-            doc.setFont("helvetica", "normal");
-            doc.text("Net Rate: " + price.toFixed(2) + " EUR", 25, 130);
-            doc.text("VAT (8.1% MWST): " + vatVal + " EUR", 25, 136);
-            doc.setFont("helvetica", "bold");
-            doc.text("TOTAL PAYABLE: " + total + " EUR", 25, 142);
-
-            // Extra terms
+            // Extra Instructions Box
             if(extra) {
-                doc.setFontSize(9);
+                doc.setFillColor(245, 245, 245);
+                doc.rect(20, 165, 170, 25, 'F');
                 doc.setFont("helvetica", "italic");
-                doc.text("Special Instructions:", 20, 155);
-                doc.text(extra, 20, 160, { maxWidth: 170 });
+                doc.setFontSize(8);
+                doc.text("SPECIAL INSTRUCTIONS:", 25, 172);
+                doc.text(extra, 25, 178, {maxWidth: 160});
             }
 
-            // Footer Legal
+            // Signature Section
+            doc.setDrawColor(150, 150, 150);
+            doc.line(20, 235, 85, 235);
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
-            doc.setTextColor(100, 100, 100);
-            const legal = "Werbung To Go operates as an information agent. The carrier is responsible for CMR insurance and transport safety. This pre-booking is valid for 2 hours.";
-            doc.text(legal, 20, 185, { maxWidth: 170 });
+            doc.text("CARRIER STAMP & SIGNATURE", 20, 240);
 
-            // Approved Stamp
+            // Approved Stamp (Swiss Style)
             doc.setDrawColor(213, 43, 30);
             doc.setLineWidth(1);
-            doc.rect(145, 195, 40, 20);
+            doc.rect(130, 225, 55, 25);
             doc.setTextColor(213, 43, 30);
-            doc.setFontSize(14);
-            doc.text("APPROVED", 150, 208);
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("WERBUNG TO GO", 157.5, 235, null, null, "center");
+            doc.setFontSize(7);
+            doc.text("APPROVED ELECTRONICALLY", 157.5, 243, null, null, "center");
 
-            doc.save(`Order_${orderId}.pdf`);
+            doc.save(`Transport_Order_${orderId}.pdf`);
         }
     </script>
 </body>
