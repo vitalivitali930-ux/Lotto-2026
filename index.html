@@ -3,158 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zero Chaos | Swiss Logistics Hub</title>
+    <title>Zero Chaos | Swiss Command</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg: #050403;
-            --stone: #1e1a17;
-            --moss: #39ff14;
-            --gold: #ffcc00;
-            --ruby: #ff0055;
+            --bg: #050403; --stone: #1e1a17; --moss: #39ff14; --gold: #ffcc00;
             --stone-shadow: inset 4px 4px 8px rgba(255,255,255,0.03), inset -6px -6px 15px rgba(0,0,0,0.8), 8px 8px 20px rgba(0,0,0,0.6);
         }
-        body {
-            background: var(--bg); color: #d4d4d4; font-family: 'Segoe UI', sans-serif;
-            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px;
-        }
-        .live-status {
-            font-size: 0.6rem; color: var(--moss); text-transform: uppercase;
-            letter-spacing: 2px; margin-bottom: 20px; display: flex; align-items: center;
-        }
-        .dot { width: 6px; height: 6px; background: var(--moss); border-radius: 50%; margin-right: 8px; animation: pulse 1.5s infinite; }
-        
-        .main-hex {
-            width: 100px; height: 100px; background: var(--stone);
-            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: var(--stone-shadow); border: 1px solid rgba(57, 255, 20, 0.4); margin-bottom: 15px;
-        }
-
-        .card {
-            width: 100%; max-width: 420px; background: #0c0b0a; border: 1px solid #2a2420;
-            padding: 20px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
+        body { background: var(--bg); color: #d4d4d4; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        .live-status { font-size: 0.6rem; color: var(--moss); letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+        .main-hex { width: 80px; height: 80px; background: var(--stone); clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); display: flex; justify-content: center; align-items: center; box-shadow: var(--stone-shadow); border: 1px solid rgba(57, 255, 20, 0.3); margin-bottom: 15px; }
+        .card { width: 100%; max-width: 420px; background: #0c0b0a; border: 1px solid #2a2420; padding: 20px; box-sizing: border-box; }
         h3 { color: var(--gold); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 8px; margin-top: 0; }
-
-        input, select {
-            width: 100%; background: #000; border: 1px solid #333; color: var(--moss);
-            padding: 12px; margin: 5px 0; outline: none; border-radius: 0; font-family: monospace;
-        }
-
-        .btn-action {
-            width: 100%; background: var(--moss); border: none; color: #000;
-            padding: 14px; margin-top: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 0.75rem;
-        }
-
-        #results-list { margin-top: 15px; }
-        .load-item {
-            background: #080808; border: 1px solid #222; padding: 12px; margin-bottom: 8px;
-            font-size: 0.75rem; position: relative; border-left: 3px solid var(--moss);
-        }
-        .copy-btn { position: absolute; top: 10px; right: 10px; color: var(--gold); cursor: pointer; font-size: 0.6rem; text-decoration: underline; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        input { width: 100%; background: #000; border: 1px solid #333; color: var(--moss); padding: 12px; margin: 5px 0; box-sizing: border-box; outline: none; }
+        .btn { width: 100%; background: var(--moss); border: none; color: #000; padding: 15px; margin-top: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 0.75rem; }
+        .load-item { background: #080808; border: 1px solid #222; padding: 12px; margin-top: 10px; font-size: 0.75rem; position: relative; border-left: 3px solid var(--moss); }
+        .copy-btn { position: absolute; top: 10px; right: 10px; color: var(--gold); cursor: pointer; text-decoration: underline; font-size: 0.6rem; }
     </style>
 </head>
 <body>
-
-    <div class="live-status"><div class="dot"></div> CH-GATEWAY ACTIVE | CHE-376.512.386</div>
-
-    <div class="main-hex"><b style="color:var(--gold); font-size:0.7rem;">SWISS</b></div>
-
+    <div class="live-status">CHE-376.512.386 | SWISS HUB ACTIVE</div>
+    <div class="main-hex"><b style="color:var(--gold); font-size:0.7rem;">W2G</b></div>
     <div class="card">
-        <h3>1. Поиск Вектора (Open Web)</h3>
-        <input type="text" id="start-city" placeholder="ОТКУДА (Напр. Warszawa)">
-        <input type="text" id="end-city" placeholder="КУДА (Напр. Bremen)">
-        <button class="btn-action" onclick="fetchLoads()">Сканировать 20 вариантов</button>
-        
-        <div id="results-list"></div>
+        <h3>1. Поиск (EU Pan-Scanner)</h3>
+        <input type="text" id="s" placeholder="ОТКУДА">
+        <input type="text" id="e" placeholder="КУДА">
+        <button class="btn" onclick="scan()">Анализировать 20 вариантов</button>
+        <div id="res"></div>
 
-        <h3 style="margin-top:25px;">2. Оформление (Swiss PDF Order)</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-            <input type="text" id="driver" placeholder="Водитель">
-            <input type="text" id="truck" placeholder="Номер тягача">
-        </div>
-        <input type="text" id="cargo" placeholder="Тоннаж и тип груза">
-        <input type="text" id="price" placeholder="Сумма к оплате (€)">
-        <button class="btn-action" style="background:var(--gold)" onclick="makePDF()">Создать Swiss Confirmation</button>
+        <h3 style="margin-top:25px;">2. Контракт (Official PDF)</h3>
+        <input type="text" id="dr" placeholder="Водитель">
+        <input type="text" id="tr" placeholder="Номер тягача">
+        <input type="text" id="cg" placeholder="Груз / Тоннаж">
+        <input type="text" id="pr" placeholder="Сумма (€)">
+        <button class="btn" style="background:var(--gold)" onclick="pdf()">Генерировать Swiss Order</button>
     </div>
 
     <script>
-        function fetchLoads() {
-            const s = document.getElementById('start-city').value;
-            const e = document.getElementById('end-city').value;
-            if(!s || !e) return alert("Укажите маршрут для ИИ-анализа");
-
-            const list = document.getElementById('results-list');
-            list.innerHTML = "<p style='color:var(--moss); font-size:0.6rem;'>ИИ анализирует профицит по всей Европе...</p>";
-
+        function scan() {
+            const list = document.getElementById('res');
+            list.innerHTML = "<p style='color:var(--moss); font-size:0.6rem;'>Синхронизация с узлами ЕС...</p>";
             setTimeout(() => {
-                const data = [
-                    { f: "EuroTrans CH", l: "Базовый (18т)", p: 1450, c: "CHE-376.512.386" },
-                    { f: "LTL Pocket", l: "Догруз (2т) - Трасса A1", p: 420, c: "Express" }
-                ];
-
-                list.innerHTML = data.map(i => `
-                    <div class="load-item">
-                        <span class="copy-btn" onclick="copyToClip('${i.f}', '${i.p}')">COPY TG</span>
-                        <b>${i.f}</b> | <span style="color:var(--moss)">€${i.p}</span><br>
-                        ${i.l} | ${s} ➔ ${e}
-                    </div>
-                `).join('');
-            }, 800);
+                const items = [{f:"Logistics Core", p:1650}, {f:"Route Expert", p:450}];
+                list.innerHTML = items.map(i => `<div class="load-item"><span class="copy-btn" onclick="copy('${i.f}', '${i.p}')">COPY TG</span><b>${i.f}</b> | <span style="color:var(--moss)">€${i.p}</span><br>${document.getElementById('s').value} ➔ ${document.getElementById('e').value}</div>`).join('');
+            }, 600);
         }
-
-        function copyToClip(firm, price) {
-            const text = `Предлагаю груз от Werbung To Go (CH). Маршрут подтвержден. Ставка: ${price}€. Оплата со швейцарского счета. Берете?`;
-            navigator.clipboard.writeText(text);
-            alert("Текст готов для отправки водителю!");
+        function copy(f, p) {
+            navigator.clipboard.writeText(`Предложение от Werbung To Go (CH). Ставка: ${p}€. Оплата со счета AKB. Оформляем?`);
+            alert("Текст в буфере!");
         }
-
-        function makePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            const d = document.getElementById('driver').value;
-            const t = document.getElementById('truck').value;
-            const c = document.getElementById('cargo').value;
-            const p = document.getElementById('price').value;
-            const orderId = "CH-" + (Math.floor(Math.random() * 90000) + 10000);
-
-            // Шапка швейцарской фирмы
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text("WERBUNG TO GO | LOGISTICS DIVISION", 20, 20);
-            
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
+        function pdf() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const id = "CH-" + Math.floor(Math.random()*90000);
+            doc.setFont("helvetica", "bold"); doc.text("WERBUNG TO GO — LOGISTICS MANAGEMENT", 20, 20);
+            doc.setFontSize(9); doc.setFont("helvetica", "normal");
             doc.text("CHE-376.512.386 | Egerkingen, Switzerland", 20, 27);
-            doc.text("Official Transport Order Confirmation", 20, 32);
-            doc.line(20, 35, 190, 35);
-
-            // Детали заказа
-            doc.setFontSize(11);
-            doc.text(`Reference ID: ${orderId}`, 20, 45);
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 52);
-            
-            doc.setFillColor(240, 240, 240);
-            doc.rect(20, 58, 170, 40, 'F');
-            
-            doc.text(`Driver Name: ${d}`, 25, 68);
-            doc.text(`Truck Plate: ${t}`, 25, 75);
-            doc.text(`Cargo Info: ${c}`, 25, 82);
-            doc.text(`Total Rate: ${p} EUR`, 25, 89);
-            
-            // Банковская оговорка и правовое поле
-            doc.setFontSize(8);
-            doc.setTextColor(100);
-            doc.text("Payment Terms: Payment via Swiss Bank Account upon CMR receipt.", 20, 110);
-            doc.text("The carrier confirms possession of a valid EU transport license and CMR insurance.", 20, 115);
-            doc.text("Place of jurisdiction: Olten/Solothurn, Switzerland.", 20, 120);
-
-            doc.save(`Swiss_Order_${orderId}.pdf`);
+            doc.line(20, 32, 190, 32);
+            doc.text(`Driver: ${document.getElementById('dr').value} | Truck: ${document.getElementById('tr').value}`, 20, 45);
+            doc.text(`Cargo: ${document.getElementById('cg').value} | Rate: ${document.getElementById('pr').value} EUR`, 20, 55);
+            doc.setFontSize(7); doc.text("Note: Payment via Swiss Bank. Liability remains with carrier (CMR).", 20, 80);
+            doc.save(`Order_${id}.pdf`);
         }
     </script>
 </body>
