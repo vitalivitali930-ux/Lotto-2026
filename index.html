@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zero Chaos | Real-Time Logistics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #050403;
+            --stone: #1e1a17;
+            --moss: #39ff14;
+            --gold: #ffcc00;
+            --stone-shadow: inset 4px 4px 8px rgba(255,255,255,0.03), inset -6px -6px 15px rgba(0,0,0,0.8), 10px 10px 20px rgba(0,0,0,0.6);
+        }
+        body {
+            background: var(--bg); color: #d4d4d4; font-family: 'Courier New', Courier, monospace;
+            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px;
+        }
+        .main-hex {
+            width: 120px; height: 120px; background: var(--stone);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: var(--stone-shadow); border: 1px solid var(--moss); margin-bottom: 20px;
+        }
+        .container { width: 100%; max-width: 450px; background: #0c0b0a; border: 1px solid #2a2420; padding: 20px; position: relative; }
+        h2 { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        input, select {
+            width: 100%; background: #000; border: 1px solid #333; color: var(--moss);
+            padding: 12px; margin: 5px 0; box-sizing: border-box; outline: none; font-size: 0.9rem;
+        }
+        .btn {
+            width: 100%; background: var(--moss); border: none; color: #000;
+            padding: 15px; margin-top: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold;
+        }
+        .result-card {
+            background: #080808; border: 1px solid #222; padding: 15px; margin-top: 15px;
+            border-left: 4px solid var(--gold);
+        }
+        .pdf-zone { margin-top: 25px; padding-top: 20px; border-top: 2px dashed #333; }
+    </style>
+</head>
+<body>
+
+    <div class="main-hex"><b style="color:var(--moss)">HUB</b></div>
+
+    <div class="container">
+        <h2>1. Поиск (Live Stream)</h2>
+        <input type="text" id="route-from" placeholder="ОТКУДА (Напр: Warszawa)">
+        <input type="text" id="route-to" placeholder="КУДА (Напр: Berlin)">
+        <button class="btn" onclick="searchLoads()">Сканировать Эфир</button>
+        
+        <div id="load-results"></div>
+
+        <div class="pdf-zone">
+            <h2>2. Оформить Сделку (PDF)</h2>
+            <input type="text" id="driver-name" placeholder="Имя водителя">
+            <input type="text" id="truck-plate" placeholder="Номер машины">
+            <input type="text" id="cargo-weight" placeholder="Тоннаж (напр. 20т)">
+            <input type="text" id="final-price" placeholder="Цена для водителя (€)">
+            <button class="btn" style="background:var(--gold)" onclick="generatePDF()">Создать PDF Контракт</button>
+        </div>
+    </div>
+
+    <script>
+        // Имитация реального API-потока
+        async function searchLoads() {
+            const from = document.getElementById('route-from').value;
+            const to = document.getElementById('route-to').value;
+            const resDiv = document.getElementById('load-results');
+            
+            resDiv.innerHTML = "<p style='color:var(--moss)'>Подключение к шлюзу ТГ...</p>";
+
+            // Здесь в будущем будет fetch('data.json') с GitHub
+            setTimeout(() => {
+                const results = [
+                    { firm: "EU-LOGIST", load: "Equipment", price: 1450, contact: "@dispatch_it" },
+                    { firm: "PL-TRANS", load: "Steel", price: 900, contact: "+48 700 000" }
+                ];
+
+                let html = "";
+                results.forEach(item => {
+                    html += `
+                        <div class="result-card">
+                            <b>${item.firm}</b> | <span style="color:var(--moss)">€${item.price}</span><br>
+                            <small>${from} -> ${to}</small><br>
+                            <small>Контакт: ${item.contact}</small>
+                        </div>`;
+                });
+                resDiv.innerHTML = html;
+            }, 1000);
+        }
+
+        // Генерация PDF
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const name = document.getElementById('driver-name').value;
+            const plate = document.getElementById('truck-plate').value;
+            const weight = document.getElementById('cargo-weight').value;
+            const price = document.getElementById('final-price').value;
+            const date = new Date().toLocaleString();
+
+            doc.setFontSize(22);
+            doc.text("LOGISTICS CONFIRMATION", 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Date: ${date}`, 20, 35);
+            doc.text("------------------------------------------", 20, 40);
+            doc.text(`Driver Name: ${name}`, 20, 50);
+            doc.text(`Truck Plate: ${plate}`, 20, 60);
+            doc.text(`Weight: ${weight}`, 20, 70);
+            doc.text(`Total Price: ${price} EUR`, 20, 80);
+            doc.text("------------------------------------------", 20, 90);
+            doc.text("Confirmed by ZERO CHAOS LOGISTICS", 20, 100);
+
+            doc.save(`Order_${plate}.pdf`);
+        }
+    </script>
+</body>
+</html>
