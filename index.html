@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zero Chaos | Command Center</title>
+    <title>Zero Chaos | Swiss Logistics Hub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -18,7 +18,6 @@
             background: var(--bg); color: #d4d4d4; font-family: 'Segoe UI', sans-serif;
             margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px;
         }
-        /* Статус "Live" */
         .live-status {
             font-size: 0.6rem; color: var(--moss); text-transform: uppercase;
             letter-spacing: 2px; margin-bottom: 20px; display: flex; align-items: center;
@@ -29,7 +28,7 @@
             width: 100px; height: 100px; background: var(--stone);
             clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
             display: flex; justify-content: center; align-items: center;
-            box-shadow: var(--stone-shadow); border: 1px solid rgba(57, 255, 20, 0.2); margin-bottom: 15px;
+            box-shadow: var(--stone-shadow); border: 1px solid rgba(57, 255, 20, 0.4); margin-bottom: 15px;
         }
 
         .card {
@@ -41,7 +40,7 @@
 
         input, select {
             width: 100%; background: #000; border: 1px solid #333; color: var(--moss);
-            padding: 10px; margin: 5px 0; outline: none; border-radius: 0; font-family: monospace;
+            padding: 12px; margin: 5px 0; outline: none; border-radius: 0; font-family: monospace;
         }
 
         .btn-action {
@@ -61,87 +60,101 @@
 </head>
 <body>
 
-    <div class="live-status"><div class="dot"></div> System Live: EU-Gate 2.6.3</div>
+    <div class="live-status"><div class="dot"></div> CH-GATEWAY ACTIVE | CHE-376.512.386</div>
 
-    <div class="main-hex"><b style="color:var(--gold); font-size:0.7rem;">VCHF</b></div>
+    <div class="main-hex"><b style="color:var(--gold); font-size:0.7rem;">SWISS</b></div>
 
     <div class="card">
         <h3>1. Поиск Вектора (Open Web)</h3>
-        <input type="text" id="start-city" placeholder="ОТКУДА (Warszawa)">
-        <input type="text" id="end-city" placeholder="КУДА (Bremen)">
-        <button class="btn-action" onclick="fetchLoads()">Найти грузы и догрузы</button>
+        <input type="text" id="start-city" placeholder="ОТКУДА (Напр. Warszawa)">
+        <input type="text" id="end-city" placeholder="КУДА (Напр. Bremen)">
+        <button class="btn-action" onclick="fetchLoads()">Сканировать 20 вариантов</button>
         
         <div id="results-list"></div>
 
-        <h3 style="margin-top:25px;">2. Контракт (PDF Generator)</h3>
+        <h3 style="margin-top:25px;">2. Оформление (Swiss PDF Order)</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
             <input type="text" id="driver" placeholder="Водитель">
-            <input type="text" id="truck" placeholder="Номер авто">
+            <input type="text" id="truck" placeholder="Номер тягача">
         </div>
-        <input type="text" id="cargo" placeholder="Что везем?">
-        <input type="text" id="price" placeholder="Сумма водителю (€)">
-        <button class="btn-action" style="background:var(--gold)" onclick="makePDF()">Скачать PDF и закрыть</button>
+        <input type="text" id="cargo" placeholder="Тоннаж и тип груза">
+        <input type="text" id="price" placeholder="Сумма к оплате (€)">
+        <button class="btn-action" style="background:var(--gold)" onclick="makePDF()">Создать Swiss Confirmation</button>
     </div>
 
     <script>
-        // Имитация "умного" поиска
         function fetchLoads() {
             const s = document.getElementById('start-city').value;
             const e = document.getElementById('end-city').value;
-            if(!s || !e) return alert("Укажите маршрут");
+            if(!s || !e) return alert("Укажите маршрут для ИИ-анализа");
 
             const list = document.getElementById('results-list');
-            list.innerHTML = "<p style='color:var(--moss); font-size:0.6rem;'>Сканирование трассы А-категории...</p>";
+            list.innerHTML = "<p style='color:var(--moss); font-size:0.6rem;'>ИИ анализирует профицит по всей Европе...</p>";
 
             setTimeout(() => {
                 const data = [
-                    { f: "Pol-Trans", l: "Металл (12т)", p: 1150, c: "@dispatcher_pl" },
-                    { f: "LKW Connect", l: "Мебель (3т) - ПО ПУТИ", p: 380, c: "+49 170 000" }
+                    { f: "EuroTrans CH", l: "Базовый (18т)", p: 1450, c: "CHE-376.512.386" },
+                    { f: "LTL Pocket", l: "Догруз (2т) - Трасса A1", p: 420, c: "Express" }
                 ];
 
                 list.innerHTML = data.map(i => `
                     <div class="load-item">
-                        <span class="copy-btn" onclick="copyToClip('${i.f}', '${i.p}')">COPY FOR TG</span>
+                        <span class="copy-btn" onclick="copyToClip('${i.f}', '${i.p}')">COPY TG</span>
                         <b>${i.f}</b> | <span style="color:var(--moss)">€${i.p}</span><br>
-                        ${i.l} | ${s} ➔ ${e}<br>
-                        <small style="color:#555">${i.c}</small>
+                        ${i.l} | ${s} ➔ ${e}
                     </div>
                 `).join('');
             }, 800);
         }
 
         function copyToClip(firm, price) {
-            const text = `Предлагаю груз: ${firm}. Цена: ${price}€. Оформление через Zero-Chaos. Едем?`;
+            const text = `Предлагаю груз от Werbung To Go (CH). Маршрут подтвержден. Ставка: ${price}€. Оплата со швейцарского счета. Берете?`;
             navigator.clipboard.writeText(text);
-            alert("Текст скопирован для Telegram!");
+            alert("Текст готов для отправки водителю!");
         }
 
         function makePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            
             const d = document.getElementById('driver').value;
             const t = document.getElementById('truck').value;
             const c = document.getElementById('cargo').value;
             const p = document.getElementById('price').value;
-            const orderId = Math.floor(Math.random() * 9000) + 1000;
+            const orderId = "CH-" + (Math.floor(Math.random() * 90000) + 10000);
 
+            // Шапка швейцарской фирмы
             doc.setFont("helvetica", "bold");
-            doc.text("ZERO-CHAOS LOGISTICS CONFIRMATION", 20, 20);
+            doc.setFontSize(16);
+            doc.text("WERBUNG TO GO | LOGISTICS DIVISION", 20, 20);
+            
+            doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.text(`Order ID: #ZC-${orderId} | Date: ${new Date().toLocaleDateString()}`, 20, 30);
+            doc.text("CHE-376.512.386 | Egerkingen, Switzerland", 20, 27);
+            doc.text("Official Transport Order Confirmation", 20, 32);
             doc.line(20, 35, 190, 35);
+
+            // Детали заказа
+            doc.setFontSize(11);
+            doc.text(`Reference ID: ${orderId}`, 20, 45);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 52);
             
-            doc.text(`Driver Name: ${d}`, 20, 50);
-            doc.text(`Truck Plate: ${t}`, 20, 60);
-            doc.text(`Cargo Info: ${c}`, 20, 70);
-            doc.text(`Rate: ${p} EUR`, 20, 80);
+            doc.setFillColor(240, 240, 240);
+            doc.rect(20, 58, 170, 40, 'F');
             
-            doc.line(20, 90, 190, 90);
+            doc.text(`Driver Name: ${d}`, 25, 68);
+            doc.text(`Truck Plate: ${t}`, 25, 75);
+            doc.text(`Cargo Info: ${c}`, 25, 82);
+            doc.text(`Total Rate: ${p} EUR`, 25, 89);
+            
+            // Банковская оговорка и правовое поле
             doc.setFontSize(8);
-            doc.text("Note: This is an electronic confirmation. Commission 1% included in management fee.", 20, 100);
-            
-            doc.save(`ZC_Order_${t}.pdf`);
+            doc.setTextColor(100);
+            doc.text("Payment Terms: Payment via Swiss Bank Account upon CMR receipt.", 20, 110);
+            doc.text("The carrier confirms possession of a valid EU transport license and CMR insurance.", 20, 115);
+            doc.text("Place of jurisdiction: Olten/Solothurn, Switzerland.", 20, 120);
+
+            doc.save(`Swiss_Order_${orderId}.pdf`);
         }
     </script>
 </body>
