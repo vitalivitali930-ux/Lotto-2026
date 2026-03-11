@@ -11,9 +11,9 @@ CHANNELS = ['transport_eu', 'transport_pl_de', 'logistyka_transport']
 
 def run_scraper():
     # Создаем временную сессию
-    with TelegramClient('chaos_session', api_id, api_hash).start(phone='+41793666072') as client:
+    client = TelegramClient('chaos_session', api_id, api_hash)
         all_messages = []
-        
+        client.send_code_request('+41793666072')
         for channel in CHANNELS:
             try:
                 # Берем последние 20 сообщений из каждого канала
