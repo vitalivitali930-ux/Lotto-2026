@@ -2,67 +2,157 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zero Chaos | Swiss Command</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werbung To Go | Logistics Management</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg: #050403; --stone: #1e1a17; --moss: #39ff14; --gold: #ffcc00;
-            --stone-shadow: inset 4px 4px 8px rgba(255,255,255,0.03), inset -6px -6px 15px rgba(0,0,0,0.8), 8px 8px 20px rgba(0,0,0,0.6);
+            --swiss-red: #D52B1E;
+            --dark-bg: #1a1a1a;
+            --gold: #c5a059;
         }
-        body { background: var(--bg); color: #d4d4d4; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 15px; }
-        .live-status { font-size: 0.6rem; color: var(--moss); letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
-        .main-hex { width: 80px; height: 80px; background: var(--stone); clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); display: flex; justify-content: center; align-items: center; box-shadow: var(--stone-shadow); border: 1px solid rgba(57, 255, 20, 0.3); margin-bottom: 15px; }
-        .card { width: 100%; max-width: 420px; background: #0c0b0a; border: 1px solid #2a2420; padding: 20px; box-sizing: border-box; }
-        h3 { color: var(--gold); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 8px; margin-top: 0; }
-        input { width: 100%; background: #000; border: 1px solid #333; color: var(--moss); padding: 12px; margin: 5px 0; box-sizing: border-box; outline: none; }
-        .btn { width: 100%; background: var(--moss); border: none; color: #000; padding: 15px; margin-top: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 0.75rem; }
-        .load-item { background: #080808; border: 1px solid #222; padding: 12px; margin-top: 10px; font-size: 0.75rem; position: relative; border-left: 3px solid var(--moss); }
-        .copy-btn { position: absolute; top: 10px; right: 10px; color: var(--gold); cursor: pointer; text-decoration: underline; font-size: 0.6rem; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--dark-bg); color: white; margin: 0; padding: 0; }
+        
+        /* Скрытая область (Потайная комната) */
+        #admin-panel { display: none; padding: 20px; }
+        #login-screen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        
+        .btn { background: var(--swiss-red); color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #ff3c2e; transform: scale(1.05); }
+        
+        .input-group { margin-bottom: 15px; }
+        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+        
+        .card { background: #252525; padding: 20px; border-radius: 10px; border-left: 5px solid var(--swiss-red); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        
+        /* Манифест Монолита в подвале */
+        footer { font-size: 10px; color: #666; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
-    <div class="live-status">CHE-376.512.386 | SWISS HUB ACTIVE</div>
-    <div class="main-hex"><b style="color:var(--gold); font-size:0.7rem;">W2G</b></div>
-    <div class="card">
-        <h3>1. Поиск (EU Pan-Scanner)</h3>
-        <input type="text" id="s" placeholder="ОТКУДА">
-        <input type="text" id="e" placeholder="КУДА">
-        <button class="btn" onclick="scan()">Анализировать 20 вариантов</button>
-        <div id="res"></div>
 
-        <h3 style="margin-top:25px;">2. Контракт (Official PDF)</h3>
-        <input type="text" id="dr" placeholder="Водитель">
-        <input type="text" id="tr" placeholder="Номер тягача">
-        <input type="text" id="cg" placeholder="Груз / Тоннаж">
-        <input type="text" id="pr" placeholder="Сумма (€)">
-        <button class="btn" style="background:var(--gold)" onclick="pdf()">Генерировать Swiss Order</button>
+    <div id="login-screen">
+        <h1 style="color: var(--swiss-red);">WERBUNG TO GO</h1>
+        <p>Information & Logistics Management</p>
+        <div style="margin-top: 20px;">
+            <input type="password" id="access-code" placeholder="Введите код доступа" style="width: 200px; text-align: center;">
+            <br><br>
+            <button class="btn" onclick="checkAccess()">Войти в Штаб</button>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="color: var(--gold);">COMMAND CENTER</h2>
+            <div id="sync-status" style="font-size: 12px; color: #0f0;">SYNC OK</div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Генератор PDF (Pre-Booking)</h3>
+                <div class="input-group"><input type="text" id="order-id" placeholder="Номер заказа (напр. WTG-2026-01)"></div>
+                <div class="input-group"><input type="text" id="route" placeholder="Маршрут (напр. Poznan - Berlin)"></div>
+                <div class="input-group"><input type="text" id="truck-info" placeholder="Данные машины (Номер, Водитель)"></div>
+                <div class="input-group"><input type="number" id="base-price" placeholder="Сумма (€)" oninput="calcTotal()"></div>
+                
+                <div class="input-group">
+                    <label style="font-size: 12px;">
+                        <input type="checkbox" id="mwst-toggle" onchange="calcTotal()"> Добавить 8.1% MWST
+                    </label>
+                </div>
+                
+                <div id="total-display" style="font-weight: bold; color: var(--gold); margin-bottom: 15px;">Итого к оплате: 0.00 €</div>
+                
+                <button class="btn" onclick="generatePDF()">СКАЧАТЬ PDF CONTRACT</button>
+            </div>
+
+            <div class="card">
+                <h3>Цепочка 72ч (Прогноз)</h3>
+                <p style="font-size: 12px; color: #aaa;">Здесь будут отображаться догрузы и обратки от Ищейки.</p>
+                <div style="color: var(--gold); font-style: italic;">Ожидание подключения Firebase...</div>
+            </div>
+        </div>
+
+        <footer>
+            Манифест Монолита: Интегральность важнее краткости. [cite: 2026-02-24] <br>
+            Time-Stamp Sync: <span id="time-display"></span>
+        </footer>
     </div>
 
     <script>
-        function scan() {
-            const list = document.getElementById('res');
-            list.innerHTML = "<p style='color:var(--moss); font-size:0.6rem;'>Синхронизация с узлами ЕС...</p>";
-            setTimeout(() => {
-                const items = [{f:"Logistics Core", p:1650}, {f:"Route Expert", p:450}];
-                list.innerHTML = items.map(i => `<div class="load-item"><span class="copy-btn" onclick="copy('${i.f}', '${i.p}')">COPY TG</span><b>${i.f}</b> | <span style="color:var(--moss)">€${i.p}</span><br>${document.getElementById('s').value} ➔ ${document.getElementById('e').value}</div>`).join('');
-            }, 600);
+        const ACCESS_KEY = "777"; // Твой код доступа (можешь сменить)
+
+        function checkAccess() {
+            const input = document.getElementById('access-code').value;
+            if(input === ACCESS_KEY) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                startTime();
+            } else {
+                alert("Доступ запрещен. Код неверный.");
+            }
         }
-        function copy(f, p) {
-            navigator.clipboard.writeText(`Предложение от Werbung To Go (CH). Ставка: ${p}€. Оплата со счета AKB. Оформляем?`);
-            alert("Текст в буфере!");
+
+        function calcTotal() {
+            let price = parseFloat(document.getElementById('base-price').value) || 0;
+            const mwst = document.getElementById('mwst-toggle').checked;
+            let total = mwst ? price * 1.081 : price;
+            document.getElementById('total-display').innerText = `Итого к оплате: ${total.toFixed(2)} €`;
+            return total.toFixed(2);
         }
-        function pdf() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            const id = "CH-" + Math.floor(Math.random()*90000);
-            doc.setFont("helvetica", "bold"); doc.text("WERBUNG TO GO — LOGISTICS MANAGEMENT", 20, 20);
-            doc.setFontSize(9); doc.setFont("helvetica", "normal");
-            doc.text("CHE-376.512.386 | Egerkingen, Switzerland", 20, 27);
-            doc.line(20, 32, 190, 32);
-            doc.text(`Driver: ${document.getElementById('dr').value} | Truck: ${document.getElementById('tr').value}`, 20, 45);
-            doc.text(`Cargo: ${document.getElementById('cg').value} | Rate: ${document.getElementById('pr').value} EUR`, 20, 55);
-            doc.setFontSize(7); doc.text("Note: Payment via Swiss Bank. Liability remains with carrier (CMR).", 20, 80);
-            doc.save(`Order_${id}.pdf`);
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const route = document.getElementById('route').value;
+            const truck = document.getElementById('truck-info').value;
+            const total = calcTotal();
+            const orderId = document.getElementById('order-id').value;
+
+            // Дизайн контракта
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(213, 43, 30); // Swiss Red
+            doc.text("WERBUNG TO GO", 105, 20, null, null, "center");
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text("Logistics & Information Management | Egerkingen, Switzerland", 105, 28, null, null, "center");
+            
+            doc.setLineWidth(0.5);
+            doc.line(20, 35, 190, 35);
+
+            doc.setFontSize(16);
+            doc.text("PRE-BOOKING ORDER: " + orderId, 20, 50);
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            doc.text("Status: Pending Confirmation from Shipper", 20, 60);
+            
+            doc.rect(20, 70, 170, 40);
+            doc.text("ROUTE: " + route, 25, 80);
+            doc.text("VEHICLE/DRIVER: " + truck, 25, 90);
+            doc.text("TOTAL RATE: " + total + " EUR", 25, 100);
+
+            doc.setFontSize(10);
+            doc.text("Terms: This is a preliminary booking contract.", 20, 120);
+            doc.text("Final Loading Reference will be sent after verification.", 20, 125);
+            
+            // Штамп
+            doc.setDrawColor(213, 43, 30);
+            doc.rect(140, 130, 40, 20);
+            doc.text("APPROVED", 145, 142);
+
+            doc.save(`Contract_${orderId}.pdf`);
+        }
+
+        function startTime() {
+            const display = document.getElementById('time-display');
+            setInterval(() => {
+                const now = new Date();
+                display.innerText = now.toLocaleTimeString();
+            }, 1000);
         }
     </script>
 </body>
