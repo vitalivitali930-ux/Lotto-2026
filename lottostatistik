@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zero Chaos - Vortex Alive</title>
+    
+    <meta name="description" content="Zero Chaos - Vortex Matrix Analysis. Präцизионная чеканка лото-билетов и частотный анализ 2026.">
+    <meta name="keywords" content="Lotto, Vortex, Zero Chaos, 6aus49, Statistik Analysis, Frequency Matrix">
+    <link rel="canonical" href="https://zero-chaos.ch">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Zero Chaos Vortex",
+      "operatingSystem": "Web",
+      "applicationCategory": "AnalyticsApplication",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CHF" }
+    }
+    </script>
+
+    <style>
+        :root {
+            --gold: #ffcc00;
+            --ruby: #ff0055;
+            --ice-blue: #00f3ff;
+            --wood-dark: #2a0a0a;
+            --wood-light: #4a1a1a;
+            --deep-space: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+            --shadow-glass: inset 0 2px 5px rgba(255,255,255,0.15), 0 5px 15px rgba(0,0,0,0.6);
+            --hud-bg: rgba(0, 20, 30, 0.9);
+        }
+
+        body { 
+            background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; background: var(--deep-space);
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ЭТАЛОННЫЙ 3D ЗАГОЛОВОК-КНОПКА */
+        h2 { 
+            text-transform: uppercase; letter-spacing: 2px; color: var(--gold); 
+            margin: 10px 0 15px 0; font-size: 1.2rem;
+            text-shadow: 
+                0 1px 0 #ccaa00, 
+                0 2px 0 #aa8800, 
+                0 3px 0 #886600,
+                0 4px 0 #664400,
+                0 10px 20px rgba(0,0,0,0.8),
+                0 0 15px rgba(255,204,0,0.4);
+            flex-shrink: 0; cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; z-index: 600; /* Выше всех слоев */
+        }
+        h2:active { 
+            transform: translateY(4px);
+            text-shadow: 0 1px 0 #886600, 0 5px 10px rgba(0,0,0,0.6);
+        }
+
+        /* HUD Dashboard - ИСПРАВЛЕННЫЙ */
+        #hud-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--hud-bg); backdrop-filter: blur(12px);
+            z-index: 550; display: flex; flex-direction: column; align-items: center;
+            opacity: 0; 
+            pointer-events: none; /* ПРОПУСКАЕТ НАЖАТИЯ В СТАНДАРТНОМ ВИДЕ */
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            clip-path: circle(0% at 50% 0%);
+        }
+        #hud-overlay.active { 
+            opacity: 1; 
+            pointer-events: auto; /* БЛОКИРУЕТ ДЛЯ ВЗАИМОДЕЙСТВИЯ ПРИ ОТКРЫТИИ */
+            clip-path: circle(150% at 50% 0%); 
+        }
+
+        .hud-grid {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,243,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,243,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px; pointer-events: none;
+        }
+
+        .hud-content {
+            margin-top: 100px; width: 85%; padding: 25px;
+            border: 1px solid var(--ice-blue); border-radius: 15px;
+            box-shadow: 0 0 40px rgba(0,243,255,0.2), inset 0 0 20px rgba(0,243,255,0.1);
+            background: rgba(0,10,20,0.6); position: relative;
+            animation: hudPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes hudPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .vortex-container {
+            position: relative;
+            width: 100vw; height: 360px; 
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1200px; flex-shrink: 0;
+            transition: 0.5s filter, 0.5s transform;
+        }
+        body.hud-open .vortex-container { filter: blur(8px) brightness(0.2); transform: scale(0.95); }
+
+        .nova-ring {
+            position: absolute; width: 75px; height: 75px; border-radius: 50%;
+            border: 4px solid var(--ruby); opacity: 0; pointer-events: none; z-index: 90;
+        }
+        .nova-active { animation: supernova 0.8s ease-out; }
+
+        @keyframes supernova {
+            0% { transform: scale(1); opacity: 1; border-width: 10px; filter: blur(0); }
+            100% { transform: scale(6); opacity: 0; border-width: 1px; filter: blur(15px); }
+        }
+
+        .core-s {
+            position: absolute; z-index: 100;
+            width: 75px; height: 75px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ff4d88, #610020);
+            box-shadow: 0 0 35px var(--ruby), var(--shadow-glass);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 900; color: #fff;
+            cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: corePulse 4s infinite ease-in-out;
+        }
+        .core-s.active { scale: 1.2; box-shadow: 0 0 60px var(--ruby), 0 0 20px #fff; }
+
+        .orbit-slot {
+            position: absolute; width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(15,15,15,0.9);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.85rem; transition: 0.5s; cursor: pointer;
+        }
+        .orbit-slot.filled {
+            background: radial-gradient(circle at 30% 30%, var(--gold), #8a6500);
+            color: #000; box-shadow: 0 0 20px var(--gold), var(--shadow-glass);
+            border: none; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .orbit-slot.active { border: 2px solid var(--gold); box-shadow: 0 0 15px var(--gold); }
+
+        .orbit-slot[data-pos="0"] { transform: translate(0, -85px); }
+        .orbit-slot[data-pos="1"] { transform: translate(75px, -42px); }
+        .orbit-slot[data-pos="2"] { transform: translate(75px, 42px); }
+        .orbit-slot[data-pos="3"] { transform: translate(0, 85px); }
+        .orbit-slot[data-pos="4"] { transform: translate(-75px, 42px); }
+        .orbit-slot[data-pos="5"] { transform: translate(-75px, -42px); }
+
+        .spiral-item {
+            position: absolute; width: 30px; height: 30px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #00f3ff11, #000);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: var(--ice-blue);
+            cursor: pointer; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;
+            animation: float 3s infinite ease-in-out;
+        }
+        .spiral-item.selected { opacity: 0; pointer-events: none; scale: 0; transform: scale(0) !important; }
+
+        .s-matrix-item {
+            position: absolute; width: 45px; height: 45px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--ruby), #400);
+            box-shadow: 0 0 15px var(--ruby), inset 0 2px 5px rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; color: #fff; z-index: 110; cursor: pointer;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; scale: 0; pointer-events: none;
+        }
+        .s-matrix-item.visible { opacity: 1; scale: 1; pointer-events: auto; }
+
+        @keyframes corePulse {
+            0%, 100% { box-shadow: 0 0 30px var(--ruby); }
+            50% { box-shadow: 0 0 50px var(--ruby), 0 0 10px #fff; }
+        }
+        @keyframes float {
+            0%, 100% { filter: brightness(0.8); }
+            50% { filter: brightness(1.5); box-shadow: 0 0 10px var(--ice-blue); }
+        }
+        @keyframes popIn { from { scale: 0; } to { scale: 1; } }
+
+        .stamp-btn { 
+            width: 85%; padding: 16px; background: var(--gold); border: none; border-radius: 50px;
+            color: #000; font-weight: 900; text-transform: uppercase; margin: 10px 0;
+            opacity: 0.1; filter: grayscale(1); transition: 0.6s; flex-shrink: 0;
+            letter-spacing: 1px;
+        }
+        .stamp-btn.ready { opacity: 1; filter: grayscale(0); cursor: pointer; box-shadow: 0 0 30px var(--gold); }
+
+        #history-wrapper {
+            width: 95%; flex-grow: 1; overflow-y: auto;
+            margin-top: 5px; padding-right: 5px; scrollbar-width: none;
+            mask-image: linear-gradient(to bottom, transparent, black 15%);
+        }
+        #history-wrapper::-webkit-scrollbar { display: none; }
+
+        .ticket-card { 
+            background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
+            border: 2px solid #5a2a2a; border-left: 5px solid var(--gold);
+            padding: 12px; margin-bottom: 12px; border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.1);
+            position: relative; overflow: hidden;
+            animation: woodBreath 8s infinite ease-in-out;
+        }
+        @keyframes woodBreath {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .ticket-card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 3px);
+            pointer-events: none;
+        }
+
+        .num-stat { display: inline-flex; align-items: baseline; margin-right: 8px; }
+        .num-val { font-weight: 900; color: var(--gold); font-size: 1.2rem; }
+        .num-count { font-size: 0.55rem; color: var(--ice-blue); vertical-align: super; margin-left: 1px; opacity: 0.8; }
+
+        .gold-particle {
+            position: absolute; background: var(--gold); border-radius: 50%;
+            pointer-events: none; z-index: 200;
+        }
+    </style>
+</head>
+<body>
+
+    <section style="display:none" aria-hidden="true">
+        <h1>Lotto 6 aus 49 - Strategische Analyse-Plattform</h1>
+        <p>Willkommen bei Zero Chaos. Diese Anwendung nutzt den Vortex-Algorithmus zur Visualisierung statistischer Häufigkeiten von Lottozahlen.</p>
+        <ul>
+            <li>Prägung von digitalen Tickets (Ticket prägen)</li>
+            <li>Echtzeit-Frequenzanalyse der Ziehungen 2026</li>
+            <li>Haptisches Feedback-System (Vibration & Sound)</li>
+            <li>Lokale Datenspeicherung via Monolith-Protokoll</li>
+        </ul>
+    </section>
+
+    <h2 onclick="toggleHUD()">Meine Lotto-Statistik</h2>
+
+    <div id="hud-overlay" onclick="toggleHUD()">
+        <div class="hud-grid"></div>
+        <div class="hud-content" id="hud-stats-data" onclick="event.stopPropagation()">
+            </div>
+        <div style="color:var(--ice-blue); margin-top: 25px; font-size: 0.8rem; letter-spacing: 3px; opacity: 0.8; font-weight: bold; text-shadow: 0 0 10px var(--ice-blue);">
+            [ TAP TO CLOSE ]
+        </div>
+    </div>
+
+    <div class="vortex-container" id="vortex">
+        <div class="nova-ring" id="nova"></div>
+        <div class="core-s" id="slot-6" onclick="handleSlotClick(6)">S</div>
+        <div class="orbit-slot" data-pos="0" id="slot-0" onclick="handleSlotClick(0)">1</div>
+        <div class="orbit-slot" data-pos="1" id="slot-1" onclick="handleSlotClick(1)">2</div>
+        <div class="orbit-slot" data-pos="2" id="slot-2" onclick="handleSlotClick(2)">3</div>
+        <div class="orbit-slot" data-pos="3" id="slot-3" onclick="handleSlotClick(3)">4</div>
+        <div class="orbit-slot" data-pos="4" id="slot-4" onclick="handleSlotClick(4)">5</div>
+        <div class="orbit-slot" data-pos="5" id="slot-5" onclick="handleSlotClick(5)">6</div>
+    </div>
+
+    <button class="stamp-btn" id="save-btn" onclick="saveTicket()">Ticket prägen</button>
+
+    <div id="history-wrapper">
+        <div id="history-content"></div>
+    </div>
+
+    <script>
+        let currentTicket = Array(7).fill(null);
+        let activeIndex = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playThud(freq = 55, dur = 0.12, vol = 0.15) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        }
+
+        function hapticFeedback(type) {
+            if (!navigator.vibrate) return;
+            if (type === 'tap') navigator.vibrate(15);
+            if (type === 'nova') navigator.vibrate([100, 30, 200]);
+        }
+
+        function toggleHUD() {
+            const hud = document.getElementById('hud-overlay');
+            const isOpen = hud.classList.toggle('active');
+            document.body.classList.toggle('hud-open', isOpen);
+            playThud(isOpen ? 180 : 70, 0.25, 0.12);
+            if (isOpen) updateHUDData();
+        }
+
+        function updateHUDData() {
+            const db = JSON.parse(localStorage.getItem('monolith_v4_1')) || [];
+            const stats = getGlobalStats();
+            const sortedStats = Object.entries(stats).sort((a,b) => b[1] - a[1]);
+            const topNum = sortedStats[0] || ["-", 0];
+
+            document.getElementById('hud-stats-data').innerHTML = `
+                <div style="color:var(--gold); font-weight:900; font-size:1rem; margin-bottom:15px; border-bottom:2px solid var(--gold); padding-bottom:8px; letter-spacing:1px;">
+                    LIVE CORE DIAGNOSTICS
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+                    <span style="color:var(--ice-blue); text-transform:uppercase;">Tickets:</span>
+                    <span style="font-weight:900; color:#fff;">${db.length}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+                    <span style="color:var(--ice-blue); text-transform:uppercase;">Top Frequency:</span>
+                    <span style="font-weight:900; color:var(--gold); text-shadow:0 0 10px var(--gold);">№ ${topNum[0]} (${topNum[1]} hits)</span>
+                </div>
+                <div style="margin-top:20px; font-size:0.65rem; color:rgba(0,243,255,0.4); font-family:monospace; line-height:1.4;">
+                    STATUS: SYNC_OK<br>
+                    MEM_STATE: MONOLITH_ACTIVE<br>
+                    SCANNING VORTEX... DONE
+                </div>
+            `;
+        }
+
+        function initVortex() {
+            const container = document.getElementById('vortex');
+            document.querySelectorAll('.spiral-item').forEach(el => el.remove());
+            for (let i = 1; i <= 42; i++) {
+                const item = document.createElement('div');
+                item.className = 'spiral-item';
+                item.innerText = i;
+                const angle = 0.45 * i;
+                const radius = 100 + (i * 1.6);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                item.style.transform = `translate(${x}px, ${y}px)`;
+                item.onclick = () => selectNumber(i);
+                container.appendChild(item);
+            }
+            initSMatrix();
+            updateUI();
+        }
+
+        function initSMatrix() {
+            const container = document.getElementById('vortex');
+            document.querySelectorAll('.s-matrix-item').forEach(el => el.remove());
+            for (let i = 1; i <= 6; i++) {
+                const item = document.createElement('div');
+                item.className = 's-matrix-item';
+                item.innerText = i;
+                const angle = (i * (Math.PI * 2 / 6)) - Math.PI/2;
+                const radius = 80; 
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                item.style.left = `calc(50% + ${x - 22.5}px)`;
+                item.style.top = `calc(50% + ${y - 22.5}px)`;
+                item.onclick = (e) => { e.stopPropagation(); selectSuperzahl(i); };
+                container.appendChild(item);
+            }
+        }
+
+        function handleSlotClick(idx) {
+            if (currentTicket[idx] !== null) {
+                currentTicket[idx] = null;
+                playThud(40);
+                updateUI();
+            }
+            activateSlot(idx);
+        }
+
+        function activateSlot(idx) {
+            activeIndex = idx;
+            document.querySelectorAll('.orbit-slot, .core-s').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slot-${idx}`).classList.add('active');
+            const matrixItems = document.querySelectorAll('.s-matrix-item');
+            if (idx === 6) matrixItems.forEach(el => el.classList.add('visible'));
+            else matrixItems.forEach(el => el.classList.remove('visible'));
+            playThud(idx === 6 ? 80 : 55);
+            hapticFeedback('tap');
+        }
+
+        function selectNumber(n) {
+            if (activeIndex === 6 || currentTicket.slice(0, 6).includes(n)) return;
+            currentTicket[activeIndex] = n;
+            playThud(120);
+            hapticFeedback('tap');
+            const nextIdx = currentTicket.slice(0, 6).findIndex(v => v === null);
+            if (nextIdx !== -1) activateSlot(nextIdx); else activateSlot(6);
+            updateUI();
+        }
+
+        function triggerSupernova() {
+            const nova = document.getElementById('nova');
+            nova.classList.remove('nova-active');
+            void nova.offsetWidth;
+            nova.classList.add('nova-active');
+            playThud(30, 0.5, 0.4);
+            hapticFeedback('nova');
+        }
+
+        function selectSuperzahl(n) {
+            currentTicket[6] = n;
+            triggerSupernova();
+            document.querySelectorAll('.s-matrix-item').forEach(el => el.classList.remove('visible'));
+            updateUI();
+        }
+
+        function updateUI() {
+            currentTicket.forEach((val, i) => {
+                const slot = document.getElementById(`slot-${i}`);
+                if (val) { slot.innerText = val; slot.classList.add('filled'); }
+                else { slot.innerText = i === 6 ? 'S' : (i + 1); slot.classList.remove('filled'); }
+            });
+            document.querySelectorAll('.spiral-item').forEach(item => {
+                if (currentTicket.slice(0, 6).includes(parseInt(item.innerText))) item.classList.add('selected');
+                else item.classList.remove('selected');
+            });
+            const btn = document.getElementById('save-btn');
+            if (!currentTicket.includes(null)) btn.classList.add('ready'); else btn.classList.remove('ready');
+        }
+
+        function spawnDust(x, y) {
+            for(let i=0; i<8; i++) {
+                const p = document.createElement('div');
+                p.className = 'gold-particle';
+                const size = Math.random() * 4 + 2;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+                
+                const tx = (Math.random() - 0.5) * 100;
+                const ty = 200 + Math.random() * 300;
+                
+                p.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], { duration: 800 + Math.random() * 400, easing: 'cubic-bezier(0.4, 0, 1, 1)' }).onfinish = () => p.remove();
+            }
+        }
+
+        function saveTicket() {
+            if (currentTicket.includes(null)) return;
+            document.querySelectorAll('.orbit-slot.filled, .core-s.filled').forEach(slot => {
+                const rect = slot.getBoundingClientRect();
+                spawnDust(rect.left + rect.width/2, rect.top + rect.height/2);
+            });
+            const now = new Date();
+            const ticket = {
+                nums: currentTicket.slice(0, 6).sort((a,b) => a-b),
+                sz: currentTicket[6],
+                time: now.toLocaleDateString() + ' ' + now.toLocaleTimeString().slice(0, 8)
+            };
+            let db = JSON.parse(localStorage.getItem('monolith_v4_1')) || [];
+            db.push(ticket);
+            localStorage.setItem('monolith_v4_1', JSON.stringify(db));
+            currentTicket = Array(7).fill(null);
+            activateSlot(0);
+            initVortex();
+            renderHistory();
+        }
+
+        function getGlobalStats() {
+            const db = JSON.parse(localStorage.getItem('monolith_v4_1')) || [];
+            const stats = {};
+            db.forEach(t => { t.nums.forEach(n => stats[n] = (stats[n] || 0) + 1); });
+            return stats;
+        }
+
+        function renderHistory() {
+            const db = JSON.parse(localStorage.getItem('monolith_v4_1')) || [];
+            const globalStats = getGlobalStats();
+            document.getElementById('history-content').innerHTML = db.reverse().map(t => `
+                <div class="ticket-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2;">
+                        <div>
+                            ${t.nums.map(n => `
+                                <span class="num-stat">
+                                    <span class="num-val">${n}</span>
+                                    <span class="num-count">${globalStats[n] || 0}</span>
+                                </span>
+                            `).join('')}
+                        </div>
+                        <span style="color:var(--ruby); font-weight:900; text-shadow: 0 0 10px var(--ruby); font-size:1.1rem;">S:${t.sz}</span>
+                    </div>
+                    <div style="font-size:0.6rem; color:rgba(255,255,255,0.4); font-family:monospace; margin-top:8px; position:relative; z-index:2;">
+                        GEPRÄGT: ${t.time}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        initVortex();
+        activateSlot(0);
+        renderHistory();
+    </script>
+</body>
+</html>
