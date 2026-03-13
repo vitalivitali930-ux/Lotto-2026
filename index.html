@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,111 +9,162 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
-            --gold: #fcf6ba;
-            --bg: #050000;
-            --cherry: #2a0202;
-            --glass: rgba(15, 2, 2, 0.98);
+            /* Soft Pearl Rose: Жемчужный розовый с мягким glow */
+            --gold: #f4e4e4; 
+            --gold-shadow: rgba(244, 228, 228, 0.35);
+            --bg: #0a0101; /* Фон осветлен */
+            --cherry: #320404;
+            --glass: rgba(20, 4, 4, 0.96);
         }
 
         body {
             background-color: var(--bg);
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(155, 1, 1, 0.15) 0%, transparent 75%),
-                linear-gradient(rgba(252, 246, 186, 0.02) 1px, transparent 1px), 
-                linear-gradient(90deg, rgba(252, 246, 186, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 30px 30px, 30px 30px;
+                radial-gradient(circle at 50% 0%, rgba(180, 40, 40, 0.25) 0%, transparent 75%),
+                linear-gradient(rgba(244, 228, 228, 0.04) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(244, 228, 228, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 45px 45px, 45px 45px;
             color: var(--gold);
-            font-family: 'Segoe UI', 'Courier New', monospace;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            overflow-x: hidden;
         }
 
         #swiss-clock {
-            font-size: 0.7rem; letter-spacing: 5px; padding: 20px;
-            text-align: center; width: 100%; color: var(--gold); opacity: 0.8;
+            font-size: 0.75rem; letter-spacing: 6px; padding: 25px;
+            text-align: center; width: 100%; color: var(--gold);
+            text-shadow: 0 0 12px var(--gold-shadow); opacity: 0.9;
         }
 
         .terminal {
-            width: 100%; max-width: 500px;
+            width: 100%; max-width: 480px;
             background: var(--glass);
-            border: 1px solid rgba(252, 246, 186, 0.1);
-            border-top: 1px solid var(--gold);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-            padding: 30px; border-radius: 4px; box-sizing: border-box;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(244, 228, 228, 0.12);
+            box-shadow: 0 60px 150px rgba(0,0,0,0.9);
+            padding: 35px; border-radius: 2px; box-sizing: border-box;
+            position: relative;
+            z-index: 10;
         }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 30px; }
-        .tab-btn {
-            flex: 1; padding: 12px; background: #000;
-            border: 1px solid rgba(252, 246, 186, 0.3);
-            color: var(--gold); cursor: pointer;
-            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 2px;
+        .terminal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.5;
         }
-        .tab-btn.active { background: var(--gold); color: black; font-weight: bold; }
 
         h1 {
             color: var(--gold); text-align: center; text-transform: uppercase;
-            letter-spacing: 6px; font-size: 1.1rem; margin-bottom: 30px;
-            opacity: 0.9;
+            letter-spacing: clamp(8px, 3vw, 14px); font-size: 1.1rem; margin-bottom: 40px;
+            font-weight: 300; opacity: 0.9;
         }
 
-        .input-group { 
-            margin-bottom: 25px; 
-            border-bottom: 1px solid rgba(252, 246, 186, 0.1);
+        .tabs { display: flex; gap: 2px; margin-bottom: 40px; background: rgba(255,255,255,0.03); padding: 4px; }
+        .tab-btn {
+            flex: 1; padding: 14px; background: transparent; border: none;
+            color: var(--gold); cursor: pointer; opacity: 0.4;
+            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 3px;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .tab-btn.active { opacity: 1; background: rgba(244, 228, 228, 0.06); border-bottom: 1px solid var(--gold); }
 
-        label {
-            display: block; margin-bottom: 5px; font-size: 0.55rem;
-            color: var(--gold); text-transform: uppercase; letter-spacing: 2px; opacity: 0.6;
-        }
-
+        .input-group { margin-bottom: 30px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-size: 0.55rem; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; opacity: 0.5; }
         input {
-            width: 100%; padding: 10px 0; background: transparent;
-            border: none; color: white; outline: none;
-            font-size: 1rem; font-family: inherit;
+            width: 100%; padding: 10px 0; background: transparent; border: none;
+            border-bottom: 1px solid rgba(244, 228, 228, 0.15); color: #fff;
+            outline: none; font-size: 1rem; transition: 0.3s;
         }
+        input:focus { border-bottom: 1px solid var(--gold); }
 
         #map {
-            width: 100%; height: 250px; margin-bottom: 20px;
-            border: 1px solid rgba(252, 246, 186, 0.2); border-radius: 2px;
+            width: 280px; height: 280px; margin: 0 auto 30px;
+            border: 1px solid rgba(244, 228, 228, 0.2); border-radius: 50%;
+            overflow: hidden; filter: grayscale(1) brightness(0.8) contrast(1.1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.7);
         }
-
-        .hidden-map { height: 0 !important; margin: 0 !important; opacity: 0; pointer-events: none; }
+        .hidden-map { display: none !important; }
 
         .action-btn {
-            width: 100%; padding: 18px; background: transparent;
+            width: 100%; padding: 22px; background: transparent;
             border: 1px solid var(--gold); color: var(--gold);
             font-weight: bold; cursor: pointer; text-transform: uppercase;
-            letter-spacing: 4px; font-size: 0.75rem; transition: 0.4s;
+            letter-spacing: 5px; font-size: 0.75rem; transition: 0.4s;
         }
-        .action-btn:hover { background: var(--gold); color: black; }
+        .action-btn:hover { background: var(--gold); color: #000; }
 
-        #status, #resultsDisplay {
-            margin-top: 25px; text-align: center; font-size: 0.6rem;
-            letter-spacing: 2px; color: var(--gold); opacity: 0.6;
+        .connect-btn {
+            display: inline-block; padding: 10px 24px; border: 1px solid var(--gold);
+            color: var(--gold); text-decoration: none; font-size: 0.65rem;
+            letter-spacing: 3px; margin-top: 10px; transition: 0.3s;
         }
+        .connect-btn:hover { background: var(--gold); color: #000; }
+
+        #status { margin-top: 35px; text-align: center; font-size: 0.65rem; letter-spacing: 4px; color: var(--gold); opacity: 0.6; text-transform: uppercase; }
 
         .cargo-card {
-            border-left: 2px solid var(--gold); background: rgba(0,0,0,0.3);
-            padding: 15px; margin-bottom: 15px; text-align: left;
+            border-left: 2px solid var(--gold); background: rgba(255,255,255,0.03);
+            padding: 22px; margin-bottom: 18px; animation: slideIn 0.6s ease-out;
         }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .hidden { display: none; }
 
+        /* ИНТРО: ГЕОМЕТРИЯ БАБОЧКИ И КРЫЛЬЕВ */
         #intro-overlay {
             position: fixed; inset: 0; background: #000; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 1.5s; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
+        .butterfly-container {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            width: 100vw; height: 300px;
+        }
+        .butterfly-body {
+            width: 2px; height: 120px; 
+            background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+            box-shadow: 0 0 25px var(--gold);
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            animation: pulseBody 3s infinite ease-in-out;
+            z-index: 2;
+        }
+        .wing {
+            flex: 1; text-align: center; color: var(--gold); 
+            font-size: clamp(0.5rem, 2vw, 0.7rem); letter-spacing: 6px; 
+            line-height: 2.5; transition: 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.7;
+        }
+        .wing-left { 
+            text-align: right; padding-right: clamp(30px, 8vw, 60px); 
+            transform: skewY(-5deg);
+        }
+        .wing-right { 
+            text-align: left; padding-left: clamp(30px, 8vw, 60px); 
+            transform: skewY(5deg);
+        }
+        .eintritt-btn {
+            margin-top: 80px; font-size: 0.55rem; color: var(--gold);
+            letter-spacing: 10px; opacity: 0.4; animation: blink 4s infinite;
+        }
+        @keyframes pulseBody { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scaleY(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scaleY(1.1); } }
+        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay" onclick="initMonolith()">
-    <div style="text-align: center; letter-spacing: 6px; font-size: 0.7rem;">
-        HEAR THE BUTTERFLIES SING.<br>SEE THE CHAOS VANISH.
+    <div class="butterfly-container">
+        <div class="butterfly-body"></div>
+        <div class="wing wing-left">
+            HEAR THE<br>BUTTERFLIES<br>SING
+        </div>
+        <div class="wing wing-right">
+            SEE THE<br>CHAOS<br>VANISH
+        </div>
     </div>
-    <div style="margin-top: 30px; font-size: 0.5rem; letter-spacing: 4px; opacity: 0.4;">[ EINTRITT ]</div>
+    <div class="eintritt-btn">[ EINTRITT ]</div>
 </div>
 
 <div id="swiss-clock">ZÜRICH: --:--:--</div>
@@ -127,50 +179,46 @@
     
     <div id="senderView">
         <div class="input-group">
-            <label>👤 VOR- UND NACHNAME:</label>
+            <label>👤 Vor- und Nachname</label>
             <input type="text" id="userName" placeholder="Name">
         </div>
         <div class="input-group">
-            <label>📞 TELEFONNUMMER:</label>
+            <label>📞 Telefonnummer</label>
             <input type="tel" id="userPhone" placeholder="+41...">
         </div>
         <div class="input-group">
-            <label>📍 ABFAHRTSORT:</label>
+            <label>📍 Abfahrtsort</label>
             <input type="text" id="fromCity" placeholder="Stadt">
         </div>
         <div class="input-group">
-            <label>🏁 ZIELORT:</label>
+            <label>🏁 Zielort</label>
             <input type="text" id="toCity" placeholder="Stadt">
         </div>
         <div class="input-group">
-            <label>🚛 FRACHTDETAILS:</label>
+            <label>🚛 Frachtdetails</label>
             <input type="text" id="cargoInfo" placeholder="Details">
         </div>
-        <button class="action-btn" onclick="sendData()">AN ZeroChaos senden</button>
+        <button class="action-btn" onclick="sendData()">Daten Senden</button>
     </div>
 
     <div id="driverView" class="hidden">
-        <button class="action-btn" style="margin-bottom:20px; font-size:0.6rem;" onclick="toggleMap()" id="mapBtn">RADAR-KARTE [+]</button>
         <div id="map" class="hidden-map"></div>
+        <button class="action-btn" style="margin-bottom:30px; font-size:0.6rem; border-color:rgba(244,228,228,0.25);" onclick="toggleMap()" id="mapBtn">Radar Aktivieren [+]</button>
+        
         <div class="input-group">
-            <label>📍 POSITION:</label>
+            <label>📍 Aktuelle Position</label>
             <input type="text" id="driverPos" placeholder="Stadt">
         </div>
-        <div class="input-group">
-            <label>🛰 RADIUS: <span id="radiusVal">50</span> KM</label>
-            <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold)">
+        <div class="input-group" style="border:none;">
+            <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
+            <input type="range" id="radiusRange" min="0" max="250" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold); margin-top:15px;">
         </div>
-        <button class="action-btn" onclick="scanCargo()">SCAN STARTEN</button>
+        <button class="action-btn" onclick="scanCargo()">Sektor Scannen</button>
     </div>
-
-    <a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
-        <button class="action-btn" style="border-color:#25D366; color:#25D366; margin-top:20px;">WHATSAPP KONTAKT</button>
-    </a>
 
     <div id="status">TERMINAL_READY_V2.6</div>
     <div id="resultsDisplay" class="hidden"></div>
 </div>
-
 <script>
     const CONFIG = {
         token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
@@ -181,25 +229,32 @@
 
     let map, markerLayer;
 
-    // ЗВУК
     function playCrystalSound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             const osc = context.createOscillator();
             const gain = context.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(2500, context.currentTime);
-            gain.gain.setValueAtTime(0.05, context.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+            osc.frequency.setValueAtTime(2800, context.currentTime);
+            gain.gain.setValueAtTime(0.02, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
             osc.connect(gain); gain.connect(context.destination);
-            osc.start(); osc.stop(context.currentTime + 0.5);
+            osc.start(); osc.stop(context.currentTime + 0.6);
         } catch(e) {}
     }
 
     function initMonolith() {
         playCrystalSound();
-        document.getElementById('intro-overlay').style.opacity = '0';
-        setTimeout(() => document.getElementById('intro-overlay').style.display = 'none', 1500);
+        const overlay = document.getElementById('intro-overlay');
+        const wings = document.querySelectorAll('.wing');
+        
+        // Эффект схлопывания крыльев
+        wings[0].style.transform = 'translateX(50px) scaleX(0) skewY(-10deg)';
+        wings[1].style.transform = 'translateX(-50px) scaleX(0) skewY(10deg)';
+        overlay.style.opacity = '0';
+        overlay.style.backdropFilter = 'blur(0px)';
+        
+        setTimeout(() => overlay.style.display = 'none', 1500);
     }
 
     function updateSwissClock() {
@@ -208,10 +263,9 @@
     }
     setInterval(updateSwissClock, 1000); updateSwissClock();
 
-    // ВСЯ ТВОЯ ЛОГИКА НИЖЕ (БЕЗ ИЗМЕНЕНИЙ)
     function initMap() {
         if (map) return;
-        map = L.map('map', { attributionControl: false }).setView([47.3769, 8.5417], 7);
+        map = L.map('map', { attributionControl: false, zoomControl: false }).setView([47.3769, 8.5417], 7);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
         markerLayer = L.layerGroup().addTo(map);
     }
@@ -220,14 +274,16 @@
         const m = document.getElementById('map');
         const b = document.getElementById('mapBtn');
         if (m.classList.contains('hidden-map')) {
-            m.classList.remove('hidden-map'); b.innerText = "RADAR-KARTE [-]";
+            m.classList.remove('hidden-map'); b.innerText = "Radar Schliessen [-]";
             setTimeout(() => { initMap(); map.invalidateSize(); loadMarkers(); }, 300);
-        } else { m.classList.add('hidden-map'); b.innerText = "RADAR-KARTE [+]"; }
+        } else { m.classList.add('hidden-map'); b.innerText = "Radar Aktivieren [+]"; }
     }
 
     async function getCoords(city) {
-        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
-        const d = await r.json(); return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
+        try {
+            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
+            const d = await r.json(); return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
+        } catch(e) { return null; }
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -239,12 +295,14 @@
     }
 
     async function getCloudData() {
-        const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
-        const myGist = gists.find(g => g.files[CONFIG.gistName]);
-        if (myGist) {
-            const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
-            return { id: myGist.id, data: content };
-        }
+        try {
+            const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
+            const myGist = gists.find(g => g.files[CONFIG.gistName]);
+            if (myGist) {
+                const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
+                return { id: myGist.id, data: content };
+            }
+        } catch(e) {}
         return { id: null, data: [] };
     }
 
@@ -261,16 +319,11 @@
     }
 
     function switchTab(role) {
+        document.getElementById('resultsDisplay').classList.add('hidden');
+        document.getElementById('resultsDisplay').innerHTML = '';
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'KUNDE') || (role === 'driver' && b.innerText === 'FAHRER')));
         document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
         document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
-        if(role === 'sender') {
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.querySelectorAll('.tab-btn')[1].classList.remove('active');
-        } else {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.querySelectorAll('.tab-btn')[0].classList.remove('active');
-        }
     }
 
     async function loadMarkers() {
@@ -278,8 +331,8 @@
         if(!markerLayer) return; markerLayer.clearLayers();
         data.forEach(o => {
             if(o.lat && o.lon) {
-                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px var(--gold);"></div>', className: '' });
-                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer).bindPopup(`${o.from} -> ${o.to}`);
+                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 12px var(--gold-shadow);"></div>', className: '' });
+                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer);
             }
         });
     }
@@ -287,27 +340,49 @@
     async function sendData() {
         const fields = { name: document.getElementById('userName').value, phone: document.getElementById('userPhone').value, from: document.getElementById('fromCity').value, to: document.getElementById('toCity').value, cargo: document.getElementById('cargoInfo').value };
         const status = document.getElementById('status');
-        if (!fields.name || !fields.from) { status.innerText = 'FEHLER: DATEN'; return; }
-        status.innerText = 'GEO: СИНХРОНИЗАЦИЯ...';
+        if (!fields.name || !fields.from) { status.innerText = 'DATA_MISSING'; return; }
+        
+        status.innerText = 'SYNCING_MONOLITH...';
         const coords = await getCoords(fields.from);
-        if(!coords) return;
-        const { data } = await getCloudData(); data.push({ ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() });
+        const { data } = await getCloudData();
+        data.push({ ...fields, lat: coords ? coords.lat : null, lon: coords ? coords.lon : null, timestamp: Date.now() });
         const ok = await saveToCloud(data);
-        const msg = `📦 <b>NEUER AUFTRAG</b>\n👤 ${fields.name}\n📞 ${fields.phone}\n📍 ${fields.from} -> ${fields.to}\n🚛 ${fields.cargo}`;
-        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
-        status.innerText = ok ? 'УСПЕШНО' : 'ОШИБКА';
+        
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CONFIG.chatId, text: `📦 <b>NEU</b>\n👤 ${fields.name}\n📍 ${fields.from} -> ${fields.to}\n🚛 ${fields.cargo}\n📞 ${fields.phone}`, parse_mode: 'HTML' })
+        });
+        
+        if(ok) {
+            status.innerText = 'TRANSACTION_SUCCESS';
+            playCrystalSound();
+            ['userName', 'userPhone', 'fromCity', 'toCity', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
+        }
     }
 
     async function scanCargo() {
         const pos = document.getElementById('driverPos').value;
         const rad = parseInt(document.getElementById('radiusRange').value);
-        const res = document.getElementById('resultsDisplay');
+        const resArea = document.getElementById('resultsDisplay');
+        const status = document.getElementById('status');
+        
+        status.innerText = 'SCANNING_SECTOR...';
         const coords = await getCoords(pos);
-        if(!coords) return;
+        if(!coords) { status.innerText = 'POSITION_NOT_FOUND'; return; }
+        
         const { data } = await getCloudData();
-        const filtered = data.filter(o => calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
-        res.classList.remove('hidden');
-        res.innerHTML = filtered.length === 0 ? 'HICHTS GEFUNDEN' : filtered.map(o => `<div class="cargo-card"><b>📦 ${o.from} -> ${o.to}</b><br>${o.cargo}</div>`).join('');
+        const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
+        
+        resArea.classList.remove('hidden');
+        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : filtered.map(o => `
+            <div class="cargo-card">
+                <div style="font-size:0.5rem; letter-spacing:2px; opacity:0.4; margin-bottom:8px;">UNIT_FOUND</div>
+                <b>${o.from} ➔ ${o.to}</b><br>
+                <div style="font-size:0.85rem; margin:12px 0; opacity:0.85;">${o.cargo}</div>
+                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}" target="_blank" class="connect-btn">CONNECT</a>
+            </div>
+        `).join('');
+        status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
 </script>
 </body>
