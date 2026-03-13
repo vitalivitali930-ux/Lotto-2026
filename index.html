@@ -234,7 +234,7 @@
     </div>
 </div>
 
-<script>
+    <script>
     const CONFIG = {
         token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
         chatId: '-1003771690386',
@@ -242,12 +242,17 @@
         gistName: 'chaos_cargo_db.json'
     };
 
-    // ГЛОБАЛЬНЫЙ ГЕО-ДВИЖОК
+    // ГЛОБАЛЬНЫЙ ГЕО-ДВИЖОК + ДИАГНОСТИКА
     async function getCoords(city) {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
             const data = await response.json();
-            return data.length > 0 ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
+            if (data.length > 0) {
+                console.log(`GEO OK: ${city}`);
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            }
+            console.error(`GEO FAIL: ${city}`);
+            return null;
         } catch (e) { return null; }
     }
 
@@ -256,10 +261,9 @@
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25; // Коэффициент дорог
+        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25; 
     }
 
-    // ОБЛАЧНАЯ БАЗА ДАННЫХ (GIST)
     async function getCloudData() {
         try {
             const gists = await fetch('https://api.github.com/gists', {
@@ -275,14 +279,14 @@
     }
 
     async function saveToCloud(orders) {
-        const { id, data } = await getCloudData();
+        const { id } = await getCloudData();
         const now = Date.now();
-        const cleanData = orders.filter(o => (now - o.timestamp) < 43200000); // 12h TTL
+        const cleanData = orders.filter(o => (now - o.timestamp) < 43200000);
         
         const method = id ? 'PATCH' : 'POST';
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         
-        await fetch(url, {
+        const res = await fetch(url, {
             method: method,
             headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -291,6 +295,7 @@
                 files: { [CONFIG.gistName]: { content: JSON.stringify(cleanData) } }
             })
         });
+        return res.ok;
     }
 
     function switchTab(role) {
@@ -325,44 +330,45 @@
 
         btn.disabled = true;
         status.style.color = 'var(--neon-green)';
-        status.innerText = 'СИНХРОНИЗАЦИЯ...';
+        status.innerText = 'GEO: ПОИСК КООРДИНАТ...';
 
         const coords = await getCoords(fields.from.value);
+        if(!coords) {
+            status.innerText = 'GEO: ГОРОД НЕ НАЙДЕН';
+            btn.disabled = false;
+            return;
+        }
+
         const orderData = {
             from: fields.from.value,
             to: fields.to.value,
             cargo: fields.cargo.value,
-            lat: coords ? coords.lat : 0,
-            lon: coords ? coords.lon : 0,
+            lat: coords.lat,
+            lon: coords.lon,
             timestamp: Date.now()
         };
+
+        status.innerText = 'CLOUD: СОХРАНЕНИЕ...';
+        const { data } = await getCloudData();
+        data.push(orderData);
+        const cloudOk = await saveToCloud(data);
 
         const message = `<b>📦 НОВЫЙ ЗАКАЗ В СИСТЕМЕ</b>\n\n` +
                         `<b>📍 ОТКУДА:</b> ${fields.from.value}\n` +
                         `<b>🏁 КУДА:</b> ${fields.to.value}\n` +
                         `<b>🚛 ГРУЗ:</b> ${fields.cargo.value}\n\n` +
                         `<i>🕒 S_TIME: ${new Date().toLocaleString()}</i>\n` +
-                        `<b>🌐 STATUS:</b> GitHub_Verified`;
+                        `<b>🌐 CLOUD:</b> ${cloudOk ? 'SAVED' : 'FAIL'}`;
 
-        try {
-            const tgResponse = await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CONFIG.chatId, text: message, parse_mode: 'HTML' })
-            });
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CONFIG.chatId, text: message, parse_mode: 'HTML' })
+        });
 
-            const { data } = await getCloudData();
-            data.push(orderData);
-            await saveToCloud(data);
-
-            if (tgResponse.ok) {
-                status.innerText = 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА.';
-                fields.from.value = ''; fields.to.value = ''; fields.cargo.value = '';
-            } else { throw new Error('API_REJECTION'); }
-        } catch (error) {
-            status.style.color = 'var(--error-red)';
-            status.innerText = 'ОШИБКА ПЕРЕДАЧИ';
-        } finally { btn.disabled = false; }
+        status.innerText = cloudOk ? 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА' : 'ОШИБКА ОБЛАКА';
+        fields.from.value = ''; fields.to.value = ''; fields.cargo.value = '';
+        btn.disabled = false;
     }
 
     async function scanCargo() {
@@ -376,16 +382,18 @@
             return;
         }
 
-        status.innerText = "ПОИСК ПО ВСЕЙ ЕВРОПЕ...";
+        status.innerText = "GEO: ОПРЕДЕЛЕНИЕ ПОЗИЦИИ...";
         const driverCoords = await getCoords(posInput);
         
         if(!driverCoords) {
-            status.innerText = "ОШИБКА: ГОРОД НЕ НАЙДЕН";
+            status.innerText = "GEO: ВАШ ГОРОД НЕ НАЙДЕН";
             return;
         }
 
+        status.innerText = "CLOUD: ЗАГРУЗКА БАЗЫ...";
         const { data } = await getCloudData();
         const now = Date.now();
+        
         const filtered = data.filter(order => {
             if ((now - order.timestamp) > 43200000) return false;
             const d = calculateDistance(driverCoords.lat, driverCoords.lon, order.lat, order.lon);
@@ -395,7 +403,7 @@
 
         res.classList.remove('hidden');
         if (filtered.length === 0) {
-            res.innerHTML = `<div class="system-note">ГРУЗОВ В РАДИУСЕ ${radius} КМ НЕ НАЙДЕНО.</div>`;
+            res.innerHTML = `<div class="system-note">ГРУЗОВ В РАДИУСЕ ${radius} КМ НЕ НАЙДЕНО. ВСЕГО В БАЗЕ: ${data.length}</div>`;
         } else {
             res.innerHTML = filtered.map(o => `
                 <div class="cargo-card">
@@ -405,7 +413,6 @@
                     🚛 Груз: ${o.cargo}
                 </div>
             `).join('');
-            // Триггер очистки базы при каждом сканировании
             await saveToCloud(data);
         }
         status.innerText = "СКАНИРОВАНИЕ ЗАВЕРШЕНО";
@@ -413,5 +420,6 @@
 
     document.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendData(); });
 </script>
+                    
 </body>
 </html>
