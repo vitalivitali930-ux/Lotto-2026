@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,6 +23,14 @@
             min-height: 100vh;
             padding: 20px;
             overflow-x: hidden;
+        }
+
+        /* Google Translate Style Fix */
+        #google_translate_element {
+            margin-bottom: 15px;
+            border: 1px solid var(--neon-green);
+            padding: 5px;
+            background: #000;
         }
 
         .terminal {
@@ -176,67 +184,75 @@
 </head>
 <body>
 
+<div id="google_translate_element"></div>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'ru', includedLanguages: 'de,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <div class="terminal halo-pulse">
     <h1>SYSTEM: ZERO CHAOS</h1>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('sender')">Заказчик</button>
-        <button class="tab-btn" onclick="switchTab('driver')">Водитель</button>
+        <button class="tab-btn active" onclick="switchTab('sender')">Kunde</button>
+        <button class="tab-btn" onclick="switchTab('driver')">Fahrer</button>
     </div>
     
     <div id="senderView">
         <div class="input-group">
-            <label>👤 ИМЯ И ФАМИЛИЯ:</label>
-            <input type="text" id="userName" placeholder="Иван Иванов">
+            <label>👤 VOR- UND NACHNAME:</label>
+            <input type="text" id="userName" placeholder="Vorname Nachname">
         </div>
         <div class="input-group">
-            <label>📞 НОМЕР ТЕЛЕФОНА:</label>
-            <input type="tel" id="userPhone" placeholder="+7 900 000 00 00">
+            <label>📞 TELEFONNUMMER:</label>
+            <input type="tel" id="userPhone" placeholder="+49 000 000 00 00">
         </div>
         <div class="input-group">
-            <label>📍 ТОЧКА ОТПРАВЛЕНИЯ (ГОРОД):</label>
-            <input type="text" id="fromCity" placeholder="Введите город">
+            <label>📍 ABFAHRTSORT (STADT):</label>
+            <input type="text" id="fromCity" placeholder="Stadt eingeben">
         </div>
         <div class="input-group">
-            <label>🏁 ТОЧКА НАЗНАЧЕНИЯ (ГОРОД):</label>
-            <input type="text" id="toCity" placeholder="Введите город">
+            <label>🏁 ZIELORT (STADT):</label>
+            <input type="text" id="toCity" placeholder="Stadt eingeben">
         </div>
         <div class="input-group">
-            <label>🚛 ПАРАМЕТРЫ ГРУЗА:</label>
-            <input type="text" id="cargoInfo" placeholder="Вес, объем, тип груза">
+            <label>🚛 FRACHTDETAILS:</label>
+            <input type="text" id="cargoInfo" placeholder="Gewicht, Volumen, Typ">
         </div>
-        <button id="sendBtn" onclick="sendData()">ОТПРАВИТЬ В КАНАЛ ХАОСА</button>
+        <button id="sendBtn" onclick="sendData()">AN CHAOS-KANAL SENDEN</button>
     </div>
 
     <div id="driverView" class="hidden">
         <div class="input-group">
-            <label>📍 МОЯ ТЕКУЩАЯ ПОЗИЦИЯ:</label>
-            <input type="text" id="driverPos" placeholder="Город нахождения">
+            <label>📍 MEINE AKTUELLE POSITION:</label>
+            <input type="text" id="driverPos" placeholder="Standort">
         </div>
         <div class="input-group">
-            <label>🏁 ПУНКТ НАЗНАЧЕНИЯ:</label>
-            <input type="text" id="driverDest" placeholder="Куда едете">
+            <label>🏁 REISEZIEL:</label>
+            <input type="text" id="driverDest" placeholder="Wohin fahren Sie?">
         </div>
         <div class="input-group">
-            <label>🛰 ДОПУСТИМОЕ ОТКЛОНЕНИЕ: <span id="radiusVal">50</span> KM</label>
+            <label>🛰 ZULÄSSIGE ABWEICHUNG: <span id="radiusVal">50</span> KM</label>
             <div class="range-container">
                 <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value">
             </div>
         </div>
-        <button id="scanBtn" onclick="scanCargo()">СКАНИРОВАТЬ ПОПУТКИ</button>
+        <button id="scanBtn" onclick="scanCargo()">NACH FRACHT SUCHEN</button>
     </div>
     
     <a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
         <button type="button" style="background: #25D366; color: white; padding: 15px; width: 100%; border: none; font-weight: bold; margin-top: 20px; cursor: pointer;">
-            СВЯЗАТЬСЯ В WHATSAPP
+            KONTAKT ÜBER WHATSAPP
         </button>
     </a>
 
-    <div id="status">TERMINAL_READY_V1.9.5</div>
+    <div id="status">TERMINAL_READY_V2.0_DE</div>
     <div id="resultsDisplay" class="hidden"></div>
     
     <div class="system-note">
-        Note: This note will not be deleted. Replace window x protocol active. Memories: V1.9.5 Active, GitHub Gist DB Integrated, Contact Fields Added.
+        Note: This note will not be deleted. Replace window x protocol active. Memories: V2.0 DE Active, Google Translate Integrated, Contact Fields Secured.
     </div>
 </div>
 
@@ -322,28 +338,28 @@
         const btn = document.getElementById('sendBtn');
         
         if (!fields.name || !fields.phone || !fields.from || !fields.to || !fields.cargo) { 
-            status.innerText = 'ЗАПОЛНИТЕ ВСЕ ПОЛЯ'; 
+            status.innerText = 'ALLE FELDER AUSFÜLLEN'; 
             return; 
         }
 
         btn.disabled = true;
-        status.innerText = 'GEO: ПОИСК...';
+        status.innerText = 'GEO: SUCHE...';
         const coords = await getCoords(fields.from);
-        if(!coords) { status.innerText = 'GEO: ОШИБКА'; btn.disabled = false; return; }
+        if(!coords) { status.innerText = 'GEO: FEHLER'; btn.disabled = false; return; }
         
         const orderData = { ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() };
-        status.innerText = 'CLOUD: ЗАПИСЬ...';
+        status.innerText = 'CLOUD: SPEICHERN...';
         
         const { data } = await getCloudData();
         data.push(orderData);
         const cloudOk = await saveToCloud(data);
 
-        const timeStr = new Date().toLocaleString('ru-RU');
-        const message = `📦 <b>НОВЫЙ ЗАКАЗ В СИСТЕМЕ</b>\n\n` +
-                        `👤 <b>КОНТАКТ:</b> ${fields.name} (${fields.phone})\n` +
-                        `📍 <b>ОТКУДА:</b> ${fields.from}\n` +
-                        `🏁 <b>КУДА:</b> ${fields.to}\n` +
-                        `🚛 <b>ГРУЗ:</b> ${fields.cargo}\n\n` +
+        const timeStr = new Date().toLocaleString('de-DE');
+        const message = `📦 <b>NEUER AUFTRAG IM SYSTEM</b>\n\n` +
+                        `👤 <b>KONTAKT:</b> ${fields.name} (${fields.phone})\n` +
+                        `📍 <b>VON:</b> ${fields.from}\n` +
+                        `🏁 <b>NACH:</b> ${fields.to}\n` +
+                        `🚛 <b>FRACHT:</b> ${fields.cargo}\n\n` +
                         `🕒 <b>S_TIME:</b> ${timeStr}\n` +
                         `🌐 <b>STATUS:</b> ${cloudOk ? 'GitHub_Verified' : 'CLOUD_ERROR'}`;
 
@@ -353,7 +369,7 @@
             body: JSON.stringify({ chat_id: CONFIG.chatId, text: message, parse_mode: 'HTML' })
         });
         
-        status.innerText = cloudOk ? 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА' : 'ОШИБКА ОБЛАКА';
+        status.innerText = cloudOk ? 'SYNCHRONISATION ABGESCHLOSSEN' : 'WOLKENFEHLER';
         btn.disabled = false;
     }
 
@@ -363,10 +379,10 @@
         const res = document.getElementById('resultsDisplay');
         const status = document.getElementById('status');
         if(!posInput) return;
-        status.innerText = "GEO: ПОИСК...";
+        status.innerText = "GEO: SUCHE...";
         const driverCoords = await getCoords(posInput);
         if(!driverCoords) { status.innerText = "GEO: FAIL"; return; }
-        status.innerText = "CLOUD: ЗАГРУЗКА...";
+        status.innerText = "CLOUD: LÄDT...";
         const { data } = await getCloudData();
         const filtered = data.filter(order => {
             const d = calculateDistance(driverCoords.lat, driverCoords.lon, order.lat, order.lon);
@@ -375,17 +391,15 @@
         });
         res.classList.remove('hidden');
         if (filtered.length === 0) {
-            res.innerHTML = `<div class="system-note">ГРУЗОВ НЕТ. В БАЗЕ: ${data.length}</div>`;
+            res.innerHTML = `<div class="system-note">KEINE FRACHT GEFUNDEN. IN DB: ${data.length}</div>`;
         } else {
-          
-     res.innerHTML = filtered.map(o => `
-    <div class="cargo-card">
-        <b>📦 ${o.from} -> ${o.to}</b><br>
-        🚛 ГРУЗ: ${o.cargo}<br>
-        🛣 ДИСТАНЦИЯ: ${o.currentDist} км
-    </div>
-`).join('');
-
+            res.innerHTML = filtered.map(o => `
+                <div class="cargo-card">
+                    <b>📦 ${o.from} -> ${o.to}</b><br>
+                    🚛 FRACHT: ${o.cargo}<br>
+                    🛣 ENTFERNUNG: ${o.currentDist} km
+                </div>
+            `).join('');
         }
         status.innerText = "SCAN_COMPLETE";
     }
