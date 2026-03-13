@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -180,7 +180,7 @@
 </a>
 
 
-    <div id="status">TERMINAL_READY_V1.3</div>
+    <div id="status">TERMINAL_READY_V1.4_GH</div>
     
     <div class="system-note">
         Note: This note will not be deleted. Replace window x protocol active.
@@ -203,14 +203,12 @@
         const status = document.getElementById('status');
         const btn = document.getElementById('sendBtn');
 
-        // Валидация
         if (!fields.from.value || !fields.to.value || !fields.cargo.value) {
             status.style.color = 'var(--error-red)';
             status.innerText = 'ОШИБКА: ОБНАРУЖЕНЫ ПУСТЫЕ ПОЛЯ';
             return;
         }
 
-        // Блокировка интерфейса
         btn.disabled = true;
         status.style.color = 'var(--neon-green)';
         status.innerText = 'УСТАНОВКА СОЕДИНЕНИЯ...';
@@ -220,43 +218,50 @@
                         `🏁 **КУДА:** ${fields.to.value}\n` +
                         `🚛 **ГРУЗ:** ${fields.cargo.value}\n\n` +
                         `🕒 **S_TIME:** ${new Date().toLocaleString()}\n` +
-                        `🌐 **STATUS:** Verified`;
+                        `🌐 **STATUS:** Verified (GitHub Port)`;
+
+        // Улучшенная функция отправки для GitHub Pages
+        const url = `https://api.telegram.org/bot${CONFIG.token}/sendMessage`;
+        const params = {
+            chat_id: CONFIG.chatId,
+            text: message,
+            parse_mode: 'Markdown'
+        };
 
         try {
-            const response = await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
+            // Переход на прямой POST-запрос с явным указанием заголовков
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CONFIG.chatId,
-                    text: message,
-                    parse_mode: 'Markdown'
-                })
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
             });
 
             if (response.ok) {
                 status.innerText = 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА. ДАННЫЕ В ХАОСЕ.';
-                // Очистка
                 fields.from.value = '';
                 fields.to.value = '';
                 fields.cargo.value = '';
             } else {
-                throw new Error('API_REJECTION');
+                const errorData = await response.json();
+                throw new Error(errorData.description || 'API_REJECTION');
             }
         } catch (error) {
             status.style.color = 'var(--error-red)';
-            status.innerText = 'КРИТИЧЕСКИЙ СБОЙ ПЕРЕДАЧИ ДАННЫХ';
+            status.innerText = 'КРИТИЧЕСКИЙ СБОЙ: ' + error.message.toUpperCase();
             console.error('System Error:', error);
         } finally {
             btn.disabled = false;
         }
     }
 
-    // Слушатель Enter
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendData();
     });
 
-    console.log("Zero Chaos System: Monolith V1.3 Loaded.");
+    console.log("Zero Chaos System: Monolith V1.4 (GitHub Optimized) Loaded.");
 </script>
 
 </body>
