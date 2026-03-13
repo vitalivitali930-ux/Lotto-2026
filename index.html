@@ -1,9 +1,30 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Zero Chaos | Logistics Terminal</title>
+    <meta name="description" content="Zero Chaos Logistics Terminal - High-end logistics solutions in Switzerland and European Union. Operated by Werbung To Go.">
+    <meta name="keywords" content="Logistik, Transport, Schweiz, Europa, Cargo, Zero Chaos, Spedition, UID CHE-376.512.386">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LogisticsService",
+      "name": "Zero Chaos Logistics",
+      "url": "https://zero-chaos.ch",
+      "identifier": "CHE-376.512.386",
+      "areaServed": ["CH", "DE", "AT", "FR", "IT", "ES", "PL", "BE", "NL", "EU"],
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Werbung To Go",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Egerkingen",
+          "addressCountry": "CH"
+        }
+      }
+    }
+    </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -161,7 +182,7 @@
             text-shadow: 
                 0 0 20px var(--gold-shadow),
                 0 0 40px var(--gold-shadow),
-                2px 2px 10px rgba(0,0,0,0.8);
+                4px 4px 15px rgba(0,0,0,0.9);
             filter: blur(15px);
         }
 
@@ -183,6 +204,19 @@
         }
         @keyframes pulseBody { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scaleY(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scaleY(1.1); } }
         @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+
+        /* LEGAL FOOTER */
+        .impressum {
+            margin-top: 40px; padding-top: 20px;
+            border-top: 1px solid rgba(244, 228, 228, 0.1);
+            font-size: 0.5rem; letter-spacing: 2px; color: var(--gold);
+            opacity: 0.3; line-height: 1.8; text-align: center;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        .impressum:hover { opacity: 0.6; }
+        
+        /* PROTECTION FROM WRONG TRANSLATION */
+        .notranslate { unicode-bidi: isolate; }
     </style>
 </head>
 <body>
@@ -200,12 +234,12 @@
     <div class="eintritt-btn" id="ebtn">[ EINTRITT ]</div>
 </div>
 
-<div id="zoom-portal">ZERO CHAOS</div>
+<div id="zoom-portal" class="notranslate">ZERO CHAOS</div>
 
-<div id="swiss-clock">ZÜRICH: --:--:--</div>
+<div id="swiss-clock" class="notranslate">ZÜRICH: --:--:--</div>
 
 <div class="terminal" id="main-terminal">
-    <h1>ZERO CHAOS</h1>
+    <h1 class="notranslate">ZERO CHAOS</h1>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('sender')">Kunde</button>
@@ -251,8 +285,14 @@
         <button class="action-btn" onclick="scanCargo()">Sektor Scannen</button>
     </div>
 
-    <div id="status">TERMINAL_READY_V2.6</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V2.6</div>
     <div id="resultsDisplay" class="hidden"></div>
+
+    <div class="impressum">
+        System Zero Chaos<br>
+        Operated by Werbung To Go<br>
+        <span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH
+    </div>
 </div>
 <script>
     const CONFIG = {
@@ -278,7 +318,6 @@
         } catch(e) {}
     }
 
-    // ХОРЕОГРАФИЯ ВХОДА
     function initMonolith() {
         playCrystalSound();
         const overlay = document.getElementById('intro-overlay');
@@ -289,28 +328,25 @@
         const ebtn = document.getElementById('ebtn');
         const btfBox = document.getElementById('btf-box');
 
-        // ШАГ 1: Схлопывание крыльев
         wl.style.transform = 'translateX(80px) scaleX(0) skewY(-15deg)';
         wr.style.transform = 'translateX(-80px) scaleX(0) skewY(15deg)';
         wl.style.opacity = '0';
         wr.style.opacity = '0';
         ebtn.style.opacity = '0';
         
-        // ШАГ 2: Набегание надписи (3 секунды)
         setTimeout(() => {
-            btfBox.style.opacity = '0'; // Убираем тело бабочки
+            btfBox.style.opacity = '0'; 
             portal.classList.add('zoom-active');
             overlay.style.background = 'transparent';
         }, 600);
 
-        // ШАГ 3: Раскрытие терминала после пролета
         setTimeout(() => {
             overlay.style.opacity = '0';
-            terminal.classList.add('revealed'); // Раскрываем сайт из центра
+            terminal.classList.add('revealed'); 
             setTimeout(() => {
                 overlay.style.display = 'none';
             }, 1000);
-        }, 2800); // Синхронно с финалом пролета
+        }, 2800); 
     }
 
     function updateSwissClock() {
