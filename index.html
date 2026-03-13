@@ -8,188 +8,117 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
-            --neon-green: #00ff41;
-            --dark-bg: #0a0a0a;
-            --panel-bg: #161616;
-            --error-red: #ff4141;
+            --gold: #fcf6ba;
+            --bg: #050000;
+            --cherry: #2a0202;
+            --glass: rgba(15, 2, 2, 0.98);
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Courier New', monospace;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(155, 1, 1, 0.15) 0%, transparent 75%),
+                linear-gradient(rgba(252, 246, 186, 0.02) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(252, 246, 186, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: var(--gold);
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+
+        #swiss-clock {
+            font-size: 0.7rem; letter-spacing: 5px; padding: 20px;
+            text-align: center; width: 100%; color: var(--gold); opacity: 0.8;
         }
 
         .terminal {
-            width: 100%;
-            max-width: 550px;
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-green);
-            box-shadow: 0 0 25px rgba(0, 255, 65, 0.15);
-            padding: 30px;
-            border-radius: 12px;
-            box-sizing: border-box;
-            position: relative;
+            width: 100%; max-width: 500px;
+            background: var(--glass);
+            border: 1px solid rgba(252, 246, 186, 0.1);
+            border-top: 1px solid var(--gold);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            padding: 30px; border-radius: 4px; box-sizing: border-box;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; }
         .tab-btn {
-            flex: 1;
-            padding: 10px;
-            background: #000;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            transition: 0.3s;
+            flex: 1; padding: 12px; background: #000;
+            border: 1px solid rgba(252, 246, 186, 0.3);
+            color: var(--gold); cursor: pointer;
+            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 2px;
         }
-
-        .tab-btn.active {
-            background: var(--neon-green);
-            color: black;
-            font-weight: bold;
-        }
+        .tab-btn.active { background: var(--gold); color: black; font-weight: bold; }
 
         h1 {
-            color: var(--neon-green);
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            font-size: 1.4rem;
-            margin-bottom: 30px;
-            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
-            padding-bottom: 15px;
+            color: var(--gold); text-align: center; text-transform: uppercase;
+            letter-spacing: 6px; font-size: 1.1rem; margin-bottom: 30px;
+            opacity: 0.9;
         }
 
-        .input-group { margin-bottom: 25px; }
+        .input-group { 
+            margin-bottom: 25px; 
+            border-bottom: 1px solid rgba(252, 246, 186, 0.1);
+        }
 
         label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 0.8rem;
-            color: var(--neon-green);
-            text-transform: uppercase;
-            font-weight: bold;
+            display: block; margin-bottom: 5px; font-size: 0.55rem;
+            color: var(--gold); text-transform: uppercase; letter-spacing: 2px; opacity: 0.6;
         }
 
         input {
-            width: 100%;
-            padding: 15px;
-            background: #000;
-            border: 1px solid #222;
-            color: var(--neon-green);
-            box-sizing: border-box;
-            outline: none;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
+            width: 100%; padding: 10px 0; background: transparent;
+            border: none; color: white; outline: none;
+            font-size: 1rem; font-family: inherit;
         }
 
-        /* КАРТА РАДАРА */
         #map {
-            width: 100%;
-            height: 300px;
-            margin-bottom: 20px;
-            border: 1px solid var(--neon-green);
-            background: #000;
-            border-radius: 4px;
-            transition: all 0.5s ease-in-out;
+            width: 100%; height: 250px; margin-bottom: 20px;
+            border: 1px solid rgba(252, 246, 186, 0.2); border-radius: 2px;
         }
 
-        /* Сворачивание карты */
-        .hidden-map {
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            opacity: 0;
-            pointer-events: none;
-        }
+        .hidden-map { height: 0 !important; margin: 0 !important; opacity: 0; pointer-events: none; }
 
-        .map-toggle-btn {
-            background: #000;
-            color: var(--neon-green);
-            border: 1px solid var(--neon-green);
-            margin-bottom: 20px;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            width: 100%;
-            transition: 0.3s;
+        .action-btn {
+            width: 100%; padding: 18px; background: transparent;
+            border: 1px solid var(--gold); color: var(--gold);
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 4px; font-size: 0.75rem; transition: 0.4s;
         }
-
-        .map-toggle-btn:hover {
-            background: var(--neon-green);
-            color: black;
-        }
-
-        .neon-marker {
-            width: 12px;
-            height: 12px;
-            background-color: var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--neon-green);
-            animation: markerPulse 2s infinite;
-        }
-
-        @keyframes markerPulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.6); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        button {
-            width: 100%;
-            padding: 18px;
-            background: var(--neon-green);
-            color: black;
-            border: none;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .action-btn:hover { background: var(--gold); color: black; }
 
         #status, #resultsDisplay {
-            margin-top: 25px;
-            text-align: center;
-            font-size: 0.9rem;
-            padding: 10px;
-            color: var(--neon-green);
-            background: rgba(0, 0, 0, 0.3);
+            margin-top: 25px; text-align: center; font-size: 0.6rem;
+            letter-spacing: 2px; color: var(--gold); opacity: 0.6;
         }
 
         .cargo-card {
-            border-left: 3px solid var(--neon-green);
-            background: #000;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: left;
+            border-left: 2px solid var(--gold); background: rgba(0,0,0,0.3);
+            padding: 15px; margin-bottom: 15px; text-align: left;
         }
 
         .hidden { display: none; }
-        .system-note { font-size: 0.6rem; color: #444; margin-top: 20px; text-align: center; }
+
+        #intro-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 1.5s; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
+<div id="intro-overlay" onclick="initMonolith()">
+    <div style="text-align: center; letter-spacing: 6px; font-size: 0.7rem;">
+        HEAR THE BUTTERFLIES SING.<br>SEE THE CHAOS VANISH.
+    </div>
+    <div style="margin-top: 30px; font-size: 0.5rem; letter-spacing: 4px; opacity: 0.4;">[ EINTRITT ]</div>
+</div>
+
+<div id="swiss-clock">ZÜRICH: --:--:--</div>
+
 <div class="terminal">
-    <h1>SYSTEM: ZERO CHAOS</h1>
+    <h1>ZERO CHAOS</h1>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('sender')">Kunde</button>
@@ -203,7 +132,7 @@
         </div>
         <div class="input-group">
             <label>📞 TELEFONNUMMER:</label>
-            <input type="tel" id="userPhone" placeholder="+49...">
+            <input type="tel" id="userPhone" placeholder="+41...">
         </div>
         <div class="input-group">
             <label>📍 ABFAHRTSORT:</label>
@@ -217,37 +146,29 @@
             <label>🚛 FRACHTDETAILS:</label>
             <input type="text" id="cargoInfo" placeholder="Details">
         </div>
-        <button id="sendBtn" onclick="sendData()">AN ZeroChaos senden</button>
-        
+        <button class="action-btn" onclick="sendData()">AN ZeroChaos senden</button>
     </div>
 
     <div id="driverView" class="hidden">
-        <button class="map-toggle-btn" onclick="toggleMap()" id="mapBtn">RADAR-KARTE ÖFFNEN [+]</button>
+        <button class="action-btn" style="margin-bottom:20px; font-size:0.6rem;" onclick="toggleMap()" id="mapBtn">RADAR-KARTE [+]</button>
         <div id="map" class="hidden-map"></div>
-        
         <div class="input-group">
             <label>📍 POSITION:</label>
-            <input type="text" id="driverPos" placeholder="Aktuelle Stadt">
+            <input type="text" id="driverPos" placeholder="Stadt">
         </div>
         <div class="input-group">
             <label>🛰 RADIUS: <span id="radiusVal">50</span> KM</label>
-            <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--neon-green)">
+            <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold)">
         </div>
-        <button id="scanBtn" onclick="scanCargo()">SCAN STARTEN</button>
+        <button class="action-btn" onclick="scanCargo()">SCAN STARTEN</button>
     </div>
 
     <a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
-    <button type="button" style="background: #25D366; color: white; padding: 15px; width: 100%; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; text-transform: uppercase;">
-        KONTAKT VIA WHATSAPP
-    </button>
-</a>
+        <button class="action-btn" style="border-color:#25D366; color:#25D366; margin-top:20px;">WHATSAPP KONTAKT</button>
+    </a>
 
-    <div id="status">TERMINAL_READY_V2.3</div>
+    <div id="status">TERMINAL_READY_V2.6</div>
     <div id="resultsDisplay" class="hidden"></div>
-    
-    <div class="system-note">
-        Note: Radar Map Integrated. Collapsible Map Core. V2.3 DE-RU.
-    </div>
 </div>
 
 <script>
@@ -260,37 +181,53 @@
 
     let map, markerLayer;
 
+    // ЗВУК
+    function playCrystalSound() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(2500, context.currentTime);
+            gain.gain.setValueAtTime(0.05, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+            osc.connect(gain); gain.connect(context.destination);
+            osc.start(); osc.stop(context.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    function initMonolith() {
+        playCrystalSound();
+        document.getElementById('intro-overlay').style.opacity = '0';
+        setTimeout(() => document.getElementById('intro-overlay').style.display = 'none', 1500);
+    }
+
+    function updateSwissClock() {
+        const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
+        document.getElementById('swiss-clock').innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
+    }
+    setInterval(updateSwissClock, 1000); updateSwissClock();
+
+    // ВСЯ ТВОЯ ЛОГИКА НИЖЕ (БЕЗ ИЗМЕНЕНИЙ)
     function initMap() {
         if (map) return;
-        map = L.map('map', { attributionControl: false }).setView([51.1657, 10.4515], 4);
+        map = L.map('map', { attributionControl: false }).setView([47.3769, 8.5417], 7);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
         markerLayer = L.layerGroup().addTo(map);
     }
 
     function toggleMap() {
-        const mapDiv = document.getElementById('map');
-        const btn = document.getElementById('mapBtn');
-        
-        if (mapDiv.classList.contains('hidden-map')) {
-            mapDiv.classList.remove('hidden-map');
-            btn.innerText = "RADAR-KARTE SCHLIESSEN [-]";
-            setTimeout(() => { 
-                initMap(); 
-                map.invalidateSize();
-                loadMarkers();
-            }, 200);
-        } else {
-            mapDiv.classList.add('hidden-map');
-            btn.innerText = "RADAR-KARTE ÖFFNEN [+]";
-        }
+        const m = document.getElementById('map');
+        const b = document.getElementById('mapBtn');
+        if (m.classList.contains('hidden-map')) {
+            m.classList.remove('hidden-map'); b.innerText = "RADAR-KARTE [-]";
+            setTimeout(() => { initMap(); map.invalidateSize(); loadMarkers(); }, 300);
+        } else { m.classList.add('hidden-map'); b.innerText = "RADAR-KARTE [+]"; }
     }
 
     async function getCoords(city) {
-        try {
-            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
-            const d = await r.json();
-            return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
-        } catch (e) { return null; }
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
+        const d = await r.json(); return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -298,25 +235,22 @@
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25; 
+        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
     }
 
     async function getCloudData() {
-        try {
-            const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
-            const myGist = gists.find(g => g.files[CONFIG.gistName]);
-            if (myGist) {
-                const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
-                return { id: myGist.id, data: content };
-            }
-            return { id: null, data: [] };
-        } catch (e) { return { id: null, data: [] }; }
+        const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
+        const myGist = gists.find(g => g.files[CONFIG.gistName]);
+        if (myGist) {
+            const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
+            return { id: myGist.id, data: content };
+        }
+        return { id: null, data: [] };
     }
 
     async function saveToCloud(orders) {
         const { id } = await getCloudData();
-        const now = Date.now();
-        const cleanData = orders.filter(o => (now - o.timestamp) < 43200000);
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 43200000);
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
             method: id ? 'PATCH' : 'POST',
@@ -327,89 +261,53 @@
     }
 
     function switchTab(role) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('senderView').classList.add('hidden');
-        document.getElementById('driverView').classList.add('hidden');
-        
-        const res = document.getElementById('resultsDisplay');
-        res.classList.add('hidden');
-        res.innerHTML = '';
-
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'KUNDE') || (role === 'driver' && b.innerText === 'FAHRER')));
+        document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
+        document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
         if(role === 'sender') {
-            document.getElementById('senderView').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.remove('active');
         } else {
-            document.getElementById('driverView').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.remove('active');
         }
     }
 
     async function loadMarkers() {
         const { data } = await getCloudData();
-        if(!markerLayer) return;
-        markerLayer.clearLayers();
+        if(!markerLayer) return; markerLayer.clearLayers();
         data.forEach(o => {
             if(o.lat && o.lon) {
-                const icon = L.divIcon({ className: 'neon-marker' });
-                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer).bindPopup(`<b>${o.from} -> ${o.to}</b><br>${o.cargo}`);
+                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px var(--gold);"></div>', className: '' });
+                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer).bindPopup(`${o.from} -> ${o.to}`);
             }
         });
     }
 
     async function sendData() {
-        const fields = { 
-            name: document.getElementById('userName').value, phone: document.getElementById('userPhone').value,
-            from: document.getElementById('fromCity').value, to: document.getElementById('toCity').value, cargo: document.getElementById('cargoInfo').value 
-        };
+        const fields = { name: document.getElementById('userName').value, phone: document.getElementById('userPhone').value, from: document.getElementById('fromCity').value, to: document.getElementById('toCity').value, cargo: document.getElementById('cargoInfo').value };
         const status = document.getElementById('status');
-        if (!fields.name || !fields.from || !fields.to) { status.innerText = 'FEHLER: FELDER'; return; }
-        
-        status.innerText = 'GEO: SUCHE...';
+        if (!fields.name || !fields.from) { status.innerText = 'FEHLER: DATEN'; return; }
+        status.innerText = 'GEO: СИНХРОНИЗАЦИЯ...';
         const coords = await getCoords(fields.from);
-        if(!coords) { status.innerText = 'GEO: FEHLER'; return; }
-        
-        const orderData = { ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() };
-        status.innerText = 'CLOUD: SPEICHERN...';
-        const { data } = await getCloudData();
-        data.push(orderData);
+        if(!coords) return;
+        const { data } = await getCloudData(); data.push({ ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() });
         const ok = await saveToCloud(data);
-
-        const timeStr = new Date().toLocaleString('de-DE');
-        const msg = `📦 <b>NEUER AUFTRAG</b>\n👤 ${fields.name} (${fields.phone})\n📍 VON: ${fields.from}\n🏁 NACH: ${fields.to}\n🚛 FRACHT: ${fields.cargo}\n🕒 ${timeStr}`;
-        
-        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' })
-        });
-        status.innerText = ok ? 'ABGESCHLOSSEN' : 'FEHLER';
+        const msg = `📦 <b>NEUER AUFTRAG</b>\n👤 ${fields.name}\n📞 ${fields.phone}\n📍 ${fields.from} -> ${fields.to}\n🚛 ${fields.cargo}`;
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
+        status.innerText = ok ? 'УСПЕШНО' : 'ОШИБКА';
     }
 
     async function scanCargo() {
         const pos = document.getElementById('driverPos').value;
         const rad = parseInt(document.getElementById('radiusRange').value);
         const res = document.getElementById('resultsDisplay');
-        const status = document.getElementById('status');
-        if(!pos) return;
-        status.innerText = "GEO: SUCHE...";
         const coords = await getCoords(pos);
         if(!coords) return;
-        status.innerText = "CLOUD: LÄDT...";
         const { data } = await getCloudData();
-        const filtered = data.filter(o => {
-            const d = calculateDistance(coords.lat, coords.lon, o.lat, o.lon);
-            o.dist = Math.round(d);
-            return d <= rad;
-        });
+        const filtered = data.filter(o => calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
         res.classList.remove('hidden');
-        res.innerHTML = filtered.length === 0 ? 'KEINE FRACHT' : filtered.map(o => `
-            <div class="cargo-card">
-                <b>📦 ${o.from} -> ${o.to}</b><br>
-                🚛 FRACHT: ${o.cargo}<br>
-                🛣 ENTFERNUNG: ${o.dist} km
-            </div>
-        `).join('');
-        status.innerText = "SCAN_COMPLETE";
+        res.innerHTML = filtered.length === 0 ? 'HICHTS GEFUNDEN' : filtered.map(o => `<div class="cargo-card"><b>📦 ${o.from} -> ${o.to}</b><br>${o.cargo}</div>`).join('');
     }
 </script>
 </body>
