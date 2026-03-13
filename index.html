@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Zero Chaos | Logistics Terminal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -25,7 +27,6 @@
             overflow-x: hidden;
         }
 
-        /* Google Translate Style Fix */
         #google_translate_element {
             margin-bottom: 15px;
             border: 1px solid var(--neon-green);
@@ -81,9 +82,7 @@
             padding-bottom: 15px;
         }
 
-        .input-group {
-            margin-bottom: 25px;
-        }
+        .input-group { margin-bottom: 25px; }
 
         label {
             display: block;
@@ -94,7 +93,7 @@
             font-weight: bold;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 15px;
             background: #000;
@@ -104,23 +103,31 @@
             outline: none;
             font-family: 'Courier New', monospace;
             font-size: 1rem;
-            transition: all 0.3s ease;
         }
 
-        input:focus {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
-            background: #050505;
+        /* КАРТА РАДАРА */
+        #map {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+            border: 1px solid var(--neon-green);
+            background: #000;
+            border-radius: 4px;
         }
 
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .neon-marker {
+            width: 12px;
+            height: 12px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--neon-green);
+            animation: markerPulse 2s infinite;
         }
-        input[type="range"] {
-            accent-color: var(--neon-green);
-            height: 5px;
+
+        @keyframes markerPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.6); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         button {
@@ -132,25 +139,15 @@
             font-weight: 900;
             cursor: pointer;
             text-transform: uppercase;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             letter-spacing: 2px;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            box-shadow: 0 0 40px var(--neon-green);
-            transform: scale(1.03);
-            background: #00cc33;
         }
 
         #status, #resultsDisplay {
             margin-top: 25px;
             text-align: center;
             font-size: 0.9rem;
-            min-height: 1.5em;
-            color: var(--neon-green);
-            border: 1px solid rgba(0, 255, 65, 0.1);
             padding: 10px;
+            color: var(--neon-green);
             background: rgba(0, 0, 0, 0.3);
         }
 
@@ -162,37 +159,21 @@
             text-align: left;
         }
 
-        .halo-pulse {
-            animation: pulse 2.5s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.3); }
-            70% { box-shadow: 0 0 0 20px rgba(0, 255, 65, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
-        }
-
-        .system-note {
-            font-size: 0.6rem;
-            color: #444;
-            margin-top: 20px;
-            text-align: center;
-        }
-
         .hidden { display: none; }
+        .system-note { font-size: 0.6rem; color: #444; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="google_translate_element"></div>
-<script type="text/javascript">
+<script>
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({pageLanguage: 'ru', includedLanguages: 'de,ru', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
 }
 </script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<div class="terminal halo-pulse">
+<div class="terminal">
     <h1>SYSTEM: ZERO CHAOS</h1>
 
     <div class="tabs">
@@ -203,56 +184,46 @@ function googleTranslateElementInit() {
     <div id="senderView">
         <div class="input-group">
             <label>👤 VOR- UND NACHNAME:</label>
-            <input type="text" id="userName" placeholder="Vorname Nachname">
+            <input type="text" id="userName" placeholder="Name">
         </div>
         <div class="input-group">
             <label>📞 TELEFONNUMMER:</label>
-            <input type="tel" id="userPhone" placeholder="+49 000 000 00 00">
+            <input type="tel" id="userPhone" placeholder="+49...">
         </div>
         <div class="input-group">
-            <label>📍 ABFAHRTSORT (STADT):</label>
-            <input type="text" id="fromCity" placeholder="Stadt eingeben">
+            <label>📍 ABFAHRTSORT:</label>
+            <input type="text" id="fromCity" placeholder="Stadt">
         </div>
         <div class="input-group">
-            <label>🏁 ZIELORT (STADT):</label>
-            <input type="text" id="toCity" placeholder="Stadt eingeben">
+            <label>🏁 ZIELORT:</label>
+            <input type="text" id="toCity" placeholder="Stadt">
         </div>
         <div class="input-group">
             <label>🚛 FRACHTDETAILS:</label>
-            <input type="text" id="cargoInfo" placeholder="Gewicht, Volumen, Typ">
+            <input type="text" id="cargoInfo" placeholder="Details">
         </div>
-        <button id="sendBtn" onclick="sendData()">AN CHAOS-KANAL SENDEN</button>
+        <button id="sendBtn" onclick="sendData()">SENDEN</button>
     </div>
 
     <div id="driverView" class="hidden">
+        <div id="map"></div>
+        
         <div class="input-group">
-            <label>📍 MEINE AKTUELLE POSITION:</label>
-            <input type="text" id="driverPos" placeholder="Standort">
+            <label>📍 POSITION:</label>
+            <input type="text" id="driverPos" placeholder="Aktuelle Stadt">
         </div>
         <div class="input-group">
-            <label>🏁 REISEZIEL:</label>
-            <input type="text" id="driverDest" placeholder="Wohin fahren Sie?">
+            <label>🛰 RADIUS: <span id="radiusVal">50</span> KM</label>
+            <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--neon-green)">
         </div>
-        <div class="input-group">
-            <label>🛰 ZULÄSSIGE ABWEICHUNG: <span id="radiusVal">50</span> KM</label>
-            <div class="range-container">
-                <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value">
-            </div>
-        </div>
-        <button id="scanBtn" onclick="scanCargo()">NACH FRACHT SUCHEN</button>
+        <button id="scanBtn" onclick="scanCargo()">SCAN STARTEN</button>
     </div>
     
-    <a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
-        <button type="button" style="background: #25D366; color: white; padding: 15px; width: 100%; border: none; font-weight: bold; margin-top: 20px; cursor: pointer;">
-            KONTAKT ÜBER WHATSAPP
-        </button>
-    </a>
-
-    <div id="status">TERMINAL_READY_V2.0_DE</div>
+    <div id="status">TERMINAL_READY_V2.1</div>
     <div id="resultsDisplay" class="hidden"></div>
     
     <div class="system-note">
-        Note: This note will not be deleted. Replace window x protocol active. Memories: V2.0 DE Active, Google Translate Integrated, Contact Fields Secured.
+        Note: Radar Map Integrated. Google Translate Active. V2.1 DE-RU.
     </div>
 </div>
 
@@ -264,11 +235,20 @@ function googleTranslateElementInit() {
         gistName: 'chaos_cargo_db.json'
     };
 
+    let map, markerLayer;
+
+    function initMap() {
+        if (map) return;
+        map = L.map('map', { attributionControl: false }).setView([51.1657, 10.4515], 4);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        markerLayer = L.layerGroup().addTo(map);
+    }
+
     async function getCoords(city) {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
-            const data = await response.json();
-            return data.length > 0 ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
+            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
+            const d = await r.json();
+            return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
         } catch (e) { return null; }
     }
 
@@ -282,9 +262,7 @@ function googleTranslateElementInit() {
 
     async function getCloudData() {
         try {
-            const gists = await fetch('https://api.github.com/gists', {
-                headers: { 'Authorization': `token ${CONFIG.ghToken}` }
-            }).then(r => r.json());
+            const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
             const myGist = gists.find(g => g.files[CONFIG.gistName]);
             if (myGist) {
                 const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
@@ -298,16 +276,11 @@ function googleTranslateElementInit() {
         const { id } = await getCloudData();
         const now = Date.now();
         const cleanData = orders.filter(o => (now - o.timestamp) < 43200000);
-        const method = id ? 'PATCH' : 'POST';
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
-            method: method,
+            method: id ? 'PATCH' : 'POST',
             headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                description: "Zero Chaos Logistics Database",
-                public: false,
-                files: { [CONFIG.gistName]: { content: JSON.stringify(cleanData) } }
-            })
+            body: JSON.stringify({ public: false, files: { [CONFIG.gistName]: { content: JSON.stringify(cleanData) } } })
         });
         return res.ok;
     }
@@ -316,94 +289,82 @@ function googleTranslateElementInit() {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('senderView').classList.add('hidden');
         document.getElementById('driverView').classList.add('hidden');
-        document.getElementById('resultsDisplay').classList.add('hidden');
         if(role === 'sender') {
             document.getElementById('senderView').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[0].classList.add('active');
         } else {
             document.getElementById('driverView').classList.remove('hidden');
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            setTimeout(() => { initMap(); loadMarkers(); }, 200);
         }
+    }
+
+    async function loadMarkers() {
+        const { data } = await getCloudData();
+        markerLayer.clearLayers();
+        data.forEach(o => {
+            if(o.lat && o.lon) {
+                const icon = L.divIcon({ className: 'neon-marker' });
+                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer).bindPopup(`<b>${o.from} -> ${o.to}</b><br>${o.cargo}`);
+            }
+        });
     }
 
     async function sendData() {
         const fields = { 
-            name: document.getElementById('userName').value,
-            phone: document.getElementById('userPhone').value,
-            from: document.getElementById('fromCity').value, 
-            to: document.getElementById('toCity').value, 
-            cargo: document.getElementById('cargoInfo').value 
+            name: document.getElementById('userName').value, phone: document.getElementById('userPhone').value,
+            from: document.getElementById('fromCity').value, to: document.getElementById('toCity').value, cargo: document.getElementById('cargoInfo').value 
         };
         const status = document.getElementById('status');
-        const btn = document.getElementById('sendBtn');
+        if (!fields.name || !fields.from || !fields.to) { status.innerText = 'FEHLER: FELDER'; return; }
         
-        if (!fields.name || !fields.phone || !fields.from || !fields.to || !fields.cargo) { 
-            status.innerText = 'ALLE FELDER AUSFÜLLEN'; 
-            return; 
-        }
-
-        btn.disabled = true;
         status.innerText = 'GEO: SUCHE...';
         const coords = await getCoords(fields.from);
-        if(!coords) { status.innerText = 'GEO: FEHLER'; btn.disabled = false; return; }
+        if(!coords) { status.innerText = 'GEO: FEHLER'; return; }
         
         const orderData = { ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() };
         status.innerText = 'CLOUD: SPEICHERN...';
-        
         const { data } = await getCloudData();
         data.push(orderData);
-        const cloudOk = await saveToCloud(data);
+        const ok = await saveToCloud(data);
 
         const timeStr = new Date().toLocaleString('de-DE');
-        const message = `📦 <b>NEUER AUFTRAG IM SYSTEM</b>\n\n` +
-                        `👤 <b>KONTAKT:</b> ${fields.name} (${fields.phone})\n` +
-                        `📍 <b>VON:</b> ${fields.from}\n` +
-                        `🏁 <b>NACH:</b> ${fields.to}\n` +
-                        `🚛 <b>FRACHT:</b> ${fields.cargo}\n\n` +
-                        `🕒 <b>S_TIME:</b> ${timeStr}\n` +
-                        `🌐 <b>STATUS:</b> ${cloudOk ? 'GitHub_Verified' : 'CLOUD_ERROR'}`;
-
+        const msg = `📦 <b>NEUER AUFTRAG</b>\n👤 ${fields.name} (${fields.phone})\n📍 VON: ${fields.from}\n🏁 NACH: ${fields.to}\n🚛 FRACHT: ${fields.cargo}\n🕒 ${timeStr}`;
+        
         await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CONFIG.chatId, text: message, parse_mode: 'HTML' })
+            body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' })
         });
-        
-        status.innerText = cloudOk ? 'SYNCHRONISATION ABGESCHLOSSEN' : 'WOLKENFEHLER';
-        btn.disabled = false;
+        status.innerText = ok ? 'ABGESCHLOSSEN' : 'FEHLER';
     }
 
     async function scanCargo() {
-        const posInput = document.getElementById('driverPos').value;
-        const radius = parseInt(document.getElementById('radiusRange').value);
+        const pos = document.getElementById('driverPos').value;
+        const rad = parseInt(document.getElementById('radiusRange').value);
         const res = document.getElementById('resultsDisplay');
         const status = document.getElementById('status');
-        if(!posInput) return;
+        if(!pos) return;
         status.innerText = "GEO: SUCHE...";
-        const driverCoords = await getCoords(posInput);
-        if(!driverCoords) { status.innerText = "GEO: FAIL"; return; }
+        const coords = await getCoords(pos);
+        if(!coords) return;
         status.innerText = "CLOUD: LÄDT...";
         const { data } = await getCloudData();
-        const filtered = data.filter(order => {
-            const d = calculateDistance(driverCoords.lat, driverCoords.lon, order.lat, order.lon);
-            order.currentDist = Math.round(d);
-            return d <= radius;
+        const filtered = data.filter(o => {
+            const d = calculateDistance(coords.lat, coords.lon, o.lat, o.lon);
+            o.dist = Math.round(d);
+            return d <= rad;
         });
         res.classList.remove('hidden');
-        if (filtered.length === 0) {
-            res.innerHTML = `<div class="system-note">KEINE FRACHT GEFUNDEN. IN DB: ${data.length}</div>`;
-        } else {
-            res.innerHTML = filtered.map(o => `
-                <div class="cargo-card">
-                    <b>📦 ${o.from} -> ${o.to}</b><br>
-                    🚛 FRACHT: ${o.cargo}<br>
-                    🛣 ENTFERNUNG: ${o.currentDist} km
-                </div>
-            `).join('');
-        }
+        res.innerHTML = filtered.length === 0 ? 'KEINE FRACHT' : filtered.map(o => `
+            <div class="cargo-card">
+                <b>📦 ${o.from} -> ${o.to}</b><br>
+                🚛 FRACHT: ${o.cargo}<br>
+                🛣 ENTFERNUNG: ${o.dist} km
+            </div>
+        `).join('');
         status.innerText = "SCAN_COMPLETE";
     }
 </script>
-
 </body>
 </html>
