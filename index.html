@@ -37,7 +37,6 @@
             position: relative;
         }
 
-        /* ВКЛАДКИ */
         .tabs {
             display: flex;
             gap: 10px;
@@ -106,7 +105,6 @@
             background: #050505;
         }
 
-        /* СЛАЙДЕР РАДИУСА */
         .range-container {
             display: flex;
             align-items: center;
@@ -188,6 +186,14 @@
     
     <div id="senderView">
         <div class="input-group">
+            <label>👤 ИМЯ И ФАМИЛИЯ:</label>
+            <input type="text" id="userName" placeholder="Иван Иванов">
+        </div>
+        <div class="input-group">
+            <label>📞 НОМЕР ТЕЛЕФОНА:</label>
+            <input type="tel" id="userPhone" placeholder="+7 900 000 00 00">
+        </div>
+        <div class="input-group">
             <label>📍 ТОЧКА ОТПРАВЛЕНИЯ (ГОРОД):</label>
             <input type="text" id="fromCity" placeholder="Введите город">
         </div>
@@ -226,16 +232,15 @@
         </button>
     </a>
 
-    <div id="status">TERMINAL_READY_V1.9</div>
+    <div id="status">TERMINAL_READY_V1.9.5</div>
     <div id="resultsDisplay" class="hidden"></div>
     
     <div class="system-note">
-        Note: This note will not be deleted. Replace window x protocol active. Memories: V1.9 Active, GitHub Gist DB Integrated.
+        Note: This note will not be deleted. Replace window x protocol active. Memories: V1.9.5 Active, GitHub Gist DB Integrated, Contact Fields Added.
     </div>
 </div>
 
 <script>
-    
     const CONFIG = {
         token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
         chatId: '-1003771690386',
@@ -306,24 +311,48 @@
     }
 
     async function sendData() {
-        const fields = { from: document.getElementById('fromCity'), to: document.getElementById('toCity'), cargo: document.getElementById('cargoInfo') };
+        const fields = { 
+            name: document.getElementById('userName').value,
+            phone: document.getElementById('userPhone').value,
+            from: document.getElementById('fromCity').value, 
+            to: document.getElementById('toCity').value, 
+            cargo: document.getElementById('cargoInfo').value 
+        };
         const status = document.getElementById('status');
         const btn = document.getElementById('sendBtn');
-        if (!fields.from.value || !fields.to.value || !fields.cargo.value) { status.innerText = 'ОШИБКА ПОЛЕЙ'; return; }
+        
+        if (!fields.name || !fields.phone || !fields.from || !fields.to || !fields.cargo) { 
+            status.innerText = 'ЗАПОЛНИТЕ ВСЕ ПОЛЯ'; 
+            return; 
+        }
+
         btn.disabled = true;
         status.innerText = 'GEO: ПОИСК...';
-        const coords = await getCoords(fields.from.value);
+        const coords = await getCoords(fields.from);
         if(!coords) { status.innerText = 'GEO: ОШИБКА'; btn.disabled = false; return; }
-        const orderData = { from: fields.from.value, to: fields.to.value, cargo: fields.cargo.value, lat: coords.lat, lon: coords.lon, timestamp: Date.now() };
+        
+        const orderData = { ...fields, lat: coords.lat, lon: coords.lon, timestamp: Date.now() };
         status.innerText = 'CLOUD: ЗАПИСЬ...';
+        
         const { data } = await getCloudData();
         data.push(orderData);
         const cloudOk = await saveToCloud(data);
+
+        const timeStr = new Date().toLocaleString('ru-RU');
+        const message = `📦 <b>НОВЫЙ ЗАКАЗ В СИСТЕМЕ</b>\n\n` +
+                        `👤 <b>КОНТАКТ:</b> ${fields.name} (${fields.phone})\n` +
+                        `📍 <b>ОТКУДА:</b> ${fields.from}\n` +
+                        `🏁 <b>КУДА:</b> ${fields.to}\n` +
+                        `🚛 <b>ГРУЗ:</b> ${fields.cargo}\n\n` +
+                        `🕒 <b>S_TIME:</b> ${timeStr}\n` +
+                        `🌐 <b>STATUS:</b> ${cloudOk ? 'GitHub_Verified' : 'CLOUD_ERROR'}`;
+
         await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CONFIG.chatId, text: `📦 НОВЫЙ ЗАКАЗ: ${fields.from.value}\n🌐 CLOUD: ${cloudOk?'OK':'FAIL'}`, parse_mode: 'HTML' })
+            body: JSON.stringify({ chat_id: CONFIG.chatId, text: message, parse_mode: 'HTML' })
         });
+        
         status.innerText = cloudOk ? 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА' : 'ОШИБКА ОБЛАКА';
         btn.disabled = false;
     }
@@ -348,7 +377,13 @@
         if (filtered.length === 0) {
             res.innerHTML = `<div class="system-note">ГРУЗОВ НЕТ. В БАЗЕ: ${data.length}</div>`;
         } else {
-            res.innerHTML = filtered.map(o => `<div class="cargo-card"><b>📦 ${o.from} -> ${o.to}</b><br>🛣 ${o.currentDist} км<br>🚛 ${o.cargo}</div>`).join('');
+            res.innerHTML = filtered.map(o => `
+                <div class="cargo-card">
+                    <b>📦 ${o.from} -> ${o.to}</b><br>
+                    👤 ${o.name} | 📞 ${o.phone}<br>
+                    🛣 ${o.currentDist} км | 🚛 ${o.cargo}
+                </div>
+            `).join('');
         }
         status.innerText = "SCAN_COMPLETE";
     }
