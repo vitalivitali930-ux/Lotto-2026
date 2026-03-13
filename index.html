@@ -37,6 +37,32 @@
             position: relative;
         }
 
+        /* ВКЛАДКИ */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #000;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--neon-green);
+            color: black;
+            font-weight: bold;
+        }
+
         h1 {
             color: var(--neon-green);
             text-align: center;
@@ -61,7 +87,7 @@
             font-weight: bold;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 15px;
             background: #000;
@@ -78,6 +104,17 @@
             border-color: var(--neon-green);
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
             background: #050505;
+        }
+
+        /* СЛАЙДЕР РАДИУСА */
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        input[type="range"] {
+            accent-color: var(--neon-green);
+            height: 5px;
         }
 
         button {
@@ -100,28 +137,7 @@
             background: #00cc33;
         }
 
-        .wa-link {
-            display: block;
-            width: 100%;
-            background: #25D366;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            margin-top: 25px;
-            text-decoration: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-
-        .wa-link:hover {
-            box-shadow: 0 0 20px rgba(37, 211, 102, 0.6);
-            filter: brightness(1.1);
-        }
-
-        #status {
+        #status, #resultsDisplay {
             margin-top: 25px;
             text-align: center;
             font-size: 0.9rem;
@@ -132,7 +148,14 @@
             background: rgba(0, 0, 0, 0.3);
         }
 
-        /* АНИМАЦИЯ HALO PULSE */
+        .cargo-card {
+            border-left: 3px solid var(--neon-green);
+            background: #000;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
         .halo-pulse {
             animation: pulse 2.5s infinite ease-in-out;
         }
@@ -149,38 +172,62 @@
             margin-top: 20px;
             text-align: center;
         }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="terminal halo-pulse">
     <h1>SYSTEM: ZERO CHAOS</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('sender')">Заказчик</button>
+        <button class="tab-btn" onclick="switchTab('driver')">Водитель</button>
+    </div>
     
-    <div class="input-group">
-        <label>📍 ТОЧКА ОТПРАВЛЕНИЯ (ГОРОД):</label>
-        <input type="text" id="fromCity" placeholder="Введите город">
+    <div id="senderView">
+        <div class="input-group">
+            <label>📍 ТОЧКА ОТПРАВЛЕНИЯ (ГОРОД):</label>
+            <input type="text" id="fromCity" placeholder="Введите город">
+        </div>
+        <div class="input-group">
+            <label>🏁 ТОЧКА НАЗНАЧЕНИЯ (ГОРОД):</label>
+            <input type="text" id="toCity" placeholder="Введите город">
+        </div>
+        <div class="input-group">
+            <label>🚛 ПАРАМЕТРЫ ГРУЗА:</label>
+            <input type="text" id="cargoInfo" placeholder="Вес, объем, тип груза">
+        </div>
+        <button id="sendBtn" onclick="sendData()">ОТПРАВИТЬ В КАНАЛ ХАОСА</button>
     </div>
 
-    <div class="input-group">
-        <label>🏁 ТОЧКА НАЗНАЧЕНИЯ (ГОРОД):</label>
-        <input type="text" id="toCity" placeholder="Введите город">
+    <div id="driverView" class="hidden">
+        <div class="input-group">
+            <label>📍 МОЯ ТЕКУЩАЯ ПОЗИЦИЯ:</label>
+            <input type="text" id="driverPos" placeholder="Город нахождения">
+        </div>
+        <div class="input-group">
+            <label>🏁 ПУНКТ НАЗНАЧЕНИЯ:</label>
+            <input type="text" id="driverDest" placeholder="Куда едете">
+        </div>
+        <div class="input-group">
+            <label>🛰 ДОПУСТИМОЕ ОТКЛОНЕНИЕ: <span id="radiusVal">50</span> KM</label>
+            <div class="range-container">
+                <input type="range" id="radiusRange" min="0" max="150" value="50" oninput="document.getElementById('radiusVal').innerText = this.value">
+            </div>
+        </div>
+        <button id="scanBtn" onclick="scanCargo()">СКАНИРОВАТЬ ПОПУТКИ</button>
     </div>
-
-    <div class="input-group">
-        <label>🚛 ПАРАМЕТРЫ ГРУЗА:</label>
-        <input type="text" id="cargoInfo" placeholder="Вес, объем, тип груза">
-    </div>
-
-    <button id="sendBtn" onclick="sendData()">ОТПРАВИТЬ В КАНАЛ ХАОСА</button>
     
-<a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
-    <button type="button" style="background: #25D366; color: white; padding: 15px; width: 100%; border: none; font-weight: bold; margin-top: 20px; cursor: pointer;">
-        СВЯЗАТЬСЯ В WHATSAPP
-    </button>
-</a>
+    <a href="https://wa.me/41793666072" target="_blank" style="text-decoration: none;">
+        <button type="button" style="background: #25D366; color: white; padding: 15px; width: 100%; border: none; font-weight: bold; margin-top: 20px; cursor: pointer;">
+            СВЯЗАТЬСЯ В WHATSAPP
+        </button>
+    </a>
 
-
-    <div id="status">TERMINAL_READY_V1.4_GH</div>
+    <div id="status">TERMINAL_READY_V1.6</div>
+    <div id="resultsDisplay" class="hidden"></div>
     
     <div class="system-note">
         Note: This note will not be deleted. Replace window x protocol active.
@@ -188,11 +235,25 @@
 </div>
 
 <script>
-    // КОНФИГУРАЦИЯ (Window 2)
     const CONFIG = {
         token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
         chatId: '-1003771690386'
     };
+
+    function switchTab(role) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('senderView').classList.add('hidden');
+        document.getElementById('driverView').classList.add('hidden');
+        document.getElementById('resultsDisplay').classList.add('hidden');
+        
+        if(role === 'sender') {
+            document.getElementById('senderView').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        } else {
+            document.getElementById('driverView').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        }
+    }
 
     async function sendData() {
         const fields = {
@@ -213,7 +274,6 @@
         status.style.color = 'var(--neon-green)';
         status.innerText = 'СИНХРОНИЗАЦИЯ...';
 
-        // Использование HTML вместо Markdown для исключения ошибок парсинга
         const message = `<b>📦 НОВЫЙ ЗАКАЗ В СИСТЕМЕ</b>\n\n` +
                         `<b>📍 ОТКУДА:</b> ${fields.from.value}\n` +
                         `<b>🏁 КУДА:</b> ${fields.to.value}\n` +
@@ -228,33 +288,48 @@
                 body: JSON.stringify({
                     chat_id: CONFIG.chatId,
                     text: message,
-                    parse_mode: 'HTML' // Переключено на HTML
+                    parse_mode: 'HTML'
                 })
             });
 
-            const result = await response.json();
-
             if (response.ok) {
                 status.innerText = 'СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА.';
-                fields.from.value = '';
-                fields.to.value = '';
-                fields.cargo.value = '';
-            } else {
-                throw new Error(result.description);
-            }
+                fields.from.value = ''; fields.to.value = ''; fields.cargo.value = '';
+            } else { throw new Error('API_REJECTION'); }
         } catch (error) {
             status.style.color = 'var(--error-red)';
-            status.innerText = 'ОШИБКА: ' + error.message.toUpperCase();
-        } finally {
-            btn.disabled = false;
-        }
+            status.innerText = 'ОШИБКА ПЕРЕДАЧИ';
+        } finally { btn.disabled = false; }
     }
 
-    document.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendData();
-    });
+    // ИМИТАЦИЯ СКАНЕРА ГРУЗОВ (Window 3 Logic)
+    function scanCargo() {
+        const pos = document.getElementById('driverPos').value;
+        const res = document.getElementById('resultsDisplay');
+        const status = document.getElementById('status');
+        
+        if(!pos) {
+            status.innerText = "УКАЖИТЕ ВАШЕ МЕСТОПОЛОЖЕНИЕ";
+            return;
+        }
+
+        status.innerText = "СКАНИРОВАНИЕ КОРИДОРА...";
+        res.classList.remove('hidden');
+        res.innerHTML = `
+            <div class="cargo-card">
+                <b>📦 ГРУЗ НАЙДЕН (ПО ПУТИ)</b><br>
+                📍 Локация: Fulda<br>
+                🛣 Отклонение: +14 км<br>
+                🚛 Тип: 12т, Железо
+            </div>
+            <div class="cargo-card" style="border-color: #444; opacity: 0.6;">
+                <b>📦 ГРУЗ ВНЕ РАДИУСА</b><br>
+                📍 Локация: Berlin (+400 км)
+            </div>
+        `;
+    }
+
+    document.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendData(); });
 </script>
-
-
 </body>
 </html>
