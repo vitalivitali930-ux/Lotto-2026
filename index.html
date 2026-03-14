@@ -34,6 +34,9 @@
             --bg: #0a0101; 
             --cherry: #320404;
             --glass: rgba(20, 4, 4, 0.96);
+            --status-red: #ff4d4d;
+            --status-yellow: #ffcc00;
+            --status-green: #00ff88;
         }
 
         body {
@@ -141,6 +144,10 @@
         .priority-tag {
             position: absolute; top: 0; right: 0; background: var(--gold);
             color: #000; font-size: 0.45rem; padding: 4px 8px; letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            position: absolute; top: 0; left: 0; width: 4px; height: 100%;
         }
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -262,10 +269,17 @@
         ghToken: _0x_p1 + _0x_p2,
         gistName: 'chaos_cargo_db.json'
     };
-    // ... Продолжение логики в Window 3
+
     let map, markerLayer;
 
-    // МАНИФЕСТ МОНОЛИТА: 0% потери функций
+    // МАНИФЕСТ МОНОЛИТА: ГЕНЕРАЦИЯ ИНДЕКСА
+    function generateOrderID(existingData) {
+        const d = new Date();
+        const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
+        const dailyCount = existingData.filter(o => o.id && o.id.startsWith(dateStr)).length + 1;
+        return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
+    }
+
     function liveMath() {
         const val = parseFloat(document.getElementById('userTariff').value);
         const pre = document.getElementById('calcPreview');
@@ -376,7 +390,7 @@
             const myGist = gists.find(g => g.files[CONFIG.gistName]);
             if (myGist) {
                 const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
-                return { id: myGist.id, data: content };
+                return { id: myGist.id, data: Array.isArray(content) ? content : [] };
             }
         } catch(e) {}
         return { id: null, data: [] };
@@ -384,7 +398,7 @@
 
     async function saveToCloud(orders) {
         const { id } = await getCloudData();
-        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 10800000);
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 43200000); // 12 ЧАСОВ TTL
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
             method: id ? 'PATCH' : 'POST',
@@ -405,8 +419,8 @@
         const { data } = await getCloudData();
         if(!markerLayer) return; markerLayer.clearLayers();
         data.forEach(o => {
-            if(o.lat && o.lon) {
-                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 12px var(--gold-shadow);"></div>', className: '' });
+            if(o.lat && o.lon && o.status === 0) { // Только красные на карте
+                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--status-red);border-radius:50%;box-shadow:0 0 12px var(--status-red);"></div>', className: '' });
                 L.marker([o.lat, o.lon], { icon }).addTo(markerLayer);
             }
         });
@@ -422,13 +436,14 @@
         const routeRaw = document.getElementById('routeInfo').value;
         const routeParts = routeRaw.split('-');
         
-        // Манифест Монолита: Двойное геокодирование для будущих сканов
         const coordsStart = await getCoords(routeParts[0]?.trim());
         const coordsEnd = routeParts[1] ? await getCoords(routeParts[1].trim()) : null;
         
         const { data } = await getCloudData();
         
         const newOrder = { 
+            id: generateOrderID(data),
+            status: 0, // КРАСНАЯ
             name: document.getElementById('userName').value, 
             phone: document.getElementById('userPhone').value, 
             route: routeRaw, 
@@ -447,7 +462,7 @@
         
         data.push(newOrder);
         const ok = await saveToCloud(data);
-        const msg = `📦 <b>NEU PRIORITY</b>\n📍 ${newOrder.route}\n🚚 Водитель: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
+        const msg = `📦 <b>NEU [${newOrder.id}]</b>\n📍 ${newOrder.route}\n🚚 Ставка: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
         await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
         
         if(ok) {
@@ -458,7 +473,6 @@
         }
     }
 
-    // НОВЫЙ ДВУХКОНТУРНЫЙ СКАНЕР
     async function scanCargo(mode) {
         const status = document.getElementById('status');
         const resArea = document.getElementById('resultsDisplay');
@@ -468,14 +482,15 @@
 
         status.innerText = `SCANNING_${mode}...`;
 
+        // Водитель видит только статус 0 (Свободные)
+        const activeOrders = data.filter(o => o.status === 0);
+
         if (mode === 'RADAR') {
             const inputPos = document.getElementById('driverPos').value.trim();
             const rad = parseInt(document.getElementById('radiusRange').value);
             const driverCoords = await getCoords(inputPos);
-            
             if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
-
-            filtered = data.filter(o => {
+            filtered = activeOrders.filter(o => {
                 const d1 = o.lat ? calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon) : 999999;
                 const d2 = o.latEnd ? calculateDistance(driverCoords.lat, driverCoords.lon, o.latEnd, o.lonEnd) : 999999;
                 return d1 <= rad || d2 <= rad;
@@ -484,12 +499,9 @@
         else if (mode === 'ROUTE') {
             const planRaw = document.getElementById('routePlan').value.toLowerCase();
             if (!planRaw) { status.innerText = 'ROUTE_ERROR: NO_DATA'; return; }
-            
             const cities = planRaw.split(',').map(c => c.trim()).filter(c => c.length > 0);
-            
-            filtered = data.filter(o => {
+            filtered = activeOrders.filter(o => {
                 const routeLower = o.route.toLowerCase();
-                // Ищем любое вхождение городов из плана в маршруте заказа
                 return cities.some(city => routeLower.includes(city));
             });
         }
@@ -498,37 +510,36 @@
         resArea.innerHTML = filtered.length === 0 ? 
             '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA_IN_THIS_SECTOR</div>' : 
             filtered.map(o => {
-                const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
+                const mLeft = Math.max(0, Math.floor((43200000 - (now - o.timestamp)) / 60000));
                 const routeParts = o.route.split('-');
-                const from = routeParts[0]?.trim() || '';
-                const to = routeParts[1]?.trim() || '';
                 const waPhone = o.phone.replace(/\D/g, '');
-                const mapUrl = to ? `http://googleusercontent.com/maps.google.com/5{encodeURIComponent(from)}/${encodeURIComponent(to)}` : `http://googleusercontent.com/maps.google.com/6{encodeURIComponent(from)}`;
-                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт: ${o.route}. Груз: ${o.cargo}. Ставка: ${o.driver}€`);
+                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт [${o.id}]: ${o.route}.`);
                 
                 return `
                 <div class="cargo-card">
-                    <div class="priority-tag">${mLeft}M</div>
+                    <div class="status-indicator" style="background:var(--status-red)"></div>
+                    <div class="priority-tag">ID: ${o.id}</div>
                     <b style="letter-spacing:1px; color:#fff;">${o.route}</b>
                     <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
-                    <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:2px; margin-bottom:12px; border-left:1px solid var(--gold);">
+                    <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
                         <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
-                        <div style="font-size:0.5rem; opacity:0.4; margin-top:5px;">Formula: ${o.factory}€ - (${o.security} + ${o.taxes} + ${o.margin})</div>
                     </div>
-                    <a href="${mapUrl}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:8px;">📍 ROUTE PRÜFEN</a>
-                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
+                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
                 </div>`;
             }).join('');
         
         status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
 
-    async function updateViewCount(ts) {
-        const { id, data } = await getCloudData();
-        const idx = data.findIndex(o => o.timestamp == ts);
+    // МАНИФЕСТ МОНОЛИТА: ПЕРЕХВАТ ЗАКАЗА (Статус -> 1 Желтый)
+    async function acceptContract(id) {
+        const { data } = await getCloudData();
+        const idx = data.findIndex(o => o.id === id);
         if (idx !== -1) {
-            data.splice(idx, 1);
-            saveToCloud(data);
+            data[idx].status = 1; // ЖЕЛТАЯ (Взят водителем)
+            await saveToCloud(data);
+            const msg = `🟡 <b>AUFTRAG FIX [${id}]</b>\nВодитель принял заказ. Ожидайте документы.`;
+            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
         }
     }
 
@@ -536,8 +547,34 @@
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
     setInterval(() => { (function(){ return false; }['constructor']('debugger')['call']()); }, 50);
+// --- СЕКРЕТНЫЙ ПРОТОКОЛ ВХОДА (5 ТАПОВ) ---
+let secretCounter = 0;
+let lastTap = 0;
+
+// Ждем загрузки DOM, чтобы найти элемент в футере
+document.addEventListener('DOMContentLoaded', () => {
+    const uidElement = document.querySelector('.impressum span.notranslate');
+    if (uidElement) {
+        uidElement.style.cursor = 'pointer'; // Делаем подсказку для себя
+        uidElement.addEventListener('click', () => {
+            const now = Date.now();
+            if (now - lastTap > 1000) secretCounter = 0;
+            secretCounter++;
+            lastTap = now;
+
+            if (secretCounter === 5) {
+                playCrystalSound();
+                const pass = prompt("SYSTEM ACCESS KEY:");
+                if (pass === "7777") { 
+                    window.location.href = 'admin.html';
+                } else {
+                    secretCounter = 0;
+                }
+            }
+        });
+    }
+});
 
 </script>
 </body>
 </html>
-
