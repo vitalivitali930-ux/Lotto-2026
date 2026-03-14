@@ -219,7 +219,8 @@
         </div>
         <div class="input-group">
             <label>📍 Abfahrt & 🏁 Ziel</label>
-            <input type="text" id="routeInfo" placeholder="Basel - Berlin">
+            <input type="text" id="routeInfo" placeholder="Basel - Berlin" list="cities-list" oninput="updateSuggestions(this.value)">
+            <datalist id="cities-list"></datalist>
         </div>
         <div class="input-group">
             <label>🚛 Frachtdetails</label>
@@ -235,7 +236,7 @@
         <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
             <div class="input-group">
                 <label>📍 Aktuelle Position (Radar)</label>
-                <input type="text" id="driverPos" placeholder="Stadt">
+                <input type="text" id="driverPos" placeholder="Stadt" list="cities-list" oninput="updateSuggestions(this.value)">
             </div>
             <div class="input-group" style="border:none; margin-bottom: 10px;">
                 <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
@@ -247,16 +248,16 @@
         <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
             <div class="input-group" style="margin-bottom: 10px;">
                 <label>🛣 Route-Plan (Berlin, Hannover, Madrid...)</label>
-                <input type="text" id="routePlan" placeholder="Städte mit Komma trennen">
+                <input type="text" id="routePlan" placeholder="Städte с Komma">
             </div>
             <button class="action-btn" onclick="scanCargo('ROUTE')" style="background: rgba(244,228,228,0.05);">[ ROUTE SCAN ]</button>
         </div>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V3.0</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V3.1</div>
     <div id="resultsDisplay" class="hidden"></div>
 
-    <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
+    <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate" id="uid-trigger">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
 </div>
 
 <script>
@@ -271,6 +272,7 @@
     };
 
     let map, markerLayer;
+    let cachedCities = [];
 
     // МАНИФЕСТ МОНОЛИТА: ГЕНЕРАЦИЯ ИНДЕКСА
     function generateOrderID(existingData) {
@@ -278,6 +280,18 @@
         const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
         const dailyCount = existingData.filter(o => o.id && o.id.startsWith(dateStr)).length + 1;
         return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
+    }
+
+    // ЖИВОЙ ПОИСК ГОРОДОВ (CITIES)
+    async function updateSuggestions(val) {
+        if (val.length < 2) return;
+        const list = document.getElementById('cities-list');
+        if (cachedCities.length === 0) {
+            const { data } = await getCloudData();
+            cachedCities = [...new Set(data.map(o => o.route.split('-')[0].trim()))];
+        }
+        const filtered = cachedCities.filter(c => c.toLowerCase().startsWith(val.toLowerCase()));
+        list.innerHTML = filtered.map(c => `<option value="${c}">`).join('');
     }
 
     function liveMath() {
@@ -398,7 +412,7 @@
 
     async function saveToCloud(orders) {
         const { id } = await getCloudData();
-        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 43200000); // 12 ЧАСОВ TTL
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 43200000); 
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
             method: id ? 'PATCH' : 'POST',
@@ -419,7 +433,7 @@
         const { data } = await getCloudData();
         if(!markerLayer) return; markerLayer.clearLayers();
         data.forEach(o => {
-            if(o.lat && o.lon && o.status === 0) { // Только красные на карте
+            if(o.lat && o.lon && o.status === 0) {
                 const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--status-red);border-radius:50%;box-shadow:0 0 12px var(--status-red);"></div>', className: '' });
                 L.marker([o.lat, o.lon], { icon }).addTo(markerLayer);
             }
@@ -443,7 +457,7 @@
         
         const newOrder = { 
             id: generateOrderID(data),
-            status: 0, // КРАСНАЯ
+            status: 0, 
             name: document.getElementById('userName').value, 
             phone: document.getElementById('userPhone').value, 
             route: routeRaw, 
@@ -479,10 +493,7 @@
         const { data } = await getCloudData();
         const now = Date.now();
         let filtered = [];
-
         status.innerText = `SCANNING_${mode}...`;
-
-        // Водитель видит только статус 0 (Свободные)
         const activeOrders = data.filter(o => o.status === 0);
 
         if (mode === 'RADAR') {
@@ -492,30 +503,18 @@
             if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
             filtered = activeOrders.filter(o => {
                 const d1 = o.lat ? calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon) : 999999;
-                const d2 = o.latEnd ? calculateDistance(driverCoords.lat, driverCoords.lon, o.latEnd, o.lonEnd) : 999999;
-                return d1 <= rad || d2 <= rad;
+                return d1 <= rad;
             });
-        } 
-        else if (mode === 'ROUTE') {
+        } else if (mode === 'ROUTE') {
             const planRaw = document.getElementById('routePlan').value.toLowerCase();
             if (!planRaw) { status.innerText = 'ROUTE_ERROR: NO_DATA'; return; }
             const cities = planRaw.split(',').map(c => c.trim()).filter(c => c.length > 0);
-            filtered = activeOrders.filter(o => {
-                const routeLower = o.route.toLowerCase();
-                return cities.some(city => routeLower.includes(city));
-            });
+            filtered = activeOrders.filter(o => cities.some(city => o.route.toLowerCase().includes(city)));
         }
 
         resArea.classList.remove('hidden');
-        resArea.innerHTML = filtered.length === 0 ? 
-            '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA_IN_THIS_SECTOR</div>' : 
-            filtered.map(o => {
-                const mLeft = Math.max(0, Math.floor((43200000 - (now - o.timestamp)) / 60000));
-                const routeParts = o.route.split('-');
-                const waPhone = o.phone.replace(/\D/g, '');
-                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт [${o.id}]: ${o.route}.`);
-                
-                return `
+        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA</div>' : 
+            filtered.map(o => `
                 <div class="cargo-card">
                     <div class="status-indicator" style="background:var(--status-red)"></div>
                     <div class="priority-tag">ID: ${o.id}</div>
@@ -524,57 +523,43 @@
                     <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
                         <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
                     </div>
-                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
-                </div>`;
-            }).join('');
-        
-        status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
+                    <a href="https://wa.me/${o.phone.replace(/\D/g, '')}?text=Hallo, Auftrag [${o.id}]" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
+                </div>`).join('');
+        status.innerText = `SCAN_COMPLETE: ${filtered.length}`;
     }
 
-    // МАНИФЕСТ МОНОЛИТА: ПЕРЕХВАТ ЗАКАЗА (Статус -> 1 Желтый)
     async function acceptContract(id) {
         const { data } = await getCloudData();
         const idx = data.findIndex(o => o.id === id);
         if (idx !== -1) {
-            data[idx].status = 1; // ЖЕЛТАЯ (Взят водителем)
+            data[idx].status = 1;
             await saveToCloud(data);
-            const msg = `🟡 <b>AUFTRAG FIX [${id}]</b>\nВодитель принял заказ. Ожидайте документы.`;
-            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
+            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: `🟡 <b>FIX [${id}]</b>`, parse_mode: 'HTML' }) });
         }
     }
 
+    // --- ФИНАЛЬНЫЕ ЗАЩИТЫ И СЕКРЕТНЫЙ ПРОТОКОЛ (ВНУТРИ СКРИПТА) ---
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
-    setInterval(() => { (function(){ return false; }['constructor']('debugger')['call']()); }, 50);
-// --- СЕКРЕТНЫЙ ПРОТОКОЛ ВХОДА (5 ТАПОВ) ---
-let secretCounter = 0;
-let lastTap = 0;
 
-// Ждем загрузки DOM, чтобы найти элемент в футере
-document.addEventListener('DOMContentLoaded', () => {
-    const uidElement = document.querySelector('.impressum span.notranslate');
-    if (uidElement) {
-        uidElement.style.cursor = 'pointer'; // Делаем подсказку для себя
-        uidElement.addEventListener('click', () => {
+    let secretCounter = 0;
+    let lastTap = 0;
+    const trigger = document.getElementById('uid-trigger');
+    if(trigger) {
+        trigger.style.cursor = 'pointer';
+        trigger.addEventListener('click', () => {
             const now = Date.now();
             if (now - lastTap > 1000) secretCounter = 0;
             secretCounter++;
             lastTap = now;
-
             if (secretCounter === 5) {
                 playCrystalSound();
-                const pass = prompt("SYSTEM ACCESS KEY:");
-                if (pass === "7777") { 
-                    window.location.href = 'admin.html';
-                } else {
-                    secretCounter = 0;
-                }
+                if (prompt("SYSTEM ACCESS KEY:") === "7777") window.location.href = 'admin.html';
+                else secretCounter = 0;
             }
         });
     }
-});
-
 </script>
 </body>
 </html>
