@@ -243,7 +243,6 @@
 </div>
 
 <script>
-    // System Zero Chaos | Core Script
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
 
@@ -409,8 +408,7 @@
         const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
         const routeRaw = document.getElementById('routeInfo').value;
-        const cityToSearch = routeRaw.split('-')[0].trim();
-        const coords = await getCoords(cityToSearch);
+        const coords = await getCoords(routeRaw.split('-')[0].trim());
         const { data } = await getCloudData();
         
         const newOrder = { 
@@ -447,15 +445,11 @@
         
         status.innerText = 'SCANNING_SECTOR...';
         const coords = await getCoords(pos);
+        if(!coords) { status.innerText = 'POSITION_NOT_FOUND'; return; }
         
         const { data } = await getCloudData();
         const now = Date.now();
-        
-        // Улучшенная логика фильтрации: если координат нет, показываем как "Global", если есть - фильтруем по радиусу
-        const filtered = data.filter(o => {
-            if (!coords || !o.lat) return true; // Показываем все, если геолокация не сработала
-            return calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad;
-        });
+        const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
         
         resArea.classList.remove('hidden');
         resArea.innerHTML = filtered.length === 0 ? 
@@ -464,8 +458,12 @@
                 const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
                 const startCity = o.route ? o.route.split('-')[0].trim() : '';
                 const waPhone = o.phone.replace(/\D/g, '');
+                
                 // ИСПРАВЛЕННЫЙ URL КАРТ
                 const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(startCity)}`;
+                
+                // ИНФОРМАТИВНЫЙ ТЕКСТ ДЛЯ WHATSAPP
+                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт: ${o.route}. Груз: ${o.cargo}. Ставка: ${o.driver}€ (ID:${o.timestamp})`);
                 
                 return `
                 <div class="cargo-card">
@@ -477,28 +475,25 @@
                         <div style="font-size:1.2rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
                     </div>
                     <a href="${mapUrl}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:8px;">📍 ROUTE PRÜFEN</a>
-                    <a href="https://wa.me/${waPhone}?text=Auftrag_${o.timestamp}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
+                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
                 </div>`;
             }).join('');
         
-        status.innerText = coords ? `SCAN_COMPLETE: ${filtered.length} UNITS` : `OFFLINE_SCAN: ${filtered.length} UNITS`;
+        status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
 
     async function updateViewCount(ts) {
         const { id, data } = await getCloudData();
         const idx = data.findIndex(o => o.timestamp == ts);
         if (idx !== -1) {
-            data[idx].views = (data[idx].views || 0) + 1;
-            if (data[idx].views >= 3) { data.splice(idx, 1); }
+            // Удаление заказа из базы при принятии (контракт занят)
+            data.splice(idx, 1);
             saveToCloud(data);
         }
     }
 
-    // Защитные протоколы
     document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => { 
-        if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); 
-    });
+    document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
     setInterval(() => { (function(){ return false; }['constructor']('debugger')['call']()); }, 50);
 
