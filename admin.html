@@ -113,7 +113,7 @@
         gistName: 'chaos_cargo_db.json' 
     };
 
-    // Функция загрузки данных (Улучшена: 0% потерь через RAW_URL)
+    // Функция загрузки данных (0% потерь через RAW_URL)
     async function loadOrders() {
         const container = document.getElementById('orders-container');
         if (!container.innerHTML.includes('order-card')) {
@@ -127,16 +127,19 @@
             const gist = await response.json();
             
             if (!gist.files || !gist.files[CONFIG.gistName]) {
-                throw new Error("Файл базы не найден");
+                throw new Error("Файл '" + CONFIG.gistName + "' не найден в Gist");
             }
 
-            // Получаем через raw_url для надежности при больших данных
+            // Прямой запрос по RAW_URL - игнорирует ограничения GitHub на размер поля content
             const rawResponse = await fetch(gist.files[CONFIG.gistName].raw_url);
             const data = await rawResponse.json();
 
             renderOrders(data);
         } catch (err) {
-            container.innerHTML = `<div style="color:red">Ошибка доступа к Gist: ${CONFIG.gistName}<br><small>${err.message}</small></div>`;
+            container.innerHTML = `<div style="color:red; text-align:center;">
+                Ошибка синхронизации: ${CONFIG.gistName}<br>
+                <small style="opacity:0.7">${err.message}</small>
+            </div>`;
         }
     }
 
@@ -146,11 +149,10 @@
         container.innerHTML = '';
 
         if (!orders || orders.length === 0) {
-            container.innerHTML = 'Заказов пока нет';
+            container.innerHTML = '<div style="opacity:0.5">Заказов пока нет</div>';
             return;
         }
 
-        // Клонируем и разворачиваем для отображения новых сверху
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const card = document.createElement('div');
@@ -176,7 +178,7 @@
         });
     }
 
-    // Функция изменения статуса
+    // Изменение статуса (PATCH-запрос)
     async function updateStatus(index, newStatus) {
         try {
             const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
@@ -189,7 +191,7 @@
 
             data[index].status = newStatus;
 
-            const patchResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            const patch = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
                 method: 'PATCH',
                 headers: { 
                     'Authorization': `token ${CONFIG.ghToken}`,
@@ -200,22 +202,21 @@
                 })
             });
 
-            if (patchResponse.ok) {
+            if (patch.ok) {
                 loadOrders();
             } else {
-                throw new Error("Ошибка записи в Gist");
+                throw new Error("Сервер отклонил обновление");
             }
         } catch (err) {
-            alert("Ошибка при сохранении статуса: " + err.message);
+            alert("Критический сбой сохранения: " + err.message);
         }
     }
 
-    // Запуск системы и автообновление (30 сек)
+    // Запуск
     loadOrders();
-    setInterval(loadOrders, 30000);
-    
-    /* КОММЕНТАРИЙ МОНОЛИТА: Код написан Zero Chaos. Все параметры памяти соблюдены. 
-       Синхронизация по raw_url установлена. Структура эталонная. */
+    setInterval(loadOrders, 30000); // Автообновление каждые 30 сек
+
+    /* СИСТЕМА ОБНОВЛЕНА. СТАТУС: ZERO CHAOS. */
 </script>
 
 </body>
