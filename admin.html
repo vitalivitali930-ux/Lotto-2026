@@ -8,59 +8,51 @@
         :root {
             --bg-color: #030303;
             --card-bg: #0d0d0d;
-            --text-dim: #666;
-            --text-mid: #999;
             --accent: #00ffcc;
             --red: #ff2d55;
             --yellow: #ffcc00;
             --green: #00ffa3;
+            --text-dim: #444;
         }
         
         body { 
-            background: var(--bg-color); color: var(--text-mid); 
+            background: var(--bg-color); color: #999; 
             font-family: 'Segoe UI', sans-serif; padding: 0; margin: 0;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Верхняя панель статистики */
+        /* Панель статистики: Математика в реальном времени */
         .stats-bar {
             width: 100%; background: #0a0a0a; padding: 15px 0;
             display: flex; justify-content: space-around;
             border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; z-index: 100;
             backdrop-filter: blur(10px);
         }
-        .stat-item { text-align: center; }
-        .stat-label { font-size: 0.5rem; text-transform: uppercase; color: #444; letter-spacing: 1px; }
-        .stat-value { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
+        .stat-item { text-align: center; cursor: pointer; }
+        .stat-label { font-size: 0.5rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+        .stat-value { font-size: 1rem; font-weight: bold; color: var(--accent); }
+        #stat-cash { color: var(--yellow); }
 
-        .terminal-header { margin: 25px 0; text-align: center; }
-        .terminal-header h2 { font-size: 0.7rem; letter-spacing: 6px; color: #333; text-transform: uppercase; }
+        .terminal-header { margin: 20px 0; text-align: center; }
+        .terminal-header h2 { font-size: 0.7rem; letter-spacing: 6px; color: #222; text-transform: uppercase; margin: 0; }
 
         #orders-container { width: 92%; max-width: 450px; }
         
         .order-card { 
             background: var(--card-bg); border-radius: 4px; padding: 20px; 
             margin-bottom: 15px; border: 1px solid #151515; position: relative;
-            transition: all 0.4s ease;
+            transition: 0.3s;
         }
 
-        /* Полоска статуса */
+        /* Индикаторы статуса */
         .order-card::before { content: ''; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #222; }
-        .order-card.status-0::before { background: var(--red); box-shadow: 0 0 15px var(--red); }
-        .order-card.status-1::before { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
-        .order-card.status-2::before { background: var(--green); }
-
-        /* Пульсация для новых */
-        @keyframes pulse-red { 0% { border-color: #151515; } 50% { border-color: #301015; } 100% { border-color: #151515; } }
-        .order-card.status-0 { animation: pulse-red 2s infinite; }
-
-        /* Сворачивание для Done */
-        .order-card.status-2 { opacity: 0.4; filter: grayscale(1); transform: scale(0.98); }
-        .order-card.status-2 .order-info, .order-card.status-2 .wa-call-btn { display: none; }
+        .order-card.status-0::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        .order-card.status-1::before { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+        .order-card.status-2::before { background: var(--green); opacity: 0.3; }
 
         .order-header { display: flex; justify-content: space-between; font-size: 0.6rem; color: #333; margin-bottom: 10px; }
-        .order-route { font-size: 0.9rem; font-weight: bold; color: #ccc; margin-bottom: 5px; }
-        .order-price { color: var(--accent); font-weight: bold; font-size: 1rem; margin: 10px 0; }
+        .order-route { font-size: 0.9rem; font-weight: bold; color: #ccc; }
+        .order-price { color: #fff; font-weight: 800; font-size: 1.1rem; margin: 10px 0; }
 
         .wa-call-btn {
             display: inline-block; border: 1px solid #222; color: #555;
@@ -71,45 +63,61 @@
         .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 15px; }
         .controls button { 
             background: #050505; border: 1px solid #1a1a1a; color: #444; 
-            padding: 10px 0; font-size: 0.55rem; font-weight: bold; text-transform: uppercase;
+            padding: 12px 0; font-size: 0.55rem; font-weight: bold; text-transform: uppercase;
         }
         
         .order-card.status-0 .btn-new { color: var(--red); border-color: var(--red); }
-        .order-card.status-1 .btn-work { color: var(--yellow); border-color: var(--yellow); }
+        .order-card.status-1 .btn-work { color: var(--yellow); border-color: var(--yellow); background: #1a1500; }
         .order-card.status-2 .btn-done { color: var(--green); border-color: var(--green); }
 
         .refresh-btn { 
-            background: none; border: 1px solid #222; color: #444; 
+            background: none; border: 1px solid #222; color: #333; 
             padding: 10px 40px; border-radius: 20px; font-size: 0.6rem; margin: 20px 0;
-            letter-spacing: 2px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div class="stats-bar">
-        <div class="stat-item">
-            <div class="stat-label">Active</div>
-            <div id="stat-active" class="stat-value">0</div>
+        <div class="stat-item" onclick="resetStats()">
+            <div class="stat-label">Tasks Done</div>
+            <div id="stat-count" class="stat-value">0</div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Turnover</div>
+            <div class="stat-label">In Work Total</div>
             <div id="stat-cash" class="stat-value">0 €</div>
         </div>
     </div>
 
     <div class="terminal-header">
-        <h2>Zero Chaos // Operations</h2>
+        <h2>Zero Chaos // Ops</h2>
     </div>
 
     <div id="orders-container"></div>
-    
-    <button class="refresh-btn" onclick="loadOrders()">REFRESH_DATA</button>
+    <button class="refresh-btn" onclick="loadOrders()">SYNC_NETWORK</button>
 
 <script>
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
     const CONFIG = { ghToken: _0x_p1 + _0x_p2, gistName: 'chaos_cargo_db.json' };
+
+    // Инициализация локальной памяти (Чтобы сумма не пропадала)
+    let workCount = localStorage.getItem('workCount') ? parseInt(localStorage.getItem('workCount')) : 0;
+    let workSum = localStorage.getItem('workSum') ? parseFloat(localStorage.getItem('workSum')) : 0;
+
+    function updateStatsDisplay() {
+        document.getElementById('stat-count').innerText = workCount;
+        document.getElementById('stat-cash').innerText = workSum.toLocaleString() + ' €';
+    }
+
+    function resetStats() {
+        if(confirm("Сбросить счетчики?")) {
+            workCount = 0; workSum = 0;
+            localStorage.setItem('workCount', 0);
+            localStorage.setItem('workSum', 0);
+            updateStatsDisplay();
+        }
+    }
 
     async function findGist() {
         const r = await fetch(`https://api.github.com/gists?t=${Date.now()}`, {
@@ -120,26 +128,16 @@
     }
 
     async function loadOrders() {
-        const container = document.getElementById('orders-container');
         const orders = await getCloudData();
-        updateStats(orders);
         renderOrders(orders);
-    }
-
-    function updateStats(orders) {
-        const active = orders.filter(o => o.status === 1).length;
-        const total = orders.reduce((sum, o) => sum + parseFloat(o.driver || o.factory || 0), 0);
-        document.getElementById('stat-active').innerText = active;
-        document.getElementById('stat-cash').innerText = total.toLocaleString() + ' €';
+        updateStatsDisplay();
     }
 
     async function getCloudData() {
         try {
             const myGist = await findGist();
-            if (!myGist) return [];
             const res = await fetch(myGist.files[CONFIG.gistName].raw_url + '?t=' + Date.now());
-            const text = await res.text();
-            return JSON.parse(text);
+            return await res.json();
         } catch(e) { return []; }
     }
 
@@ -153,22 +151,35 @@
             card.className = `order-card status-${status}`;
             
             const cleanPhone = order.phone ? order.phone.replace(/\D/g, '') : '';
-            const msg = encodeURIComponent(`Здравствуйте! По поводу вашего заказа ${order.route}.`);
+            const price = parseFloat(order.driver || order.factory || 0);
 
             card.innerHTML = `
                 <div class="order-header"><span>${order.id}</span><span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : ''}</span></div>
                 <div class="order-route">${order.route}</div>
-                <div class="order-info">${order.name} | ${order.cargo}</div>
-                <div class="order-price">${order.driver || order.factory || 0} €</div>
-                <a href="https://wa.me/${cleanPhone}?text=${msg}" class="wa-call-btn" target="_blank">WhatsApp Chat</a>
+                <div class="order-price">${price} €</div>
+                <a href="https://wa.me/${cleanPhone}" class="wa-call-btn" target="_blank">WhatsApp Chat</a>
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">New</button>
-                    <button class="btn-work" onclick="updateStatus(${realIndex}, 1)">Work</button>
+                    <button class="btn-work" onclick="handleWork(${realIndex}, ${price})">Work</button>
                     <button class="btn-done" onclick="updateStatus(${realIndex}, 2)">Done</button>
                 </div>
             `;
             container.appendChild(card);
         });
+    }
+
+    // ХИТРАЯ МАТЕМАТИКА: Считает только новые нажатия
+    async function handleWork(index, price) {
+        const orders = await getCloudData();
+        // Если заказ еще НЕ был в статусе WORK (1), прибавляем к счетчику
+        if (orders[index].status !== 1) {
+            workCount++;
+            workSum += price;
+            localStorage.setItem('workCount', workCount);
+            localStorage.setItem('workSum', workSum);
+            updateStatsDisplay();
+        }
+        updateStatus(index, 1);
     }
 
     async function updateStatus(index, s) {
@@ -184,7 +195,6 @@
     }
 
     loadOrders();
-    setInterval(loadOrders, 60000);
 </script>
 </body>
 </html>
