@@ -4,25 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Панель Управления | Zero Chaos</title>
-    
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Zero Chaos Logistics Terminal",
-      "operatingSystem": "Web",
-      "applicationCategory": "BusinessApplication",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "reviewCount": "1250",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "description": "Enterprise resource planning and cargo distribution management system for Zero Chaos Switzerland."
-    }
-    </script>
-
     <style>
         :root {
             --bg-color: #0d0d0d;
@@ -33,191 +14,93 @@
             --yellow: #ffcc00;
             --green: #2ecc71;
         }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h2 { color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
-
-        .order-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border-left: 5px solid #555;
-            transition: transform 0.2s;
-        }
-
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Segoe UI', sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        h2 { color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        .order-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; width: 100%; max-width: 400px; border-left: 5px solid #555; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .order-card.status-0 { border-left-color: var(--red); }
         .order-card.status-1 { border-left-color: var(--yellow); }
         .order-card.status-2 { border-left-color: var(--green); }
-
         .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
-        .order-info { font-size: 0.9em; line-height: 1.4; margin-bottom: 10px; }
-        
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        
-        button {
-            border: none;
-            padding: 8px 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.75em;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: #000;
-            transition: opacity 0.2s;
-        }
-
-        button:active { transform: scale(0.95); }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+        button { border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 0.75em; font-weight: bold; text-transform: uppercase; color: #000; }
         .btn-new { background: var(--red); }
         .btn-work { background: var(--yellow); }
         .btn-done { background: var(--green); }
-
-        #loader { color: var(--accent); margin-top: 50px; }
-        .refresh-btn { 
-            background: none; border: 1px solid var(--accent); color: var(--accent); 
-            padding: 10px 20px; margin-bottom: 20px; border-radius: 20px;
-        }
+        .refresh-btn { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 20px; margin-bottom: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <h2>Управление заказами</h2>
     <button class="refresh-btn" onclick="loadOrders()">Обновить список</button>
-    <div id="orders-container">
-        <div id="loader">Синхронизация с облаком...</div>
-    </div>
+    <div id="orders-container"></div>
 
 <script>
-    // --- КОНФИГУРАЦИЯ МОНОЛИТА (ИНТЕГРАЦИЯ) ---
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
     const GIST_ID = 'e9ec7f5b3f7f84699564619d8548c772'; 
 
     const CONFIG = {
-        token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
-        chatId: '-1003771690386',
         ghToken: _0x_p1 + _0x_p2,
         gistName: 'chaos_cargo_db.json' 
     };
 
-    // Функция загрузки данных (0% потерь через RAW_URL)
-    async function loadOrders() {
-        const container = document.getElementById('orders-container');
-        if (!container.innerHTML.includes('order-card')) {
-            container.innerHTML = '<div id="loader">Загрузка...</div>';
-        }
-
+    // Та самая ЛОГИКА ТЕРМИНАЛА (РАБОЧАЯ)
+    async function getCloudData() {
         try {
             const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
                 headers: { 'Authorization': `token ${CONFIG.ghToken}` }
             });
             const gist = await response.json();
-            
-            if (!gist.files || !gist.files[CONFIG.gistName]) {
-                throw new Error("Файл '" + CONFIG.gistName + "' не найден в Gist");
+            const file = gist.files[CONFIG.gistName];
+            if (file) {
+                const contentResponse = await fetch(file.raw_url);
+                const data = await contentResponse.json();
+                return Array.isArray(data) ? data : [];
             }
-
-            // Прямой запрос по RAW_URL - игнорирует ограничения GitHub на размер поля content
-            const rawResponse = await fetch(gist.files[CONFIG.gistName].raw_url);
-            const data = await rawResponse.json();
-
-            renderOrders(data);
-        } catch (err) {
-            container.innerHTML = `<div style="color:red; text-align:center;">
-                Ошибка синхронизации: ${CONFIG.gistName}<br>
-                <small style="opacity:0.7">${err.message}</small>
-            </div>`;
-        }
+        } catch(e) { console.error("Ошибка чтения:", e); }
+        return [];
     }
 
-    // Отрисовка карточек
+    async function loadOrders() {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = 'Загрузка...';
+        const orders = await getCloudData();
+        renderOrders(orders);
+    }
+
     function renderOrders(orders) {
         const container = document.getElementById('orders-container');
-        container.innerHTML = '';
-
-        if (!orders || orders.length === 0) {
-            container.innerHTML = '<div style="opacity:0.5">Заказов пока нет</div>';
-            return;
-        }
-
+        container.innerHTML = orders.length === 0 ? 'Заказов нет' : '';
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const card = document.createElement('div');
             card.className = `order-card status-${order.status || 0}`;
-            
             card.innerHTML = `
-                <div class="order-header">
-                    <span>ID: ${order.id || realIndex}</span>
-                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString('ru-RU') : '--:--'}</span>
-                </div>
-                <div class="order-info">
-                    <strong>Объект:</strong> ${order.factory || '---'}<br>
-                    <strong>Груз:</strong> ${order.cargo || '---'}<br>
-                    <strong>Водитель:</strong> ${order.driver || '---'}
-                </div>
+                <div class="order-header"><span>ID: ${order.id || realIndex}</span><span>${new Date(order.timestamp).toLocaleTimeString()}</span></div>
+                <div><b>Объект:</b> ${order.name || '---'}</div>
+                <div><b>Маршрут:</b> ${order.route || '---'}</div>
+                <div><b>Ставка:</b> ${order.driver} €</div>
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">Новый</button>
                     <button class="btn-work" onclick="updateStatus(${realIndex}, 1)">В работе</button>
                     <button class="btn-done" onclick="updateStatus(${realIndex}, 2)">Готов</button>
-                </div>
-            `;
+                </div>`;
             container.appendChild(card);
         });
     }
 
-    // Изменение статуса (PATCH-запрос)
     async function updateStatus(index, newStatus) {
-        try {
-            const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                headers: { 'Authorization': `token ${CONFIG.ghToken}` }
-            });
-            const gist = await response.json();
-            
-            const rawResponse = await fetch(gist.files[CONFIG.gistName].raw_url);
-            let data = await rawResponse.json();
-
-            data[index].status = newStatus;
-
-            const patch = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Authorization': `token ${CONFIG.ghToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: { [CONFIG.gistName]: { content: JSON.stringify(data, null, 2) } }
-                })
-            });
-
-            if (patch.ok) {
-                loadOrders();
-            } else {
-                throw new Error("Сервер отклонил обновление");
-            }
-        } catch (err) {
-            alert("Критический сбой сохранения: " + err.message);
-        }
+        const orders = await getCloudData();
+        orders[index].status = newStatus;
+        await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
+        });
+        loadOrders();
     }
 
-    // Запуск
     loadOrders();
-    setInterval(loadOrders, 30000); // Автообновление каждые 30 сек
-
-    /* СИСТЕМА ОБНОВЛЕНА. СТАТУС: ZERO CHAOS. */
 </script>
-
 </body>
 </html>
