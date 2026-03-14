@@ -29,10 +29,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
-            /* Soft Pearl Rose: Жемчужный розовый с мягким glow */
             --gold: #f4e4e4; 
             --gold-shadow: rgba(244, 228, 228, 0.35);
-            --bg: #0a0101; /* Фон осветлен */
+            --bg: #0a0101; 
             --cherry: #320404;
             --glass: rgba(20, 4, 4, 0.96);
         }
@@ -65,10 +64,8 @@
             border: 1px solid rgba(244, 228, 228, 0.12);
             box-shadow: 0 60px 150px rgba(0,0,0,0.9);
             padding: 35px; border-radius: 2px; box-sizing: border-box;
-            position: relative;
-            z-index: 10;
-            transform: scaleX(0);
-            opacity: 0;
+            position: relative; z-index: 10;
+            transform: scaleX(0); opacity: 0;
             transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease;
         }
         
@@ -246,7 +243,6 @@
 </div>
 
 <script>
-    // GitHub Secret Masking
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
 
@@ -259,7 +255,6 @@
 
     let map, markerLayer;
 
-    // --- MATH 8-4-6 LOGIC ---
     function liveMath() {
         const val = parseFloat(document.getElementById('userTariff').value);
         const pre = document.getElementById('calcPreview');
@@ -280,7 +275,6 @@
         return { factoryPrice, security, taxes, margin, driverPay };
     }
 
-    // --- TIME SYNC GUARD ---
     async function verifySync() {
         try {
             const server = await fetch('https://worldtimeapi.org/api/timezone/Europe/Zurich');
@@ -328,7 +322,8 @@
 
     function updateSwissClock() {
         const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
-        document.getElementById('swiss-clock').innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
+        const clock = document.getElementById('swiss-clock');
+        if(clock) clock.innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
     }
     setInterval(updateSwissClock, 1000); updateSwissClock();
 
@@ -377,7 +372,7 @@
 
     async function saveToCloud(orders) {
         const { id } = await getCloudData();
-        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 10800000); // 3 часа лимит
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 10800000);
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
             method: id ? 'PATCH' : 'POST',
@@ -412,13 +407,14 @@
         
         const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
-        const coords = await getCoords(document.getElementById('routeInfo').value.split('-')[0].trim());
+        const routeRaw = document.getElementById('routeInfo').value;
+        const coords = await getCoords(routeRaw.split('-')[0].trim());
         const { data } = await getCloudData();
         
         const newOrder = { 
             name: document.getElementById('userName').value, 
             phone: document.getElementById('userPhone').value, 
-            route: document.getElementById('routeInfo').value, 
+            route: routeRaw, 
             cargo: document.getElementById('cargoInfo').value,
             factory: math.factoryPrice.toFixed(2),
             driver: math.driverPay.toFixed(2),
@@ -430,7 +426,6 @@
         
         data.push(newOrder);
         const ok = await saveToCloud(data);
-        
         const msg = `📦 <b>NEU PRIORITY</b>\n👤 ${newOrder.name}\n📍 ${newOrder.route}\n💰 Завод: ${newOrder.factory}€\n🚚 Водитель: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
         await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
         
@@ -459,13 +454,18 @@
         resArea.classList.remove('hidden');
         resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : filtered.map(o => {
             const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
+            const startCity = o.route ? o.route.split('-')[0].trim() : '';
             return `
             <div class="cargo-card">
                 <div class="priority-tag">${mLeft}M REMAINING</div>
                 <b>${o.route}</b><br>
                 <div style="font-size:0.85rem; margin:12px 0; opacity:0.85;">${o.cargo}</div>
-                <div style="font-size:0.7rem; color:var(--gold); margin-bottom:10px;">Netto: ${o.driver} €</div>
-                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn">CONNECT</a>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:2px; margin-bottom:12px;">
+                    <div style="font-size:0.55rem; opacity:0.6; text-transform:uppercase;">Выплата водителя (Netto):</div>
+                    <div style="font-size:1.1rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                </div>
+                <a href="https://www.google.com/maps/search/${encodeURIComponent(startCity)}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:5px; font-size:0.6rem;">📍 ПРИМЕРНЫЙ МАРШРУТ</a>
+                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}?text=Ich_nehme_Auftrag_${o.timestamp}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
             </div>
         `}).join('');
         status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
@@ -476,14 +476,11 @@
         const idx = data.findIndex(o => o.timestamp == ts);
         if (idx !== -1) {
             data[idx].views = (data[idx].views || 0) + 1;
-            if (data[idx].views >= 3) {
-                data.splice(idx, 1); // Удаляем если 3 просмотра
-            }
+            if (data[idx].views >= 3) { data.splice(idx, 1); }
             saveToCloud(data);
         }
     }
 
-    // --- PROTECTIVE LOCKS ---
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
