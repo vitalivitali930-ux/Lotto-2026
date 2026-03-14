@@ -236,7 +236,7 @@
         <button class="action-btn" onclick="scanCargo()">Sektor Scannen</button>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V2.7</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V2.9</div>
     <div id="resultsDisplay" class="hidden"></div>
 
     <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
@@ -437,7 +437,7 @@
         }
     }
 
-    async function scanCargo() {
+     async function scanCargo() {
         const pos = document.getElementById('driverPos').value;
         const rad = parseInt(document.getElementById('radiusRange').value);
         const resArea = document.getElementById('resultsDisplay');
@@ -452,24 +452,33 @@
         const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
         
         resArea.classList.remove('hidden');
-        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : filtered.map(o => {
-            const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
-            const startCity = o.route ? o.route.split('-')[0].trim() : '';
-            return `
-            <div class="cargo-card">
-                <div class="priority-tag">${mLeft}M REMAINING</div>
-                <b>${o.route}</b><br>
-                <div style="font-size:0.85rem; margin:12px 0; opacity:0.85;">${o.cargo}</div>
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:2px; margin-bottom:12px;">
-                    <div style="font-size:0.55rem; opacity:0.6; text-transform:uppercase;">Выплата водителя (Netto):</div>
-                    <div style="font-size:1.1rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
-                </div>
-                <a href="https://www.google.com/maps/search/${encodeURIComponent(startCity)}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:5px; font-size:0.6rem;">📍 ПРИМЕРНЫЙ МАРШРУТ</a>
-                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}?text=Ich_nehme_Auftrag_${o.timestamp}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
-            </div>
-        `}).join('');
+        resArea.innerHTML = filtered.length === 0 ? 
+            '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : 
+            filtered.map(o => {
+                const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
+                const startCity = o.route ? o.route.split('-')[0].trim() : '';
+                const waPhone = o.phone.replace(/\D/g, '');
+                // ИСПРАВЛЕННАЯ СТРОКА НИЖЕ:
+                const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(startCity)}`;
+                
+                return `
+                <div class="cargo-card">
+                    <div class="priority-tag">${mLeft}M VERBLEIBEND</div>
+                    <b style="letter-spacing:1px;">${o.route}</b>
+                    <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:2px; margin-bottom:12px;">
+                        <div style="font-size:0.55rem; opacity:0.6; text-transform:uppercase;">Fahrer Auszahlung:</div>
+                        <div style="font-size:1.2rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                    </div>
+                    <a href="${mapUrl}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:8px;">📍 ROUTE PRÜFEN</a>
+                    <a href="https://wa.me/${waPhone}?text=Auftrag_${o.timestamp}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
+                </div>`;
+            }).join('');
+        
         status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
+
+
 
     async function updateViewCount(ts) {
         const { id, data } = await getCloudData();
