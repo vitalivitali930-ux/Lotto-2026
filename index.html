@@ -476,6 +476,36 @@
         `).join('');
         status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
+    /* MOUSE & KEYBOARD LOCK: MONOLITH PROTECT */
+
+// 1. Убиваем правую кнопку мыши
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    // Можно добавить тонкий троллинг в консоль, если она открыта
+    console.log("System: Access Denied.");
+}, false);
+
+// 2. Блокируем горячие клавиши (Ctrl+U, Ctrl+Shift+I, F12)
+document.addEventListener('keydown', function(e) {
+    if (
+        e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+        (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+    ) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// 3. Запрещаем выделение текста (через CSS и JS для надежности)
+document.onselectstart = function() { return false; }; // Для старых браузеров
+/* ANTI-DEBUGGER LOCK: ZERO CHAOS */
+setInterval(function() {
+    (function() {
+        return false;
+    }['constructor']('debugger')['call']());
+}, 50);
+
 </script>
 </body>
 </html>
