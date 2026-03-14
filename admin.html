@@ -27,17 +27,18 @@
         .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; opacity: 0.7; }
         .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
         button { border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
         .btn-new { background: var(--red); color: #000; }
         .btn-work { background: var(--yellow); color: #000; }
         .btn-done { background: var(--green); color: #000; }
         .refresh-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 25px; border-radius: 30px; margin-bottom: 25px; cursor: pointer; letter-spacing: 2px; }
+        #debug-info { font-size: 0.6rem; color: #555; margin-top: 20px; }
     </style>
 </head>
 <body>
     <h2>Система Управления</h2>
     <button class="refresh-btn" onclick="loadOrders()">ОБНОВИТЬ СЕТЬ</button>
     <div id="orders-container"></div>
+    <div id="debug-info"></div>
 
 <script>
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
@@ -49,36 +50,52 @@
         gistName: 'chaos_cargo_db.json' 
     };
 
-    // УЛУЧШЕННЫЙ ЗАБОР ДАННЫХ (БЕЗ ОШИБОК И КЭША)
+    // ФУНКЦИЯ "БУЛЬДОЗЕР" — ЗАБИРАЕТ ВСЁ
     async function getCloudData() {
+        const debug = document.getElementById('debug-info');
         try {
-            // Добавляем метку времени для обхода кэша GitHub API
-            const response = await fetch(`https://api.github.com/gists/${GIST_ID}?t=${Date.now()}`, {
+            // 1. Пытаемся получить Gist
+            const response = await fetch(`https://api.github.com/gists/${GIST_ID}?nocache=${Date.now()}`, {
                 headers: { 'Authorization': `token ${CONFIG.ghToken}` }
             });
+            
+            if (!response.ok) throw new Error(`GitHub вернул ${response.status}`);
+            
             const gist = await response.json();
             const file = gist.files[CONFIG.gistName];
             
-            if (file) {
-                // Прямой забор содержимого через RAW URL
-                const contentResponse = await fetch(file.raw_url + '?cache_bust=' + Date.now());
-                const rawText = await contentResponse.text();
-                
-                if (!rawText || rawText.trim() === "") return [];
-                const data = JSON.parse(rawText);
-                return Array.isArray(data) ? data : [];
+            if (!file) throw new Error("Файл не найден в Gist");
+
+            // 2. Пытаемся забрать контент тремя путями
+            let content = "";
+            
+            // Путь А: Через поле content (если маленькое)
+            if (file.content) {
+                content = file.content;
+            } 
+            // Путь Б: Через raw_url (если поле content обрезано)
+            else {
+                const rawResponse = await fetch(file.raw_url + '?t=' + Date.now());
+                content = await rawResponse.text();
             }
+
+            debug.innerText = "Raw data length: " + content.length;
+
+            if (!content || content.trim() === "" || content === "null") return [];
+            
+            const data = JSON.parse(content);
+            return Array.isArray(data) ? data : [];
+
         } catch(e) { 
-            console.error("Критический сбой забора:", e); 
+            debug.innerText = "ERROR: " + e.message;
+            console.error(e);
+            return [];
         }
-        return [];
     }
 
     async function loadOrders() {
         const container = document.getElementById('orders-container');
-        if (!container.innerHTML || container.innerHTML.includes('БАЗА')) {
-            container.innerHTML = '<div style="opacity:0.5; letter-spacing:5px;">SCANNING...</div>';
-        }
+        container.innerHTML = '<div style="opacity:0.5;">СКАНИРОВАНИЕ...</div>';
         const orders = await getCloudData();
         renderOrders(orders);
     }
@@ -87,26 +104,24 @@
         const container = document.getElementById('orders-container');
         container.innerHTML = (orders.length === 0) ? '<div style="opacity:0.3; padding:50px;">БАЗА_ДАННЫХ_ПУСТА</div>' : '';
         
-        // Разворачиваем, чтобы новые заказы всегда были сверху
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const card = document.createElement('div');
-            
-            // Определяем статус (0 - новый, 1 - в работе, 2 - готов)
             const status = (order.status !== undefined) ? order.status : 0;
             card.className = `order-card status-${status}`;
             
             card.innerHTML = `
                 <div class="order-header">
-                    <span>ID: ${order.id || 'NEW'}</span>
-                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString('ru-RU') : '--:--'}</span>
+                    <span>ID: ${order.id || '---'}</span>
+                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : ''}</span>
                 </div>
-                <div style="margin-bottom:8px;"><strong>КУСТАРЬ:</strong> ${order.name || 'Аноним'}</div>
-                <div style="margin-bottom:8px;"><strong>МАРШРУТ:</strong> ${order.route || 'Локация не указана'}</div>
-                <div style="margin-bottom:8px;"><strong>ГРУЗ:</strong> ${order.cargo || '---'}</div>
-                <div style="color:var(--accent); font-size:1.2rem; font-weight:bold;">${order.driver || order.factory || '0'} €</div>
-                <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">📞 ${order.phone || '---'}</div>
-                
+                <div><b>МАРШРУТ:</b> ${order.route || '---'}</div>
+                <div style="font-size:0.85rem; margin:10px 0;">
+                    👤 ${order.name || '---'} | 📞 ${order.phone || '---'}
+                </div>
+                <div style="color:var(--accent); font-size:1.1rem; font-weight:bold;">
+                    ${order.driver || order.factory || '0'} €
+                </div>
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">НОВЫЙ</button>
                     <button class="btn-work" onclick="updateStatus(${realIndex}, 1)">В РАБОТЕ</button>
@@ -117,31 +132,19 @@
     }
 
     async function updateStatus(index, newStatus) {
-        // Сначала получаем актуальную базу
         const orders = await getCloudData();
         if (orders[index]) {
             orders[index].status = newStatus;
-            
-            const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            await fetch(`https://api.github.com/gists/${GIST_ID}`, {
                 method: 'PATCH',
-                headers: { 
-                    'Authorization': `token ${CONFIG.ghToken}`, 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ 
-                    files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } 
-                })
+                headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
             });
-            
-            if (res.ok) loadOrders();
-            else alert("Ошибка синхронизации статуса");
+            loadOrders();
         }
     }
 
-    // Авто-обновление каждые 45 секунд
     loadOrders();
-    setInterval(loadOrders, 45000);
-
 </script>
 </body>
 </html>
