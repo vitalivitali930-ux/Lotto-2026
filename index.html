@@ -247,14 +247,14 @@
 
         <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
             <div class="input-group" style="margin-bottom: 10px;">
-                <label>🛣 Route-Plan (Berlin, Hannover, Madrid...)</label>
-                <input type="text" id="routePlan" placeholder="Städte с Komma">
+                <label>🛣 Route-Plan (Osnabrück - Zürich ИЛИ Hannover)</label>
+                <input type="text" id="routePlan" placeholder="Städte с Komma / Route">
             </div>
             <button class="action-btn" onclick="scanCargo('ROUTE')" style="background: rgba(244,228,228,0.05);">[ ROUTE SCAN ]</button>
         </div>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V3.1</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V3.2</div>
     <div id="resultsDisplay" class="hidden"></div>
 
     <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate" id="uid-trigger">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
@@ -274,7 +274,15 @@
     let map, markerLayer;
     let cachedCities = [];
 
-    // МАНИФЕСТ МОНОЛИТА: ГЕНЕРАЦИЯ ИНДЕКСА
+    // --- МАНИФЕСТ МОНОЛИТА: ГЕОМЕТРИЧЕСКОЕ ЯДРО ---
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const l2 = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+        if (l2 === 0) return calculateDistance(px, py, x1, y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return calculateDistance(px, py, x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+    }
+
     function generateOrderID(existingData) {
         const d = new Date();
         const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
@@ -282,7 +290,6 @@
         return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
     }
 
-    // ЖИВОЙ ПОИСК ГОРОДОВ (CITIES)
     async function updateSuggestions(val) {
         if (val.length < 2) return;
         const list = document.getElementById('cities-list');
@@ -448,7 +455,7 @@
         const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
         const routeRaw = document.getElementById('routeInfo').value;
-        const routeParts = routeRaw.split('-');
+        const routeParts = routeRaw.split(/[\-\,]+/);
         
         const coordsStart = await getCoords(routeParts[0]?.trim());
         const coordsEnd = routeParts[1] ? await getCoords(routeParts[1].trim()) : null;
@@ -491,7 +498,6 @@
         const status = document.getElementById('status');
         const resArea = document.getElementById('resultsDisplay');
         const { data } = await getCloudData();
-        const now = Date.now();
         let filtered = [];
         status.innerText = `SCANNING_${mode}...`;
         const activeOrders = data.filter(o => o.status === 0);
@@ -506,10 +512,30 @@
                 return d1 <= rad;
             });
         } else if (mode === 'ROUTE') {
-            const planRaw = document.getElementById('routePlan').value.toLowerCase();
+            const planRaw = document.getElementById('routePlan').value.trim();
             if (!planRaw) { status.innerText = 'ROUTE_ERROR: NO_DATA'; return; }
-            const cities = planRaw.split(',').map(c => c.trim()).filter(c => c.length > 0);
-            filtered = activeOrders.filter(o => cities.some(city => o.route.toLowerCase().includes(city)));
+            
+            const planParts = planRaw.split(/[\-\,]+/);
+            const startDriver = await getCoords(planParts[0]?.trim());
+            const endDriver = planParts[1] ? await getCoords(planParts[1]?.trim()) : null;
+
+            if (!startDriver) { status.innerText = 'ROUTE_ERROR: CITY_NOT_FOUND'; return; }
+
+            filtered = activeOrders.filter(o => {
+                if (!o.lat || !o.latEnd) {
+                    // Fallback на текстовое совпадение, если нет координат в базе
+                    return planParts.some(city => o.route.toLowerCase().includes(city.toLowerCase().trim()));
+                }
+
+                if (endDriver) {
+                    const d1 = distToSegment(o.lat, o.lon, startDriver.lat, startDriver.lon, endDriver.lat, endDriver.lon);
+                    const d2 = distToSegment(startDriver.lat, startDriver.lon, o.lat, o.lon, o.latEnd, o.lonEnd);
+                    return d1 <= 50 || d2 <= 50;
+                } else {
+                    const d = distToSegment(startDriver.lat, startDriver.lon, o.lat, o.lon, o.latEnd, o.lonEnd);
+                    return d <= 50;
+                }
+            });
         }
 
         resArea.classList.remove('hidden');
@@ -518,7 +544,7 @@
                 <div class="cargo-card">
                     <div class="status-indicator" style="background:var(--status-red)"></div>
                     <div class="priority-tag">ID: ${o.id}</div>
-                    <b style="letter-spacing:1px; color:#fff;">${o.route}</b>
+                    <b style="letter-spacing:1px; color:#fff; text-transform:uppercase;">${o.route}</b>
                     <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
                     <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
                         <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
@@ -538,7 +564,6 @@
         }
     }
 
-    // --- ФИНАЛЬНЫЕ ЗАЩИТЫ И СЕКРЕТНЫЙ ПРОТОКОЛ (ВНУТРИ СКРИПТА) ---
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
