@@ -26,7 +26,8 @@
         .order-card.status-2 { border-left-color: var(--green); }
         .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; opacity: 0.7; }
         .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        button { border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
         .btn-new { background: var(--red); color: #000; }
         .btn-work { background: var(--yellow); color: #000; }
         .btn-done { background: var(--green); color: #000; }
@@ -48,50 +49,63 @@
         gistName: 'chaos_cargo_db.json' 
     };
 
-    // Чтение данных по методу Терминала
+    // УЛУЧШЕННЫЙ ЗАБОР ДАННЫХ (БЕЗ ОШИБОК И КЭША)
     async function getCloudData() {
         try {
-            const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            // Добавляем метку времени для обхода кэша GitHub API
+            const response = await fetch(`https://api.github.com/gists/${GIST_ID}?t=${Date.now()}`, {
                 headers: { 'Authorization': `token ${CONFIG.ghToken}` }
             });
             const gist = await response.json();
             const file = gist.files[CONFIG.gistName];
+            
             if (file) {
-                const contentResponse = await fetch(file.raw_url);
-                const data = await contentResponse.json();
+                // Прямой забор содержимого через RAW URL
+                const contentResponse = await fetch(file.raw_url + '?cache_bust=' + Date.now());
+                const rawText = await contentResponse.text();
+                
+                if (!rawText || rawText.trim() === "") return [];
+                const data = JSON.parse(rawText);
                 return Array.isArray(data) ? data : [];
             }
-        } catch(e) { console.error("Ошибка:", e); }
+        } catch(e) { 
+            console.error("Критический сбой забора:", e); 
+        }
         return [];
     }
 
     async function loadOrders() {
         const container = document.getElementById('orders-container');
-        container.innerHTML = '<div style="opacity:0.5; letter-spacing:5px;">SCANNING...</div>';
+        if (!container.innerHTML || container.innerHTML.includes('БАЗА')) {
+            container.innerHTML = '<div style="opacity:0.5; letter-spacing:5px;">SCANNING...</div>';
+        }
         const orders = await getCloudData();
         renderOrders(orders);
     }
 
     function renderOrders(orders) {
         const container = document.getElementById('orders-container');
-        container.innerHTML = (orders.length === 0) ? '<div style="opacity:0.3">БАЗА_ДАННЫХ_ПУСТА</div>' : '';
+        container.innerHTML = (orders.length === 0) ? '<div style="opacity:0.3; padding:50px;">БАЗА_ДАННЫХ_ПУСТА</div>' : '';
         
+        // Разворачиваем, чтобы новые заказы всегда были сверху
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const card = document.createElement('div');
-            card.className = `order-card status-${order.status || 0}`;
             
-            // КЛЮЧИ СИНХРОНИЗИРОВАНЫ С INFO.HTML (name, route, driver, cargo, phone)
+            // Определяем статус (0 - новый, 1 - в работе, 2 - готов)
+            const status = (order.status !== undefined) ? order.status : 0;
+            card.className = `order-card status-${status}`;
+            
             card.innerHTML = `
                 <div class="order-header">
-                    <span>ID: ${order.id || 'N/A'}</span>
-                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : '--:--'}</span>
+                    <span>ID: ${order.id || 'NEW'}</span>
+                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString('ru-RU') : '--:--'}</span>
                 </div>
                 <div style="margin-bottom:8px;"><strong>КУСТАРЬ:</strong> ${order.name || 'Аноним'}</div>
-                <div style="margin-bottom:8px;"><strong>МАРШРУТ:</strong> ${order.route || 'Не указан'}</div>
+                <div style="margin-bottom:8px;"><strong>МАРШРУТ:</strong> ${order.route || 'Локация не указана'}</div>
                 <div style="margin-bottom:8px;"><strong>ГРУЗ:</strong> ${order.cargo || '---'}</div>
-                <div style="color:var(--accent); font-size:1.2rem; font-weight:bold;">${order.driver || '0'} €</div>
-                <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">Тел: ${order.phone || '---'}</div>
+                <div style="color:var(--accent); font-size:1.2rem; font-weight:bold;">${order.driver || order.factory || '0'} €</div>
+                <div style="font-size:0.8rem; margin-top:5px; opacity:0.6;">📞 ${order.phone || '---'}</div>
                 
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">НОВЫЙ</button>
@@ -103,17 +117,31 @@
     }
 
     async function updateStatus(index, newStatus) {
+        // Сначала получаем актуальную базу
         const orders = await getCloudData();
-        orders[index].status = newStatus;
-        await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
-        });
-        loadOrders();
+        if (orders[index]) {
+            orders[index].status = newStatus;
+            
+            const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Authorization': `token ${CONFIG.ghToken}`, 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ 
+                    files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } 
+                })
+            });
+            
+            if (res.ok) loadOrders();
+            else alert("Ошибка синхронизации статуса");
+        }
     }
 
+    // Авто-обновление каждые 45 секунд
     loadOrders();
+    setInterval(loadOrders, 45000);
+
 </script>
 </body>
 </html>
