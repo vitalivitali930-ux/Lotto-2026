@@ -119,7 +119,7 @@
             width: 100%; padding: 22px; background: transparent;
             border: 1px solid var(--gold); color: var(--gold);
             font-weight: bold; cursor: pointer; text-transform: uppercase;
-            letter-spacing: 5px; font-size: 0.75rem; transition: 0.4s;
+            letter-spacing: 5px; font-size: 0.75rem; transition: 0.4s; margin-bottom: 10px;
         }
         .action-btn:hover { background: var(--gold); color: #000; }
 
@@ -223,20 +223,30 @@
 
     <div id="driverView" class="hidden">
         <div id="map" class="hidden-map"></div>
-        <button class="action-btn" style="margin-bottom:30px; font-size:0.6rem; border-color:rgba(244,228,228,0.25);" onclick="toggleMap()" id="mapBtn">Radar Aktivieren [+]</button>
+        <button class="action-btn" style="margin-bottom:20px; font-size:0.6rem; border-color:rgba(244,228,228,0.25);" onclick="toggleMap()" id="mapBtn">Radar Aktivieren [+]</button>
         
-        <div class="input-group">
-            <label>📍 Aktuelle Position</label>
-            <input type="text" id="driverPos" placeholder="Stadt">
+        <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
+            <div class="input-group">
+                <label>📍 Aktuelle Position (Radar)</label>
+                <input type="text" id="driverPos" placeholder="Stadt">
+            </div>
+            <div class="input-group" style="border:none; margin-bottom: 10px;">
+                <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
+                <input type="range" id="radiusRange" min="0" max="250" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold);">
+            </div>
+            <button class="action-btn" onclick="scanCargo('RADAR')" style="border-style: dashed;">[ SECTOR SCAN ]</button>
         </div>
-        <div class="input-group" style="border:none;">
-            <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
-            <input type="range" id="radiusRange" min="0" max="250" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold); margin-top:15px;">
+
+        <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
+            <div class="input-group" style="margin-bottom: 10px;">
+                <label>🛣 Route-Plan (Berlin, Hannover, Madrid...)</label>
+                <input type="text" id="routePlan" placeholder="Städte mit Komma trennen">
+            </div>
+            <button class="action-btn" onclick="scanCargo('ROUTE')" style="background: rgba(244,228,228,0.05);">[ ROUTE SCAN ]</button>
         </div>
-        <button class="action-btn" onclick="scanCargo()">Sektor Scannen</button>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V2.9</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V3.0</div>
     <div id="resultsDisplay" class="hidden"></div>
 
     <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
@@ -252,9 +262,10 @@
         ghToken: _0x_p1 + _0x_p2,
         gistName: 'chaos_cargo_db.json'
     };
-
+    // ... Продолжение логики в Window 3
     let map, markerLayer;
 
+    // МАНИФЕСТ МОНОЛИТА: 0% потери функций
     function liveMath() {
         const val = parseFloat(document.getElementById('userTariff').value);
         const pre = document.getElementById('calcPreview');
@@ -344,6 +355,7 @@
     }
 
     async function getCoords(city) {
+        if (!city) return null;
         try {
             const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
             const d = await r.json(); return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
@@ -408,7 +420,12 @@
         const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
         const routeRaw = document.getElementById('routeInfo').value;
-        const coords = await getCoords(routeRaw.split('-')[0].trim());
+        const routeParts = routeRaw.split('-');
+        
+        // Манифест Монолита: Двойное геокодирование для будущих сканов
+        const coordsStart = await getCoords(routeParts[0]?.trim());
+        const coordsEnd = routeParts[1] ? await getCoords(routeParts[1].trim()) : null;
+        
         const { data } = await getCloudData();
         
         const newOrder = { 
@@ -418,15 +435,19 @@
             cargo: document.getElementById('cargoInfo').value,
             factory: math.factoryPrice.toFixed(2),
             driver: math.driverPay.toFixed(2),
-            views: 0,
-            lat: coords ? coords.lat : null, 
-            lon: coords ? coords.lon : null, 
+            security: math.security.toFixed(2),
+            taxes: math.taxes.toFixed(2),
+            margin: math.margin.toFixed(2),
+            lat: coordsStart ? coordsStart.lat : null, 
+            lon: coordsStart ? coordsStart.lon : null,
+            latEnd: coordsEnd ? coordsEnd.lat : null,
+            lonEnd: coordsEnd ? coordsEnd.lon : null,
             timestamp: Date.now() 
         };
         
         data.push(newOrder);
         const ok = await saveToCloud(data);
-        const msg = `📦 <b>NEU PRIORITY</b>\n👤 ${newOrder.name}\n📍 ${newOrder.route}\n💰 Завод: ${newOrder.factory}€\n🚚 Водитель: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
+        const msg = `📦 <b>NEU PRIORITY</b>\n📍 ${newOrder.route}\n🚚 Водитель: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
         await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
         
         if(ok) {
@@ -437,45 +458,65 @@
         }
     }
 
-    async function scanCargo() {
-        const pos = document.getElementById('driverPos').value;
-        const rad = parseInt(document.getElementById('radiusRange').value);
-        const resArea = document.getElementById('resultsDisplay');
+    // НОВЫЙ ДВУХКОНТУРНЫЙ СКАНЕР
+    async function scanCargo(mode) {
         const status = document.getElementById('status');
-        
-        status.innerText = 'SCANNING_SECTOR...';
-        const coords = await getCoords(pos);
-        if(!coords) { status.innerText = 'POSITION_NOT_FOUND'; return; }
-        
+        const resArea = document.getElementById('resultsDisplay');
         const { data } = await getCloudData();
         const now = Date.now();
-        const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
-        
+        let filtered = [];
+
+        status.innerText = `SCANNING_${mode}...`;
+
+        if (mode === 'RADAR') {
+            const inputPos = document.getElementById('driverPos').value.trim();
+            const rad = parseInt(document.getElementById('radiusRange').value);
+            const driverCoords = await getCoords(inputPos);
+            
+            if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
+
+            filtered = data.filter(o => {
+                const d1 = o.lat ? calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon) : 999999;
+                const d2 = o.latEnd ? calculateDistance(driverCoords.lat, driverCoords.lon, o.latEnd, o.lonEnd) : 999999;
+                return d1 <= rad || d2 <= rad;
+            });
+        } 
+        else if (mode === 'ROUTE') {
+            const planRaw = document.getElementById('routePlan').value.toLowerCase();
+            if (!planRaw) { status.innerText = 'ROUTE_ERROR: NO_DATA'; return; }
+            
+            const cities = planRaw.split(',').map(c => c.trim()).filter(c => c.length > 0);
+            
+            filtered = data.filter(o => {
+                const routeLower = o.route.toLowerCase();
+                // Ищем любое вхождение городов из плана в маршруте заказа
+                return cities.some(city => routeLower.includes(city));
+            });
+        }
+
         resArea.classList.remove('hidden');
         resArea.innerHTML = filtered.length === 0 ? 
-            '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : 
+            '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA_IN_THIS_SECTOR</div>' : 
             filtered.map(o => {
                 const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
-                const startCity = o.route ? o.route.split('-')[0].trim() : '';
+                const routeParts = o.route.split('-');
+                const from = routeParts[0]?.trim() || '';
+                const to = routeParts[1]?.trim() || '';
                 const waPhone = o.phone.replace(/\D/g, '');
-                
-                // ИСПРАВЛЕННЫЙ URL КАРТ
-                const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(startCity)}`;
-                
-                // ИНФОРМАТИВНЫЙ ТЕКСТ ДЛЯ WHATSAPP
-                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт: ${o.route}. Груз: ${o.cargo}. Ставка: ${o.driver}€ (ID:${o.timestamp})`);
+                const mapUrl = to ? `http://googleusercontent.com/maps.google.com/5{encodeURIComponent(from)}/${encodeURIComponent(to)}` : `http://googleusercontent.com/maps.google.com/6{encodeURIComponent(from)}`;
+                const waMsg = encodeURIComponent(`Hallo, я принимаю контракт: ${o.route}. Груз: ${o.cargo}. Ставка: ${o.driver}€`);
                 
                 return `
                 <div class="cargo-card">
-                    <div class="priority-tag">${mLeft}M VERBLEIBEND</div>
-                    <b style="letter-spacing:1px;">${o.route}</b>
+                    <div class="priority-tag">${mLeft}M</div>
+                    <b style="letter-spacing:1px; color:#fff;">${o.route}</b>
                     <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
-                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:2px; margin-bottom:12px;">
-                        <div style="font-size:0.55rem; opacity:0.6; text-transform:uppercase;">Fahrer Auszahlung:</div>
-                        <div style="font-size:1.2rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                    <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:2px; margin-bottom:12px; border-left:1px solid var(--gold);">
+                        <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                        <div style="font-size:0.5rem; opacity:0.4; margin-top:5px;">Formula: ${o.factory}€ - (${o.security} + ${o.taxes} + ${o.margin})</div>
                     </div>
                     <a href="${mapUrl}" target="_blank" class="connect-btn" style="display:block; text-align:center; background:rgba(255,255,255,0.1); margin-bottom:8px;">📍 ROUTE PRÜFEN</a>
-                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center;">AUFTRAG ANNEHMEN</a>
+                    <a href="https://wa.me/${waPhone}?text=${waMsg}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
                 </div>`;
             }).join('');
         
@@ -486,7 +527,6 @@
         const { id, data } = await getCloudData();
         const idx = data.findIndex(o => o.timestamp == ts);
         if (idx !== -1) {
-            // Удаление заказа из базы при принятии (контракт занят)
             data.splice(idx, 1);
             saveToCloud(data);
         }
@@ -500,3 +540,4 @@
 </script>
 </body>
 </html>
+
