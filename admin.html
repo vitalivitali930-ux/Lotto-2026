@@ -74,16 +74,37 @@
             background: none; border: 1px solid #222; color: #333; 
             padding: 10px 40px; border-radius: 20px; font-size: 0.6rem; margin: 20px 0;
         }
+
+        /* MODAL WINDOW FOR CASH EDITING */
+        #cash-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #111; border: 1px solid #333; width: 85%; max-width: 400px;
+            max-height: 70vh; overflow-y: auto; padding: 20px; border-radius: 8px;
+        }
+        .modal-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid #222; font-size: 0.8rem;
+        }
+        .remove-btn { color: var(--red); background: none; border: 1px solid var(--red); padding: 2px 8px; border-radius: 4px; cursor: pointer; }
+        .close-modal { margin-top: 20px; padding: 10px 20px; background: #222; color: #fff; border: none; border-radius: 4px; }
     </style>
 </head>
 <body>
+
+    <div id="cash-modal">
+        <div class="modal-content" id="modal-list"></div>
+        <button class="close-modal" onclick="toggleModal(false)">ЗАКРЫТЬ</button>
+    </div>
 
     <div class="stats-bar">
         <div class="stat-item" onclick="resetStats()">
             <div class="stat-label">Tasks Done</div>
             <div id="stat-count" class="stat-value">0</div>
         </div>
-        <div class="stat-item">
+        <div class="stat-item" onclick="toggleModal(true)">
             <div class="stat-label">In Work Total</div>
             <div id="stat-cash" class="stat-value">0 €</div>
         </div>
@@ -101,22 +122,59 @@
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
     const CONFIG = { ghToken: _0x_p1 + _0x_p2, gistName: 'chaos_cargo_db.json' };
 
-    // Загружаем память: счетчик, сумма и СПИСОК УЖЕ ПОСЧИТАННЫХ ID
     let workCount = localStorage.getItem('workCount') ? parseInt(localStorage.getItem('workCount')) : 0;
     let workSum = localStorage.getItem('workSum') ? parseFloat(localStorage.getItem('workSum')) : 0;
-    let processedIds = localStorage.getItem('processedIds') ? JSON.parse(localStorage.getItem('processedIds')) : [];
+    
+    // Структура памяти: массив объектов {id: "...", price: 0}
+    let processedOrders = localStorage.getItem('processedOrders') ? JSON.parse(localStorage.getItem('processedOrders')) : [];
 
     function updateStatsDisplay() {
         document.getElementById('stat-count').innerText = workCount;
         document.getElementById('stat-cash').innerText = workSum.toLocaleString() + ' €';
     }
 
+    function toggleModal(show) {
+        const modal = document.getElementById('cash-modal');
+        modal.style.display = show ? 'flex' : 'none';
+        if(show) renderModalList();
+    }
+
+    function renderModalList() {
+        const list = document.getElementById('modal-list');
+        list.innerHTML = '<h3 style="color:#555; font-size:0.7rem; text-transform:uppercase;">Список транзакций</h3>';
+        if(processedOrders.length === 0) list.innerHTML += '<p style="color:#333; font-size:0.8rem;">Пусто</p>';
+        
+        processedOrders.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'modal-item';
+            div.innerHTML = `
+                <span>${item.id} <br><small style="color:#555">${item.price} €</small></span>
+                <button class="remove-btn" onclick="removeTransaction(${i})">УДАЛИТЬ</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function removeTransaction(index) {
+        const item = processedOrders[index];
+        workCount--;
+        workSum -= item.price;
+        processedOrders.splice(index, 1);
+        
+        localStorage.setItem('workCount', workCount);
+        localStorage.setItem('workSum', workSum);
+        localStorage.setItem('processedOrders', JSON.stringify(processedOrders));
+        
+        updateStatsDisplay();
+        renderModalList();
+    }
+
     function resetStats() {
         if(confirm("Сбросить кошелек и историю контрактов?")) {
-            workCount = 0; workSum = 0; processedIds = [];
+            workCount = 0; workSum = 0; processedOrders = [];
             localStorage.setItem('workCount', 0);
             localStorage.setItem('workSum', 0);
-            localStorage.setItem('processedIds', JSON.stringify([]));
+            localStorage.setItem('processedOrders', JSON.stringify([]));
             updateStatsDisplay();
         }
     }
@@ -173,15 +231,15 @@
     }
 
     async function handleWork(index, price, orderId) {
-        // УМНЫЙ ФИЛЬТР: Проверка ID в памяти телефона
-        if (!processedIds.includes(orderId)) {
+        const isAlreadyProcessed = processedOrders.some(item => item.id === orderId);
+        if (!isAlreadyProcessed) {
             workCount++;
             workSum += price;
-            processedIds.push(orderId);
+            processedOrders.push({id: orderId, price: price});
 
             localStorage.setItem('workCount', workCount);
             localStorage.setItem('workSum', workSum);
-            localStorage.setItem('processedIds', JSON.stringify(processedIds));
+            localStorage.setItem('processedOrders', JSON.stringify(processedOrders));
             
             updateStatsDisplay();
         }
