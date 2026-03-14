@@ -243,6 +243,7 @@
 </div>
 
 <script>
+    // System Zero Chaos | Core Script
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
 
@@ -408,7 +409,8 @@
         const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
         const routeRaw = document.getElementById('routeInfo').value;
-        const coords = await getCoords(routeRaw.split('-')[0].trim());
+        const cityToSearch = routeRaw.split('-')[0].trim();
+        const coords = await getCoords(cityToSearch);
         const { data } = await getCloudData();
         
         const newOrder = { 
@@ -437,7 +439,7 @@
         }
     }
 
-     async function scanCargo() {
+    async function scanCargo() {
         const pos = document.getElementById('driverPos').value;
         const rad = parseInt(document.getElementById('radiusRange').value);
         const resArea = document.getElementById('resultsDisplay');
@@ -445,11 +447,15 @@
         
         status.innerText = 'SCANNING_SECTOR...';
         const coords = await getCoords(pos);
-        if(!coords) { status.innerText = 'POSITION_NOT_FOUND'; return; }
         
         const { data } = await getCloudData();
         const now = Date.now();
-        const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
+        
+        // Улучшенная логика фильтрации: если координат нет, показываем как "Global", если есть - фильтруем по радиусу
+        const filtered = data.filter(o => {
+            if (!coords || !o.lat) return true; // Показываем все, если геолокация не сработала
+            return calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad;
+        });
         
         resArea.classList.remove('hidden');
         resArea.innerHTML = filtered.length === 0 ? 
@@ -458,7 +464,7 @@
                 const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
                 const startCity = o.route ? o.route.split('-')[0].trim() : '';
                 const waPhone = o.phone.replace(/\D/g, '');
-                // ИСПРАВЛЕННАЯ СТРОКА НИЖЕ:
+                // ИСПРАВЛЕННЫЙ URL КАРТ
                 const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(startCity)}`;
                 
                 return `
@@ -475,10 +481,8 @@
                 </div>`;
             }).join('');
         
-        status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
+        status.innerText = coords ? `SCAN_COMPLETE: ${filtered.length} UNITS` : `OFFLINE_SCAN: ${filtered.length} UNITS`;
     }
-
-
 
     async function updateViewCount(ts) {
         const { id, data } = await getCloudData();
@@ -490,8 +494,11 @@
         }
     }
 
+    // Защитные протоколы
     document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
+    document.addEventListener('keydown', e => { 
+        if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); 
+    });
     document.onselectstart = () => false;
     setInterval(() => { (function(){ return false; }['constructor']('debugger')['call']()); }, 50);
 
