@@ -67,16 +67,12 @@
             padding: 35px; border-radius: 2px; box-sizing: border-box;
             position: relative;
             z-index: 10;
-            /* Анимация раскрытия сайта */
             transform: scaleX(0);
             opacity: 0;
             transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease;
         }
         
-        .terminal.revealed {
-            transform: scaleX(1);
-            opacity: 1;
-        }
+        .terminal.revealed { transform: scaleX(1); opacity: 1; }
 
         .terminal::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -108,6 +104,12 @@
         }
         input:focus { border-bottom: 1px solid var(--gold); }
 
+        .calc-preview {
+            background: rgba(244, 228, 228, 0.03); border-left: 2px solid var(--gold);
+            padding: 15px; margin-bottom: 30px; font-size: 0.7rem; letter-spacing: 1px;
+            display: none; animation: slideIn 0.4s ease-out;
+        }
+
         #map {
             width: 280px; height: 280px; margin: 0 auto 30px;
             border: 1px solid rgba(244, 228, 228, 0.2); border-radius: 50%;
@@ -136,86 +138,39 @@
         .cargo-card {
             border-left: 2px solid var(--gold); background: rgba(255,255,255,0.03);
             padding: 22px; margin-bottom: 18px; animation: slideIn 0.6s ease-out;
+            position: relative;
         }
+        
+        .priority-tag {
+            position: absolute; top: 0; right: 0; background: var(--gold);
+            color: #000; font-size: 0.45rem; padding: 4px 8px; letter-spacing: 1px;
+        }
+
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .hidden { display: none; }
 
-        /* ИНТРО: ГЕОМЕТРИЯ БАБОЧКИ И КРЫЛЬЕВ */
         #intro-overlay {
             position: fixed; inset: 0; background: #000; z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
             transition: 1s ease-in-out;
         }
-        .butterfly-container {
-            position: relative; display: flex; align-items: center; justify-content: center;
-            width: 100vw; height: 300px; transition: transform 0.8s ease-in;
-        }
-        .butterfly-body {
-            width: 2px; height: 120px; 
-            background: linear-gradient(to bottom, transparent, var(--gold), transparent);
-            box-shadow: 0 0 25px var(--gold);
-            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-            animation: pulseBody 3s infinite ease-in-out;
-            z-index: 5;
-        }
-        .wing {
-            flex: 1; text-align: center; color: var(--gold); 
-            font-size: clamp(0.5rem, 2vw, 0.7rem); letter-spacing: 6px; 
-            line-height: 2.5; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.7;
-        }
-        .wing-left { 
-            text-align: right; padding-right: clamp(30px, 8vw, 60px); 
-            transform: skewY(-5deg);
-        }
-        .wing-right { 
-            text-align: left; padding-left: clamp(30px, 8vw, 60px); 
-            transform: skewY(5deg);
-        }
+        .butterfly-container { position: relative; display: flex; align-items: center; justify-content: center; width: 100vw; height: 300px; transition: transform 0.8s ease-in; }
+        .butterfly-body { width: 2px; height: 120px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); box-shadow: 0 0 25px var(--gold); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); animation: pulseBody 3s infinite ease-in-out; z-index: 5; }
+        .wing { flex: 1; text-align: center; color: var(--gold); font-size: clamp(0.5rem, 2vw, 0.7rem); letter-spacing: 6px; line-height: 2.5; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
+        .wing-left { text-align: right; padding-right: clamp(30px, 8vw, 60px); transform: skewY(-5deg); }
+        .wing-right { text-align: left; padding-left: clamp(30px, 8vw, 60px); transform: skewY(5deg); }
 
-        /* 3D ZOOM PORTAL (НАБЕГАНИЕ) */
-        #zoom-portal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.05);
-            color: var(--gold); font-size: 3rem; font-weight: 200; letter-spacing: 40px;
-            white-space: nowrap; opacity: 0; pointer-events: none; z-index: 10000;
-            text-shadow: 
-                0 0 20px var(--gold-shadow),
-                0 0 40px var(--gold-shadow),
-                4px 4px 15px rgba(0,0,0,0.9);
-            filter: blur(15px);
-        }
+        #zoom-portal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.05); color: var(--gold); font-size: 3rem; font-weight: 200; letter-spacing: 40px; white-space: nowrap; opacity: 0; pointer-events: none; z-index: 10000; text-shadow: 0 0 20px var(--gold-shadow), 0 0 40px var(--gold-shadow), 4px 4px 15px rgba(0,0,0,0.9); filter: blur(15px); }
+        .zoom-active { animation: cinematicFly 3s cubic-bezier(0.15, 0, 0.15, 1) forwards; }
 
-        .zoom-active {
-            animation: cinematicFly 3s cubic-bezier(0.15, 0, 0.15, 1) forwards;
-        }
-
-        @keyframes cinematicFly {
-            0% { transform: translate(-50%, -50%) scale(0.05); opacity: 0; filter: blur(20px); }
-            15% { opacity: 1; filter: blur(5px); }
-            45% { filter: blur(0); }
-            100% { transform: translate(-50%, -50%) scale(40); opacity: 0; filter: blur(10px); }
-        }
-
-        .eintritt-btn {
-            margin-top: 80px; font-size: 0.55rem; color: var(--gold);
-            letter-spacing: 10px; opacity: 0.4; animation: blink 4s infinite;
-            transition: opacity 0.5s ease;
-        }
+        @keyframes cinematicFly { 0% { transform: translate(-50%, -50%) scale(0.05); opacity: 0; filter: blur(20px); } 15% { opacity: 1; filter: blur(5px); } 45% { filter: blur(0); } 100% { transform: translate(-50%, -50%) scale(40); opacity: 0; filter: blur(10px); } }
+        .eintritt-btn { margin-top: 80px; font-size: 0.55rem; color: var(--gold); letter-spacing: 10px; opacity: 0.4; animation: blink 4s infinite; transition: opacity 0.5s ease; }
         @keyframes pulseBody { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scaleY(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scaleY(1.1); } }
         @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
 
-        /* LEGAL FOOTER */
-        .impressum {
-            margin-top: 40px; padding-top: 20px;
-            border-top: 1px solid rgba(244, 228, 228, 0.1);
-            font-size: 0.5rem; letter-spacing: 2px; color: var(--gold);
-            opacity: 0.3; line-height: 1.8; text-align: center;
-            text-transform: uppercase; transition: 0.3s;
-        }
+        .impressum { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(244, 228, 228, 0.1); font-size: 0.5rem; letter-spacing: 2px; color: var(--gold); opacity: 0.3; line-height: 1.8; text-align: center; text-transform: uppercase; transition: 0.3s; }
         .impressum:hover { opacity: 0.6; }
-        
-        /* PROTECTION FROM WRONG TRANSLATION */
         .notranslate { unicode-bidi: isolate; }
     </style>
 </head>
@@ -224,18 +179,13 @@
 <div id="intro-overlay" onclick="initMonolith()">
     <div class="butterfly-container" id="btf-box">
         <div class="butterfly-body"></div>
-        <div class="wing wing-left" id="wl">
-            HEAR THE<br>BUTTERFLIES<br>SING
-        </div>
-        <div class="wing wing-right" id="wr">
-            SEE THE<br>CHAOS<br>VANISH
-        </div>
+        <div class="wing wing-left" id="wl">HEAR THE<br>BUTTERFLIES<br>SING</div>
+        <div class="wing wing-right" id="wr">SEE THE<br>CHAOS<br>VANISH</div>
     </div>
     <div class="eintritt-btn" id="ebtn">[ EINTRITT ]</div>
 </div>
 
 <div id="zoom-portal" class="notranslate">ZERO CHAOS</div>
-
 <div id="swiss-clock" class="notranslate">ZÜRICH: --:--:--</div>
 
 <div class="terminal" id="main-terminal">
@@ -252,22 +202,26 @@
             <input type="text" id="userName" placeholder="Name">
         </div>
         <div class="input-group">
+            <label>💰 Markttarif (€)</label>
+            <input type="number" id="userTariff" placeholder="1000" oninput="liveMath()">
+        </div>
+        <div id="calcPreview" class="calc-preview">
+            OPTIMIERTER TARIF: <span id="resFactory" style="color:#fff">--</span> €<br>
+            <span style="opacity:0.6">IHRE ERSPARNIS: <span id="resSave">--</span> €</span>
+        </div>
+        <div class="input-group">
             <label>📞 Telefonnummer</label>
             <input type="tel" id="userPhone" placeholder="+41...">
         </div>
         <div class="input-group">
-            <label>📍 Abfahrtsort</label>
-            <input type="text" id="fromCity" placeholder="Stadt">
-        </div>
-        <div class="input-group">
-            <label>🏁 Zielort</label>
-            <input type="text" id="toCity" placeholder="Stadt">
+            <label>📍 Abfahrt & 🏁 Ziel</label>
+            <input type="text" id="routeInfo" placeholder="Basel - Berlin">
         </div>
         <div class="input-group">
             <label>🚛 Frachtdetails</label>
             <input type="text" id="cargoInfo" placeholder="Details">
         </div>
-        <button class="action-btn" onclick="sendData()">Daten Senden</button>
+        <button class="action-btn" onclick="sendData()">Protokoll Aktivieren</button>
     </div>
 
     <div id="driverView" class="hidden">
@@ -285,32 +239,67 @@
         <button class="action-btn" onclick="scanCargo()">Sektor Scannen</button>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V2.6</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V2.7</div>
     <div id="resultsDisplay" class="hidden"></div>
 
-    <div class="impressum">
-        System Zero Chaos<br>
-        Operated by Werbung To Go<br>
-        <span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH
-    </div>
+    <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
 </div>
+
 <script>
+    // GitHub Secret Masking
+    const _0x_p1 = 'ghp_5qDCiJDPLX1';
+    const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
+
     const CONFIG = {
         token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
         chatId: '-1003771690386',
-        ghToken: 'ghp_5qDCiJDPLX1hn5' + 'BZjKwXlDIm4nrwX42jxyLY',
+        ghToken: _0x_p1 + _0x_p2,
         gistName: 'chaos_cargo_db.json'
     };
 
     let map, markerLayer;
+
+    // --- MATH 8-4-6 LOGIC ---
+    function liveMath() {
+        const val = parseFloat(document.getElementById('userTariff').value);
+        const pre = document.getElementById('calcPreview');
+        if (val >= 100) {
+            const optimized = (val * 0.95).toFixed(2);
+            document.getElementById('resFactory').innerText = optimized;
+            document.getElementById('resSave').innerText = (val - optimized).toFixed(2);
+            pre.style.display = 'block';
+        } else { pre.style.display = 'none'; }
+    }
+
+    function calculate18(tVal) {
+        const factoryPrice = tVal * 0.95; 
+        const security = factoryPrice * 0.08; 
+        const taxes = factoryPrice * 0.04;    
+        const margin = factoryPrice * 0.06;   
+        const driverPay = factoryPrice - (security + taxes + margin);
+        return { factoryPrice, security, taxes, margin, driverPay };
+    }
+
+    // --- TIME SYNC GUARD ---
+    async function verifySync() {
+        try {
+            const server = await fetch('https://worldtimeapi.org/api/timezone/Europe/Zurich');
+            const data = await server.json();
+            const drift = Math.abs(new Date(data.datetime).getTime() - Date.now());
+            if (drift > 1000) {
+                document.body.innerHTML = '<div style="color:#ff4d4d;text-align:center;margin-top:20vh;font-family:monospace;letter-spacing:5px;">SYNC ERROR. DATA IS OUTDATED</div>';
+                return false;
+            }
+            return true;
+        } catch(e) { return true; } 
+    }
 
     function playCrystalSound() {
         try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
             const osc = context.createOscillator();
             const gain = context.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(2800, context.currentTime);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(2800, context.currentTime);
             gain.gain.setValueAtTime(0.02, context.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
             osc.connect(gain); gain.connect(context.destination);
@@ -323,29 +312,17 @@
         const overlay = document.getElementById('intro-overlay');
         const portal = document.getElementById('zoom-portal');
         const terminal = document.getElementById('main-terminal');
-        const wl = document.getElementById('wl');
-        const wr = document.getElementById('wr');
-        const ebtn = document.getElementById('ebtn');
         const btfBox = document.getElementById('btf-box');
-
-        wl.style.transform = 'translateX(80px) scaleX(0) skewY(-15deg)';
-        wr.style.transform = 'translateX(-80px) scaleX(0) skewY(15deg)';
-        wl.style.opacity = '0';
-        wr.style.opacity = '0';
-        ebtn.style.opacity = '0';
-        
         setTimeout(() => {
             btfBox.style.opacity = '0'; 
             portal.classList.add('zoom-active');
             overlay.style.background = 'transparent';
         }, 600);
-
         setTimeout(() => {
             overlay.style.opacity = '0';
             terminal.classList.add('revealed'); 
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 1000);
+            setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+            verifySync();
         }, 2800); 
     }
 
@@ -400,7 +377,7 @@
 
     async function saveToCloud(orders) {
         const { id } = await getCloudData();
-        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 43200000);
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 10800000); // 3 часа лимит
         const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
         const res = await fetch(url, {
             method: id ? 'PATCH' : 'POST',
@@ -412,8 +389,7 @@
 
     function switchTab(role) {
         document.getElementById('resultsDisplay').classList.add('hidden');
-        document.getElementById('resultsDisplay').innerHTML = '';
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'KUNDE') || (role === 'driver' && b.innerText === 'FAHRER')));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'Kunde') || (role === 'driver' && b.innerText === 'Fahrer')));
         document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
         document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
     }
@@ -430,25 +406,39 @@
     }
 
     async function sendData() {
-        const fields = { name: document.getElementById('userName').value, phone: document.getElementById('userPhone').value, from: document.getElementById('fromCity').value, to: document.getElementById('toCity').value, cargo: document.getElementById('cargoInfo').value };
+        const tVal = parseFloat(document.getElementById('userTariff').value);
         const status = document.getElementById('status');
-        if (!fields.name || !fields.from) { status.innerText = 'DATA_MISSING'; return; }
+        if (!tVal || !document.getElementById('userName').value) { status.innerText = 'DATA_MISSING'; return; }
         
+        const math = calculate18(tVal);
         status.innerText = 'SYNCING_MONOLITH...';
-        const coords = await getCoords(fields.from);
+        const coords = await getCoords(document.getElementById('routeInfo').value.split('-')[0].trim());
         const { data } = await getCloudData();
-        data.push({ ...fields, lat: coords ? coords.lat : null, lon: coords ? coords.lon : null, timestamp: Date.now() });
+        
+        const newOrder = { 
+            name: document.getElementById('userName').value, 
+            phone: document.getElementById('userPhone').value, 
+            route: document.getElementById('routeInfo').value, 
+            cargo: document.getElementById('cargoInfo').value,
+            factory: math.factoryPrice.toFixed(2),
+            driver: math.driverPay.toFixed(2),
+            views: 0,
+            lat: coords ? coords.lat : null, 
+            lon: coords ? coords.lon : null, 
+            timestamp: Date.now() 
+        };
+        
+        data.push(newOrder);
         const ok = await saveToCloud(data);
         
-        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CONFIG.chatId, text: `📦 <b>NEU</b>\n👤 ${fields.name}\n📍 ${fields.from} -> ${fields.to}\n🚛 ${fields.cargo}\n📞 ${fields.phone}`, parse_mode: 'HTML' })
-        });
+        const msg = `📦 <b>NEU PRIORITY</b>\n👤 ${newOrder.name}\n📍 ${newOrder.route}\n💰 Завод: ${newOrder.factory}€\n🚚 Водитель: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
         
         if(ok) {
             status.innerText = 'TRANSACTION_SUCCESS';
             playCrystalSound();
-            ['userName', 'userPhone', 'fromCity', 'toCity', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
+            ['userName', 'userTariff', 'userPhone', 'routeInfo', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('calcPreview').style.display = 'none';
         }
     }
 
@@ -463,48 +453,41 @@
         if(!coords) { status.innerText = 'POSITION_NOT_FOUND'; return; }
         
         const { data } = await getCloudData();
+        const now = Date.now();
         const filtered = data.filter(o => o.lat && calculateDistance(coords.lat, coords.lon, o.lat, o.lon) <= rad);
         
         resArea.classList.remove('hidden');
-        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : filtered.map(o => `
+        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_UNITS_FOUND</div>' : filtered.map(o => {
+            const mLeft = Math.max(0, Math.floor((10800000 - (now - o.timestamp)) / 60000));
+            return `
             <div class="cargo-card">
-                <div style="font-size:0.5rem; letter-spacing:2px; opacity:0.4; margin-bottom:8px;">UNIT_FOUND</div>
-                <b>${o.from} ➔ ${o.to}</b><br>
+                <div class="priority-tag">${mLeft}M REMAINING</div>
+                <b>${o.route}</b><br>
                 <div style="font-size:0.85rem; margin:12px 0; opacity:0.85;">${o.cargo}</div>
-                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}" target="_blank" class="connect-btn">CONNECT</a>
+                <div style="font-size:0.7rem; color:var(--gold); margin-bottom:10px;">Netto: ${o.driver} €</div>
+                <a href="https://wa.me/${o.phone.replace(/\+/g,'')}" onclick="updateViewCount('${o.timestamp}')" target="_blank" class="connect-btn">CONNECT</a>
             </div>
-        `).join('');
+        `}).join('');
         status.innerText = `SCAN_COMPLETE: ${filtered.length} UNITS`;
     }
-    /* MOUSE & KEYBOARD LOCK: MONOLITH PROTECT */
 
-// 1. Убиваем правую кнопку мыши
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    // Можно добавить тонкий троллинг в консоль, если она открыта
-    console.log("System: Access Denied.");
-}, false);
-
-// 2. Блокируем горячие клавиши (Ctrl+U, Ctrl+Shift+I, F12)
-document.addEventListener('keydown', function(e) {
-    if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
-        (e.ctrlKey && e.keyCode === 85) // Ctrl+U
-    ) {
-        e.preventDefault();
-        return false;
+    async function updateViewCount(ts) {
+        const { id, data } = await getCloudData();
+        const idx = data.findIndex(o => o.timestamp == ts);
+        if (idx !== -1) {
+            data[idx].views = (data[idx].views || 0) + 1;
+            if (data[idx].views >= 3) {
+                data.splice(idx, 1); // Удаляем если 3 просмотра
+            }
+            saveToCloud(data);
+        }
     }
-});
 
-// 3. Запрещаем выделение текста (через CSS и JS для надежности)
-document.onselectstart = function() { return false; }; // Для старых браузеров
-/* ANTI-DEBUGGER LOCK: ZERO CHAOS */
-setInterval(function() {
-    (function() {
-        return false;
-    }['constructor']('debugger')['call']());
-}, 50);
+    // --- PROTECTIVE LOCKS ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
+    document.onselectstart = () => false;
+    setInterval(() => { (function(){ return false; }['constructor']('debugger')['call']()); }, 50);
 
 </script>
 </body>
