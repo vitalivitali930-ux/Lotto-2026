@@ -3,111 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zero Chaos | Admin v3.5</title>
+    <title>Zero Chaos | Command Center</title>
     <style>
         :root {
-            --bg-color: #050505; /* Ещё глубже черный */
-            --card-bg: #111111; /* Глубокий серый для карточек */
-            --text-main: #888888; /* Базовый серый текст */
-            --text-highlight: #aaaaaa; /* Светло-серый при наведении */
-            
+            --bg-color: #030303;
+            --card-bg: #0d0d0d;
+            --text-dim: #666;
+            --text-mid: #999;
             --accent: #00ffcc;
-            --red: #ff3366;
+            --red: #ff2d55;
             --yellow: #ffcc00;
-            --green: #00ff88;
-            --gray: #444444; /* Серый для законченных заказов */
+            --green: #00ffa3;
         }
         
         body { 
-            background: var(--bg-color); color: var(--text-main); 
-            font-family: 'Inter', Roboto, sans-serif; padding: 20px; 
-            margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; 
+            background: var(--bg-color); color: var(--text-mid); 
+            font-family: 'Segoe UI', sans-serif; padding: 0; margin: 0;
+            display: flex; flex-direction: column; align-items: center;
         }
-        
-        h2 { text-transform: uppercase; letter-spacing: 5px; color: #555; /* Приглушенный заголовок */ text-shadow: none; font-size: 1rem; margin-bottom: 30px; }
-        h2:hover { color: var(--text-highlight); }
 
-        .refresh-btn { 
-            background: transparent; border: 1px solid #333; color: #555; 
-            padding: 10px 30px; border-radius: 50px; cursor: pointer; 
-            font-weight: bold; letter-spacing: 2px; font-size: 0.7rem; transition: 0.3s;
+        /* Верхняя панель статистики */
+        .stats-bar {
+            width: 100%; background: #0a0a0a; padding: 15px 0;
+            display: flex; justify-content: space-around;
+            border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
         }
-        .refresh-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px rgba(0, 255, 204, 0.1); }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.5rem; text-transform: uppercase; color: #444; letter-spacing: 1px; }
+        .stat-value { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
 
-        #orders-container { width: 100%; max-width: 450px; margin-top: 30px; }
+        .terminal-header { margin: 25px 0; text-align: center; }
+        .terminal-header h2 { font-size: 0.7rem; letter-spacing: 6px; color: #333; text-transform: uppercase; }
+
+        #orders-container { width: 92%; max-width: 450px; }
         
         .order-card { 
-            background: var(--card-bg); border-radius: 6px; padding: 25px; 
-            margin-bottom: 25px; position: relative; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.02);
-            transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            background: var(--card-bg); border-radius: 4px; padding: 20px; 
+            margin-bottom: 15px; border: 1px solid #151515; position: relative;
+            transition: all 0.4s ease;
         }
-        .order-card:hover { border-color: rgba(255,255,255,0.05); transform: translateY(-2px); }
 
         /* Полоска статуса */
-        .order-card::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: #222; transition: 0.3s; }
-        .order-card.status-0::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
-        .order-card.status-1::before { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
-        .order-card.status-2::before { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .order-card::before { content: ''; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #222; }
+        .order-card.status-0::before { background: var(--red); box-shadow: 0 0 15px var(--red); }
+        .order-card.status-1::before { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
+        .order-card.status-2::before { background: var(--green); }
 
-        /* Логика полного "посерения" для DONE (Статус 2) */
-        .order-card.status-2 {
-            border-color: rgba(255,255,255,0.01);
-            filter: grayscale(1) opacity(0.6); /* Приглушаем всю карточку */
-        }
-        .order-card.status-2 * { color: #555 !important; text-shadow: none !important; }
-        .order-card.status-2::before { background: var(--gray) !important; box-shadow: none !important; }
+        /* Пульсация для новых */
+        @keyframes pulse-red { 0% { border-color: #151515; } 50% { border-color: #301015; } 100% { border-color: #151515; } }
+        .order-card.status-0 { animation: pulse-red 2s infinite; }
 
-        .order-header { display: flex; justify-content: space-between; font-size: 0.65rem; color: #444; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
-        .order-route { font-size: 1rem; font-weight: bold; margin-bottom: 12px; color: var(--text-highlight); letter-spacing: 1px; }
-        
-        .order-info { font-size: 0.8rem; line-height: 1.6; color: #777; margin-bottom: 15px; }
-        .order-info strong { color: #aaa; }
+        /* Сворачивание для Done */
+        .order-card.status-2 { opacity: 0.4; filter: grayscale(1); transform: scale(0.98); }
+        .order-card.status-2 .order-info, .order-card.status-2 .wa-call-btn { display: none; }
 
-        .order-price { font-size: 1.3rem; color: var(--text-highlight); font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; }
+        .order-header { display: flex; justify-content: space-between; font-size: 0.6rem; color: #333; margin-bottom: 10px; }
+        .order-route { font-size: 0.9rem; font-weight: bold; color: #ccc; margin-bottom: 5px; }
+        .order-price { color: var(--accent); font-weight: bold; font-size: 1rem; margin: 10px 0; }
 
-        /* Кнопка WhatsApp Call */
         .wa-call-btn {
-            display: inline-block; background: #1a1a1a; color: #666; 
-            text-decoration: none; padding: 6px 15px; border-radius: 4px; 
-            font-size: 0.6rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; 
-            border: 1px solid #222; transition: 0.3s; margin-top: 5px;
+            display: inline-block; border: 1px solid #222; color: #555;
+            padding: 8px 15px; border-radius: 2px; font-size: 0.6rem;
+            text-decoration: none; text-transform: uppercase; margin: 10px 0;
         }
-        .wa-call-btn:hover { background: #222; color: #aaa; border-color: #333; }
-        .wa-call-btn i { margin-right: 5px; opacity: 0.7; }
 
-        .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 15px; }
         .controls button { 
-            border: none; padding: 12px 5px; border-radius: 4px; 
-            font-size: 0.65rem; font-weight: 900; cursor: pointer; 
-            text-transform: uppercase; transition: 0.2s; opacity: 0.6;
-            background: #1a1a1a; color: #555; border: 1px solid #222;
+            background: #050505; border: 1px solid #1a1a1a; color: #444; 
+            padding: 10px 0; font-size: 0.55rem; font-weight: bold; text-transform: uppercase;
         }
-        .controls button:hover { opacity: 1; transform: translateY(-1px); background: #222; color: #fff; border-color: #333; }
         
-        .order-card.status-0 .btn-new { background: var(--red); color: #fff; opacity: 1; border: none; box-shadow: 0 0 10px rgba(255, 51, 102, 0.2); }
-        .order-card.status-1 .btn-work { background: var(--yellow); color: #000; opacity: 1; border: none; box-shadow: 0 0 10px rgba(255, 204, 0, 0.2); }
-        .order-card.status-2 .btn-done { background: var(--green); color: #000; opacity: 1; border: none; }
+        .order-card.status-0 .btn-new { color: var(--red); border-color: var(--red); }
+        .order-card.status-1 .btn-work { color: var(--yellow); border-color: var(--yellow); }
+        .order-card.status-2 .btn-done { color: var(--green); border-color: var(--green); }
 
-        #debug-info { margin-top: auto; padding: 20px; font-family: monospace; font-size: 0.6rem; color: #222; text-align: center; }
+        .refresh-btn { 
+            background: none; border: 1px solid #222; color: #444; 
+            padding: 10px 40px; border-radius: 20px; font-size: 0.6rem; margin: 20px 0;
+            letter-spacing: 2px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h2>Zero Chaos :: Ops Terminal</h2>
-    <button class="refresh-btn" onclick="loadOrders()">SYNC_NETWORK</button>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-label">Active</div>
+            <div id="stat-active" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Turnover</div>
+            <div id="stat-cash" class="stat-value">0 €</div>
+        </div>
+    </div>
+
+    <div class="terminal-header">
+        <h2>Zero Chaos // Operations</h2>
+    </div>
+
     <div id="orders-container"></div>
-    <div id="debug-info">Ready.</div>
+    
+    <button class="refresh-btn" onclick="loadOrders()">REFRESH_DATA</button>
 
 <script>
-    // Манифест: Данные должны быть молодыми и живыми
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
-    const CONFIG = {
-        ghToken: _0x_p1 + _0x_p2,
-        gistName: 'chaos_cargo_db.json'
-    };
+    const CONFIG = { ghToken: _0x_p1 + _0x_p2, gistName: 'chaos_cargo_db.json' };
 
-    // МОЛОДАЯ ФУНКЦИЯ: Сама ищет свой путь (без жестких ID)
     async function findGist() {
         const r = await fetch(`https://api.github.com/gists?t=${Date.now()}`, {
             headers: { 'Authorization': `token ${CONFIG.ghToken}` }
@@ -116,60 +119,48 @@
         return gists.find(g => g.files[CONFIG.gistName]);
     }
 
-    async function getCloudData() {
-        const debug = document.getElementById('debug-info');
-        try {
-            const myGist = await findGist();
-            if (!myGist) throw new Error("GIST_NOT_FOUND");
-
-            const file = myGist.files[CONFIG.gistName];
-            const contentResponse = await fetch(file.raw_url + '?cache=' + Date.now());
-            const text = await contentResponse.text();
-            
-            debug.innerText = `[${myGist.id.substring(0,6)}] LEN: ${text.length}`;
-            return (text && text !== "[]" && text !== "null") ? JSON.parse(text) : [];
-        } catch(e) {
-            debug.innerText = "OFFLINE / ERROR: " + e.message;
-            return [];
-        }
-    }
-
     async function loadOrders() {
         const container = document.getElementById('orders-container');
-        if (!container.innerHTML || container.innerHTML.includes('ПУСТО')) {
-            container.innerHTML = '<div style="text-align:center; opacity:0.1; letter-spacing:4px; padding:50px;">СКАНИРОВАНИЕ СЕТИ...</div>';
-        }
         const orders = await getCloudData();
+        updateStats(orders);
         renderOrders(orders);
+    }
+
+    function updateStats(orders) {
+        const active = orders.filter(o => o.status === 1).length;
+        const total = orders.reduce((sum, o) => sum + parseFloat(o.driver || o.factory || 0), 0);
+        document.getElementById('stat-active').innerText = active;
+        document.getElementById('stat-cash').innerText = total.toLocaleString() + ' €';
+    }
+
+    async function getCloudData() {
+        try {
+            const myGist = await findGist();
+            if (!myGist) return [];
+            const res = await fetch(myGist.files[CONFIG.gistName].raw_url + '?t=' + Date.now());
+            const text = await res.text();
+            return JSON.parse(text);
+        } catch(e) { return []; }
     }
 
     function renderOrders(orders) {
         const container = document.getElementById('orders-container');
-        container.innerHTML = orders.length === 0 ? '<div style="text-align:center; opacity:0.1; padding:40px;">БАЗА ПУСТА</div>' : '';
-        
+        container.innerHTML = '';
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const status = order.status || 0;
             const card = document.createElement('div');
             card.className = `order-card status-${status}`;
             
-            // Чистим телефон для ссылки
             const cleanPhone = order.phone ? order.phone.replace(/\D/g, '') : '';
-            
+            const msg = encodeURIComponent(`Здравствуйте! По поводу вашего заказа ${order.route}.`);
+
             card.innerHTML = `
-                <div class="order-header">
-                    <span>${order.id || 'N/A'}</span>
-                    <span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}) : ''}</span>
-                </div>
-                <div class="order-route">${order.route || '---'}</div>
-                <div class="order-info">
-                    <strong>Кустарь:</strong> ${order.name || '---'}<br>
-                    <strong>Груз:</strong> ${order.cargo || '---'}
-                </div>
+                <div class="order-header"><span>${order.id}</span><span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : ''}</span></div>
+                <div class="order-route">${order.route}</div>
+                <div class="order-info">${order.name} | ${order.cargo}</div>
                 <div class="order-price">${order.driver || order.factory || 0} €</div>
-                
-                ${cleanPhone ? `<a href="https://wa.me/${cleanPhone}" class="wa-call-btn" target="_blank">[ WhatsApp Call ]</a>` : '<span style="font-size:0.6rem; color:#333;">Нет тел.</span>'}
-                
+                <a href="https://wa.me/${cleanPhone}?text=${msg}" class="wa-call-btn" target="_blank">WhatsApp Chat</a>
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">New</button>
                     <button class="btn-work" onclick="updateStatus(${realIndex}, 1)">Work</button>
@@ -180,24 +171,20 @@
         });
     }
 
-    async function updateStatus(index, newStatus) {
+    async function updateStatus(index, s) {
         const orders = await getCloudData();
         const myGist = await findGist();
-        
-        if (myGist && orders[index]) {
-            orders[index].status = newStatus;
-            await fetch(`https://api.github.com/gists/${myGist.id}`, {
-                method: 'PATCH',
-                headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
-            });
-            loadOrders();
-        }
+        orders[index].status = s;
+        await fetch(`https://api.github.com/gists/${myGist.id}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `token ${CONFIG.ghToken}` },
+            body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
+        });
+        loadOrders();
     }
 
     loadOrders();
-    // Авто-обновление каждые 45 сек
-    setInterval(loadOrders, 45000);
+    setInterval(loadOrders, 60000);
 </script>
 </body>
 </html>
