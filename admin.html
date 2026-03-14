@@ -101,9 +101,10 @@
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
     const CONFIG = { ghToken: _0x_p1 + _0x_p2, gistName: 'chaos_cargo_db.json' };
 
-    // Инициализация локальной памяти (Чтобы сумма не пропадала)
+    // Загружаем память: счетчик, сумма и СПИСОК УЖЕ ПОСЧИТАННЫХ ID
     let workCount = localStorage.getItem('workCount') ? parseInt(localStorage.getItem('workCount')) : 0;
     let workSum = localStorage.getItem('workSum') ? parseFloat(localStorage.getItem('workSum')) : 0;
+    let processedIds = localStorage.getItem('processedIds') ? JSON.parse(localStorage.getItem('processedIds')) : [];
 
     function updateStatsDisplay() {
         document.getElementById('stat-count').innerText = workCount;
@@ -111,10 +112,11 @@
     }
 
     function resetStats() {
-        if(confirm("Сбросить счетчики?")) {
-            workCount = 0; workSum = 0;
+        if(confirm("Сбросить кошелек и историю контрактов?")) {
+            workCount = 0; workSum = 0; processedIds = [];
             localStorage.setItem('workCount', 0);
             localStorage.setItem('workSum', 0);
+            localStorage.setItem('processedIds', JSON.stringify([]));
             updateStatsDisplay();
         }
     }
@@ -147,20 +149,22 @@
         [...orders].reverse().forEach((order, index) => {
             const realIndex = orders.length - 1 - index;
             const status = order.status || 0;
+            const orderId = order.id || `temp-${realIndex}`;
+            const price = parseFloat(order.driver || order.factory || 0);
+
             const card = document.createElement('div');
             card.className = `order-card status-${status}`;
             
             const cleanPhone = order.phone ? order.phone.replace(/\D/g, '') : '';
-            const price = parseFloat(order.driver || order.factory || 0);
 
             card.innerHTML = `
-                <div class="order-header"><span>${order.id}</span><span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : ''}</span></div>
+                <div class="order-header"><span>${orderId}</span><span>${order.timestamp ? new Date(order.timestamp).toLocaleTimeString() : ''}</span></div>
                 <div class="order-route">${order.route}</div>
                 <div class="order-price">${price} €</div>
                 <a href="https://wa.me/${cleanPhone}" class="wa-call-btn" target="_blank">WhatsApp Chat</a>
                 <div class="controls">
                     <button class="btn-new" onclick="updateStatus(${realIndex}, 0)">New</button>
-                    <button class="btn-work" onclick="handleWork(${realIndex}, ${price})">Work</button>
+                    <button class="btn-work" onclick="handleWork(${realIndex}, ${price}, '${orderId}')">Work</button>
                     <button class="btn-done" onclick="updateStatus(${realIndex}, 2)">Done</button>
                 </div>
             `;
@@ -168,15 +172,17 @@
         });
     }
 
-    // ХИТРАЯ МАТЕМАТИКА: Считает только новые нажатия
-    async function handleWork(index, price) {
-        const orders = await getCloudData();
-        // Если заказ еще НЕ был в статусе WORK (1), прибавляем к счетчику
-        if (orders[index].status !== 1) {
+    async function handleWork(index, price, orderId) {
+        // УМНЫЙ ФИЛЬТР: Проверка ID в памяти телефона
+        if (!processedIds.includes(orderId)) {
             workCount++;
             workSum += price;
+            processedIds.push(orderId);
+
             localStorage.setItem('workCount', workCount);
             localStorage.setItem('workSum', workSum);
+            localStorage.setItem('processedIds', JSON.stringify(processedIds));
+            
             updateStatsDisplay();
         }
         updateStatus(index, 1);
@@ -188,7 +194,7 @@
         orders[index].status = s;
         await fetch(`https://api.github.com/gists/${myGist.id}`, {
             method: 'PATCH',
-            headers: { 'Authorization': `token ${CONFIG.ghToken}` },
+            headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ files: { [CONFIG.gistName]: { content: JSON.stringify(orders, null, 2) } } })
         });
         loadOrders();
