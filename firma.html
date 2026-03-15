@@ -1,21 +1,18 @@
-Водители 
-
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Zero Chaos | Harvester v2.2 Touch</title>
+    <title>Zero Chaos | Producer Harvester v1.0</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
         :root {
-            --glow-color: #00f2ff;
-            --bg-dark: #0a0a0a;
-            --accent: #ff007b;
-            --success: #2ecc71;
+            --glow-color: #ffcc00; /* Золотой для заказчиков */
+            --bg-dark: #0f0e0a;
+            --accent: #ffae00;
+            --success: #00ff88;
             --pending: #f1c40f;
-            --decline: #e74c3c;
-            --new-item: #bc13fe;
+            --decline: #ff4d4d;
+            --new-item: #ffea00;
         }
 
         body {
@@ -30,7 +27,7 @@
             z-index: 9999; pointer-events: none;
         }
         .toast {
-            background: rgba(0, 242, 255, 0.9); color: black;
+            background: rgba(255, 204, 0, 0.9); color: black;
             padding: 15px 25px; border-radius: 5px; font-weight: bold;
             margin-bottom: 10px; box-shadow: 0 0 20px var(--glow-color);
             animation: slideDown 0.4s ease, fadeOut 0.4s 2s forwards;
@@ -46,7 +43,7 @@
         .folder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
         .folder-card {
             border: 2px solid var(--glow-color); padding: 20px 5px;
-            text-align: center; background: rgba(0, 242, 255, 0.03);
+            text-align: center; background: rgba(255, 204, 0, 0.03);
             -webkit-tap-highlight-color: transparent;
         }
         .folder-card:active { background: var(--glow-color); color: black; }
@@ -55,7 +52,7 @@
         .back-btn { padding: 12px; border: 1px solid var(--accent); color: var(--accent); margin-bottom: 15px; width: 80px; text-align: center; font-weight: bold; }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
-        td { padding: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 242, 255, 0.08); font-size: 11px; vertical-align: middle; }
+        td { padding: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 204, 0, 0.1); font-size: 11px; vertical-align: middle; }
 
         .btn-action {
             padding: 10px 5px; border: 1px solid var(--accent); color: var(--accent);
@@ -63,17 +60,13 @@
         }
 
         .status-btn { width: 35px; height: 35px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .active-green { background: var(--success) !important; color: white !important; }
+        .active-green { background: var(--success) !important; color: black !important; }
         .active-yellow { background: var(--pending) !important; color: black !important; }
 
         .row-new { border-left: 3px solid var(--new-item); }
 
-        /* Панель загрузки */
         .injector-panel { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
-        textarea { width: 100%; background: #000; color: #0f0; border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px; outline: none; box-sizing: border-box; }
-
-        #modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; justify-content:center; align-items:center; z-index:5000; }
-        .modal-content { background: var(--bg-dark); border: 1px solid var(--glow-color); padding: 20px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        textarea { width: 100%; background: #000; color: var(--glow-color); border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px; outline: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -81,34 +74,28 @@
     <div id="toast-container"></div>
 
     <div id="login-screen">
-        <h2 style="color:var(--glow-color)">ZERO CHAOS</h2>
+        <h2 style="color:var(--glow-color)">CLIENT SECTOR</h2>
         <input type="password" id="pass-input" placeholder="CODE: 777" style="background:transparent; border:1px solid var(--glow-color); color:white; padding:12px; text-align:center; width: 150px;">
         <br><br>
-        <button class="btn-action" style="width: 150px; font-size: 14px;" onclick="checkPass()">ENTER</button>
+        <button class="btn-action" style="width: 150px; font-size: 14px;" onclick="checkPass()">ACTIVATE</button>
     </div>
 
     <div id="main-dashboard">
         <div id="home-view">
-            <h1 style="color:var(--glow-color); font-size: 18px; text-transform: uppercase;">Dossier: Countries</h1>
+            <h1 style="color:var(--glow-color); font-size: 18px;">PRODUCERS: REGIONS</h1>
             <div id="folder-grid" class="folder-grid"></div>
         </div>
 
         <div id="country-view">
             <div class="back-btn" onclick="showHome()">← BACK</div>
             <h2 id="current-country-name" style="color:var(--glow-color); margin: 10px 0;"></h2>
-            <table>
-                <tbody id="data-table"></tbody>
-            </table>
+            <table><tbody id="data-table"></tbody></table>
         </div>
 
         <div class="injector-panel">
-            <textarea id="direct-injector" rows="3" placeholder="Paste JSON array here..."></textarea>
-            <button class="btn-action" style="width:100%; margin-top:8px; border-color:var(--glow-color); color:var(--glow-color); font-size: 12px;" onclick="quickInject()">СКОРМИТЬ НОВЫЕ ФИРМЫ</button>
+            <textarea id="direct-injector" rows="3" placeholder="Paste Manufacturing JSON..."></textarea>
+            <button class="btn-action" style="width:100%; margin-top:8px; border-color:var(--glow-color); color:var(--glow-color);" onclick="quickInject()">ЗАГРУЗИТЬ ЗАВОДЫ</button>
         </div>
-    </div>
-
-    <div id="modal-overlay">
-        <div class="modal-content" id="modal-body"></div>
     </div>
 
     <script>
@@ -127,9 +114,10 @@
             if (document.getElementById('pass-input').value === '777') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-dashboard').style.display = 'block';
-                if (!localStorage.getItem('harvester_db')) localStorage.setItem('harvester_db', JSON.stringify([]));
+                // ИСПОЛЬЗУЕМ ОТДЕЛЬНЫЙ КЛЮЧ: producer_db
+                if (!localStorage.getItem('producer_db')) localStorage.setItem('producer_db', JSON.stringify([]));
                 renderHome();
-                showToast("СИСТЕМА АКТИВИРОВАНА");
+                showToast("ДОСТУП К КЛИЕНТАМ ОТКРЫТ");
             }
         }
 
@@ -138,11 +126,11 @@
             document.getElementById('country-view').style.display = 'none';
             const grid = document.getElementById('folder-grid');
             grid.innerHTML = "";
-            let db = JSON.parse(localStorage.getItem('harvester_db') || "[]");
+            let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
             const countries = [...new Set(db.map(item => item.id.split('_')[0].toUpperCase()))].sort();
             countries.forEach(c => {
                 const count = db.filter(item => item.id.split('_')[0].toUpperCase() === c).length;
-                grid.innerHTML += `<div class="folder-card" onclick="showCountry('${c}')"><h2>${c}</h2><span>Targets: ${count}</span></div>`;
+                grid.innerHTML += `<div class="folder-card" onclick="showCountry('${c}')"><h2>${c}</h2><span>Factories: ${count}</span></div>`;
             });
         }
 
@@ -150,7 +138,7 @@
             currentFolder = code;
             document.getElementById('home-view').style.display = 'none';
             document.getElementById('country-view').style.display = 'block';
-            document.getElementById('current-country-name').innerText = "TARGETS: " + code;
+            document.getElementById('current-country-name').innerText = "PRODUCTION: " + code;
             loadTable();
         }
 
@@ -159,8 +147,9 @@
         function loadTable() {
             const tbody = document.getElementById('data-table');
             tbody.innerHTML = "";
-            let db = JSON.parse(localStorage.getItem('harvester_db') || "[]");
-            const memory = JSON.parse(localStorage.getItem('harvester_memory') || "{}");
+            let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
+            // ИСПОЛЬЗУЕМ ОТДЕЛЬНЫЙ КЛЮЧ ПАМЯТИ: producer_memory
+            const memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
             db.sort((a, b) => a.name.localeCompare(b.name));
             db.forEach(item => {
                 if (item.id.split('_')[0].toUpperCase() !== currentFolder) return;
@@ -168,13 +157,14 @@
                 if (status === 'red') return;
                 const row = document.createElement('tr');
                 if (status === 'new') row.className = 'row-new';
-                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.query + " -engineering -jobs")}`;
+                // НОВАЯ ЛОГИКА ПОИСКА: убираем транспортников, ищем производство
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.query + " -transport -logistics -expedition")}`;
                 row.innerHTML = `
-                    <td><b>${item.name}</b><br><small style="color:gray;">${item.region}</small></td>
-                    <td><a href="${searchUrl}" target="_blank" class="btn-action" style="border-color:var(--glow-color); color:var(--glow-color);">GO</a></td>
+                    <td><b>${item.name}</b><br><small style="color:#aaa;">${item.region}</small></td>
+                    <td><a href="${searchUrl}" target="_blank" class="btn-action" style="border-color:var(--glow-color); color:var(--glow-color);">DEAL</a></td>
                     <td>
                         <div style="display:flex; gap:3px;">
-                            <button class="status-btn ${status==='green'?'active-green':''}" onclick="updateStatus('${item.id}', 'green')">✔</button>
+                            <button class="status-btn ${status==='green'?'active-green':''}" onclick="updateStatus('${item.id}', 'green')">💰</button>
                             <button class="status-btn ${status==='yellow'?'active-yellow':''}" onclick="updateStatus('${item.id}', 'yellow')">?</button>
                             <button class="status-btn" onclick="updateStatus('${item.id}', 'red')">✖</button>
                         </div>
@@ -185,25 +175,25 @@
         }
 
         function updateStatus(id, status) {
-            let memory = JSON.parse(localStorage.getItem('harvester_memory') || "{}");
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
             memory[id] = status;
-            localStorage.setItem('harvester_memory', JSON.stringify(memory));
+            localStorage.setItem('producer_memory', JSON.stringify(memory));
             loadTable();
-            showToast("СТАТУС ОБНОВЛЕН");
+            showToast("СТАТУС КЛИЕНТА ОБНОВЛЕН");
         }
 
         function quickInject() {
             const area = document.getElementById('direct-injector');
             try {
                 const newData = JSON.parse(area.value);
-                let db = JSON.parse(localStorage.getItem('harvester_db') || "[]");
+                let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
                 const existingIds = db.map(x => x.id);
                 const filtered = newData.filter(item => !existingIds.includes(item.id));
-                localStorage.setItem('harvester_db', JSON.stringify(db.concat(filtered)));
+                localStorage.setItem('producer_db', JSON.stringify(db.concat(filtered)));
                 area.value = "";
-                showToast("ДОБАВЛЕНО: " + filtered.length);
+                showToast("ЗАВОДОВ ДОБАВЛЕНО: " + filtered.length);
                 renderHome();
-            } catch(e) { showToast("ОШИБКА ФОРМАТА JSON"); }
+            } catch(e) { showToast("ОШИБКА JSON"); }
         }
     </script>
 </body>
