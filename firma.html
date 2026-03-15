@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Zero Chaos | Producer Harvester v1.1</title>
+    <title>Zero Chaos | Producer Harvester v1.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
         :root {
             --glow-color: #ffcc00; 
             --bg-dark: #0f0e0a;
             --accent: #ffae00;
-            --success: #00ff88; /* Цвет ответа */
-            --pending: #f1c40f; /* Цвет запроса */
+            --success: #00ff88;
+            --pending: #f1c40f;
             --decline: #ff4d4d;
             --new-item: #ffea00;
         }
@@ -23,7 +23,7 @@
 
         #toast-container {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; pointer-events: none;
+            z-index: 10000; pointer-events: none;
         }
         .toast {
             background: rgba(255, 204, 0, 0.9); color: black;
@@ -34,6 +34,23 @@
 
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+        /* MODAL SYSTEM */
+        #modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9000;
+            justify-content: center; align-items: center;
+        }
+        .log-card {
+            width: 90%; max-width: 400px; background: #1a1915; border: 2px solid var(--glow-color);
+            padding: 20px; box-shadow: 0 0 30px rgba(255,204,0,0.2);
+        }
+        .log-card h3 { color: var(--glow-color); margin-top: 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .log-card input, .log-card textarea {
+            width: 100%; background: #000; border: 1px solid #444; color: var(--glow-color);
+            padding: 10px; margin: 8px 0; font-family: monospace; outline: none; box-sizing: border-box;
+        }
+        .log-card label { font-size: 10px; color: #888; text-transform: uppercase; }
 
         #login-screen { text-align: center; margin-top: 25vh; border: 1px solid var(--glow-color); padding: 30px; }
         #main-dashboard { display: none; }
@@ -54,12 +71,11 @@
 
         .btn-action {
             padding: 10px 5px; border: 1px solid var(--accent); color: var(--accent);
-            background: transparent; font-weight: bold; font-size: 10px; text-align: center;
+            background: transparent; font-weight: bold; font-size: 10px; text-align: center; text-decoration: none;
         }
 
         .status-btn { width: 35px; height: 35px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
-        /* Цветовая индикация состояний */
         .active-sent { background: var(--pending) !important; color: black !important; }
         .active-reply { background: var(--success) !important; color: black !important; }
 
@@ -72,6 +88,22 @@
 <body>
 
     <div id="toast-container"></div>
+
+    <div id="modal-overlay">
+        <div class="log-card">
+            <h3 id="modal-title">OPERATIONAL LOG</h3>
+            <label>CONTACT PERSON</label>
+            <input type="text" id="log-name" placeholder="Name/Position">
+            <label>COMMUNICATION CHANNEL</label>
+            <input type="text" id="log-phone" placeholder="+00 000 000 000">
+            <label>STATUS NOTES</label>
+            <textarea id="log-note" rows="2" placeholder="Brief summary..."></textarea>
+            <div style="display:flex; justify-content: space-between; margin-top:10px;">
+                <button class="btn-action" style="width:48%; border-color:var(--decline); color:var(--decline);" onclick="closeModal()">CANCEL</button>
+                <button class="btn-action" style="width:48%; border-color:var(--success); color:var(--success);" onclick="saveLog()">COMMIT DATA</button>
+            </div>
+        </div>
+    </div>
 
     <div id="login-screen">
         <h2 style="color:var(--glow-color)">CLIENT SECTOR</h2>
@@ -100,6 +132,8 @@
 
     <script>
         let currentFolder = null;
+        let activeItemId = null;
+        let activeStatusType = null;
 
         function showToast(text) {
             const container = document.getElementById('toast-container');
@@ -126,9 +160,14 @@
             const grid = document.getElementById('folder-grid');
             grid.innerHTML = "";
             let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
             const countries = [...new Set(db.map(item => item.id.split('_')[0].toUpperCase()))].sort();
             countries.forEach(c => {
-                const count = db.filter(item => item.id.split('_')[0].toUpperCase() === c).length;
+                const count = db.filter(item => {
+                    const isSameCountry = item.id.split('_')[0].toUpperCase() === c;
+                    const isNotDeleted = memory[item.id]?.status !== 'red';
+                    return isSameCountry && isNotDeleted;
+                }).length;
                 grid.innerHTML += `<div class="folder-card" onclick="showCountry('${c}')"><h2>${c}</h2><span>Items: ${count}</span></div>`;
             });
         }
@@ -141,24 +180,21 @@
             loadTable();
         }
 
-        function showHome() { renderHome(); }
+        function showHome() { currentFolder = null; renderHome(); }
 
         function loadTable() {
             const tbody = document.getElementById('data-table');
             tbody.innerHTML = "";
             let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
             const memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
-            
             db.sort((a, b) => a.name.localeCompare(b.name));
-            
             db.forEach(item => {
                 if (item.id.split('_')[0].toUpperCase() !== currentFolder) return;
-                const status = memory[item.id] || 'new';
-                if (status === 'red') return;
+                const memEntry = memory[item.id] || {status: 'new'};
+                if (memEntry.status === 'red') return;
                 
                 const row = document.createElement('tr');
-                if (status === 'new') row.className = 'row-new';
-                
+                if (memEntry.status === 'new') row.className = 'row-new';
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.query + " -transport -logistics")}`;
                 
                 row.innerHTML = `
@@ -166,9 +202,9 @@
                     <td><a href="${searchUrl}" target="_blank" class="btn-action" style="border-color:var(--glow-color); color:var(--glow-color);">DEAL</a></td>
                     <td>
                         <div style="display:flex; gap:3px;">
-                            <button class="status-btn ${status==='sent'?'active-sent':''}" onclick="updateStatus('${item.id}', 'sent')" title="Запрос отослан">✉️</button>
-                            <button class="status-btn ${status==='reply'?'active-reply':''}" onclick="updateStatus('${item.id}', 'reply')" title="Есть ответ">📞</button>
-                            <button class="status-btn" onclick="updateStatus('${item.id}', 'red')" title="Удалить">✖</button>
+                            <button class="status-btn ${memEntry.status==='sent'?'active-sent':''}" onclick="openLog('${item.id}', 'sent')">✉️</button>
+                            <button class="status-btn ${memEntry.status==='reply'?'active-reply':''}" onclick="openLog('${item.id}', 'reply')">📞</button>
+                            <button class="status-btn" onclick="quickStatus('${item.id}', 'red')">✖</button>
                         </div>
                     </td>
                 `;
@@ -176,12 +212,42 @@
             });
         }
 
-        function updateStatus(id, status) {
+        function openLog(id, status) {
+            activeItemId = id;
+            activeStatusType = status;
             let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
-            memory[id] = status;
+            const data = memory[id] || {};
+            
+            document.getElementById('log-name').value = data.name || "";
+            document.getElementById('log-phone').value = data.phone || "";
+            document.getElementById('log-note').value = data.note || "";
+            document.getElementById('modal-title').innerText = "LOG ENTRY: " + id;
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        function saveLog() {
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            memory[activeItemId] = {
+                status: activeStatusType,
+                name: document.getElementById('log-name').value,
+                phone: document.getElementById('log-phone').value,
+                note: document.getElementById('log-note').value,
+                ts: new Date().toLocaleString()
+            };
+            localStorage.setItem('producer_memory', JSON.stringify(memory));
+            closeModal();
+            loadTable();
+            showToast("DATA COMMITTED");
+        }
+
+        function quickStatus(id, status) {
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            memory[id] = { status: status };
             localStorage.setItem('producer_memory', JSON.stringify(memory));
             loadTable();
-            showToast("СТАТУС ОБНОВЛЕН");
+            showToast("STATUS: " + status.toUpperCase());
         }
 
         function quickInject() {
@@ -193,9 +259,9 @@
                 const filtered = newData.filter(item => !existingIds.includes(item.id));
                 localStorage.setItem('producer_db', JSON.stringify(db.concat(filtered)));
                 area.value = "";
-                showToast("ДОБАВЛЕНО В БАЗУ: " + filtered.length);
+                showToast("INJECTED: " + filtered.length);
                 renderHome();
-            } catch(e) { showToast("ОШИБКА JSON"); }
+            } catch(e) { showToast("JSON ERROR"); }
         }
     </script>
 </body>
