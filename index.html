@@ -53,7 +53,6 @@
             overflow-x: hidden;
         }
 
-        /* --- SECRET PORTAL STYLES --- */
         #secret-portal-container {
             position: fixed; top: 15px; left: 15px; z-index: 10001;
             cursor: pointer; transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
@@ -79,7 +78,6 @@
             text-transform: uppercase; transition: 0.3s; margin: 10px;
         }
         .portal-btn:hover { background: var(--gold); color: #000; }
-        /* --------------------------- */
 
         #swiss-clock {
             font-size: 0.75rem; letter-spacing: 6px; padding: 25px;
@@ -101,7 +99,6 @@
         }
         
         .terminal.revealed { transform: scaleX(1); opacity: 1; }
-
         .terminal::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
@@ -262,14 +259,21 @@
             <label>📞 Telefonnummer</label>
             <input type="tel" id="userPhone" placeholder="+41...">
         </div>
-        <div class="input-group">
-            <label>📍 Abfahrt & 🏁 Ziel</label>
-            <input type="text" id="routeInfo" placeholder="Basel - Berlin" list="cities-list" oninput="updateSuggestions(this.value)">
-            <datalist id="cities-list"></datalist>
+        
+        <div style="display: flex; gap: 15px;">
+            <div class="input-group" style="flex: 1;">
+                <label>📍 Abholort</label>
+                <input type="text" id="abholOrt" placeholder="PLZ / Stadt">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>🏁 Zustellort</label>
+                <input type="text" id="zustellOrt" placeholder="PLZ / Stadt">
+            </div>
         </div>
+
         <div class="input-group">
             <label>🚛 Frachtdetails</label>
-            <input type="text" id="cargoInfo" placeholder="Details">
+            <input type="text" id="cargoInfo" placeholder="Details (z.B. 33 EP, 24t)">
         </div>
         <button class="action-btn" onclick="sendData()">Protokoll Aktivieren</button>
     </div>
@@ -282,6 +286,7 @@
             <div class="input-group">
                 <label>📍 Aktuelle Position (Radar)</label>
                 <input type="text" id="driverPos" placeholder="Stadt" list="cities-list" oninput="updateSuggestions(this.value)">
+                <datalist id="cities-list"></datalist>
             </div>
             <div class="input-group" style="border:none; margin-bottom: 10px;">
                 <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
@@ -299,13 +304,13 @@
         </div>
     </div>
 
-    <div id="status" class="notranslate">TERMINAL_READY_V3.5</div>
+    <div id="status" class="notranslate">TERMINAL_READY_V4.2</div>
     <div id="resultsDisplay" class="hidden"></div>
 
     <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate" id="uid-trigger">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
 </div>
-
 <script>
+    // Манифест Монолита: Код написан Нулевым Хаосом. Функция «Along the Route» интегрирована.
     const _0x_p1 = 'ghp_5qDCiJDPLX1';
     const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
 
@@ -319,141 +324,7 @@
     let map, markerLayer;
     let cachedCities = [];
 
-    // --- SECRET PORTAL LOGIC ---
-    function openPortal() {
-        const overlay = document.getElementById('portal-overlay');
-        const v = document.getElementById('portal-video-full');
-        overlay.style.display = 'flex';
-        setTimeout(() => { overlay.style.opacity = '1'; v.play(); }, 50);
-    }
-    function closePortal() {
-        const overlay = document.getElementById('portal-overlay');
-        const v = document.getElementById('portal-video-full');
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; v.pause(); }, 600);
-    }
-    function tryAccess() {
-        playCrystalSound();
-        const code = prompt("SYSTEM_ACCESS_KEY:");
-        if (code === "777") { window.location.href = 'admin.html'; }
-        else { closePortal(); }
-    }
-    // ---------------------------
-
-    function distToSegment(px, py, x1, y1, x2, y2) {
-        const l2 = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
-        if (l2 === 0) return calculateDistance(px, py, x1, y1);
-        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
-        t = Math.max(0, Math.min(1, t));
-        return calculateDistance(px, py, x1 + t * (x2 - x1), y1 + t * (y2 - y1));
-    }
-
-    function generateOrderID(existingData) {
-        const d = new Date();
-        const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
-        const dailyCount = existingData.filter(o => o.id && o.id.startsWith(dateStr)).length + 1;
-        return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
-    }
-
-    async function updateSuggestions(val) {
-        if (val.length < 2) return;
-        const list = document.getElementById('cities-list');
-        if (cachedCities.length === 0) {
-            const { data } = await getCloudData();
-            cachedCities = [...new Set(data.map(o => o.route.split('-')[0].trim()))];
-        }
-        const filtered = cachedCities.filter(c => c.toLowerCase().startsWith(val.toLowerCase()));
-        list.innerHTML = filtered.map(c => `<option value="${c}">`).join('');
-    }
-
-    function liveMath() {
-        const val = parseFloat(document.getElementById('userTariff').value);
-        const pre = document.getElementById('calcPreview');
-        if (val >= 100) {
-            const optimized = (val * 0.95).toFixed(2);
-            document.getElementById('resFactory').innerText = optimized;
-            document.getElementById('resSave').innerText = (val - optimized).toFixed(2);
-            pre.style.display = 'block';
-        } else { pre.style.display = 'none'; }
-    }
-
-    function calculate18(tVal) {
-        const factoryPrice = tVal * 0.95; 
-        const security = factoryPrice * 0.08; 
-        const taxes = factoryPrice * 0.04;    
-        const margin = factoryPrice * 0.06;   
-        const driverPay = factoryPrice - (security + taxes + margin);
-        return { factoryPrice, security, taxes, margin, driverPay };
-    }
-
-    async function verifySync() {
-        try {
-            const server = await fetch('https://worldtimeapi.org/api/timezone/Europe/Zurich');
-            const data = await server.json();
-            const drift = Math.abs(new Date(data.datetime).getTime() - Date.now());
-            if (drift > 1000) {
-                document.body.innerHTML = '<div style="color:#ff4d4d;text-align:center;margin-top:20vh;font-family:monospace;letter-spacing:5px;">SYNC ERROR. DATA IS OUTDATED</div>';
-                return false;
-            }
-            return true;
-        } catch(e) { return true; } 
-    }
-
-    function playCrystalSound() {
-        try {
-            const context = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = context.createOscillator();
-            const gain = context.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(2800, context.currentTime);
-            gain.gain.setValueAtTime(0.02, context.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
-            osc.connect(gain); gain.connect(context.destination);
-            osc.start(); osc.stop(context.currentTime + 0.6);
-        } catch(e) {}
-    }
-
-    function initMonolith() {
-        playCrystalSound();
-        const overlay = document.getElementById('intro-overlay');
-        const portal = document.getElementById('zoom-portal');
-        const terminal = document.getElementById('main-terminal');
-        const btfBox = document.getElementById('btf-box');
-        setTimeout(() => {
-            btfBox.style.opacity = '0'; 
-            portal.classList.add('zoom-active');
-            overlay.style.background = 'transparent';
-        }, 600);
-        setTimeout(() => {
-            overlay.style.opacity = '0';
-            terminal.classList.add('revealed'); 
-            setTimeout(() => { overlay.style.display = 'none'; }, 1000);
-            verifySync();
-        }, 2800); 
-    }
-
-    function updateSwissClock() {
-        const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
-        const clock = document.getElementById('swiss-clock');
-        if(clock) clock.innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
-    }
-    setInterval(updateSwissClock, 1000); updateSwissClock();
-
-    function initMap() {
-        if (map) return;
-        map = L.map('map', { attributionControl: false, zoomControl: false }).setView([47.3769, 8.5417], 7);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-        markerLayer = L.layerGroup().addTo(map);
-    }
-
-    function toggleMap() {
-        const m = document.getElementById('map');
-        const b = document.getElementById('mapBtn');
-        if (m.classList.contains('hidden-map')) {
-            m.classList.remove('hidden-map'); b.innerText = "Radar Schliessen [-]";
-            setTimeout(() => { initMap(); map.invalidateSize(); loadMarkers(); }, 300);
-        } else { m.classList.add('hidden-map'); b.innerText = "Radar Aktivieren [+]"; }
-    }
-
+    // --- GEO & MATH TOOLS ---
     async function getCoords(city) {
         if (!city) return null;
         try {
@@ -470,6 +341,24 @@
         return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
     }
 
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const l2 = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+        if (l2 === 0) return calculateDistance(px, py, x1, y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return calculateDistance(px, py, x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+    }
+
+    function calculate18(tVal) {
+        const factoryPrice = tVal * 0.95; 
+        const security = factoryPrice * 0.08; 
+        const taxes = factoryPrice * 0.04;    
+        const margin = factoryPrice * 0.06;   
+        const driverPay = factoryPrice - (security + taxes + margin);
+        return { factoryPrice, security, taxes, margin, driverPay };
+    }
+
+    // --- CLOUD OPS ---
     async function getCloudData() {
         try {
             const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
@@ -494,13 +383,199 @@
         return res.ok;
     }
 
-    function switchTab(role) {
-        document.getElementById('resultsDisplay').classList.add('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'Kunde') || (role === 'driver' && b.innerText === 'Fahrer')));
-        document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
-        document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
+    // --- CORE SENDER LOGIC ---
+    async function sendData() {
+        const tVal = parseFloat(document.getElementById('userTariff').value);
+        const status = document.getElementById('status');
+        const uName = document.getElementById('userName').value.trim();
+        const aOrt = document.getElementById('abholOrt').value.trim();
+        const zOrt = document.getElementById('zustellOrt').value.trim();
+        
+        if (!tVal || !uName || !aOrt || !zOrt) { status.innerText = 'DATA_MISSING'; return; }
+        
+        const math = calculate18(tVal);
+        status.innerText = 'GEO_SYNCING...';
+        
+        const [coordsA, coordsZ] = await Promise.all([getCoords(aOrt), getCoords(zOrt)]);
+        const { data } = await getCloudData();
+        
+        const newOrder = { 
+            id: generateOrderID(data),
+            status: 0, 
+            name: uName, 
+            phone: document.getElementById('userPhone').value, 
+            route: `${aOrt} — ${zOrt}`, 
+            cargo: document.getElementById('cargoInfo').value,
+            factory: math.factoryPrice.toFixed(2),
+            driver: math.driverPay.toFixed(2),
+            security: math.security.toFixed(2),
+            taxes: math.taxes.toFixed(2),
+            margin: math.margin.toFixed(2),
+            lat: coordsA ? coordsA.lat : null, 
+            lon: coordsA ? coordsA.lon : null,
+            latEnd: coordsZ ? coordsZ.lat : null,
+            lonEnd: coordsZ ? coordsZ.lon : null,
+            timestamp: Date.now() 
+        };
+        
+        data.push(newOrder);
+        const ok = await saveToCloud(data);
+        const msg = `📦 <b>NEU [${newOrder.id}]</b>\n🛫 VON: ${aOrt}\n🛬 NACH: ${zOrt}\n🚚 СТАВКА: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
+        
+        if(ok) {
+            status.innerText = 'TRANSACTION_SUCCESS';
+            playCrystalSound();
+            ['userName', 'userTariff', 'userPhone', 'abholOrt', 'zustellOrt', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('calcPreview').style.display = 'none';
+        }
     }
 
+    // --- CORE DRIVER LOGIC (INTEGRATED ALONG THE ROUTE) ---
+    async function scanCargo(mode) {
+        const status = document.getElementById('status');
+        const resArea = document.getElementById('resultsDisplay');
+        const { data } = await getCloudData();
+        let filtered = [];
+        status.innerText = `SCANNING_${mode}...`;
+        const activeOrders = data.filter(o => o.status === 0);
+        const rad = parseInt(document.getElementById('radiusRange').value);
+
+        if (mode === 'RADAR') {
+            const inputPos = document.getElementById('driverPos').value.trim();
+            const driverCoords = await getCoords(inputPos);
+            if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
+            filtered = activeOrders.filter(o => {
+                if (!o.lat) return false;
+                const d = calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon);
+                o.tempDist = d;
+                o.isAlong = false;
+                return d <= rad;
+            });
+        } else if (mode === 'ROUTE') {
+            const planRaw = document.getElementById('routePlan').value.trim();
+            const planParts = planRaw.split(/[\-\,]+/);
+            const startDriver = await getCoords(planParts[0]?.trim());
+            const endDriver = planParts[1] ? await getCoords(planParts[1]?.trim()) : null;
+
+            if (!startDriver) { status.innerText = 'ROUTE_ERROR: START_NOT_FOUND'; return; }
+
+            filtered = activeOrders.filter(o => {
+                if (!o.lat) return false;
+                // Математика «Along the Route»: Если есть конечная точка, считаем девиацию от отрезка
+                let d = endDriver ? distToSegment(o.lat, o.lon, startDriver.lat, startDriver.lon, endDriver.lat, endDriver.lon) : calculateDistance(startDriver.lat, startDriver.lon, o.lat, o.lon);
+                o.tempDist = d;
+                o.isAlong = endDriver && d <= (rad * 0.5); // Помечаем как "По пути", если отклонение < 50% от радиуса
+                return d <= rad;
+            });
+        }
+
+        resArea.classList.remove('hidden');
+        filtered.sort((a,b) => a.tempDist - b.tempDist);
+        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA_IN_RADIUS</div>' : 
+            filtered.map(o => `
+                <div class="cargo-card">
+                    <div class="status-indicator" style="background:${o.isAlong ? 'var(--status-green)' : 'var(--status-red)'}"></div>
+                    <div class="priority-tag">${o.isAlong ? 'ALONG THE ROUTE' : 'DEVIATION: ' + Math.round(o.tempDist) + ' KM'}</div>
+                    <b style="letter-spacing:1px; color:#fff; text-transform:uppercase;">${o.route}</b>
+                    <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
+                    <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
+                        <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                    </div>
+                    <a href="https://wa.me/${o.phone.replace(/\D/g, '')}?text=Hallo, Auftrag [${o.id}]" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:${o.isAlong ? 'var(--status-green)' : 'var(--gold)'}; color:#000; border:none;">AUFTRAG ANNEHMEN</a>
+                </div>`).join('');
+        status.innerText = `SCAN_COMPLETE: ${filtered.length}`;
+    }
+
+    // --- SYSTEM UI & INIT ---
+    function openPortal() {
+        const overlay = document.getElementById('portal-overlay');
+        const v = document.getElementById('portal-video-full');
+        overlay.style.display = 'flex';
+        setTimeout(() => { overlay.style.opacity = '1'; v.play(); }, 50);
+    }
+    function closePortal() {
+        const overlay = document.getElementById('portal-overlay');
+        const v = document.getElementById('portal-video-full');
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; v.pause(); }, 600);
+    }
+    function tryAccess() {
+        playCrystalSound();
+        const code = prompt("SYSTEM_ACCESS_KEY:");
+        if (code === "777") { window.location.href = 'admin.html'; }
+        else { closePortal(); }
+    }
+    function generateOrderID(existingData) {
+        const d = new Date();
+        const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
+        const dailyCount = existingData.filter(o => o.id && o.id.startsWith(dateStr)).length + 1;
+        return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
+    }
+    function liveMath() {
+        const val = parseFloat(document.getElementById('userTariff').value);
+        const pre = document.getElementById('calcPreview');
+        if (val >= 100) {
+            const optimized = (val * 0.95).toFixed(2);
+            document.getElementById('resFactory').innerText = optimized;
+            document.getElementById('resSave').innerText = (val - optimized).toFixed(2);
+            pre.style.display = 'block';
+        } else { pre.style.display = 'none'; }
+    }
+    async function verifySync() {
+        try {
+            const server = await fetch('https://worldtimeapi.org/api/timezone/Europe/Zurich');
+            const data = await server.json();
+            const drift = Math.abs(new Date(data.datetime).getTime() - Date.now());
+            if (drift > 1000) {
+                document.body.innerHTML = '<div style="color:#ff4d4d;text-align:center;margin-top:20vh;font-family:monospace;letter-spacing:5px;">SYNC ERROR. DATA IS OUTDATED</div>';
+                return false;
+            }
+            return true;
+        } catch(e) { return true; } 
+    }
+    function playCrystalSound() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(2800, context.currentTime);
+            gain.gain.setValueAtTime(0.02, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
+            osc.connect(gain); gain.connect(context.destination);
+            osc.start(); osc.stop(context.currentTime + 0.6);
+        } catch(e) {}
+    }
+    function initMonolith() {
+        playCrystalSound();
+        const overlay = document.getElementById('intro-overlay');
+        const portal = document.getElementById('zoom-portal');
+        const terminal = document.getElementById('main-terminal');
+        const btfBox = document.getElementById('btf-box');
+        setTimeout(() => { btfBox.style.opacity = '0'; portal.classList.add('zoom-active'); overlay.style.background = 'transparent'; }, 600);
+        setTimeout(() => { overlay.style.opacity = '0'; terminal.classList.add('revealed'); setTimeout(() => { overlay.style.display = 'none'; }, 1000); verifySync(); }, 2800); 
+    }
+    function updateSwissClock() {
+        const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
+        const clock = document.getElementById('swiss-clock');
+        if(clock) clock.innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
+    }
+    setInterval(updateSwissClock, 1000); updateSwissClock();
+
+    function initMap() {
+        if (map) return;
+        map = L.map('map', { attributionControl: false, zoomControl: false }).setView([47.3769, 8.5417], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        markerLayer = L.layerGroup().addTo(map);
+    }
+    function toggleMap() {
+        const m = document.getElementById('map');
+        const b = document.getElementById('mapBtn');
+        if (m.classList.contains('hidden-map')) {
+            m.classList.remove('hidden-map'); b.innerText = "Radar Schliessen [-]";
+            setTimeout(() => { initMap(); map.invalidateSize(); loadMarkers(); }, 300);
+        } else { m.classList.add('hidden-map'); b.innerText = "Radar Aktivieren [+]"; }
+    }
     async function loadMarkers() {
         const { data } = await getCloudData();
         if(!markerLayer) return; markerLayer.clearLayers();
@@ -511,112 +586,12 @@
             }
         });
     }
-
-    async function sendData() {
-        const tVal = parseFloat(document.getElementById('userTariff').value);
-        const status = document.getElementById('status');
-        if (!tVal || !document.getElementById('userName').value) { status.innerText = 'DATA_MISSING'; return; }
-        
-        const math = calculate18(tVal);
-        status.innerText = 'SYNCING_MONOLITH...';
-        const routeRaw = document.getElementById('routeInfo').value;
-        const routeParts = routeRaw.split(/[\-\,]+/);
-        
-        const coordsStart = await getCoords(routeParts[0]?.trim());
-        const coordsEnd = routeParts[1] ? await getCoords(routeParts[1].trim()) : null;
-        
-        const { data } = await getCloudData();
-        
-        const newOrder = { 
-            id: generateOrderID(data),
-            status: 0, 
-            name: document.getElementById('userName').value, 
-            phone: document.getElementById('userPhone').value, 
-            route: routeRaw, 
-            cargo: document.getElementById('cargoInfo').value,
-            factory: math.factoryPrice.toFixed(2),
-            driver: math.driverPay.toFixed(2),
-            security: math.security.toFixed(2),
-            taxes: math.taxes.toFixed(2),
-            margin: math.margin.toFixed(2),
-            lat: coordsStart ? coordsStart.lat : null, 
-            lon: coordsStart ? coordsStart.lon : null,
-            latEnd: coordsEnd ? coordsEnd.lat : null,
-            lonEnd: coordsEnd ? coordsEnd.lon : null,
-            timestamp: Date.now() 
-        };
-        
-        data.push(newOrder);
-        const ok = await saveToCloud(data);
-        const msg = `📦 <b>NEU [${newOrder.id}]</b>\n📍 ${newOrder.route}\n🚚 Ставка: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
-        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
-        
-        if(ok) {
-            status.innerText = 'TRANSACTION_SUCCESS';
-            playCrystalSound();
-            ['userName', 'userTariff', 'userPhone', 'routeInfo', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('calcPreview').style.display = 'none';
-        }
+    function switchTab(role) {
+        document.getElementById('resultsDisplay').classList.add('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'Kunde') || (role === 'driver' && b.innerText === 'Fahrer')));
+        document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
+        document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
     }
-
-    async function scanCargo(mode) {
-        const status = document.getElementById('status');
-        const resArea = document.getElementById('resultsDisplay');
-        const { data } = await getCloudData();
-        let filtered = [];
-        status.innerText = `SCANNING_${mode}...`;
-        const activeOrders = data.filter(o => o.status === 0);
-
-        if (mode === 'RADAR') {
-            const inputPos = document.getElementById('driverPos').value.trim();
-            const rad = parseInt(document.getElementById('radiusRange').value);
-            const driverCoords = await getCoords(inputPos);
-            if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
-            filtered = activeOrders.filter(o => {
-                const d1 = o.lat ? calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon) : 999999;
-                return d1 <= rad;
-            });
-        } else if (mode === 'ROUTE') {
-            const planRaw = document.getElementById('routePlan').value.trim();
-            if (!planRaw) { status.innerText = 'ROUTE_ERROR: NO_DATA'; return; }
-            
-            const planParts = planRaw.split(/[\-\,]+/);
-            const startDriver = await getCoords(planParts[0]?.trim());
-            const endDriver = planParts[1] ? await getCoords(planParts[1]?.trim()) : null;
-
-            if (!startDriver) { status.innerText = 'ROUTE_ERROR: CITY_NOT_FOUND'; return; }
-
-            filtered = activeOrders.filter(o => {
-                if (!o.lat || !o.latEnd) {
-                    return planParts.some(city => o.route.toLowerCase().includes(city.toLowerCase().trim()));
-                }
-                if (endDriver) {
-                    const d1 = distToSegment(o.lat, o.lon, startDriver.lat, startDriver.lon, endDriver.lat, endDriver.lon);
-                    const d2 = distToSegment(startDriver.lat, startDriver.lon, o.lat, o.lon, o.latEnd, o.lonEnd);
-                    return d1 <= 50 || d2 <= 50;
-                } else {
-                    const d = distToSegment(startDriver.lat, startDriver.lon, o.lat, o.lon, o.latEnd, o.lonEnd);
-                    return d <= 50;
-                }
-            });
-        }
-
-        resArea.classList.remove('hidden');
-        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA</div>' : 
-            filtered.map(o => `
-                <div class="cargo-card">
-                    <div class="status-indicator" style="background:var(--status-red)"></div>
-                    <div class="priority-tag">ID: ${o.id}</div>
-                    <b style="letter-spacing:1px; color:#fff; text-transform:uppercase;">${o.route}</b>
-                    <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
-                    <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
-                        <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
-                    </div>
-                    <a href="https://wa.me/${o.phone.replace(/\D/g, '')}?text=Hallo, Auftrag [${o.id}]" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:var(--gold); color:#000;">AUFTRAG ANNEHMEN</a>
-                </div>`).join('');
-        status.innerText = `SCAN_COMPLETE: ${filtered.length}`;
-    }
-
     async function acceptContract(id) {
         const { data } = await getCloudData();
         const idx = data.findIndex(o => o.id === id);
@@ -626,7 +601,6 @@
             fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: `🟡 <b>FIX [${id}]</b>`, parse_mode: 'HTML' }) });
         }
     }
-
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
@@ -639,8 +613,7 @@
         trigger.addEventListener('click', () => {
             const now = Date.now();
             if (now - lastTap > 1000) secretCounter = 0;
-            secretCounter++;
-            lastTap = now;
+            secretCounter++; lastTap = now;
             if (secretCounter === 5) {
                 playCrystalSound();
                 if (prompt("SYSTEM ACCESS KEY:") === "7777") window.location.href = 'admin.html';
