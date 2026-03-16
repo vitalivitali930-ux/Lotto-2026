@@ -555,8 +555,18 @@
         const terminal = document.getElementById('main-terminal');
         const btfBox = document.getElementById('btf-box');
         setTimeout(() => { btfBox.style.opacity = '0'; portal.classList.add('zoom-active'); overlay.style.background = 'transparent'; }, 600);
-        setTimeout(() => { overlay.style.opacity = '0'; terminal.classList.add('revealed'); setTimeout(() => { overlay.style.display = 'none'; }, 1000); verifySync(); }, 2800); 
+        setTimeout(() => { 
+            overlay.style.opacity = '0'; 
+            terminal.classList.add('revealed'); 
+            setTimeout(() => { overlay.style.display = 'none'; }, 1000); 
+            verifySync(); 
+        }, 2800); 
+        
+        updateSEOOrbit();
     }
+
+
+
     function updateSwissClock() {
         const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
         const clock = document.getElementById('swiss-clock');
@@ -603,6 +613,37 @@
             fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: `🟡 <b>FIX [${id}]</b>`, parse_mode: 'HTML' }) });
         }
     }
+    // --- МОДУЛЬ SEO-ИНЪЕКЦИИ (ЦИКЛИЧЕСКАЯ ПАМЯТЬ) ---
+async function updateSEOOrbit() {
+    const { data } = await getCloudData(); // Берем твою базу из облака
+    if (!data || data.length === 0) return;
+
+    // Сортируем и берем только последние 50 записей (чтобы не было тормозов)
+    const freshData = data
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 50);
+
+    // Создаем скрытый контейнер для Google
+    let seoContainer = document.getElementById('seo-buffer');
+    if (!seoContainer) {
+        seoContainer = document.createElement('div');
+        seoContainer.id = 'seo-buffer';
+        // Делаем его невидимым для глаза, но доступным для робота
+        seoContainer.style.cssText = "position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;";
+        document.body.appendChild(seoContainer);
+    }
+
+    // Генерируем "мясо" для поисковика
+    let htmlContent = "<h2>Aktuelle Logistik-Aktivitäten Egerkingen / EU</h2>";
+    freshData.forEach(item => {
+        htmlContent += `<p>Transport ${item.route}: Статус ${item.status === 0 ? 'Aktiv' : 'Abgeschlossen'}. 
+                        Fracht: ${item.cargo}. Kapazität: ${item.driver} EUR. ID: ${item.id}</p>`;
+    });
+
+    seoContainer.innerHTML = htmlContent;
+    console.log("SEO_ORBIT_UPDATED: 50_NODES_ACTIVE");
+}
+
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
     document.onselectstart = () => false;
