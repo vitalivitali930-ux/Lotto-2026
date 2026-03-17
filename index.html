@@ -1,160 +1,74 @@
 <!DOCTYPE html>
-<html lang='ru'>
+<html lang="ru">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF MONOLITH 2.0</title>
+    <meta charset="UTF-8">
+    <title>VCHF MONOLITH: STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --gold: #ffcf40; --blue: #24A1DE; --neon: #00fa9a; --bg: #050505; }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-
-        /* Шапка */
-        #header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(20,25,40,0.8); border-bottom: 1px solid var(--blue); }
-        .net-card { display: flex; align-items: center; gap: 10px; border: 1px solid var(--blue); padding: 5px 12px; border-radius: 10px; background: rgba(0,0,0,0.5); }
-        .logo-box { width: 30px; height: 30px; border: 1px solid var(--gold); border-radius: 5px; background: url('1771489965074(1).png') center/cover; }
-        
-        /* Кнопки */
-        .btn { background: rgba(36,161,222,0.2); border: 1px solid var(--blue); color: var(--blue); padding: 6px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:active { transform: scale(0.95); background: var(--blue); color: white; }
-
-        /* Арена */
-        #arena { flex: 1; position: relative; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 100%); display: flex; align-items: center; justify-content: center; }
-        #arena::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,207,64,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,207,64,0.03) 1px, transparent 1px); background-size: 30px 30px; pointer-events: none; }
-        .chaos-text { font-size: 10px; letter-spacing: 4px; color: var(--gold); opacity: 0.4; pointer-events: none; }
-
-        /* Чат */
-        #chat-win { position: fixed; bottom: 85px; left: 15px; right: 15px; height: 50vh; background: rgba(5,5,5,0.98); border: 1px solid var(--gold); border-radius: 15px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 0 30px rgba(0,0,0,1); }
-        #msgs { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .m { padding: 8px 12px; border-radius: 10px; font-size: 14px; max-width: 80%; word-wrap: break-word; }
-        .m.me { align-self: flex-end; background: var(--blue); border-bottom-right-radius: 2px; }
-        .m.him { align-self: flex-start; background: #222; border: 1px solid var(--gold); border-bottom-left-radius: 2px; }
-        .chat-input { display: flex; padding: 10px; border-top: 1px solid #333; gap: 10px; }
-        #chat-in { flex: 1; background: #111; border: none; color: #fff; padding: 10px; outline: none; border-radius: 5px; }
-
-        /* Триггер чата */
-        #chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1100; box-shadow: 0 5px 15px rgba(36,161,222,0.4); }
-        #badge { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: #ff4444; border-radius: 50%; display: none; }
-
-        /* Оверлей */
-        #lock { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        body { background: #050505; color: #00fa9a; font-family: monospace; padding: 20px; }
+        .console { border: 1px solid #24A1DE; padding: 15px; height: 300px; overflow-y: auto; margin-bottom: 10px; background: #000; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #ffcf40; color: #fff; padding: 10px; }
+        button { background: #24A1DE; border: none; color: #fff; padding: 10px 20px; cursor: pointer; }
+        .sys-msg { color: #888; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
-<div id="lock">
-    <div class="logo-box" style="width:70px; height:70px;"></div>
-    <button class="btn" style="padding: 15px 40px; font-size: 14px;" onclick="connect()">ПОДКЛЮЧИТЬСЯ К ОБЛАКУ</button>
-</div>
-
-<div id="header">
-    <div class="net-card">
-        <div class="logo-box"></div>
-        <div>
-            <div id="r-id" style="font-size: 10px; color: var(--gold);">ROOM: ---</div>
-            <div id="c-status" style="font-size: 8px; color: var(--neon);">CONNECTING...</div>
-        </div>
+    <div id="status">STATUS: OFFLINE</div>
+    <div class="console" id="log"></div>
+    
+    <div class="input-row">
+        <input type="text" id="in" placeholder="Введите команду или сообщение...">
+        <button onclick="send()">SEND</button>
     </div>
-    <button class="btn" onclick="copy()">ССЫЛКА</button>
-</div>
-
-<div id="arena">
-    <div class="chaos-text">NULLED CHAOS // VCHF 2.0</div>
-</div>
-
-<div id="chat-win">
-    <div id="msgs"></div>
-    <div class="chat-input">
-        <input type="text" id="chat-in" placeholder="Введите сигнал...">
-        <button class="btn" onclick="send()">OK</button>
-    </div>
-</div>
-
-<div id="chat-toggle" onclick="toggleChat()">💬<div id="badge"></div></div>
 
 <script>
-    // Манифест Монолита: Настройка облачного ядра
+    // Манифест Монолита: Оптимизированное ядро
     const firebaseConfig = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const myID = 'USR_' + Math.floor(Math.random() * 9999);
-    let roomRef = null;
-    let currentRoom = '';
+    const myID = "USER_" + Math.random().toString(36).substr(2, 5);
+    let room = new URLSearchParams(window.location.search).get('room') || "777";
+    const roomRef = db.ref('stable_v1/' + room);
 
-    function connect() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let room = urlParams.get('room') || prompt("ID КОМНАТЫ:", "777");
-        if (!room) return;
+    // ПОДКЛЮЧЕНИЕ
+    function init() {
+        document.getElementById('status').innerText = "STATUS: ONLINE (ROOM " + room + ")";
         
-        currentRoom = room.trim();
-        document.getElementById('lock').style.display = 'none';
-        document.getElementById('r-id').textContent = "ROOM: " + currentRoom;
-        
-        roomRef = db.ref('vchf_monolith/' + currentRoom);
-
-        // Универсальный слушатель: подтягивает всю историю при изменениях
-        roomRef.on('value', (snap) => {
+        // Слушаем только ОДНО последнее изменение, чтобы не вешать сеть
+        roomRef.limitToLast(1).on('child_added', (snap) => {
             const data = snap.val();
-            const container = document.getElementById('msgs');
-            container.innerHTML = ''; 
-            
-            if (data) {
-                Object.values(data).forEach(m => {
-                    if (m.text) drawMessage(m.text, m.sender === myID ? 'me' : 'him');
-                });
-                document.getElementById('c-status').textContent = "ONLINE // CLOUD ACTIVE";
+            if (data.sender !== myID) {
+                printLog("RECV: " + data.msg, "#ffcf40");
             }
         });
+        printLog("System initialized as " + myID, "#888");
     }
 
     function send() {
-        const input = document.getElementById('chat-in');
-        const text = input.value.trim();
-        if (!text || !roomRef) return;
+        const val = document.getElementById('in').value.trim();
+        if (!val) return;
 
         roomRef.push({
             sender: myID,
-            text: text,
+            msg: val,
             ts: firebase.database.ServerValue.TIMESTAMP
         });
-        input.value = '';
+
+        printLog("SENT: " + val, "#24A1DE");
+        document.getElementById('in').value = '';
     }
 
-    function drawMessage(txt, side) {
-        const container = document.getElementById('msgs');
-        const div = document.createElement('div');
-        div.className = `m ${side}`;
-        div.textContent = txt;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-
-        if (side === 'him' && document.getElementById('chat-win').style.display !== 'flex') {
-            document.getElementById('badge').style.display = 'block';
-        }
+    function printLog(text, color) {
+        const l = document.getElementById('log');
+        l.innerHTML += `<div style="color:${color}">${text}</div>`;
+        l.scrollTop = l.scrollHeight;
     }
 
-    function toggleChat() {
-        const win = document.getElementById('chat-win');
-        const isShown = win.style.display === 'flex';
-        win.style.display = isShown ? 'none' : 'flex';
-        if (!isShown) document.getElementById('badge').style.display = 'none';
-    }
-
-    function copy() {
-        const link = window.location.origin + window.location.pathname + "?room=" + currentRoom;
-        const dummy = document.createElement("input");
-        document.body.appendChild(dummy);
-        dummy.value = link;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        alert("ССЫЛКА СКОПИРОВАНА В БУФЕР");
-    }
-
-    document.getElementById('chat-in').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
+    window.onload = init;
 </script>
 </body>
 </html>
