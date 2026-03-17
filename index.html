@@ -3,157 +3,181 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF 2.0 - Firebase Edition</title>
+    <title>VCHF 2.0 - Bi-Turbo Cloud</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --gold: #ffcf40; --space: #121625; --neon: #00fa9a; --blue: #24A1DE; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #050505; color: white; font-family: 'Segoe UI', sans-serif;
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        :root {
+            --gold: #ffcf40; --space-dark: #050505; --neon: #00fa9a; 
+            --blue: #24A1DE; --grid: rgba(255, 207, 64, 0.05);
         }
 
-        /* Шапка статуса */
-        #net-header {
-            padding: 15px; background: rgba(20, 25, 40, 0.9);
-            border-bottom: 1px solid var(--blue); display: flex; align-items: center; gap: 15px;
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--space-dark); color: #fff; font-family: 'Segoe UI', sans-serif;
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
-        .radar {
-            width: 40px; height: 40px; border: 2px solid var(--neon); border-radius: 8px;
+
+        /* Арена с сеткой */
+        #arena {
+            flex: 1; position: relative; overflow: hidden;
+            background: radial-gradient(circle at 50% 40%, #1a1a2e 0%, #000 100%);
+        }
+        #arena::after {
+            content: ''; position: absolute; inset: -50%;
+            background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px; transform: rotateX(60deg); pointer-events: none;
+        }
+
+        /* Верхняя панель управления */
+        #top-bar {
+            position: absolute; top: 15px; left: 15px; right: 15px; z-index: 5000;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+
+        .status-card {
+            background: rgba(12, 15, 24, 0.9); border: 1px solid var(--blue);
+            border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px;
+            backdrop-filter: blur(10px); min-width: 150px;
+        }
+
+        .net-logo {
+            width: 35px; height: 35px; border-radius: 6px; border: 1px solid var(--gold);
             background: url('1771489965074(1).png') center/cover; position: relative;
         }
-        .pulse {
-            position: absolute; top:-5px; left:-5px; right:-5px; bottom:-5px;
-            border: 2px solid var(--neon); border-radius: 10px; opacity: 0;
-        }
-        .active .pulse { animation: rPulse 1.5s infinite; }
-        @keyframes rPulse { 0% {transform: scale(1); opacity: 0.8;} 100% {transform: scale(1.4); opacity: 0;} }
 
-        /* Зона чата */
-        #chat-area {
-            flex: 1; display: flex; flex-direction: column; padding: 15px;
-            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
-        }
-        #messages {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            padding-bottom: 20px;
-        }
-        .msg { padding: 10px 15px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-        .msg.me { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 2px; }
-        .msg.him { align-self: flex-start; background: #222; border: 1px solid var(--gold); border-bottom-left-radius: 2px; }
-
-        /* Ввод */
-        #input-panel {
-            padding: 15px; background: #000; border-top: 1px solid #333;
-            display: flex; gap: 10px;
-        }
-        input {
-            flex: 1; background: #111; border: 1px solid var(--gold);
-            padding: 12px; color: white; border-radius: 25px; outline: none;
-        }
-        #send-btn {
-            background: var(--blue); border: none; width: 45px; height: 45px;
-            border-radius: 50%; color: white; font-weight: bold; cursor: pointer;
+        .btn-action {
+            background: rgba(36, 161, 222, 0.2); border: 1px solid var(--blue);
+            color: var(--blue); padding: 8px 15px; border-radius: 20px;
+            font-size: 10px; font-weight: bold; cursor: pointer; letter-spacing: 1px;
         }
 
-        #overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
+        /* Чат-система */
+        #chat-window {
+            position: fixed; bottom: 100px; left: 15px; right: 15px; height: 300px;
+            background: rgba(5, 5, 5, 0.95); border: 1px solid var(--gold);
+            border-radius: 15px; display: none; flex-direction: column; z-index: 6000;
         }
-        .btn-main {
-            padding: 15px 40px; background: none; border: 2px solid var(--neon);
-            color: var(--neon); border-radius: 30px; font-weight: bold; cursor: pointer;
+        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .m { padding: 8px 12px; border-radius: 10px; font-size: 13px; max-width: 80%; }
+        .m.me { align-self: flex-end; background: var(--blue); }
+        .m.him { align-self: flex-start; background: #222; border: 1px solid var(--gold); }
+        
+        .chat-input-row { display: flex; padding: 10px; border-top: 1px solid #333; }
+        #chat-in { flex: 1; background: #000; border: none; color: #fff; padding: 10px; outline: none; }
+
+        /* Иконка чата */
+        #chat-trigger {
+            position: fixed; bottom: 30px; right: 20px; width: 55px; height: 55px;
+            background: var(--blue); border-radius: 50%; display: flex; 
+            align-items: center; justify-content: center; font-size: 24px; z-index: 5500;
+            box-shadow: 0 0 20px rgba(36, 161, 222, 0.5);
+        }
+
+        #msg-alert { position: absolute; top: 0; right: 0; width: 15px; height: 15px; background: red; border-radius: 50%; display: none; }
+
+        #start-screen {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <div class="radar" style="width:80px; height:80px; margin-bottom:20px;"></div>
-        <button class="btn-main" onclick="initCloud()">ВХОД В ОБЛАКО</button>
+    <div id="start-screen">
+        <div class="net-logo" style="width:80px; height:80px; margin-bottom:20px;"></div>
+        <button class="btn-action" style="font-size:16px; padding: 15px 40px;" onclick="connectCloud()">ВХОД В МОНОЛИТ</button>
     </div>
 
-    <div id="net-header">
-        <div id="radar-box" class="radar"><div class="pulse"></div></div>
-        <div>
-            <div id="room-id" style="font-size: 12px; color: var(--gold);">OFFLINE</div>
-            <div id="status-text" style="font-size: 10px; color: var(--blue);">ОЖИДАНИЕ...</div>
+    <div id="top-bar">
+        <div class="status-card">
+            <div class="net-logo"></div>
+            <div>
+                <div id="room-display" style="font-size: 10px; color: var(--gold);">ROOM: ---</div>
+                <div id="cloud-status" style="font-size: 9px; color: var(--blue);">ОФФЛАЙН</div>
+            </div>
+        </div>
+        <button class="btn-action" onclick="copyInvite()">ССЫЛКА</button>
+    </div>
+
+    <div id="arena">
+        <div id="chaos-msg" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--gold); font-size:12px; letter-spacing:5px; opacity:0.5;">VCHF MONOLITH 2.0</div>
+    </div>
+
+    <div id="chat-window">
+        <div id="messages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chat-in" placeholder="Сигнал...">
+            <button onclick="sendMsg()" style="background:none; border:none; color:var(--neon); padding:0 10px;">OK</button>
         </div>
     </div>
 
-    <div id="chat-area">
-        <div id="messages"></div>
-    </div>
-
-    <div id="input-panel">
-        <input type="text" id="user-input" placeholder="Напиши привет...">
-        <button id="send-btn" onclick="sendMessage()">OK</button>
-    </div>
+    <div id="chat-trigger" onclick="toggleChat()">💬<div id="msg-alert"></div></div>
 
 <script>
-    // Манифест Монолита: Прямая связь через Firebase
     const config = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(config);
     const db = firebase.database();
 
-    let myID = 'ID_' + Math.floor(Math.random() * 10000);
-    let roomPath = null;
+    let myID = 'P_' + Math.floor(Math.random() * 9999);
+    let roomID = '';
+    let roomRef = null;
 
-    function initCloud() {
-        let room = prompt("ID КОМНАТЫ (например 777):", "777");
-        if (!room) return;
+    function connectCloud() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let r = urlParams.get('room') || prompt("КОМНАТА:", "777");
+        if (!r) return;
 
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('room-id').textContent = "ROOM: " + room;
-        document.getElementById('radar-box').classList.add('active');
+        roomID = r.trim();
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('room-display').textContent = "ROOM: " + roomID;
+        document.getElementById('cloud-status').textContent = "ОБЛАКО АКТИВНО";
         
-        roomPath = db.ref('vchf_rooms/' + room.trim());
-
-        // Слушаем облако
-        roomPath.on('child_added', (snapshot) => {
-            const data = snapshot.val();
+        roomRef = db.ref('vchf_v2/' + roomID);
+        
+        // Слушаем чат и команды
+        roomRef.limitToLast(1).on('child_added', (snap) => {
+            const data = snap.val();
             if (data.sender !== myID) {
-                renderMsg(data.text, 'him');
+                if (data.type === 'msg') renderMsg(data.val, 'him');
             }
         });
-
-        document.getElementById('status-text').textContent = "ОБЛАКО АКТИВНО";
     }
 
-    function sendMessage() {
-        const input = document.getElementById('user-input');
-        const text = input.value.trim();
-        if (!text || !roomPath) return;
-
-        // Отправка в облако
-        roomPath.push({
-            sender: myID,
-            text: text,
-            time: Date.now()
-        });
-
-        renderMsg(text, 'me');
-        input.value = '';
-    }
-
-    function renderMsg(text, side) {
-        const container = document.getElementById('messages');
-        const div = document.createElement('div');
-        div.className = `msg ${side}`;
-        div.textContent = text;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+    function sendMsg() {
+        const i = document.getElementById('chat-in');
+        if (!i.value.trim() || !roomRef) return;
         
-        // Вибрация при входящем
-        if (side === 'him' && window.navigator.vibrate) window.navigator.vibrate(100);
+        roomRef.push({ sender: myID, type: 'msg', val: i.value.trim(), time: Date.now() });
+        renderMsg(i.value.trim(), 'me');
+        i.value = '';
     }
 
-    // Слушатель Enter
-    document.getElementById('user-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-</script>
+    function renderMsg(txt, side) {
+        const box = document.getElementById('messages');
+        const d = document.createElement('div');
+        d.className = `m ${side}`;
+        d.textContent = txt;
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+        if (side === 'him' && document.getElementById('chat-window').style.display !== 'flex') {
+            document.getElementById('msg-alert').style.display = 'block';
+        }
+    }
 
+    function toggleChat() {
+        const w = document.getElementById('chat-window');
+        const isOpen = w.style.display === 'flex';
+        w.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) document.getElementById('msg-alert').style.display = 'none';
+    }
+
+    function copyInvite() {
+        const link = window.location.origin + window.location.pathname + "?room=" + roomID;
+        navigator.clipboard.writeText(link).then(() => alert("ССЫЛКА СКОПИРОВАНА"));
+    }
+
+    document.getElementById('chat-in').addEventListener('keypress', (e) => { if(e.key==='Enter') sendMsg(); });
+</script>
 </body>
 </html>
