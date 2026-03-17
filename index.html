@@ -115,7 +115,7 @@
     <div id="chat-trigger" onclick="toggleChat()">💬<div id="msg-alert"></div></div>
 
 <script>
-    const config = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
+       const config = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(config);
     const db = firebase.database();
 
@@ -135,21 +135,37 @@
         
         roomRef = db.ref('vchf_v2/' + roomID);
         
-        // Слушаем чат и команды
-        roomRef.limitToLast(1).on('child_added', (snap) => {
-            const data = snap.val();
-            if (data.sender !== myID) {
-                if (data.type === 'msg') renderMsg(data.val, 'him');
-            }
+        // ЖЕЛЕЗОБЕТОННЫЙ МЕТОД: слушаем ВСЮ базу комнаты
+        roomRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            
+            // Очищаем чат перед перерисовкой, чтобы не было дублей
+            const box = document.getElementById('messages');
+            box.innerHTML = ''; 
+
+            // Превращаем объект из базы в массив и сортируем по времени
+            Object.values(data).forEach(msg => {
+                if(msg.type === 'msg') {
+                    renderMsg(msg.val, msg.sender === myID ? 'me' : 'him');
+                }
+            });
         });
     }
 
     function sendMsg() {
         const i = document.getElementById('chat-in');
-        if (!i.value.trim() || !roomRef) return;
+        const val = i.value.trim();
+        if (!val || !roomRef) return;
         
-        roomRef.push({ sender: myID, type: 'msg', val: i.value.trim(), time: Date.now() });
-        renderMsg(i.value.trim(), 'me');
+        // Отправляем с меткой времени сервера, чтобы никто не потерялся
+        roomRef.push({ 
+            sender: myID, 
+            type: 'msg', 
+            val: val, 
+            time: firebase.database.ServerValue.TIMESTAMP 
+        });
+        
         i.value = '';
     }
 
@@ -160,24 +176,32 @@
         d.textContent = txt;
         box.appendChild(d);
         box.scrollTop = box.scrollHeight;
+        
         if (side === 'him' && document.getElementById('chat-window').style.display !== 'flex') {
             document.getElementById('msg-alert').style.display = 'block';
+            if (window.navigator.vibrate) window.navigator.vibrate(100);
         }
     }
 
     function toggleChat() {
         const w = document.getElementById('chat-window');
-        const isOpen = w.style.display === 'flex';
-        w.style.display = isOpen ? 'none' : 'flex';
-        if (!isOpen) document.getElementById('msg-alert').style.display = 'none';
+        w.style.display = (w.style.display === 'flex') ? 'none' : 'flex';
+        document.getElementById('msg-alert').style.display = 'none';
     }
 
     function copyInvite() {
         const link = window.location.origin + window.location.pathname + "?room=" + roomID;
-        navigator.clipboard.writeText(link).then(() => alert("ССЫЛКА СКОПИРОВАНА"));
+        const el = document.createElement('textarea');
+        el.value = link;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert("ССЫЛКА СКОПИРОВАНА");
     }
 
     document.getElementById('chat-in').addEventListener('keypress', (e) => { if(e.key==='Enter') sendMsg(); });
+
 </script>
 </body>
 </html>
