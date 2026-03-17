@@ -32,6 +32,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             cursor: pointer; transition: 0.3s;
         }
+        #net-status:active { transform: scale(0.95); background: var(--tg-blue); }
 
         .net-logo-wrapper { position: relative; width: 35px; height: 35px; }
         .net-logo {
@@ -190,7 +191,7 @@
         </div>
     </div>
 <script>
-    // МАНИФЕСТ МОНОЛИТА: Исправленный старт скрипта
+    // МАНИФЕСТ МОНОЛИТА: Фикс рассинхрона через иерархию Хоста. 0% потерь.
     const SUITS = ['♠', '♣', '♦', '♥'];
     const RANKS = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     const COLORS = {'♠': '#1a1a1a', '♣': '#1a1a1a', '♦': '#e63946', '♥': '#e63946'};
@@ -200,9 +201,9 @@
         trump: '', phase: 'WAIT', turn: 'host', attacker: 'host'
     };
 
-    let peer = null, conn = null, myRole = 'host';
+    let peer = null, conn = null, myRole = 'host', currentRoom = '';
     let localReady = false, remoteReady = false;
-    let isExpanded = false, audioCtx = null;
+    let isExpanded = false;
     let searchAttempt = 0;
     
     let lastHeartbeat = Date.now();
@@ -214,19 +215,28 @@
         if (!persistent) setTimeout(() => m.classList.remove('active'), 3000);
     }
 
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('room')) {
+            document.getElementById('btn-start-center').textContent = "СОЕДИНЕНИЕ...";
+            currentRoom = urlParams.get('room');
+        }
+    });
+
     function startNetwork() {
         const urlParams = new URLSearchParams(window.location.search);
-        let roomNum = urlParams.get('room');
+        let roomNum = urlParams.get('room') || currentRoom;
         if (!roomNum) {
-            roomNum = prompt("НОМЕР КОМНАТЫ:");
+            roomNum = prompt("НОМЕР КОМНАТЫ (например: 777):");
             if (!roomNum) return;
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?room=${roomNum}`;
             window.history.pushState({path: newUrl}, '', newUrl);
         }
-        const finalID = "VCHF_MONO_" + roomNum.trim();
+        currentRoom = roomNum.trim();
+        const finalID = "VCHF_MONO_" + currentRoom;
         document.getElementById('btn-start-center').style.display = 'none';
         document.getElementById('search-overlay').style.display = 'flex';
-        initPeerSession(finalID, roomNum);
+        initPeerSession(finalID, currentRoom);
     }
 
     function initPeerSession(finalID, roomNum) {
@@ -250,21 +260,23 @@
             isDisconnected = true;
             showMsg("СВЯЗЬ ПРЕРВАНА...", true);
             document.body.style.filter = "grayscale(1) brightness(0.5)";
-            document.getElementById('peer-id').textContent = "ОЖИДАНИЕ...";
         }
     }
 
     function attemptConnect(targetID, roomName) {
         searchAttempt++;
-        document.getElementById('room-info').textContent = "ПОИСК: " + roomName;
+        document.getElementById('room-info').textContent = "ID: " + roomName;
         conn = peer.connect(targetID, { reliable: true });
 
         let connectTimeout = setTimeout(() => {
             if (!conn || !conn.open) {
-                if (searchAttempt > 3) { peer.destroy(); createHostRoom(targetID, roomName); }
+                if (searchAttempt > 2) { 
+                    if (peer) peer.destroy(); 
+                    createHostRoom(targetID, roomName); 
+                }
                 else { attemptConnect(targetID, roomName); }
             }
-        }, 2500);
+        }, 2000);
         setupConn(connectTimeout);
     }
 
@@ -273,7 +285,6 @@
         peer.on('open', () => {
             myRole = 'host';
             document.getElementById('search-overlay').style.display = 'none';
-            document.getElementById('room-info').textContent = "ROOM: " + oNum;
             document.getElementById('peer-id').textContent = "ЖДУ ГОСТЯ...";
             document.getElementById('radar').style.display = 'block';
             document.getElementById('radar').style.animation = 'radarBeam 4s infinite';
@@ -283,7 +294,6 @@
             conn = c; 
             setupConn(); 
             showMsg("ИГРОК ВОШЕЛ");
-            document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
         });
     }
 
@@ -291,15 +301,17 @@
         if (!conn) return;
         conn.on('open', () => {
             if (timeoutToClear) clearTimeout(timeoutToClear);
+            myRole = (peer.id.includes('VCHF_MONO_')) ? 'host' : 'guest';
             document.getElementById('search-overlay').style.display = 'none';
             document.getElementById('btn-ready').style.display = 'block';
-            document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
+            document.getElementById('peer-id').textContent = (myRole === 'host') ? "HOST READY" : "GUEST CONNECTED";
             document.getElementById('radar').style.display = 'block';
             document.getElementById('radar').style.animation = 'radarBeam 1s infinite';
             lastHeartbeat = Date.now();
             conn.on('data', handleNetData);
         });
     }
+
     function handleNetData(data) {
         if (data.type === 'PING') { conn.send({type: 'PONG'}); return; }
         if (data.type === 'PONG') {
@@ -308,13 +320,13 @@
                 isDisconnected = false;
                 document.getElementById('status-msg').classList.remove('active');
                 document.body.style.filter = "none";
-                document.getElementById('peer-id').textContent = "СВЯЗЬ OK";
             }
             return;
         }
 
         if (data.type === 'READY') { remoteReady = true; showMsg("ВРАГ ГОТОВ"); checkStart(); }
         if (data.type === 'SYNC_DECK') { 
+            // Гость получает реальность и только тогда начинает ChaosPhase
             vchf.deck = data.deck; vchf.trump = data.trump; 
             renderTrumpUI(); startChaosPhase(); 
         }
@@ -330,14 +342,18 @@
     
     function sendReady() {
         localReady = true; document.getElementById('btn-ready').style.display = 'none';
-        if(conn) conn.send({type: 'READY'}); showMsg("ОЖИДАНИЕ..."); checkStart();
+        if(conn) conn.send({type: 'READY'}); showMsg("СИНХРОНИЗАЦИЯ..."); checkStart();
     }
 
     function checkStart() {
+        // Диктатура Хоста: только он генерирует колоду
         if (localReady && remoteReady && myRole === 'host') {
-            let d = []; SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
+            let d = []; 
+            SUITS.forEach(s => RANKS.forEach(r => d.push({s, r, v: RANKS.indexOf(r), c: COLORS[s], used: false})));
             vchf.deck = d.sort(() => Math.random() - 0.5);
             vchf.trump = SUITS[Math.floor(Math.random() * 4)];
+            
+            // Отправляем колоду гостю ПЕРЕД началом отрисовки
             conn.send({type: 'SYNC_DECK', deck: vchf.deck, trump: vchf.trump});
             renderTrumpUI(); startChaosPhase();
         }
@@ -360,6 +376,7 @@
             }, i * 15);
             n.onclick = () => { 
                 if (vchf.phase === 'PICK' && !card.used) {
+                    // Хост и гость строго по очереди или по лимиту
                     const canIPick = (myRole === 'host') ? (vchf.pHand.length <= vchf.eCount) : (vchf.pHand.length < vchf.eCount);
                     if (canIPick) { if (conn) conn.send({type: 'PICK', idx: i}); executePick(i, 'player'); }
                     else { showMsg("ЖДИ ВРАГА"); }
@@ -370,7 +387,7 @@
 
     function executePick(idx, actor) {
         const card = vchf.deck[idx]; const n = document.getElementById(`node-${idx}`);
-        if (!n || card.used) return;
+        if (!n || !card || card.used) return;
         card.used = true;
         if (actor === 'player') {
             vchf.pHand.push(card); fillSlot(card);
@@ -380,8 +397,10 @@
             vchf.eCount++; n.style.top = "-150px"; n.style.opacity = "0";
             setTimeout(() => n.remove(), 600);
         }
-        document.getElementById('enemy-stat').textContent = `КАРТ У ВРАГА: ${vchf.eCount}`;
-        if (vchf.deck.every(c => c.used)) { vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); }
+        document.getElementById('enemy-stat').textContent = `ВРАГ: ${vchf.eCount}`;
+        if (vchf.deck.every(c => c.used)) { 
+            vchf.phase = 'BATTLE'; vchf.turn = vchf.attacker; showMsg("БОЙ!"); renderBattleTable(); 
+        }
     }
 
     function fillSlot(card) {
@@ -469,7 +488,14 @@
 
     function copyMyID() {
         const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => showMsg("ССЫЛКА КОПИРОВАНА"));
+        navigator.clipboard.writeText(url).then(() => {
+            if (window.navigator.vibrate) window.navigator.vibrate(50);
+            showMsg("LINK COPIED TO BUFFER");
+            const netInfo = document.getElementById('peer-id');
+            const oldText = netInfo.textContent;
+            netInfo.textContent = "ID: " + currentRoom + " (COPIED)";
+            setTimeout(() => netInfo.textContent = oldText, 2000);
+        });
     }
 
     window.onload = () => {
