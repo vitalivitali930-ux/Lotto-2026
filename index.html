@@ -3,127 +3,157 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>VCHF TEST LINK</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>VCHF 2.0 - Firebase Edition</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --gold: #ffcf40; --neon: #00fa9a; --blue: #24A1DE; }
-        body { background: #050505; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; overflow: hidden; }
-        
-        #net-display { border: 2px solid var(--blue); padding: 20px; border-radius: 15px; background: rgba(0,0,0,0.8); text-align: center; width: 90%; max-width: 400px; }
-        .radar { width: 60px; height: 60px; border: 3px solid var(--neon); border-radius: 50%; margin: 0 auto 20px; position: relative; cursor: pointer; }
-        .radar.active { animation: pulse 0.5s infinite alternate; box-shadow: 0 0 20px var(--neon); }
-        @keyframes pulse { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
-        
-        #log { width: 100%; height: 150px; background: #111; border: 1px solid #333; margin-top: 20px; padding: 10px; font-size: 12px; overflow-y: auto; text-align: left; color: #aaa; }
-        input { width: 100%; padding: 12px; margin-top: 10px; background: #222; border: 1px solid var(--gold); color: white; border-radius: 8px; outline: none; }
-        button { width: 100%; padding: 12px; margin-top: 10px; background: var(--blue); border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        
-        .status-tag { font-size: 10px; letter-spacing: 2px; color: var(--gold); margin-bottom: 5px; display: block; }
+        :root { --gold: #ffcf40; --space: #121625; --neon: #00fa9a; --blue: #24A1DE; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050505; color: white; font-family: 'Segoe UI', sans-serif;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* Шапка статуса */
+        #net-header {
+            padding: 15px; background: rgba(20, 25, 40, 0.9);
+            border-bottom: 1px solid var(--blue); display: flex; align-items: center; gap: 15px;
+        }
+        .radar {
+            width: 40px; height: 40px; border: 2px solid var(--neon); border-radius: 8px;
+            background: url('1771489965074(1).png') center/cover; position: relative;
+        }
+        .pulse {
+            position: absolute; top:-5px; left:-5px; right:-5px; bottom:-5px;
+            border: 2px solid var(--neon); border-radius: 10px; opacity: 0;
+        }
+        .active .pulse { animation: rPulse 1.5s infinite; }
+        @keyframes rPulse { 0% {transform: scale(1); opacity: 0.8;} 100% {transform: scale(1.4); opacity: 0;} }
+
+        /* Зона чата */
+        #chat-area {
+            flex: 1; display: flex; flex-direction: column; padding: 15px;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
+        }
+        #messages {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            padding-bottom: 20px;
+        }
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .msg.me { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 2px; }
+        .msg.him { align-self: flex-start; background: #222; border: 1px solid var(--gold); border-bottom-left-radius: 2px; }
+
+        /* Ввод */
+        #input-panel {
+            padding: 15px; background: #000; border-top: 1px solid #333;
+            display: flex; gap: 10px;
+        }
+        input {
+            flex: 1; background: #111; border: 1px solid var(--gold);
+            padding: 12px; color: white; border-radius: 25px; outline: none;
+        }
+        #send-btn {
+            background: var(--blue); border: none; width: 45px; height: 45px;
+            border-radius: 50%; color: white; font-weight: bold; cursor: pointer;
+        }
+
+        #overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
+        }
+        .btn-main {
+            padding: 15px 40px; background: none; border: 2px solid var(--neon);
+            color: var(--neon); border-radius: 30px; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div id="net-display">
-        <span class="status-tag">QUANTUM LINK TEST</span>
-        <div id="radar-circle" class="radar" onclick="forceReconnect()"></div>
-        <h2 id="state">OFFLINE</h2>
-        <p id="sub-state" style="font-size: 12px; color: #666;">Нажми кнопку входа</p>
-        
-        <div id="chat-box" style="display:none;">
-            <div id="log"></div>
-            <input type="text" id="msg-input" placeholder="Напиши что-нибудь...">
-            <button onclick="send()">ОТПРАВИТЬ ТЕСТ</button>
+    <div id="overlay">
+        <div class="radar" style="width:80px; height:80px; margin-bottom:20px;"></div>
+        <button class="btn-main" onclick="initCloud()">ВХОД В ОБЛАКО</button>
+    </div>
+
+    <div id="net-header">
+        <div id="radar-box" class="radar"><div class="pulse"></div></div>
+        <div>
+            <div id="room-id" style="font-size: 12px; color: var(--gold);">OFFLINE</div>
+            <div id="status-text" style="font-size: 10px; color: var(--blue);">ОЖИДАНИЕ...</div>
         </div>
-        
-        <button id="start-btn" onclick="start()">ВХОД В СЕТЬ</button>
+    </div>
+
+    <div id="chat-area">
+        <div id="messages"></div>
+    </div>
+
+    <div id="input-panel">
+        <input type="text" id="user-input" placeholder="Напиши привет...">
+        <button id="send-btn" onclick="sendMessage()">OK</button>
     </div>
 
 <script>
-    let peer = null, conn = null, myRoom = '';
+    // Манифест Монолита: Прямая связь через Firebase
+    const config = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(config);
+    const db = firebase.database();
 
-    function addLog(txt, color = '#aaa') {
-        const l = document.getElementById('log');
-        l.innerHTML += `<div style="color:${color}">${txt}</div>`;
-        l.scrollTop = l.scrollHeight;
-    }
+    let myID = 'ID_' + Math.floor(Math.random() * 10000);
+    let roomPath = null;
 
-    function start() {
-        let room = new URLSearchParams(window.location.search).get('room') || prompt("ID КОМНАТЫ:", "777");
+    function initCloud() {
+        let room = prompt("ID КОМНАТЫ (например 777):", "777");
         if (!room) return;
-        myRoom = room.trim().toLowerCase();
-        document.getElementById('start-btn').style.display = 'none';
-        document.getElementById('state').textContent = "SEARCHING...";
-        init(false);
-    }
 
-    function init(isHostForce) {
-        if (peer) peer.destroy();
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('room-id').textContent = "ROOM: " + room;
+        document.getElementById('radar-box').classList.add('active');
         
-        const id = isHostForce ? "VCHF_MONO_" + myRoom : null;
-        peer = new Peer(id, {
-            debug: 2,
-            config: {'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }]}
-        });
+        roomPath = db.ref('vchf_rooms/' + room.trim());
 
-        peer.on('open', (myID) => {
-            if (isHostForce) {
-                document.getElementById('state').textContent = "HOSTING: " + myRoom;
-                document.getElementById('sub-state').textContent = "Ждем гостя...";
-                addLog("Создана комната как Хост", "#00fa9a");
-            } else {
-                addLog("Ищем хоста " + myRoom + "...");
-                let c = peer.connect("VCHF_MONO_" + myRoom, { reliable: true });
-                
-                let t = setTimeout(() => {
-                    if (!conn || !conn.open) {
-                        addLog("Хост не ответил, переключаюсь в режим Хоста...");
-                        c.close();
-                        init(true);
-                    }
-                }, 4000);
-
-                c.on('open', () => {
-                    clearTimeout(t);
-                    setupConn(c, "GUEST");
-                });
+        // Слушаем облако
+        roomPath.on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            if (data.sender !== myID) {
+                renderMsg(data.text, 'him');
             }
         });
 
-        peer.on('connection', (c) => {
-            setupConn(c, "HOST");
-        });
-
-        peer.on('error', (err) => {
-            addLog("Ошибка: " + err.type, "#ff4444");
-            if (err.type === 'unavailable-id') init(false);
-        });
+        document.getElementById('status-text').textContent = "ОБЛАКО АКТИВНО";
     }
 
-    function setupConn(c, role) {
-        conn = c;
-        document.getElementById('state').textContent = "CONNECTED";
-        document.getElementById('sub-state').textContent = "Роль: " + role;
-        document.getElementById('radar-circle').classList.add('active');
-        document.getElementById('chat-box').style.display = 'block';
-        addLog("Связь установлена!", "#00fa9a");
+    function sendMessage() {
+        const input = document.getElementById('user-input');
+        const text = input.value.trim();
+        if (!text || !roomPath) return;
+
+        // Отправка в облако
+        roomPath.push({
+            sender: myID,
+            text: text,
+            time: Date.now()
+        });
+
+        renderMsg(text, 'me');
+        input.value = '';
+    }
+
+    function renderMsg(text, side) {
+        const container = document.getElementById('messages');
+        const div = document.createElement('div');
+        div.className = `msg ${side}`;
+        div.textContent = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
         
-        conn.on('data', (data) => {
-            addLog("ПРИШЛО: " + data, "#24A1DE");
-        });
+        // Вибрация при входящем
+        if (side === 'him' && window.navigator.vibrate) window.navigator.vibrate(100);
     }
 
-    function send() {
-        const i = document.getElementById('msg-input');
-        if (conn && i.value) {
-            conn.send(i.value);
-            addLog("ТЫ: " + i.value, "#ffcf40");
-            i.value = '';
-        }
-    }
-
-    function forceReconnect() {
-        location.href = window.location.origin + window.location.pathname + "?room=" + myRoom;
-    }
+    // Слушатель Enter
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
 </script>
+
 </body>
 </html>
