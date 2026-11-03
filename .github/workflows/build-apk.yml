@@ -33,7 +33,7 @@ jobs:
       with:
         packages: 'platforms;android-33 build-tools;33.0.2 platform-tools'
 
-    - name: Prepare Cordova and Build APK
+    - name: Prepare Cordova, Build and Sign APK
       run: |
         cordova create ../cordova-build com.zerochaos.app ZeroApp
         cd ../cordova-build
@@ -42,11 +42,19 @@ jobs:
         cp -r $GITHUB_WORKSPACE/* www/
 
         cordova platform add android
-        # Явно указываем сборку именно APK-файла
         cordova build android --release -- --packageType=apk
 
+        # Генерируем временный debug/release ключ для подписи прямо на раннере
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+        # Подписываем APK
+        jarsigner -keystore debug.keystore -storepass android -keypass android platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk androiddebugkey
+
+        # Выравниваем APK (zipalign)
+        $ANDROID_SDK_ROOT/build-tools/33.0.2/zipalign -v 4 platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk app-release.apk
+
         mkdir -p $GITHUB_WORKSPACE/output
-        cp platforms/android/app/build/outputs/apk/release/*.apk $GITHUB_WORKSPACE/output/
+        cp app-release.apk $GITHUB_WORKSPACE/output/
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
