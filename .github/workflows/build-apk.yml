@@ -33,17 +33,26 @@ jobs:
       with:
         packages: 'platforms;android-33 build-tools;33.0.2 platform-tools'
 
-    - name: Build APK via Cordova
+    - name: Prepare Cordova and Build APK
       run: |
-        # Если config.xml отсутствует, генерируем базовый конфиг без создания новой папки
-        if [ ! -f "config.xml" ]; then
-          cordova init
-        fi
+        # 1. Создаем чистую временную структуру Cordova во временной папке
+        cordova create ../cordova-build com.zerochaos.app ZeroApp
+        cd ../cordova-build
+
+        # 2. Очищаем дефолтную папку www и копируем туда весь твой проект
+        rm -rf www/*
+        cp -r $GITHUB_WORKSPACE/* www/
+
+        # 3. Добавляем платформу Android и собираем APK
         cordova platform add android
         cordova build android --release
+
+        # 4. Копируем собранный APK обратно в папку репозитория
+        mkdir -p $GITHUB_WORKSPACE/output
+        cp platforms/android/app/build/outputs/apk/release/*.apk $GITHUB_WORKSPACE/output/
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-release-apk
-        path: platforms/android/app/build/outputs/apk/release/
+        path: output/
