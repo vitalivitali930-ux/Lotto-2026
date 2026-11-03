@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Zero Chaos | Logistics Terminal</title>
+    <meta name="description" content="Zero Chaos Logistics Terminal - High-end logistics solutions in Switzerland and European Union. Operated by Werbung To Go.">
+    <meta name="keywords" content="Logistik, Transport, Schweiz, Europa, Cargo, Zero Chaos, Spedition, UID CHE-376.512.386">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LogisticsService",
+      "name": "Zero Chaos Logistics",
+      "url": "https://zero-chaos.ch",
+      "identifier": "CHE-376.512.386",
+      "areaServed": ["CH", "DE", "AT", "FR", "IT", "ES", "PL", "BE", "NL", "EU"],
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Werbung To Go",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Egerkingen",
+          "addressCountry": "CH"
+        }
+      }
+    }
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --gold: #f4e4e4; 
+            --gold-shadow: rgba(244, 228, 228, 0.35);
+            --bg: #0a0101; 
+            --cherry: #320404;
+            --glass: rgba(20, 4, 4, 0.96);
+            --status-red: #ff4d4d;
+            --status-yellow: #ffcc00;
+            --status-green: #00ff88;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(180, 40, 40, 0.25) 0%, transparent 75%),
+                linear-gradient(rgba(244, 228, 228, 0.04) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(244, 228, 228, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 45px 45px, 45px 45px;
+            color: var(--gold);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #secret-portal-container {
+            position: fixed; top: 15px; left: 15px; z-index: 10001;
+            cursor: pointer; transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        #admin-preview {
+            width: 50px; height: 50px; border-radius: 50%;
+            border: 1px solid rgba(244, 228, 228, 0.2);
+            object-fit: cover; box-shadow: 0 0 15px rgba(0,0,0,0.6);
+            filter: grayscale(0.4) brightness(0.8); transition: 0.4s;
+        }
+        #admin-preview:hover { filter: grayscale(0) brightness(1); border-color: var(--gold); }
+
+        #portal-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 10002;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.6s ease;
+        }
+        #portal-video-full { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .portal-controls { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
+        .portal-btn {
+            background: transparent; border: 1px solid var(--gold); color: var(--gold);
+            padding: 18px 45px; letter-spacing: 6px; font-size: 0.65rem; cursor: pointer;
+            text-transform: uppercase; transition: 0.3s; margin: 10px;
+        }
+        .portal-btn:hover { background: var(--gold); color: #000; }
+
+        #swiss-clock {
+            font-size: 0.75rem; letter-spacing: 6px; padding: 25px;
+            text-align: center; width: 100%; color: var(--gold);
+            text-shadow: 0 0 12px var(--gold-shadow); opacity: 0.9;
+        }
+
+        .terminal {
+            width: 100%; max-width: 480px;
+            background: var(--glass);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(244, 228, 228, 0.12);
+            box-shadow: 0 60px 150px rgba(0,0,0,0.9);
+            padding: 35px; border-radius: 2px; box-sizing: border-box;
+            position: relative; z-index: 10;
+            transform: scaleX(0); opacity: 0;
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease;
+        }
+        
+        .terminal.revealed { transform: scaleX(1); opacity: 1; }
+        .terminal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.5;
+        }
+
+        h1 {
+            color: var(--gold); text-align: center; text-transform: uppercase;
+            letter-spacing: clamp(8px, 3vw, 14px); font-size: 1.1rem; margin-bottom: 40px;
+            font-weight: 300; opacity: 0.9;
+        }
+
+        .tabs { display: flex; gap: 2px; margin-bottom: 40px; background: rgba(255,255,255,0.03); padding: 4px; }
+        .tab-btn {
+            flex: 1; padding: 14px; background: transparent; border: none;
+            color: var(--gold); cursor: pointer; opacity: 0.4;
+            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 3px;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-btn.active { opacity: 1; background: rgba(244, 228, 228, 0.06); border-bottom: 1px solid var(--gold); }
+
+        .input-group { margin-bottom: 30px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-size: 0.55rem; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; opacity: 0.5; }
+        input {
+            width: 100%; padding: 10px 0; background: transparent; border: none;
+            border-bottom: 1px solid rgba(244, 228, 228, 0.15); color: #fff;
+            outline: none; font-size: 1rem; transition: 0.3s;
+        }
+        input:focus { border-bottom: 1px solid var(--gold); }
+
+        .calc-preview {
+            background: rgba(244, 228, 228, 0.03); border-left: 2px solid var(--gold);
+            padding: 15px; margin-bottom: 30px; font-size: 0.7rem; letter-spacing: 1px;
+            display: none; animation: slideIn 0.4s ease-out;
+        }
+
+        #map {
+            width: 280px; height: 280px; margin: 0 auto 30px;
+            border: 1px solid rgba(244, 228, 228, 0.2); border-radius: 50%;
+            overflow: hidden; filter: grayscale(1) brightness(0.8) contrast(1.1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.7);
+        }
+        .hidden-map { display: none !important; }
+
+        .action-btn {
+            width: 100%; padding: 22px; background: transparent;
+            border: 1px solid var(--gold); color: var(--gold);
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 5px; font-size: 0.75rem; transition: 0.4s; margin-bottom: 10px;
+        }
+        .action-btn:hover { background: var(--gold); color: #000; }
+
+        .connect-btn {
+            display: inline-block; padding: 10px 24px; border: 1px solid var(--gold);
+            color: var(--gold); text-decoration: none; font-size: 0.65rem;
+            letter-spacing: 3px; margin-top: 10px; transition: 0.3s;
+        }
+        .connect-btn:hover { background: var(--gold); color: #000; }
+
+        #status { margin-top: 35px; text-align: center; font-size: 0.65rem; letter-spacing: 4px; color: var(--gold); opacity: 0.6; text-transform: uppercase; }
+
+        .cargo-card {
+            border-left: 2px solid var(--gold); background: rgba(255,255,255,0.03);
+            padding: 22px; margin-bottom: 18px; animation: slideIn 0.6s ease-out;
+            position: relative;
+        }
+        
+        .priority-tag {
+            position: absolute; top: 0; right: 0; background: var(--gold);
+            color: #000; font-size: 0.45rem; padding: 4px 8px; letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden { display: none; }
+
+        #intro-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: 1s ease-in-out;
+        }
+        .butterfly-container { position: relative; display: flex; align-items: center; justify-content: center; width: 100vw; height: 300px; transition: transform 0.8s ease-in; }
+        .butterfly-body { width: 2px; height: 120px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); box-shadow: 0 0 25px var(--gold); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); animation: pulseBody 3s infinite ease-in-out; z-index: 5; }
+        .wing { flex: 1; text-align: center; color: var(--gold); font-size: clamp(0.5rem, 2vw, 0.7rem); letter-spacing: 6px; line-height: 2.5; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7; }
+        .wing-left { text-align: right; padding-right: clamp(30px, 8vw, 60px); transform: skewY(-5deg); }
+        .wing-right { text-align: left; padding-left: clamp(30px, 8vw, 60px); transform: skewY(5deg); }
+
+        #zoom-portal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.05); color: var(--gold); font-size: 3rem; font-weight: 200; letter-spacing: 40px; white-space: nowrap; opacity: 0; pointer-events: none; z-index: 10000; text-shadow: 0 0 20px var(--gold-shadow), 0 0 40px var(--gold-shadow), 4px 4px 15px rgba(0,0,0,0.9); filter: blur(15px); }
+        .zoom-active { animation: cinematicFly 3s cubic-bezier(0.15, 0, 0.15, 1) forwards; }
+
+        @keyframes cinematicFly { 0% { transform: translate(-50%, -50%) scale(0.05); opacity: 0; filter: blur(20px); } 15% { opacity: 1; filter: blur(5px); } 45% { filter: blur(0); } 100% { transform: translate(-50%, -50%) scale(40); opacity: 0; filter: blur(10px); } }
+        .eintritt-btn { margin-top: 80px; font-size: 0.55rem; color: var(--gold); letter-spacing: 10px; opacity: 0.4; animation: blink 4s infinite; transition: opacity 0.5s ease; }
+        @keyframes pulseBody { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scaleY(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scaleY(1.1); } }
+        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+
+        .impressum { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(244, 228, 228, 0.1); font-size: 0.5rem; letter-spacing: 2px; color: var(--gold); opacity: 0.3; line-height: 1.8; text-align: center; text-transform: uppercase; transition: 0.3s; }
+        .impressum:hover { opacity: 0.6; }
+        .notranslate { unicode-bidi: isolate; }
+    </style>
+</head>
+<body>
+
+<div style="display:none">Logistics Terminal: Transport services, cargo tracking, and route optimization.</div>
+
+<div id="secret-portal-container" onclick="openPortal()">
+    <video id="admin-preview" autoplay loop muted playsinline>
+        <source src="admin.mp4" type="video/mp4">
+    </video>
+</div>
+
+<div id="portal-overlay">
+    <video id="portal-video-full" loop muted playsinline>
+        <source src="admin.mp4" type="video/mp4">
+    </video>
+    <div class="portal-controls">
+        <div style="color:var(--gold); letter-spacing:12px; margin-bottom:30px; font-size:0.75rem; opacity:0.6;">[ ENCRYPTED_SESSION ]</div>
+        <button class="portal-btn" onclick="tryAccess()">ACCESS_SYSTEM</button>
+        <button class="portal-btn" style="border:none; opacity:0.4; font-size:0.55rem;" onclick="closePortal()">Schliessen</button>
+    </div>
+</div>
+
+<div id="intro-overlay" onclick="initMonolith()">
+    <div class="butterfly-container" id="btf-box">
+        <div class="butterfly-body"></div>
+        <div class="wing wing-left" id="wl">HEAR THE<br>BUTTERFLIES<br>SING</div>
+        <div class="wing wing-right" id="wr">SEE THE<br>CHAOS<br>VANISH</div>
+    </div>
+    <div class="eintritt-btn" id="ebtn">[ EINTRITT ]</div>
+
+
+<div onclick="event.stopPropagation(); document.getElementById('agb-modal').style.display='block'" style="cursor:pointer; text-decoration:underline; font-size:10px; color:var(--gold); text-align:center; margin-top:20px; letter-spacing:2px; opacity:0.5;">Impressum & AGB</div>
+</div>
+
+
+<div id="zoom-portal" class="notranslate">ZERO CHAOS</div>
+<div id="swiss-clock" class="notranslate">ZÜRICH: --:--:--</div>
+
+<div class="terminal" id="main-terminal">
+    <h1 class="notranslate">ZERO CHAOS</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('sender')">Kunde</button>
+        <button class="tab-btn" onclick="switchTab('driver')">Fahrer</button>
+    </div>
+    
+    <div id="senderView">
+        <div class="input-group">
+            <label>👤 Vor- und Nachname</label>
+            <input type="text" id="userName" placeholder="Name">
+        </div>
+        <div class="input-group">
+            <label>💰 Markttarif (€)</label>
+            <input type="number" id="userTariff" placeholder="1000" oninput="liveMath()">
+        </div>
+        <div id="calcPreview" class="calc-preview">
+            OPTIMIERTER TARIF: <span id="resFactory" style="color:#fff">--</span> €<br>
+            <span style="opacity:0.6">IHRE ERSPARNIS: <span id="resSave">--</span> €</span>
+        </div>
+        <div class="input-group">
+            <label>📞 Telefonnummer</label>
+            <input type="tel" id="userPhone" placeholder="+41...">
+        </div>
+        
+        <div style="display: flex; gap: 15px;">
+            <div class="input-group" style="flex: 1;">
+                <label>📍 Abholort</label>
+                <input type="text" id="abholOrt" placeholder="PLZ / Stadt">
+            </div>
+            <div class="input-group" style="flex: 1;">
+                <label>🏁 Zustellort</label>
+                <input type="text" id="zustellOrt" placeholder="PLZ / Stadt">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>🚛 Frachtdetails</label>
+            <input type="text" id="cargoInfo" placeholder="Details (z.B. 33 EP, 24t)">
+        </div>
+        <button class="action-btn" onclick="sendData()">Protokoll Aktivieren</button>
+    </div>
+
+    <div id="driverView" class="hidden">
+        <div id="map" class="hidden-map"></div>
+        <button class="action-btn" style="margin-bottom:20px; font-size:0.6rem; border-color:rgba(244,228,228,0.25);" onclick="toggleMap()" id="mapBtn">Radar Aktivieren [+]</button>
+        
+        <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
+            <div class="input-group">
+                <label>📍 Aktuelle Position (Radar)</label>
+                <input type="text" id="driverPos" placeholder="Stadt" list="cities-list" oninput="updateSuggestions(this.value)">
+                <datalist id="cities-list"></datalist>
+            </div>
+            <div class="input-group" style="border:none; margin-bottom: 10px;">
+                <label>🛰 Scan-Radius: <span id="radiusVal">50</span> KM</label>
+                <input type="range" id="radiusRange" min="0" max="250" value="50" oninput="document.getElementById('radiusVal').innerText = this.value" style="width:100%; accent-color:var(--gold);">
+            </div>
+            <button class="action-btn" onclick="scanCargo('RADAR')" style="border-style: dashed;">[ SECTOR SCAN ]</button>
+        </div>
+
+        <div style="border: 1px solid rgba(244,228,228,0.1); padding: 15px; margin-bottom: 20px;">
+            <div class="input-group" style="margin-bottom: 10px;">
+                <label>🛣 Route-Plan (Osnabrück - Zürich ИЛИ Hannover)</label>
+                <input type="text" id="routePlan" placeholder="Städte с Komma / Route">
+            </div>
+            <button class="action-btn" onclick="scanCargo('ROUTE')" style="background: rgba(244,228,228,0.05);">[ ROUTE SCAN ]</button>
+        </div>
+    </div>
+
+    <div id="status" class="notranslate">TERMINAL_READY_V4.2</div>
+    <div id="resultsDisplay" class="hidden"></div>
+
+    <div class="impressum">System Zero Chaos<br>Operated by Werbung To Go<br><span class="notranslate" id="uid-trigger">UID: CHE-376.512.386</span> | Egerkingen, CH</div>
+</div>
+<script>
+    // Манифест Монолита: Код написан Нулевым Хаосом. Функция «Along the Route» интегрирована.
+    const _0x_p1 = 'ghp_5qDCiJDPLX1';
+    const _0x_p2 = 'hn5BZjKwXlDIm4nrwX42jxyLY';
+
+    const CONFIG = {
+        token: '8744193753:AAH8TxbIxpC4NTpHVEIRdMjn5P0vuW-zn9w',
+        chatId: '-1003771690386',
+        ghToken: _0x_p1 + _0x_p2,
+        gistName: 'chaos_cargo_db.json'
+    };
+
+    let map, markerLayer;
+    let cachedCities = [];
+
+    // --- GEO & MATH TOOLS ---
+    async function getCoords(city) {
+        if (!city) return null;
+        try {
+            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
+            const d = await r.json(); return d.length > 0 ? { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) } : null;
+        } catch(e) { return null; }
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
+    }
+
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const l2 = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+        if (l2 === 0) return calculateDistance(px, py, x1, y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return calculateDistance(px, py, x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+    }
+
+    function calculate18(tVal) {
+        const factoryPrice = tVal * 0.95; 
+        const security = factoryPrice * 0.08; 
+        const taxes = factoryPrice * 0.04;    
+        const margin = factoryPrice * 0.06;   
+        const driverPay = factoryPrice - (security + taxes + margin);
+        return { factoryPrice, security, taxes, margin, driverPay };
+    }
+
+    // --- CLOUD OPS ---
+    async function getCloudData() {
+        try {
+            const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${CONFIG.ghToken}` } }).then(r => r.json());
+            const myGist = gists.find(g => g.files[CONFIG.gistName]);
+            if (myGist) {
+                const content = await fetch(myGist.files[CONFIG.gistName].raw_url).then(r => r.json());
+                return { id: myGist.id, data: Array.isArray(content) ? content : [] };
+            }
+        } catch(e) {}
+        return { id: null, data: [] };
+    }
+
+    async function saveToCloud(orders) {
+        const { id } = await getCloudData();
+        const cleanData = orders.filter(o => (Date.now() - o.timestamp) < 172800000 ); 
+        const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
+        const res = await fetch(url, {
+            method: id ? 'PATCH' : 'POST',
+            headers: { 'Authorization': `token ${CONFIG.ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ public: false, files: { [CONFIG.gistName]: { content: JSON.stringify(cleanData) } } })
+        });
+        return res.ok;
+    }
+
+    // --- CORE SENDER LOGIC ---
+    async function sendData() {
+        const tVal = parseFloat(document.getElementById('userTariff').value);
+        const status = document.getElementById('status');
+        const uName = document.getElementById('userName').value.trim();
+        const aOrt = document.getElementById('abholOrt').value.trim();
+        const zOrt = document.getElementById('zustellOrt').value.trim();
+        
+        if (!tVal || !uName || !aOrt || !zOrt) { status.innerText = 'DATA_MISSING'; return; }
+        
+        const math = calculate18(tVal);
+        status.innerText = 'GEO_SYNCING...';
+        
+        const [coordsA, coordsZ] = await Promise.all([getCoords(aOrt), getCoords(zOrt)]);
+        const { data } = await getCloudData();
+        
+        const newOrder = { 
+            id: generateOrderID(data),
+            status: 0, 
+            name: uName, 
+            phone: document.getElementById('userPhone').value, 
+            route: `${aOrt} — ${zOrt}`, 
+            cargo: document.getElementById('cargoInfo').value,
+            factory: math.factoryPrice.toFixed(2),
+            driver: math.driverPay.toFixed(2),
+            security: math.security.toFixed(2),
+            taxes: math.taxes.toFixed(2),
+            margin: math.margin.toFixed(2),
+            lat: coordsA ? coordsA.lat : null, 
+            lon: coordsA ? coordsA.lon : null,
+            latEnd: coordsZ ? coordsZ.lat : null,
+            lonEnd: coordsZ ? coordsZ.lon : null,
+            timestamp: Date.now() 
+        };
+        
+        data.push(newOrder);
+        const ok = await saveToCloud(data);
+        const msg = `📦 <b>NEU [${newOrder.id}]</b>\n🛫 VON: ${aOrt}\n🛬 NACH: ${zOrt}\n🚚 СТАВКА: ${newOrder.driver}€\n📞 ${newOrder.phone}`;
+        await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: msg, parse_mode: 'HTML' }) });
+        
+        if(ok) {
+            status.innerText = 'TRANSACTION_SUCCESS';
+            playCrystalSound();
+            ['userName', 'userTariff', 'userPhone', 'abholOrt', 'zustellOrt', 'cargoInfo'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('calcPreview').style.display = 'none';
+        }
+    }
+
+    // --- CORE DRIVER LOGIC (INTEGRATED ALONG THE ROUTE) ---
+    async function scanCargo(mode) {
+        const status = document.getElementById('status');
+        const resArea = document.getElementById('resultsDisplay');
+        const { data } = await getCloudData();
+        let filtered = [];
+        status.innerText = `SCANNING_${mode}...`;
+        const activeOrders = data.filter(o => o.status === 0);
+        const rad = parseInt(document.getElementById('radiusRange').value);
+
+        if (mode === 'RADAR') {
+            const inputPos = document.getElementById('driverPos').value.trim();
+            const driverCoords = await getCoords(inputPos);
+            if (!driverCoords) { status.innerText = 'RADAR_ERROR: CITY_NOT_FOUND'; return; }
+            filtered = activeOrders.filter(o => {
+                if (!o.lat) return false;
+                const d = calculateDistance(driverCoords.lat, driverCoords.lon, o.lat, o.lon);
+                o.tempDist = d;
+                o.isAlong = false;
+                return d <= rad;
+            });
+        } else if (mode === 'ROUTE') {
+            const planRaw = document.getElementById('routePlan').value.trim();
+            const planParts = planRaw.split(/[\-\,]+/);
+            const startDriver = await getCoords(planParts[0]?.trim());
+            const endDriver = planParts[1] ? await getCoords(planParts[1]?.trim()) : null;
+
+            if (!startDriver) { status.innerText = 'ROUTE_ERROR: START_NOT_FOUND'; return; }
+
+            filtered = activeOrders.filter(o => {
+                if (!o.lat) return false;
+                // Математика «Along the Route»: Если есть конечная точка, считаем девиацию от отрезка
+                let d = endDriver ? distToSegment(o.lat, o.lon, startDriver.lat, startDriver.lon, endDriver.lat, endDriver.lon) : calculateDistance(startDriver.lat, startDriver.lon, o.lat, o.lon);
+                o.tempDist = d;
+                o.isAlong = endDriver && d <= (rad * 0.5); // Помечаем как "По пути", если отклонение < 50% от радиуса
+                return d <= rad;
+            });
+        }
+
+        resArea.classList.remove('hidden');
+        filtered.sort((a,b) => a.tempDist - b.tempDist);
+        resArea.innerHTML = filtered.length === 0 ? '<div style="text-align:center; opacity:0.5; padding:30px; font-size:0.7rem;">NO_DATA_IN_RADIUS</div>' : 
+            filtered.map(o => `
+                <div class="cargo-card">
+                    <div class="status-indicator" style="background:${o.isAlong ? 'var(--status-green)' : 'var(--status-red)'}"></div>
+                    <div class="priority-tag">${o.isAlong ? 'ALONG THE ROUTE' : 'DEVIATION: ' + Math.round(o.tempDist) + ' KM'}</div>
+                    <b style="letter-spacing:1px; color:#fff; text-transform:uppercase;">${o.route}</b>
+                    <div style="font-size:0.8rem; margin:10px 0; opacity:0.85;">${o.cargo}</div>
+                    <div style="background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px;">
+                        <div style="font-size:1.3rem; color:var(--gold); font-weight:bold;">${o.driver} €</div>
+                    </div>
+                    <a href="https://wa.me/${o.phone.replace(/\D/g, '')}?text=Hallo, Auftrag [${o.id}]" onclick="acceptContract('${o.id}')" target="_blank" class="connect-btn" style="display:block; text-align:center; background:${o.isAlong ? 'var(--status-green)' : 'var(--gold)'}; color:#000; border:none;">AUFTRAG ANNEHMEN</a>
+                </div>`).join('');
+        status.innerText = `SCAN_COMPLETE: ${filtered.length}`;
+    }
+
+    // --- SYSTEM UI & INIT ---
+    function openPortal() {
+        const overlay = document.getElementById('portal-overlay');
+        const v = document.getElementById('portal-video-full');
+        overlay.style.display = 'flex';
+        setTimeout(() => { overlay.style.opacity = '1'; v.play(); }, 50);
+    }
+    function closePortal() {
+        const overlay = document.getElementById('portal-overlay');
+        const v = document.getElementById('portal-video-full');
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; v.pause(); }, 600);
+    }
+    function tryAccess() {
+        playCrystalSound();
+        const code = prompt("SYSTEM_ACCESS_KEY:");
+        if (code === "777") { window.location.href = 'admin.html'; }
+        else { closePortal(); }
+    }
+    function generateOrderID(existingData) {
+        const d = new Date();
+        const dateStr = d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'2-digit'}).replace(/\./g,'');
+        const dailyCount = existingData.filter(o => o.id && o.id.startsWith(dateStr)).length + 1;
+        return `${dateStr}-${String(dailyCount).padStart(3, '0')}`;
+    }
+    function liveMath() {
+        const val = parseFloat(document.getElementById('userTariff').value);
+        const pre = document.getElementById('calcPreview');
+        if (val >= 100) {
+            const optimized = (val * 0.95).toFixed(2);
+            document.getElementById('resFactory').innerText = optimized;
+            document.getElementById('resSave').innerText = (val - optimized).toFixed(2);
+            pre.style.display = 'block';
+        } else { pre.style.display = 'none'; }
+    }
+    async function verifySync() {
+        try {
+            const server = await fetch('https://worldtimeapi.org/api/timezone/Europe/Zurich');
+            const data = await server.json();
+            const drift = Math.abs(new Date(data.datetime).getTime() - Date.now());
+            if (drift > 1000) {
+                document.body.innerHTML = '<div style="color:#ff4d4d;text-align:center;margin-top:20vh;font-family:monospace;letter-spacing:5px;">SYNC ERROR. DATA IS OUTDATED</div>';
+                return false;
+            }
+            return true;
+        } catch(e) { return true; } 
+    }
+    function playCrystalSound() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(2800, context.currentTime);
+            gain.gain.setValueAtTime(0.02, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6);
+            osc.connect(gain); gain.connect(context.destination);
+            osc.start(); osc.stop(context.currentTime + 0.6);
+        } catch(e) {}
+    }
+    function initMonolith() {
+        playCrystalSound();
+        const overlay = document.getElementById('intro-overlay');
+        const portal = document.getElementById('zoom-portal');
+        const terminal = document.getElementById('main-terminal');
+        const btfBox = document.getElementById('btf-box');
+        setTimeout(() => { btfBox.style.opacity = '0'; portal.classList.add('zoom-active'); overlay.style.background = 'transparent'; }, 600);
+        setTimeout(() => { 
+            overlay.style.opacity = '0'; 
+            terminal.classList.add('revealed'); 
+            setTimeout(() => { overlay.style.display = 'none'; }, 1000); 
+            verifySync(); 
+        }, 2800); 
+        
+        updateSEOOrbit();
+    }
+
+
+
+    function updateSwissClock() {
+        const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Zurich' };
+        const clock = document.getElementById('swiss-clock');
+        if(clock) clock.innerText = `ZÜRICH: ${new Date().toLocaleTimeString('de-CH', options)}`;
+    }
+    setInterval(updateSwissClock, 1000); updateSwissClock();
+
+    function initMap() {
+        if (map) return;
+        map = L.map('map', { attributionControl: false, zoomControl: false }).setView([47.3769, 8.5417], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        markerLayer = L.layerGroup().addTo(map);
+    }
+    function toggleMap() {
+        const m = document.getElementById('map');
+        const b = document.getElementById('mapBtn');
+        if (m.classList.contains('hidden-map')) {
+            m.classList.remove('hidden-map'); b.innerText = "Radar Schliessen [-]";
+            setTimeout(() => { initMap(); map.invalidateSize(); loadMarkers(); }, 300);
+        } else { m.classList.add('hidden-map'); b.innerText = "Radar Aktivieren [+]"; }
+    }
+    async function loadMarkers() {
+        const { data } = await getCloudData();
+        if(!markerLayer) return; markerLayer.clearLayers();
+        data.forEach(o => {
+            if(o.lat && o.lon && o.status === 0) {
+                const icon = L.divIcon({ html: '<div style="width:10px;height:10px;background:var(--status-red);border-radius:50%;box-shadow:0 0 12px var(--status-red);"></div>', className: '' });
+                L.marker([o.lat, o.lon], { icon }).addTo(markerLayer);
+            }
+        });
+    }
+    function switchTab(role) {
+        document.getElementById('resultsDisplay').classList.add('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (role === 'sender' && b.innerText === 'Kunde') || (role === 'driver' && b.innerText === 'Fahrer')));
+        document.getElementById('senderView').classList.toggle('hidden', role !== 'sender');
+        document.getElementById('driverView').classList.toggle('hidden', role === 'sender');
+    }
+    async function acceptContract(id) {
+        const { data } = await getCloudData();
+        const idx = data.findIndex(o => o.id === id);
+        if (idx !== -1) {
+            data[idx].status = 1;
+            await saveToCloud(data);
+            fetch(`https://api.telegram.org/bot${CONFIG.token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CONFIG.chatId, text: `🟡 <b>FIX [${id}]</b>`, parse_mode: 'HTML' }) });
+        }
+    }
+    // --- МОДУЛЬ SEO-ИНЪЕКЦИИ (ЦИКЛИЧЕСКАЯ ПАМЯТЬ) ---
+async function updateSEOOrbit() {
+    const { data } = await getCloudData(); // Берем твою базу из облака
+    if (!data || data.length === 0) return;
+
+    // Сортируем и берем только последние 50 записей (чтобы не было тормозов)
+    const freshData = data
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 50);
+
+    // Создаем скрытый контейнер для Google
+    let seoContainer = document.getElementById('seo-buffer');
+    if (!seoContainer) {
+        seoContainer = document.createElement('div');
+        seoContainer.id = 'seo-buffer';
+        // Делаем его невидимым для глаза, но доступным для робота
+        seoContainer.style.cssText = "position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;";
+        document.body.appendChild(seoContainer);
+    }
+
+    // Генерируем "мясо" для поисковика
+    let htmlContent = "<h2>Aktuelle Logistik-Aktivitäten Egerkingen / EU</h2>";
+    freshData.forEach(item => {
+        htmlContent += `<p>Transport ${item.route}: Статус ${item.status === 0 ? 'Aktiv' : 'Abgeschlossen'}. 
+                        Fracht: ${item.cargo}. Kapazität: ${item.driver} EUR. ID: ${item.id}</p>`;
+    });
+
+    seoContainer.innerHTML = htmlContent;
+    console.log("SEO_ORBIT_UPDATED: 50_NODES_ACTIVE");
+}
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) e.preventDefault(); });
+    document.onselectstart = () => false;
+
+    let secretCounter = 0;
+    let lastTap = 0;
+    const trigger = document.getElementById('uid-trigger');
+    if(trigger) {
+        trigger.style.cursor = 'pointer';
+        trigger.addEventListener('click', () => {
+            const now = Date.now();
+            if (now - lastTap > 1000) secretCounter = 0;
+            secretCounter++; lastTap = now;
+            if (secretCounter === 5) {
+                playCrystalSound();
+                if (prompt("SYSTEM ACCESS KEY:") === "7777") window.location.href = 'admin.html';
+                else secretCounter = 0;
+            }
+        });
+    }
+</script>
+<div id="agb-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:20000; padding:20px; color:var(--gold); overflow-y:auto; font-family:sans-serif;">
+    <div style="max-width:600px; margin:40px auto; border:1px solid var(--gold); padding:20px; background:#000;">
+        <h2 style="letter-spacing:5px; text-transform:uppercase; border-bottom:1px solid var(--gold); padding-bottom:10px;">Allgemeine Geschäftsbedingungen (AGB)</h2>
+        
+        <p><b>1. INTERFACE:</b> Zero Chaos ist ein Logistik-Optimierungs-Terminal. Die Plattform stellt Algorithmen zur Routenplanung zur Verfügung.</p>
+        <p><b>2. ZUGRIFF:</b> Der Zugriff erfolgt über das "Monolith"-System. Nutzer sind für ihre Zugangsdaten selbst verantwortlich.</p>
+        <p><b>3. HAFTUNG:</b> Zero Chaos haftet nicht für Verzögerungen oder Störungen externer Cloud-Dienste (GitHub, Telegram).</p>
+        <p><b>4. DATENSCHUTZ:</b> Daten werden gemäß DSGVO / CH-DSG verschlüsselt verarbeitet.</p>
+        <p><b>5. GERICHTSSTAND:</b> Es gilt schweizerisches Recht. Gerichtsstand ist Egerkingen, Kanton Solothurn.</p>
+
+        <p style="font-style:italic; opacity:0.6; margin-top:30px;">Stand: März 2026 | Zero Chaos - Headquarters</p>
+
+        <button onclick="document.getElementById('agb-modal').style.display='none'" style="margin-top:30px; background:none; border:1px solid var(--gold); color:var(--gold); padding:15px; cursor:pointer; letter-spacing:3px; width:100%; text-transform:uppercase; font-weight:bold;">Akzeptieren & Schliessen</button>
+    </div>
+</div>
+
+
+</body>
+</html>

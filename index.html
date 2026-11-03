@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zero Chaos SSH</title>
     <style>
@@ -68,3 +69,75 @@
 </body>
 </html>
 
+=======
+    <title>VCHF MONOLITH: STABLE</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background: #050505; color: #00fa9a; font-family: monospace; padding: 20px; }
+        .console { border: 1px solid #24A1DE; padding: 15px; height: 300px; overflow-y: auto; margin-bottom: 10px; background: #000; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; background: #111; border: 1px solid #ffcf40; color: #fff; padding: 10px; }
+        button { background: #24A1DE; border: none; color: #fff; padding: 10px 20px; cursor: pointer; }
+        .sys-msg { color: #888; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+    <div id="status">STATUS: OFFLINE</div>
+    <div class="console" id="log"></div>
+    
+    <div class="input-row">
+        <input type="text" id="in" placeholder="Введите команду или сообщение...">
+        <button onclick="send()">SEND</button>
+    </div>
+
+<script>
+    // Манифест Монолита: Оптимизированное ядро
+    const firebaseConfig = { databaseURL: "https://vchf-monolith-default-rtdb.firebaseio.com/" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const myID = "USER_" + Math.random().toString(36).substr(2, 5);
+    let room = new URLSearchParams(window.location.search).get('room') || "777";
+    const roomRef = db.ref('stable_v1/' + room);
+
+    // ПОДКЛЮЧЕНИЕ
+    function init() {
+        document.getElementById('status').innerText = "STATUS: ONLINE (ROOM " + room + ")";
+        
+        // Слушаем только ОДНО последнее изменение, чтобы не вешать сеть
+        roomRef.limitToLast(1).on('child_added', (snap) => {
+            const data = snap.val();
+            if (data.sender !== myID) {
+                printLog("RECV: " + data.msg, "#ffcf40");
+            }
+        });
+        printLog("System initialized as " + myID, "#888");
+    }
+
+    function send() {
+        const val = document.getElementById('in').value.trim();
+        if (!val) return;
+
+        roomRef.push({
+            sender: myID,
+            msg: val,
+            ts: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        printLog("SENT: " + val, "#24A1DE");
+        document.getElementById('in').value = '';
+    }
+
+    function printLog(text, color) {
+        const l = document.getElementById('log');
+        l.innerHTML += `<div style="color:${color}">${text}</div>`;
+        l.scrollTop = l.scrollHeight;
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
+>>>>>>> 8a1c8a3561ba405ab5e6c7a6ee8ed26d7d48b164

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Zero Chaos | Producer Harvester v1.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <style>
+        :root {
+            --glow-color: #ffcc00; 
+            --bg-dark: #0f0e0a;
+            --accent: #ffae00;
+            --success: #00ff88;
+            --pending: #f1c40f;
+            --decline: #ff4d4d;
+            --new-item: #ffea00;
+        }
+
+        body {
+            background: var(--bg-dark); color: white;
+            font-family: 'Courier New', monospace;
+            margin: 0; padding: 10px; overflow-x: hidden;
+        }
+
+        #toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 10000; pointer-events: none;
+        }
+        .toast {
+            background: rgba(255, 204, 0, 0.9); color: black;
+            padding: 15px 25px; border-radius: 5px; font-weight: bold;
+            margin-bottom: 10px; box-shadow: 0 0 20px var(--glow-color);
+            animation: slideDown 0.4s ease, fadeOut 0.4s 2s forwards;
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+        /* MODAL SYSTEM */
+        #modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9000;
+            justify-content: center; align-items: center;
+        }
+        .log-card {
+            width: 90%; max-width: 400px; background: #1a1915; border: 2px solid var(--glow-color);
+            padding: 20px; box-shadow: 0 0 30px rgba(255,204,0,0.2);
+        }
+        .log-card h3 { color: var(--glow-color); margin-top: 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .log-card input, .log-card textarea {
+            width: 100%; background: #000; border: 1px solid #444; color: var(--glow-color);
+            padding: 10px; margin: 8px 0; font-family: monospace; outline: none; box-sizing: border-box;
+        }
+        .log-card label { font-size: 10px; color: #888; text-transform: uppercase; }
+
+        #login-screen { text-align: center; margin-top: 25vh; border: 1px solid var(--glow-color); padding: 30px; }
+        #main-dashboard { display: none; }
+
+        .folder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .folder-card {
+            border: 2px solid var(--glow-color); padding: 20px 5px;
+            text-align: center; background: rgba(255, 204, 0, 0.03);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .folder-card:active { background: var(--glow-color); color: black; }
+
+        #country-view { display: none; }
+        .back-btn { padding: 12px; border: 1px solid var(--accent); color: var(--accent); margin-bottom: 15px; width: 80px; text-align: center; font-weight: bold; }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+        td { padding: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 204, 0, 0.1); font-size: 11px; vertical-align: middle; }
+
+        .btn-action {
+            padding: 10px 5px; border: 1px solid var(--accent); color: var(--accent);
+            background: transparent; font-weight: bold; font-size: 10px; text-align: center; text-decoration: none;
+        }
+
+        .status-btn { width: 35px; height: 35px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        
+        .active-sent { background: var(--pending) !important; color: black !important; }
+        .active-reply { background: var(--success) !important; color: black !important; }
+
+        .row-new { border-left: 3px solid var(--new-item); }
+
+        .injector-panel { margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
+        textarea { width: 100%; background: #000; color: var(--glow-color); border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px; outline: none; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div id="modal-overlay">
+        <div class="log-card">
+            <h3 id="modal-title">OPERATIONAL LOG</h3>
+            <label>CONTACT PERSON</label>
+            <input type="text" id="log-name" placeholder="Name/Position">
+            <label>COMMUNICATION CHANNEL</label>
+            <input type="text" id="log-phone" placeholder="+00 000 000 000">
+            <label>STATUS NOTES</label>
+            <textarea id="log-note" rows="2" placeholder="Brief summary..."></textarea>
+            <div style="display:flex; justify-content: space-between; margin-top:10px;">
+                <button class="btn-action" style="width:48%; border-color:var(--decline); color:var(--decline);" onclick="closeModal()">CANCEL</button>
+                <button class="btn-action" style="width:48%; border-color:var(--success); color:var(--success);" onclick="saveLog()">COMMIT DATA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-screen">
+        <h2 style="color:var(--glow-color)">CLIENT SECTOR</h2>
+        <input type="password" id="pass-input" placeholder="CODE: 777" style="background:transparent; border:1px solid var(--glow-color); color:white; padding:12px; text-align:center; width: 150px;">
+        <br><br>
+        <button class="btn-action" style="width: 150px; font-size: 14px;" onclick="checkPass()">ACTIVATE</button>
+    </div>
+
+    <div id="main-dashboard">
+        <div id="home-view">
+            <h1 style="color:var(--glow-color); font-size: 18px;">PRODUCERS: REGIONS</h1>
+            <div id="folder-grid" class="folder-grid"></div>
+        </div>
+
+        <div id="country-view">
+            <div class="back-btn" onclick="showHome()">← BACK</div>
+            <h2 id="current-country-name" style="color:var(--glow-color); margin: 10px 0;"></h2>
+            <table><tbody id="data-table"></tbody></table>
+        </div>
+
+        <div class="injector-panel">
+            <textarea id="direct-injector" rows="3" placeholder="Paste Manufacturing JSON..."></textarea>
+            <button class="btn-action" style="width:100%; margin-top:8px; border-color:var(--glow-color); color:var(--glow-color);" onclick="quickInject()">ЗАГРУЗИТЬ ЗАВОДЫ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentFolder = null;
+        let activeItemId = null;
+        let activeStatusType = null;
+
+        function showToast(text) {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerText = text;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        }
+
+        function checkPass() {
+            if (document.getElementById('pass-input').value === '777') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-dashboard').style.display = 'block';
+                if (!localStorage.getItem('producer_db')) localStorage.setItem('producer_db', JSON.stringify([]));
+                renderHome();
+                showToast("БАЗА ДАННЫХ АКТИВНА");
+            }
+        }
+
+        function renderHome() {
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('country-view').style.display = 'none';
+            const grid = document.getElementById('folder-grid');
+            grid.innerHTML = "";
+            let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            const countries = [...new Set(db.map(item => item.id.split('_')[0].toUpperCase()))].sort();
+            countries.forEach(c => {
+                const count = db.filter(item => {
+                    const isSameCountry = item.id.split('_')[0].toUpperCase() === c;
+                    const isNotDeleted = memory[item.id]?.status !== 'red';
+                    return isSameCountry && isNotDeleted;
+                }).length;
+                grid.innerHTML += `<div class="folder-card" onclick="showCountry('${c}')"><h2>${c}</h2><span>Items: ${count}</span></div>`;
+            });
+        }
+
+        function showCountry(code) {
+            currentFolder = code;
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('country-view').style.display = 'block';
+            document.getElementById('current-country-name').innerText = "DB: " + code;
+            loadTable();
+        }
+
+        function showHome() { currentFolder = null; renderHome(); }
+
+        function loadTable() {
+            const tbody = document.getElementById('data-table');
+            tbody.innerHTML = "";
+            let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
+            const memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            db.sort((a, b) => a.name.localeCompare(b.name));
+            db.forEach(item => {
+                if (item.id.split('_')[0].toUpperCase() !== currentFolder) return;
+                const memEntry = memory[item.id] || {status: 'new'};
+                if (memEntry.status === 'red') return;
+                
+                const row = document.createElement('tr');
+                if (memEntry.status === 'new') row.className = 'row-new';
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(item.query + " -transport -logistics")}`;
+                
+                row.innerHTML = `
+                    <td><b>${item.name}</b><br><small style="color:#aaa;">${item.region}</small></td>
+                    <td><a href="${searchUrl}" target="_blank" class="btn-action" style="border-color:var(--glow-color); color:var(--glow-color);">DEAL</a></td>
+                    <td>
+                        <div style="display:flex; gap:3px;">
+                            <button class="status-btn ${memEntry.status==='sent'?'active-sent':''}" onclick="openLog('${item.id}', 'sent')">✉️</button>
+                            <button class="status-btn ${memEntry.status==='reply'?'active-reply':''}" onclick="openLog('${item.id}', 'reply')">📞</button>
+                            <button class="status-btn" onclick="quickStatus('${item.id}', 'red')">✖</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function openLog(id, status) {
+            activeItemId = id;
+            activeStatusType = status;
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            const data = memory[id] || {};
+            
+            document.getElementById('log-name').value = data.name || "";
+            document.getElementById('log-phone').value = data.phone || "";
+            document.getElementById('log-note').value = data.note || "";
+            document.getElementById('modal-title').innerText = "LOG ENTRY: " + id;
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        function saveLog() {
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            memory[activeItemId] = {
+                status: activeStatusType,
+                name: document.getElementById('log-name').value,
+                phone: document.getElementById('log-phone').value,
+                note: document.getElementById('log-note').value,
+                ts: new Date().toLocaleString()
+            };
+            localStorage.setItem('producer_memory', JSON.stringify(memory));
+            closeModal();
+            loadTable();
+            showToast("DATA COMMITTED");
+        }
+
+        function quickStatus(id, status) {
+            let memory = JSON.parse(localStorage.getItem('producer_memory') || "{}");
+            memory[id] = { status: status };
+            localStorage.setItem('producer_memory', JSON.stringify(memory));
+            loadTable();
+            showToast("STATUS: " + status.toUpperCase());
+        }
+
+        function quickInject() {
+            const area = document.getElementById('direct-injector');
+            try {
+                const newData = JSON.parse(area.value);
+                let db = JSON.parse(localStorage.getItem('producer_db') || "[]");
+                const existingIds = db.map(x => x.id);
+                const filtered = newData.filter(item => !existingIds.includes(item.id));
+                localStorage.setItem('producer_db', JSON.stringify(db.concat(filtered)));
+                area.value = "";
+                showToast("INJECTED: " + filtered.length);
+                renderHome();
+            } catch(e) { showToast("JSON ERROR"); }
+        }
+    </script>
+</body>
+</html>
