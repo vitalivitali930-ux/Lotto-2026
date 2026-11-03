@@ -35,10 +35,11 @@ jobs:
 
     - name: Build APK via Cordova
       run: |
+        # Если config.xml отсутствует, генерируем базовый конфиг без создания новой папки
         if [ ! -f "config.xml" ]; then
-          cordova create . com.zerochaos.app ZeroApp
-          cordova platform add android
+          cordova init
         fi
+        cordova platform add android
         cordova build android --release
 
     - name: Upload APK artifact
