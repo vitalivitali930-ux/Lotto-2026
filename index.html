@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Chaos SSH</title>
+    <style>
+        body { background: #121212; color: #00ffcc; font-family: monospace; padding: 15px; margin: 0; }
+        h2 { text-align: center; color: #fff; font-size: 1.2rem; }
+        .box { background: #1e1e1e; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #333; }
+        label { display: block; font-size: 0.85rem; margin-top: 8px; color: #aaa; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 4px; background: #2b2b2b; color: #fff; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; font-family: monospace; }
+        button { width: 100%; background: #00ffcc; color: #121212; border: none; padding: 10px; font-weight: bold; border-radius: 4px; margin-top: 15px; cursor: pointer; font-size: 1rem; }
+        button:active { background: #00b38f; }
+        pre { background: #000; padding: 10px; border-radius: 4px; overflow-x: auto; color: #00ff00; min-height: 80px; font-size: 0.85rem; border: 1px solid #222; }
+    </style>
+</head>
+<body>
+    <h2>Zero Chaos SSH Panel</h2>
+    <div class="box">
+        <label>IP Сервера (Host):</label>
+        <input type="text" id="host" placeholder="например, 192.168.1.50">
+
+        <label>Порт (Port):</label>
+        <input type="text" id="port" value="22">
+
+        <label>Юзер (Username):</label>
+        <input type="text" id="username" value="root">
+
+        <label>Приватный ключ (оставь пустым, если берется из ~/.ssh/id_rsa):</label>
+        <textarea id="privateKey" rows="3" placeholder="-----BEGIN RSA PRIVATE KEY----- ..."></textarea>
+
+        <label>Команда (Command):</label>
+        <input type="text" id="command" value="uptime && uname -a">
+
+        <button onclick="runSSH()">ВЫПОЛНИТЬ</button>
+    </div>
+
+    <div class="box">
+        <label>Результат:</label>
+        <pre id="output">Ожидание команды...</pre>
+    </div>
+
+    <script>
+        async function runSSH() {
+            const host = document.getElementById('host').value;
+            const port = document.getElementById('port').value;
+            const username = document.getElementById('username').value;
+            const privateKey = document.getElementById('privateKey').value;
+            const command = document.getElementById('command').value;
+            const outputPre = document.getElementById('output');
+
+            outputPre.innerText = 'Подключение и выполнение...';
+
+            try {
+                const response = await fetch('/exec', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host, port, username, privateKey, command })
+                });
+                const data = await response.json();
+                outputPre.innerText = data.output;
+            } catch (err) {
+                outputPre.innerText = 'Ошибка запроса: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
+
