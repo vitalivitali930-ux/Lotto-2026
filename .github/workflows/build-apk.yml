@@ -1,0 +1,47 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies & Cordova
+      run: |
+        npm install
+        sudo npm install -g cordova
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Build APK via Cordova
+      run: |
+        # Если проект еще не инициализирован как Cordova, инициализируем базовую структуру
+        if [ ! -f "config.xml" ]; then
+          cordova create . com.zerochaos.app ZeroApp
+          cordova platform add android
+        fi
+        cordova build android --release
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release-apk
+        path: platforms/android/app/build/outputs/apk/release/
