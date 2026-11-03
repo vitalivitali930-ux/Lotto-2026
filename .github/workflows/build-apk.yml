@@ -33,7 +33,7 @@ jobs:
       with:
         packages: 'platforms;android-33 build-tools;33.0.2 platform-tools'
 
-    - name: Prepare Cordova, Build and Sign APK
+    - name: Build and Sign APK
       run: |
         cordova create ../cordova-build com.zerochaos.app ZeroApp
         cd ../cordova-build
@@ -44,20 +44,20 @@ jobs:
         cordova platform add android
         cordova build android --release -- --packageType=apk
 
-        # Генерируем временный debug/release ключ для подписи прямо на раннере
-        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        # Генерируем ключ для подписи
+        keytool -genkey -v -keystore release.keystore -storepass android -alias androidkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=ZeroChaos,O=Dev,C=DE"
 
-        # Подписываем APK
-        jarsigner -keystore debug.keystore -storepass android -keypass android platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk androiddebugkey
+        # Подписываем созданный APK
+        jarsigner -keystore release.keystore -storepass android -keypass android platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk androidkey
 
-        # Выравниваем APK (zipalign)
-        $ANDROID_SDK_ROOT/build-tools/33.0.2/zipalign -v 4 platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk app-release.apk
+        # Выравниваем (zipalign) в итоговый готовый файл
+        $ANDROID_SDK_ROOT/build-tools/33.0.2/zipalign -v 4 platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk app-release-signed.apk
 
         mkdir -p $GITHUB_WORKSPACE/output
-        cp app-release.apk $GITHUB_WORKSPACE/output/
+        cp app-release-signed.apk $GITHUB_WORKSPACE/output/app-release.apk
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-release-apk
+        name: app-release-final
         path: output/
